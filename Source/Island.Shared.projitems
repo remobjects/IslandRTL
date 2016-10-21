@@ -1,0 +1,53 @@
+﻿<?xml version="1.0" encoding="utf-8" standalone="yes"?>
+<Project xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <PropertyGroup>
+    <MSBuildAllProjects>$(MSBuildAllProjects);$(MSBuildThisFileFullPath)</MSBuildAllProjects>
+    <HasSharedItems>true</HasSharedItems>
+    <SharedGUID>8BE19C06-DD7E-41F7-954B-6D269C087E4C</SharedGUID>
+  </PropertyGroup>
+  <PropertyGroup Label="Configuration">
+    <Import_RootNamespace>Island.Shared.elements</Import_RootNamespace>
+  </PropertyGroup>
+  <ItemGroup>
+    <Compile Include="$(MSBuildThisFileDirectory)Attributes.pas" />
+    <Compile Include="$(MSBuildThisFileDirectory)Convert.pas" />
+    <Compile Include="$(MSBuildThisFileDirectory)EqualityComparer.pas" />
+    <Compile Include="$(MSBuildThisFileDirectory)Exceptions.pas" />
+    <Compile Include="$(MSBuildThisFileDirectory)GCHandle.pas" />
+    <Compile Include="$(MSBuildThisFileDirectory)Guid.pas" />
+    <Compile Include="$(MSBuildThisFileDirectory)HashSet.pas" />
+    <Compile Include="$(MSBuildThisFileDirectory)Nullable.pas" />
+    <Compile Include="$(MSBuildThisFileDirectory)ObjectPool.pas" />
+    <Compile Include="$(MSBuildThisFileDirectory)Random.pas" />
+    <Compile Include="$(MSBuildThisFileDirectory)Task.pas" />
+    <Compile Include="$(MSBuildThisFileDirectory)TextConvert.pas" />
+    <Compile Include="$(MSBuildThisFileDirectory)Utilities.pas" />
+    <Compile Include="Environment.pas" />
+    <Compile Include="StringBuilder.pas" />
+    <Compile Include="DateTime.pas" />
+    <Compile Include="File.pas" />
+    <Compile Include="Folder.pas" />
+    <Compile Include="Path.pas" />
+    <Compile Include="MemoryStream.pas" />
+    <Compile Include="Stream.pas" />
+    <Compile Include="FileStream.pas" />
+    <Compile Include="Tuples.pas" />
+    <Compile Include="Dictionary.pas" />
+    <Compile Include="KeyValuePair.pas" />
+    <Compile Include="List.pas" />
+    <Compile Include="Delegates.pas" />
+    <Compile Include="Floats.pas" />
+    <Compile Include="Integers.pas" />
+    <Compile Include="Math.pas" />
+    <Compile Include="Object.pas" />
+    <Compile Include="String.pas" />
+    <Compile Include="Type.pas" />
+    <Compile Include="Types.pas" />
+    <Compile Include="Array.pas" />
+    <Compile Include="Thread.pas" />
+    <Compile Include="Console.pas" />
+    <Compile Include="Monitor.pas" />
+    <Compile Include="Sequence.pas" />
+    <Compile Include="Linq.pas" />
+  </ItemGroup>
+</Project>

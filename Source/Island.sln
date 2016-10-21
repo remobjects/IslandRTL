@@ -1,0 +1,43 @@
+Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio 14
+VisualStudioVersion = 14.0.25123.0
+MinimumVisualStudioVersion = 10.0.40219.1
+Project("{656346D9-4656-40DA-A068-22D5425D4639}") = "Island.Ubuntu", "Island.Ubuntu.elements", "{A2C670B6-DB38-401A-AE00-71515C87CCC5}"
+EndProject
+Project("{656346D9-4656-40DA-A068-22D5425D4639}") = "Island.Windows", "Island.Windows.elements", "{00BBBADD-8D31-439B-9495-1F35080E299E}"
+EndProject
+Project("{656346D9-4656-40DA-A068-22D5425D4639}") = "Island.Shared", "Island.Shared.elements", "{8BE19C06-DD7E-41F7-954B-6D269C087E4C}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug-i386|AnyCPU = Debug-i386|AnyCPU
+		Debug-x86_64|AnyCPU = Debug-x86_64|AnyCPU
+		Release-i386|AnyCPU = Release-i386|AnyCPU
+		Release-x86_64|AnyCPU = Release-x86_64|AnyCPU
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{A2C670B6-DB38-401A-AE00-71515C87CCC5}.Debug-i386|AnyCPU.ActiveCfg = Debug-x86_64
+		{A2C670B6-DB38-401A-AE00-71515C87CCC5}.Debug-i386|AnyCPU.Build.0 = Debug-x86_64
+		{A2C670B6-DB38-401A-AE00-71515C87CCC5}.Debug-x86_64|AnyCPU.ActiveCfg = Debug-x86_64
+		{A2C670B6-DB38-401A-AE00-71515C87CCC5}.Debug-x86_64|AnyCPU.Build.0 = Debug-x86_64
+		{A2C670B6-DB38-401A-AE00-71515C87CCC5}.Release-i386|AnyCPU.ActiveCfg = Release-x86_64
+		{A2C670B6-DB38-401A-AE00-71515C87CCC5}.Release-i386|AnyCPU.Build.0 = Release-x86_64
+		{A2C670B6-DB38-401A-AE00-71515C87CCC5}.Release-x86_64|AnyCPU.ActiveCfg = Release-x86_64
+		{A2C670B6-DB38-401A-AE00-71515C87CCC5}.Release-x86_64|AnyCPU.Build.0 = Release-x86_64
+		{00BBBADD-8D31-439B-9495-1F35080E299E}.Debug-i386|AnyCPU.ActiveCfg = Debug-i386
+		{00BBBADD-8D31-439B-9495-1F35080E299E}.Debug-i386|AnyCPU.Build.0 = Debug-i386
+		{00BBBADD-8D31-439B-9495-1F35080E299E}.Debug-x86_64|AnyCPU.ActiveCfg = Debug-x86_64
+		{00BBBADD-8D31-439B-9495-1F35080E299E}.Debug-x86_64|AnyCPU.Build.0 = Debug-x86_64
+		{00BBBADD-8D31-439B-9495-1F35080E299E}.Release-i386|AnyCPU.ActiveCfg = Release-i386
+		{00BBBADD-8D31-439B-9495-1F35080E299E}.Release-i386|AnyCPU.Build.0 = Release-i386
+		{00BBBADD-8D31-439B-9495-1F35080E299E}.Release-x86_64|AnyCPU.ActiveCfg = Release-x86_64
+		{00BBBADD-8D31-439B-9495-1F35080E299E}.Release-x86_64|AnyCPU.Build.0 = Release-x86_64
+		{8BE19C06-DD7E-41F7-954B-6D269C087E4C}.Debug-i386|AnyCPU.ActiveCfg = Debug-i386|AnyCPU
+		{8BE19C06-DD7E-41F7-954B-6D269C087E4C}.Debug-x86_64|AnyCPU.ActiveCfg = Debug-x86_64|AnyCPU
+		{8BE19C06-DD7E-41F7-954B-6D269C087E4C}.Release-i386|AnyCPU.ActiveCfg = Release-i386|AnyCPU
+		{8BE19C06-DD7E-41F7-954B-6D269C087E4C}.Release-x86_64|AnyCPU.ActiveCfg = Release-x86_64|AnyCPU
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+EndGlobal

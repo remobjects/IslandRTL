@@ -1,0 +1,22 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio 14
+VisualStudioVersion = 14.0.25123.0
+MinimumVisualStudioVersion = 10.0.40219.1
+Project("{656346D9-4656-40DA-A068-22D5425D4639}") = "Island.Ubuntu", "Island.Ubuntu.elements", "{00BBBADD-8D31-439B-9495-1F35080E299E}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug-x86_64|Default = Debug-x86_64|Default
+		Release-x86_64|Default = Release-x86_64|Default
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{00BBBADD-8D31-439B-9495-1F35080E299E}.Debug-x86_64|Default.ActiveCfg = Debug-x86_64
+		{00BBBADD-8D31-439B-9495-1F35080E299E}.Debug-x86_64|Default.Build.0 = Debug-x86_64
+		{00BBBADD-8D31-439B-9495-1F35080E299E}.Release-x86_64|Default.ActiveCfg = Release-x86_64
+		{00BBBADD-8D31-439B-9495-1F35080E299E}.Release-x86_64|Default.Build.0 = Release-x86_64
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+EndGlobal
