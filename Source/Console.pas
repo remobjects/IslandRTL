@@ -9,14 +9,14 @@ type
     class var fOutputHandle: rtl.HANDLE;
     class var fInputHandle: rtl.HANDLE;
     {$ENDIF}
-    class method Read(): AnsiChar;
   public
-    class method Write(s: String);
-    class method Write(s: Object);
+    class method &Write(s: String);
+    class method &Write(s: Object);
     class method WriteLine(s: String);
     class method WriteLine(s: Object);
     class method WriteLine();
-    class method Write(); empty;
+    class method &Write(); empty;
+    class method ReadChar(): AnsiChar;
     class method ReadLine(): String;
   end;
 
@@ -76,7 +76,7 @@ begin
   var offset := 0;
   var buf: array[0..255] of AnsiChar;
   while true do begin
-    var ch := &Read();
+    var ch := ReadChar();
     if ch = #0 then break; // problem with Read
     if ch = #13 then break; //CR was detected
     buf[offset] := ch;
@@ -91,7 +91,7 @@ begin
   exit r;
 end;
 
-class method Console.Read: AnsiChar;
+class method Console.ReadChar: AnsiChar;
 begin
   var ch : array[0..0] of AnsiChar;
   ch[0] := #0;
