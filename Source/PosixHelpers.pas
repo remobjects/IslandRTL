@@ -41,7 +41,7 @@ type
     [SymbolName('__elements_entry_point')]
     method UserEntryPoint(args: array of String): Integer; external;
     [SYmbolName({$IFDEF EMSCRIPTEN}'_start'{$ELSE}'__elements_entry_point_helper'{$ENDIF})]
-    method Entrypoint(argc: Integer; argv: ^^char; envp: ^^char): Integer;
+    method Entrypoint(argc: Integer; argv: ^^ansichar; envp: ^^ansichar): Integer;
     {$IFNDEF EMSCRIPTEN}
     [SymbolName('_start'), Naked]
     method _start;
@@ -59,6 +59,10 @@ type
     method DwarfEHReadPointer(var aData: ^Byte): rtl.uintptr_t;
     method DwarfEHReadULEB128(var aData: ^Byte): rtl.uintptr_t;
     method DwarfEHReadSLEB128(var aData: ^Byte): rtl.intptr_t;
+
+    class var nargs: Integer; 
+    class var args: ^^ansichar; 
+    class var envp: ^^ansichar;
     
     class var
       [SymbolName('__init_array_start')]
@@ -159,8 +163,8 @@ begin
     if (0 = (aState and rtl.{$IFDEF EMSCRIPTEN}_Unwind_Action.{$ENDIF}_UA_HANDLER_FRAME))  then begin 
       // finally, always parse 
       if Parselsda(aState, lMine, aEx, aCtx, out lTypeInfo, out lLandingPad) then begin
-        rtl._Unwind_SetGR(aCtx, 0, rtl.{$IFDEF EMSCRIPTEN}uintptr_t{$ELSE}_Unwind_Word{$ENDIF}(aEx));
-        rtl._Unwind_SetGR(aCtx, 1, rtl.{$IFDEF EMSCRIPTEN}uintptr_t{$ELSE}_Unwind_Word{$ENDIF}(lTypeInfo));
+        rtl._Unwind_SetGR(aCtx, 0, rtl.uintptr_t(aEx));
+        rtl._Unwind_SetGR(aCtx, 1, rtl.uintptr_t(lTypeInfo));
         rtl._Unwind_SetIP(aCtx, lLandingPad);
         exit rtl._Unwind_Reason_Code._URC_INSTALL_CONTEXT;
       end;
@@ -169,8 +173,8 @@ begin
     // exception
     if not lMine then begin 
       if Parselsda(aState, lMine, aEx, aCtx, out lTypeInfo, out lLandingPad) then begin
-        rtl._Unwind_SetGR(aCtx, 0, rtl.{$IFDEF EMSCRIPTEN}uintptr_t{$ELSE}_Unwind_Word{$ENDIF}(aEx));
-        rtl._Unwind_SetGR(aCtx, 1, rtl.{$IFDEF EMSCRIPTEN}uintptr_t{$ELSE}_Unwind_Word{$ENDIF}(lTypeInfo));
+        rtl._Unwind_SetGR(aCtx, 0, rtl.uintptr_t(aEx));
+        rtl._Unwind_SetGR(aCtx, 1, rtl.uintptr_t(lTypeInfo));
         rtl._Unwind_SetIP(aCtx, lLandingPad);
         exit rtl._Unwind_Reason_Code._URC_INSTALL_CONTEXT;
       end;
@@ -179,8 +183,8 @@ begin
     end;
     var lRecord := ^ElementsException(aEx);
     lRecord := ^ElementsException(@^Byte(lRecord)[-Int32((^Byte(@lRecord^.Unwind) - ^Byte(lRecord)))]);
-    rtl._Unwind_SetGR(aCtx, 0, rtl.{$IFDEF EMSCRIPTEN}uintptr_t{$ELSE}_Unwind_Word{$ENDIF}(aEx));
-    rtl._Unwind_SetGR(aCtx, 1, rtl.{$IFDEF EMSCRIPTEN}uintptr_t{$ELSE}_Unwind_Word{$ENDIF}(lRecord^.handlerSwitchValue));
+    rtl._Unwind_SetGR(aCtx, 0, rtl.uintptr_t(aEx));
+    rtl._Unwind_SetGR(aCtx, 1, rtl.uintptr_t(lRecord^.handlerSwitchValue));
     rtl._Unwind_SetIP(aCtx, lRecord^.landingPad);
     exit rtl._Unwind_Reason_Code._URC_INSTALL_CONTEXT;
   end;
@@ -227,9 +231,12 @@ begin
   ", "", false, false);
 end;
 {$ENDIF}
-
-method ExternalCalls.Entrypoint(argc: Integer; argv: ^^char; envp: ^^char): Integer;
+{$HIDE W27}
+method ExternalCalls.Entrypoint(argc: Integer; argv: ^^ansichar; envp: ^^ansichar): Integer;
 begin
+  ExternalCalls.nargs := nargs;
+  ExternalCalls.args := args;
+  ExternalCalls.envp := envp;
   Utilities.Initialize;
   exit UserEntryPoint([]);
   {$IFNDEF EMSCRIPTEN}
@@ -247,7 +254,7 @@ begin
   end;
   exit 0;
 end;
-
+{$SHOW W27}
 method ExternalCalls.fini;
 begin
   //_finilist;
