@@ -371,7 +371,7 @@ begin
       inc(bufpos);
     end;
   end;
-  exit  String.FromChars(buf,bufpos);
+  exit  String.FromPChar(buf,bufpos);
 end;
 
 class method FloatToString.CalcLastDigit(var data: array[0..maxpos] of Byte; aStart: Integer; aCount: Integer);

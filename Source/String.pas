@@ -5,7 +5,7 @@ interface
 type
   LCMapStringTransformMode = assembly enum (None, Upper, Lower);
 
-  &String = public class(Object)
+  String = public class(Object)
   assembly {$HIDE H6}
     fLength: Integer;
     fFirstChar: Char;{$SHOW H6}
@@ -26,12 +26,16 @@ type
     class method AllocString(aLen: Integer): String;
   public
     class constructor;
-    class method FromCharArray(anArray: array of Char): String;
-    class method FromChars(c: ^Char; aCharCount: Integer): String;
-    class method FromChars(c: ^Char): String;
+    
+    //constructor(aArray: array of Char);
+    //constructor(c: ^Char; aCharCount: Integer): String;
+    class method FromCharArray(aArray: array of Char): String;
+    class method FromPChar(c: ^Char; aCharCount: Integer): String;
+    class method FromPChar(c: ^Char): String;
+    class method FromPAnsiChars(c: ^AnsiChar; aCharCount: Integer): String;
+    class method FromPAnsiChars(c: ^AnsiChar): String;
+    class method FromRepeatedChar(c: Char; aCharCount: Integer): String;
     class method FromChar(c: Char): String;
-    class method FromAnsiChars(c: ^AnsiChar; aCharCount: Integer): String;
-    class method FromAnsiChars(c: ^AnsiChar): String;
     class method IsNullOrEmpty(value: String):Boolean;
     method ToAnsiChars(aNullTerminate: Boolean := false): array of AnsiChar;
     method ToCharArray(aNullTerminate: Boolean := false): array of Char;
@@ -85,13 +89,23 @@ type
     method GetHashCode: Integer; override;
   end;
 
+  String_Constructors = public extension class(String)
+    constructor(aArray: array of Char);
+    constructor(c: ^Char; aCharCount: Integer);
+    constructor(c: ^Char);
+    constructor(c: Char; aCharCount: Integer);
+    constructor(c: Char);
+    constructor(c: ^AnsiChar; aCharCount: Integer);
+    constructor(c: ^AnsiChar);
+  end;
+
 {$IFDEF POSIX}
 method iconv_helper(cd: rtl.iconv_t; inputdata: ^AnsiChar; inputdatalength: rtl.size_t; suggestedlength: Integer; out aresult: ^ansichar): integer; public;
 {$ENDIF}
 
 implementation
 
-class method String.FromChars(c: ^Char; aCharCount: Integer): String;
+class method String.FromPChar(c: ^Char; aCharCount: Integer): String;
 begin
   result := AllocString(aCharCount);
   {$IFDEF WINDOWS}ExternalCalls.{$ELSEIF POSIX}rtl.{$ELSE}{$ERROR}{$ENDIF}memcpy(@result.ffirstChar, c, aCharCount * 2);
@@ -126,7 +140,7 @@ begin
 end;
 {$ENDIF}
 
-class method String.FromAnsiChars(c: ^AnsiChar; aCharCount: Integer): String;
+class method String.FromPAnsiChars(c: ^AnsiChar; aCharCount: Integer): String;
 begin
   {$IFDEF WINDOWS}
   var len := rtl.MultiByteToWideChar(rtl.CP_ACP, 0, c, aCharCount, nil, 0);
@@ -137,7 +151,7 @@ begin
   var lNewLen: rtl.size_t := iconv_helper(String.fCurrentToUtf16, c, aCharCount, aCharCount * 2 + 5, out lNewData);
   // method iconv_helper(cd: rtl.iconv_t; inputdata: ^AnsiChar; inputdatalength: rtl.size_t;outputdata: ^^AnsiChar; outputdatalength: ^rtl.size_t; suggested_output_length: Integer): Integer;
   if lNewLen <> -1  then begin
-    result := String.FromChars(^Char(lNewData), lNewLen);
+    result := String.FromPChar(^Char(lNewData), lNewLen);
     rtl.free(lNewData);
   end;
   {$ENDIF}
@@ -235,7 +249,7 @@ begin
       lresult[pos] := self.Item[i];
       inc(pos);
     end;
-  exit String.FromChars(@lresult,pos);
+  exit String.FromPChar(@lresult,pos);
 end;
 
 method String.Trim(aChars: array of Char): String;
@@ -303,7 +317,7 @@ begin
   CheckIndex(StartIndex);
   if aLength = 0 then exit '';
   {$HIDE W46}
-  exit String.FromChars(@(@fFirstChar)[StartIndex], aLength);
+  exit String.FromPChar(@(@fFirstChar)[StartIndex], aLength);
   {$SHOW W46}
 end;
 
@@ -619,19 +633,26 @@ begin
   if (aIndex < 0) or (aIndex >= fLength) then raise new ArgumentOutOfRangeException('Index was out of range.');
 end;
 
-class method String.FromChars(c: ^Char): String;
+class method String.FromPChar(c: ^Char): String;
 begin
-  exit FromChars(c, {$IFDEF WINDOWS}ExternalCalls.{$ELSEIF POSIX}rtl.{$ELSE}{$ERROR}{$ENDIF}wcslen(c));
+  exit FromPChar(c, {$IFDEF WINDOWS}ExternalCalls.{$ELSEIF POSIX}rtl.{$ELSE}{$ERROR}{$ENDIF}wcslen(c));
 end;
 
 class method String.FromChar(c: Char): String;
 begin
-  exit FromChars(@c, 1);
+  exit FromPChar(@c, 1);
 end;
 
-class method String.FromAnsiChars(c: ^AnsiChar): String;
+class method String.FromRepeatedChar(c: Char; aCharCount: Integer): String;
 begin
-  exit FromAnsiChars(c, {$IFDEF WINDOWS}ExternalCalls.{$ELSEIF POSIX}rtl.{$ELSE}{$ERROR}{$ENDIF}strlen(c));
+  result := AllocString(aCharCount);
+  for i: Integer := 0 to aCharCount-1 do
+    (@result.fFirstChar)[i] := c;
+end;
+
+class method String.FromPAnsiChars(c: ^AnsiChar): String;
+begin
+  exit FromPAnsiChars(c, {$IFDEF WINDOWS}ExternalCalls.{$ELSEIF POSIX}rtl.{$ELSE}{$ERROR}{$ENDIF}strlen(c));
 end;
 
 class constructor String;
@@ -769,12 +790,17 @@ begin
   exit sb.ToString;
 end;
 
-class method String.FromCharArray(anArray: array of Char): String;
+/*constructor String(aArray: array of Char);
 begin
-  if anArray = nil then
-    exit FromChars(nil,0)
+  constructor(if aArray = nil then nil else @aArray[0], if aArray = nil then nil else aArray.Length);
+end;*/
+
+class method String.FromCharArray(aArray: array of Char): String;
+begin
+  if aArray = nil then
+    exit FromPChar(nil,0)
   else
-    exit FromChars(@anArray[0], anArray.Length);
+    exit FromPChar(@aArray[0], aArray.Length);
 end;
 
 class method String.Join(Separator: String; Value: array of String): String;
@@ -845,6 +871,43 @@ begin
     str.Append(lenum.Current.ToString);
   end;
   exit str.ToString;
+end;
+
+{ String_Constructors }
+
+constructor String_Constructors(aArray: array of Char);
+begin
+  result := String.FromCharArray(aArray);
+end;
+
+constructor String_Constructors(c: ^Char; aCharCount: Integer);
+begin
+  result := String.FromPChar(c, aCharCount);
+end;
+
+constructor String_Constructors(c: ^Char);
+begin
+  result := String.FromPChar(c);
+end;
+
+constructor String_Constructors(c: Char; aCharCount: Integer);
+begin
+  result := String.FromRepeatedChar(c, aCharCount);
+end;
+
+constructor String_Constructors(c: Char);
+begin
+  result := String.FromChar(c);
+end;
+
+constructor String_Constructors(c: ^AnsiChar; aCharCount: Integer);
+begin
+  result := String.FromPAnsiChars(c, aCharCount);
+end;
+
+constructor String_Constructors(c: ^AnsiChar);
+begin
+  result := String.FromPAnsiChars(c);
 end;
 
 end.

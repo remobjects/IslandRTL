@@ -154,7 +154,7 @@ type
       var arr := new array of Char(RepeatCount);
       for i: Integer := 0 to RepeatCount-1 do
         arr[i] := Value;
-      exit Append(String.FromChars(@arr[0],RepeatCount));
+      exit Append(String.FromPChar(@arr[0],RepeatCount));
     end;
 
     method AppendLine: StringBuilder; 
@@ -228,7 +228,7 @@ type
         Length := curpos;
       end
       else begin         
-        var tempStr := String.FromChars(@fBuf[StartIndex],Count).Replace(OldValue,NewValue);        
+        var tempStr := String.FromPChar(@fBuf[StartIndex],Count).Replace(OldValue,NewValue);        
         if fLength - (StartIndex+ Count)+ tempStr.Length > MaxCapacity then RaiseError('Enlarging the value of this instance would exceed MaxCapacity');
         var newbuflen := tempstr.Length+fLength -Count;
         var tempstrbuf := tempstr.ToCharArray;
@@ -265,7 +265,7 @@ type
 
     method ToString: String; override;
     begin
-      exit String.FromChars(@fbuf[0], fLength);
+      exit String.FromPChar(@fbuf[0], fLength);
     end;
 
     method ToString(StartIndex, Count: Integer): String; 
@@ -274,7 +274,7 @@ type
       if (Count < 0) then RaiseError('Count less than zero') ;
       if (StartIndex < 0) then RaiseError('StartIndex less than zero') ;
       if (StartIndex + Count > Length) then RaiseError('StartIndex + Count is greater than the length');      
-      exit String.FromChars(@fbuf[StartIndex], Count);
+      exit String.FromPChar(@fbuf[StartIndex], Count);
     end;
 
     method Insert(Offset: Integer; Value: String): StringBuilder;

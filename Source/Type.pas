@@ -10,9 +10,9 @@ type
   public
     constructor(aValue: ^IslandTypeInfo);
     property RTTI: ^IslandTypeInfo read fValue;
-    property &Name: String read String.FromAnsiChars(fValue^.Ext^.Name);
+    property &Name: String read String.FromPAnsiChars(fValue^.Ext^.Name);
     property &Flags: IslandTypeFlags read fValue^.Ext^.Flags;
-	  method Equals(other: Object): Boolean; override;
+    method Equals(other: Object): Boolean; override;
     method GetHashCode: Integer; override;
   end;
 

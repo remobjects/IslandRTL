@@ -461,7 +461,7 @@ begin
     buffer[i] := '-';
     dec(i);
   end;
-  exit String.FromChars(@Buffer[i+1], 50 -i);
+  exit String.FromPChar(@Buffer[i+1], 50 -i);
 end;
 
 method UInt64.ToString: String;
@@ -476,7 +476,7 @@ begin
     dec(i);
     n1 :=n1 /10;
   end;
-  exit String.FromChars(@Buffer[i+1], 50 -i);
+  exit String.FromPChar(@Buffer[i+1], 50 -i);
 end;
 
 method Byte.ToString: String;

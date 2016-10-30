@@ -152,7 +152,7 @@ type
       end;
       for i: Integer := 0 to a_Pos do
         arr[i] := '0';
-      exit String.FromChars(@arr[0],aDigits);
+      exit String.FromPChar(@arr[0],aDigits);
     end;
   end;
 

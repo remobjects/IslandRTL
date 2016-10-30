@@ -65,7 +65,7 @@ type
       if hfind = rtl.INVALID_HANDLE_VALUE then exit;
       repeat
         if find.dwFileAttributes and rtl.FILE_ATTRIBUTE_DIRECTORY <> rtl.FILE_ATTRIBUTE_DIRECTORY then
-          result.Add(new File(Path.Combine(fFullPath,String.FromChars(@find.cFileName[0]))));
+          result.Add(new File(Path.Combine(fFullPath,String.FromPChar(@find.cFileName[0]))));
       until (not rtl.FindNextFileW(hFind, @find));
       {$ELSEIF POSIX}
       {$HINT Posix: implement Folder.GetFiles}
@@ -81,7 +81,7 @@ type
       if hfind = rtl.INVALID_HANDLE_VALUE then exit;
       repeat
         if find.dwFileAttributes and rtl.FILE_ATTRIBUTE_DIRECTORY = rtl.FILE_ATTRIBUTE_DIRECTORY then
-          result.Add(new Folder(Path.Combine(fFullPath,String.FromChars(@find.cFileName[0]))));
+          result.Add(new Folder(Path.Combine(fFullPath,String.FromPChar(@find.cFileName[0]))));
       until (not rtl.FindNextFileW(hFind, @find));
       {$ELSEIF POSIX}
       {$HINT Posix: implement Folder.GetSubFolders}

@@ -67,10 +67,10 @@ type
             end;
             rtl.REG_SZ,
             rtl.REG_EXPAND_SZ,
-            rtl.REG_LINK:      exit String.FromChars(^Char(bufref));
+            rtl.REG_LINK:      exit String.FromPChar(^Char(bufref));
 
             rtl.REG_MULTI_SZ:begin
-              var s:= String.FromChars(^Char(bufref),pcbData);
+              var s:= String.FromPChar(^Char(bufref),pcbData);
               if s.EndsWith(#0#0) then s:= s.Substring(0,s.Length-2);
               exit s.Split(#0);
             end;

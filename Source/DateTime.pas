@@ -308,12 +308,12 @@ type
       if k = 0 then CheckForLastError;
       var buf:= new array of Char(k+1);      
       var k1 := rtl.GetDateFormatEx(l1,0,@sysdate,nil,rtl.LPWSTR(@buf[0]),k+1, nil);
-      var r := string.FromChars(@buf[0],k1);      
+      var r := string.FromPChar(@buf[0],k1);      
       
       k := rtl.GetTimeFormatEx(l1,0,@sysdate,nil,nil,0);
       var buf1:= new array of Char(k+1);      
       k1 := rtl.GetTimeFormatEx(l1,0,@sysdate,nil,rtl.LPWSTR(@buf1[0]),k+1);
-      exit r.TrimEnd+' ' + string.FromChars(@buf1[0],k1).TrimEnd;      
+      exit r.TrimEnd+' ' + string.FromPChar(@buf1[0],k1).TrimEnd;      
       {$ELSEIF POSIX}
       {$ELSE}{$ERROR}
       {$ENDIF}

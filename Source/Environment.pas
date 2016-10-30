@@ -14,7 +14,7 @@ type
       exit 'Windows';
       {$ELSEIF POSIX}
       var str : rtl.__struct_utsname;
-      if rtl.uname(@str) = 0 then exit String.FromAnsiChars(str.sysname);
+      if rtl.uname(@str) = 0 then exit String.FromPAnsiChars(str.sysname);
       CheckForLastError;
       {$ELSE}{$ERROR}{$ENDIF}
     end;
@@ -30,7 +30,7 @@ type
       exit Registry.GetValue('HKEY_LOCAL_MACHINE\SOFTWARE\Microsoft\Windows NT\CurrentVersion','CurrentVersion','') as String;      
       {$ELSEIF POSIX}
       var str : rtl.__struct_utsname;
-      if rtl.uname(@str) = 0 then exit String.FromAnsiChars(str.version);
+      if rtl.uname(@str) = 0 then exit String.FromPAnsiChars(str.version);
       CheckForLastError;
       {$ELSE}{$ERROR}{$ENDIF}
     end;
@@ -49,10 +49,10 @@ type
       if len = 0 then begin
         CheckForLastError;
       end;
-      exit String.FromChars(@buf[0],len);
+      exit String.FromPChar(@buf[0],len);
       {$ELSEIF POSIX}
       var lName := Name.ToAnsiChars;
-      exit String.FromAnsiChars(rtl.getenv(@lName[0]));
+      exit String.FromPAnsiChars(rtl.getenv(@lName[0]));
       {$ELSE}{$ERROR}{$ENDIF}
     end;
 
@@ -66,16 +66,16 @@ type
         if len1 > len then begin
           var newbuf := new array of Char(len1+1);
           len1 := rtl.GetCurrentDirectoryW(len1+1,@newbuf[0]);
-          exit string.FromChars(@newbuf[0],len1);
+          exit string.FromPChar(@newbuf[0],len1);
         end
         else begin
-          exit string.FromChars(@buf[0],len1);
+          exit string.FromPChar(@buf[0],len1);
         end;
       end;
       CheckForLastError;
       {$ELSEIF POSIX}
       var lCwd := rtl.get_current_dir_name();
-      result := String.FromAnsiChars(lCwd);
+      result := String.FromPAnsiChars(lCwd);
       rtl.free(lCwd);
       {$ELSE}{$ERROR}{$ENDIF}
     end;
