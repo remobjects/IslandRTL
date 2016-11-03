@@ -49,9 +49,16 @@ begin
   if String.IsNullOrEmpty(FullPathName) then raise new Exception('FullPathName should be specified');
   if not Exists then raise new Exception('File is not exist:'+FullPath);
   {$IFDEF WINDOWS}
-  CheckForIOError(rtl.CopyFileW(FullPath.ToFileName,FullPathName.ToFileName,True));
+  CheckForIOError(rtl.CopyFileW(FullPath.ToFileName(),FullPathName.ToFileName(),True));
   {$ELSEIF POSIX}
-  {$Hint POSIX: implement File.Copy}
+  var f2 := new FileStream(FullPathName,FileMode.CreateNew,FileAccess.Write,FileShare.None);
+  var f1 := new FileStream(Self.FullPath,FileMode.Open,FileAccess.Read,FileShare.Read);
+  try
+    f1.CopyTo(f2);
+  finally
+    f1.Close;
+    f2.Close;
+  end;
   {$ELSE}{$ERROR}
   {$ENDIF}
   exit new File(FullPathName);
@@ -68,9 +75,9 @@ method File.Delete;
 begin
   if not Exists then raise new Exception('File is not found:'+FullPath);
   {$IFDEF WINDOWS}
-  CheckForIOError(rtl.DeleteFileW(FullPath.ToFileName));
+  CheckForIOError(rtl.DeleteFileW(FullPath.ToFileName()));
   {$ELSEIF POSIX}
-  {$Hint POSIX: implement File.Delete}
+  CheckForIOError(rtl.remove(FullPath.ToFileName()));  
   {$ELSE}{$ERROR}
   {$ENDIF}
 end;
@@ -92,9 +99,9 @@ begin
   if String.IsNullOrEmpty(FullPathName)then raise new Exception('FullPathName should be specified');
   if not Exists then raise new Exception('File is not exist:'+FullPath);
   {$IFDEF WINDOWS}
-  CheckForIOError(rtl.MoveFileExW(Self.FullPath.ToFileName,FullPathName.ToFileName, rtl.MOVEFILE_REPLACE_EXISTING OR rtl.MOVEFILE_COPY_ALLOWED));
+  CheckForIOError(rtl.MoveFileExW(Self.FullPath.ToFileName(),FullPathName.ToFileName(), rtl.MOVEFILE_REPLACE_EXISTING OR rtl.MOVEFILE_COPY_ALLOWED));
   {$ELSEIF POSIX}
-  {$Hint POSIX: implement File.Move}
+  CheckForIOError(rtl.rename(Self.FullPath.ToFileName(),FullPathName.ToFileName()));
   {$ELSE}{$ERROR}
   {$ENDIF}
   fPath := FullPathName;
@@ -113,24 +120,18 @@ begin
   if String.IsNullOrEmpty(NewName)then raise new Exception('NewName should be specified');
   var newFullName: not nullable string := Path.Combine(Path.GetParentDirectory(FullPath), NewName);
   if not Exists then raise new Exception('File is not exist:'+FullPath);
-  {$IFDEF WINDOWS}
-  CheckForIOError(rtl.MoveFileExW(Self.FullPath.ToFileName,newFullName.ToFileName, rtl.MOVEFILE_REPLACE_EXISTING OR rtl.MOVEFILE_COPY_ALLOWED));
-  {$ELSEIF POSIX}
-  {$Hint POSIX: implement File.Rename}
-  {$ELSE}{$ERROR}
-  {$ENDIF}
-  fPath := newFullName;
-  exit self;
+  exit Move(newFullName);
 end;
 
 class method File.Exists(FileName: not nullable String): Boolean;
 begin
   {$IFDEF WINDOWS}
-  var attr := rtl.GetFileAttributesW(FileName.ToFileName);
-  if attr = rtl.INVALID_FILE_ATTRIBUTES then exit false;
-  exit (attr and rtl.FILE_ATTRIBUTE_DIRECTORY) <> rtl.FILE_ATTRIBUTE_DIRECTORY;
+  var attr := rtl.GetFileAttributesW(FileName.ToFileName());
+  exit FileUtils.isFile(attr);
   {$ELSEIF POSIX}
-  {$Hint POSIX: implement File.Exists}
+  var sb: rtl.__struct_stat;
+  CheckForIOError(rtl.stat(FileName.ToFileName(),@sb));
+  exit FileUtils.isFile(sb.st_mode);
   {$ELSE}{$ERROR}
   {$ENDIF}
 end;
@@ -139,7 +140,7 @@ method File.GetFileTime(aCreated: Boolean): DateTime;
 begin
   if not Exists then raise new Exception('File is not found:'+FullPath);
   {$IFDEF WINDOWS}
-  var handle := rtl.CreateFileW(FullPath.ToFileName, rtl.GENERIC_READ, rtl.FILE_SHARE_READ, nil, rtl.OPEN_EXISTING, rtl.FILE_ATTRIBUTE_NORMAL, nil);
+  var handle := rtl.CreateFileW(FullPath.ToFileName(), rtl.GENERIC_READ, rtl.FILE_SHARE_READ, nil, rtl.OPEN_EXISTING, rtl.FILE_ATTRIBUTE_NORMAL, nil);
   CheckForIOError(handle <> rtl.INVALID_HANDLE_VALUE);
   try
     var created: rtl.FILETIME;
@@ -152,7 +153,9 @@ begin
     rtl.CloseHandle(handle);
   end;
   {$ELSEIF POSIX}
-  {$HINT POSIX: implement File.GetFileTime}  
+  var sb: rtl.__struct_stat;
+  CheckForIOError(rtl.stat(FullPath.ToFileName(),@sb));
+  exit DateTime.FromUnixTime(sb.st_mtim); 
   {$ELSE}{$ERROR}
   {$ENDIF}
 end;

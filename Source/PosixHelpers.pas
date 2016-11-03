@@ -2,18 +2,18 @@
 
 interface
 
-uses 
+uses
   rtl;
 
 type
   atexitfunc = public procedure();
-  
+
   atexitrec = record
   public
     func: atexitfunc;
     next: ^atexitrec;
   end;
-  
+
   ExternalCalls = public static class
   private
     class var atexitlist: ^atexitrec;
@@ -22,7 +22,7 @@ type
     method ExceptionHandler(aVersion: Integer; aState: rtl._Unwind_Action; aClass: UInt64; aEx: ^rtl.__struct__Unwind_Exception; aCtx: ^Void): rtl._Unwind_Reason_Code;
     [SymbolName('ElementsRaiseException')]
     method RaiseException(aRaiseAddress: ^Void; aRaiseFrame: ^Void; aRaiseObject: Object);
-    
+
     const ElementsExceptionCode: UInt64 = $E042881952454d4f;
 
     [SymbolName('atexit')]
@@ -37,7 +37,7 @@ type
 
     [SymbolName('ElementsRethrow')]
     method ElementsRethrow;
-    
+
     [SymbolName('__elements_entry_point')]
     method UserEntryPoint(args: array of String): Integer; external;
     [SYmbolName({$IFDEF EMSCRIPTEN}'_start'{$ELSE}'__elements_entry_point_helper'{$ENDIF})]
@@ -53,25 +53,24 @@ type
     [SymbolnAme('__elements_fini')]
     method fini;
 
-    method Parselsda(aAction: rtl._Unwind_Action; aNative: Boolean; aEx: ^rtl.__struct__Unwind_Exception; aCtx: ^Void; 
+    method Parselsda(aAction: rtl._Unwind_Action; aNative: Boolean; aEx: ^rtl.__struct__Unwind_Exception; aCtx: ^Void;
       out aTypeIndex: rtl.int64_t; out aLandingPadPointer: rtl.uintptr_t): Boolean;
     method DwarfEHReadPointer(var aData: ^Byte; aEncoding: DwarfEHEncodingType): rtl.uintptr_t;
     method DwarfEHReadPointer(var aData: ^Byte): rtl.uintptr_t;
     method DwarfEHReadULEB128(var aData: ^Byte): rtl.uintptr_t;
     method DwarfEHReadSLEB128(var aData: ^Byte): rtl.intptr_t;
 
-    class var nargs: Integer; 
-    class var args: ^^ansichar; 
+    class var nargs: Integer;
+    class var args: ^^ansichar;
     class var envp: ^^ansichar;
-    
     class var
       [SymbolName('__init_array_start')]
       __init_array_start: Integer; external;
       [SymbolName('__init_array_end')]
       __init_array_end: Integer; external;
   end;
-  
-  DwarfEHEncodingType = public enum (  
+
+  DwarfEHEncodingType = public enum (
     DW_EH_PE_absptr = $00,
     DW_EH_PE_omit = $ff,
     DW_EH_PE_uleb128 = $01,
@@ -89,22 +88,28 @@ type
     DW_EH_PE_funcrel = $40,
     DW_EH_PE_aligned = $50,
     DW_EH_PE_indirect = $80) of Byte;
-  
+
   LibCEntryHelper = public method (nargs: Integer; args: ^^ansichar; envp: ^^ansichar): Integer;
   LibCFinalizerHelper = public method();
-  
+
   ElementsException = public record
   public
     handlerSwitchValue: Integer;
     landingPad: rtl.uintptr_t;
 
-    Unwind: rtl.__struct__Unwind_Exception; 
+    Unwind: rtl.__struct__Unwind_Exception;
     Object: Object;
   end;
 
 method CheckForLastError(aMessage: String := '');
-
+method CheckForIOError(value: Integer);
 implementation
+
+method CheckForIOError(value: Integer);
+begin
+  if value = 0 then exit;
+  CheckForLastError();
+end;
 
 method CheckForLastError(aMessage: String := '');
 begin
@@ -123,7 +128,7 @@ begin
   if lExp <> nil then begin
     lExp.ExceptionAddress := aRaiseAddress;
   end;
-  
+
   lRecord^.Unwind.exception_class := ElementsExceptionCode;
   lRecord^.Object := aRaiseObject;
   // No need to set anything, we use a GC so no cleanup needed
@@ -141,15 +146,15 @@ method ExternalCalls.ExceptionHandler(aVersion: Integer; aState: rtl._Unwind_Act
 begin
   if (aVersion <> 1) or (aEx = nil) or (aCtx = nil) then exit rtl._Unwind_Reason_Code._URC_FATAL_PHASE1_ERROR;
   var lMine := aClass = ElementsExceptionCode;
-  
+
   var lTypeInfo: rtl.int64_t;
   var lLandingPad: rtl.uintptr_t;
-  if 0 <> (aState and rtl.{$IFDEF EMSCRIPTEN}_Unwind_Action.{$ENDIF}_UA_SEARCH_PHASE)  then begin 
-    if Parselsda(aState, lMine, aEx, aCtx, out lTypeInfo, out lLandingPad) then begin 
-      if lMine then begin 
+  if 0 <> (aState and rtl.{$IFDEF EMSCRIPTEN}_Unwind_Action.{$ENDIF}_UA_SEARCH_PHASE)  then begin
+    if Parselsda(aState, lMine, aEx, aCtx, out lTypeInfo, out lLandingPad) then begin
+      if lMine then begin
         var lRecord := ^ElementsException(aEx);
         lRecord := ^ElementsException(@^Byte(lRecord)[-Int32((^Byte(@lRecord^.Unwind) - ^Byte(lRecord)))]);
-  
+
         lRecord^.handlerSwitchValue := lTypeInfo;
         lRecord^.landingPad := lLandingPad;
       end;
@@ -158,10 +163,10 @@ begin
     exit rtl._Unwind_Reason_Code._URC_CONTINUE_UNWIND;
   end;
 
-  if 0 <> (aState and rtl.{$IFDEF EMSCRIPTEN}_Unwind_Action.{$ENDIF}_UA_CLEANUP_PHASE) then begin 
+  if 0 <> (aState and rtl.{$IFDEF EMSCRIPTEN}_Unwind_Action.{$ENDIF}_UA_CLEANUP_PHASE) then begin
     // This is either unwinding OR catching
-    if (0 = (aState and rtl.{$IFDEF EMSCRIPTEN}_Unwind_Action.{$ENDIF}_UA_HANDLER_FRAME))  then begin 
-      // finally, always parse 
+    if (0 = (aState and rtl.{$IFDEF EMSCRIPTEN}_Unwind_Action.{$ENDIF}_UA_HANDLER_FRAME))  then begin
+      // finally, always parse
       if Parselsda(aState, lMine, aEx, aCtx, out lTypeInfo, out lLandingPad) then begin
         rtl._Unwind_SetGR(aCtx, 0, rtl.uintptr_t(aEx));
         rtl._Unwind_SetGR(aCtx, 1, rtl.uintptr_t(lTypeInfo));
@@ -171,7 +176,7 @@ begin
       exit rtl._Unwind_Reason_Code._URC_CONTINUE_UNWIND;
     end;
     // exception
-    if not lMine then begin 
+    if not lMine then begin
       if Parselsda(aState, lMine, aEx, aCtx, out lTypeInfo, out lLandingPad) then begin
         rtl._Unwind_SetGR(aCtx, 0, rtl.uintptr_t(aEx));
         rtl._Unwind_SetGR(aCtx, 1, rtl.uintptr_t(lTypeInfo));
@@ -195,7 +200,7 @@ method ExternalCalls.ElementsBeginCatch(obj: ^Void): ^Void;
 begin
   var lRecord := ^ElementsException(obj);
   lRecord := ^ElementsException(@^Byte(lRecord)[-Int32((^Byte(@lRecord^.Unwind) - ^Byte(lRecord)))]);
-  if lRecord^.Unwind.exception_class = ElementsExceptionCode then begin 
+  if lRecord^.Unwind.exception_class = ElementsExceptionCode then begin
     exit InternalCalls.Cast(lRecord^.Object);
   end;
   exit @lRecord^.Object;
@@ -262,37 +267,37 @@ begin
     atexitlist^.func();
     atexitlist := atexitlist^.next;
   end;
-  
+
 end;
 
-method ExternalCalls.Parselsda(aAction: _Unwind_Action; aNative: Boolean; aEx: ^__struct__Unwind_Exception; 
+method ExternalCalls.Parselsda(aAction: _Unwind_Action; aNative: Boolean; aEx: ^__struct__Unwind_Exception;
   aCtx: ^Void; out aTypeIndex: rtl.int64_t; out aLandingPadPointer: rtl.uintptr_t): Boolean;
 begin
   var lLSD := ^Byte(rtl._Unwind_GetLanguageSpecificData(aCtx));
   if lLSD = nil then exit false;
   var lOffset := Integer ((^Byte(rtl._Unwind_GetIP(aCtx)) - ^Byte(rtl._Unwind_GetRegionStart(aCtx)))-1 );
-  
+
   var lLandingPadStart := DwarfEHReadPointer(var lLSD);
   if lLandingPadStart = 0 then lLandingPadStart := uintptr_t(^Byte(rtl._Unwind_GetRegionStart(aCtx)));
-  
+
   var lTypeEncoding := ^DwarfEHEncodingType(lLSD)^;
   inc(lLSD); // skip type info
-  var lTypeInfoTable: ^Byte := if lTypeEncoding = DwarfEHEncodingType.DW_EH_PE_omit then nil else DwarfEHReadULEB128(var lLSD) + lLSD; 
-  
+  var lTypeInfoTable: ^Byte := if lTypeEncoding = DwarfEHEncodingType.DW_EH_PE_omit then nil else DwarfEHReadULEB128(var lLSD) + lLSD;
+
   var lCallsiteEncoding := ^DwarfEHEncodingType(lLSD)^;
   inc(lLSD);
   var lSizeOfCallsiteTable: UInt32 := uint32_t(DwarfEHReadULEB128(var lLSD));
   var lActionTable: ^uint8_t := lLSD + lSizeOfCallsiteTable;
-  loop begin 
+  loop begin
     if lLSD >= lActionTable then exit false; // shouldn't  happen; out of range
     var lCallsiteEntryStart: uintptr_t := DwarfEHReadPointer(var lLSD, lCallsiteEncoding);
     var lCallsiteEntryLength: uintptr_t := DwarfEHReadPointer(var lLSD, lCallsiteEncoding);
     aLandingPadPointer := DwarfEHReadPointer(var lLSD, lCallsiteEncoding);
     var lCallsiteEntryActionTable: uintptr_t := DwarfEHReadULEB128(var lLSD);
     if (lOffset >= lCallsiteEntryStart) then begin
-      if lOffset >= (lCallsiteEntryStart + lCallsiteEntryLength) then 
-        continue; // out of range, an error that shouldn't occur 
-      if aLandingPadPointer = 0 then 
+      if lOffset >= (lCallsiteEntryStart + lCallsiteEntryLength) then
+        continue; // out of range, an error that shouldn't occur
+      if aLandingPadPointer = 0 then
         exit false; // nothing to do here, empty LP
 
       aLandingPadPointer := lLandingPadStart + aLandingPadPointer;
@@ -309,7 +314,7 @@ begin
       var lCurrentActionTable: ^uint8_t := lActionTable + lCallsiteEntryActionTable - 1;
       loop begin
         var lIndexInTypeInfoTable: Int64 := DwarfEHReadSLEB128(var lCurrentActionTable);
-        if lIndexInTypeInfoTable = 0 then begin 
+        if lIndexInTypeInfoTable = 0 then begin
           // cleanup pad
           if ((aAction and {$IFDEF EMSCRIPTEN}_Unwind_Action.{$ENDIF}_UA_CLEANUP_PHASE) <> 0) and not ((aAction and {$IFDEF EMSCRIPTEN}_Unwind_Action.{$ENDIF}_UA_HANDLER_FRAME) <> 0) then begin
             atypeIndex := lIndexInTypeInfoTable;
@@ -319,8 +324,8 @@ begin
         if lIndexInTypeInfoTable > 0 then begin
           // this is a catch
           if lTypeInfoTable = nil then exit false; // shouldn't happen
-          var lTypeReadOffset := @lTypeInfoTable[- lIndexInTypeInfoTable * case DwarfEHEncodingType(lTypeEncoding and $F) of 
-            DwarfEHEncodingType.DW_EH_PE_absptr: sizeof(^byte); 
+          var lTypeReadOffset := @lTypeInfoTable[- lIndexInTypeInfoTable * case DwarfEHEncodingType(lTypeEncoding and $F) of
+            DwarfEHEncodingType.DW_EH_PE_absptr: sizeof(^byte);
             DwarfEHEncodingType.DW_EH_PE_udata2, DwarfEHEncodingType.DW_EH_PE_sdata2: 2;
             DwarfEHEncodingType.DW_EH_PE_udata4, DwarfEHEncodingType.DW_EH_PE_sdata4: 4;
             DwarfEHEncodingType.DW_EH_PE_udata8, DwarfEHEncodingType.DW_EH_PE_sdata8: 8;
@@ -328,7 +333,7 @@ begin
           end];
           var catchType := ^void(DwarfEHReadPointer(var lTypeReadOffset, lTypeEncoding));
           if catchType = nil then begin
-            // catch all 
+            // catch all
             if ((aAction and {$IFDEF EMSCRIPTEN}_Unwind_Action.{$ENDIF}_UA_SEARCH_PHASE) <> 0) or ((aAction and {$IFDEF EMSCRIPTEN}_Unwind_Action.{$ENDIF}_UA_HANDLER_FRAME) <>0) then begin
               atypeIndex := lIndexInTypeInfoTable;
               exit true;
@@ -354,7 +359,7 @@ begin
                   exit false;
                 end;
               end;
-            end; 
+            end;
           end;
 
         end;
@@ -372,32 +377,32 @@ end;
 method ExternalCalls.DwarfEHReadPointer(var aData: ^Byte; aEncoding: DwarfEHEncodingType): uintptr_t;
 begin
   var lStart := @aData;
-  case DwarfEHEncodingType(aEncoding and $f) of 
+  case DwarfEHEncodingType(aEncoding and $f) of
     (DwarfEHEncodingType.DW_EH_PE_omit and $f): exit 0;
-    DwarfEHEncodingType.DW_EH_PE_absptr: begin 
+    DwarfEHEncodingType.DW_EH_PE_absptr: begin
       result := ^rtl.uintptr_t(aData)^;
       inc(aData, sizeOf(rtl.uintptr_t));
     end;
     DwarfEHEncodingType.DW_EH_PE_uleb128: result := DwarfEHReadULEB128(var aData);
     DwarfEHEncodingType.DW_EH_PE_sleb128: result := DwarfEHReadSLEB128(var aData);
-    DwarfEHEncodingType.DW_EH_PE_sdata2, 
-    DwarfEHEncodingType.DW_EH_PE_udata2: begin 
+    DwarfEHEncodingType.DW_EH_PE_sdata2,
+    DwarfEHEncodingType.DW_EH_PE_udata2: begin
       result := ^rtl.uint16_t(aData)^;
     inc(aData, 2);
     end;
     DwarfEHEncodingType.DW_EH_PE_udata4,
-    DwarfEHEncodingType.DW_EH_PE_sdata4: begin 
+    DwarfEHEncodingType.DW_EH_PE_sdata4: begin
       result := ^rtl.uint32_t(aData)^;
     inc(aData, 4);
     end;
     DwarfEHEncodingType.DW_EH_PE_udata8,
-    DwarfEHEncodingType.DW_EH_PE_sdata8: begin 
+    DwarfEHEncodingType.DW_EH_PE_sdata8: begin
       result := ^rtl.uint64_t(aData)^;
     inc(aData, 8);
     end;
   else exit 0;
   end;
-  if 0  <> (aEncoding and DwarfEHEncodingType.DW_EH_PE_pcrel) then 
+  if 0  <> (aEncoding and DwarfEHEncodingType.DW_EH_PE_pcrel) then
     result := result + rtl.uintptr_t(lStart);
   if 0 <> (aEncoding and DwarfEHEncodingType.DW_EH_PE_indirect) then
     result := ^uintptr_t(result)^;
@@ -413,7 +418,7 @@ end;
 method ExternalCalls.DwarfEHReadULEB128(var aData: ^Byte): uintptr_t;
 begin
   var lShift := 0;
-  loop begin 
+  loop begin
     var lData := aData^;
     inc(aData);
     result := result or (rtl.uintptr_t(lData and $7f) shl lShift);
@@ -425,14 +430,14 @@ end;
 method ExternalCalls.DwarfEHReadSLEB128(var aData: ^Byte): intptr_t;
 begin
   var lShift := 0;
-  loop begin 
+  loop begin
     var lData := aData^;
     inc(aData);
     result := result or (rtl.uintptr_t(lData and $7f) shl lShift);
     lShift := lShift + 7;
     if (lData and $80) = 0 then break;
   end;
-  if ((aData[-1] and $40) <> 0) and (lShift < sizeOf(intptr_t)) then 
+  if ((aData[-1] and $40) <> 0) and (lShift < sizeOf(intptr_t)) then
     result := result or - (intptr_t(1) shl lShift);
 end;
 

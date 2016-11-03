@@ -14,8 +14,10 @@ type
   private
     {$IFDEF WINDOWS}
     fHandle: rtl.HANDLE := rtl.INVALID_HANDLE_VALUE;
+    {$ELSEIF POSIX}
+    fHandle: ^rtl._IO_FILE;
     {$ENDIF}
-    fAccess: FileAccess; 
+    fAccess: FileAccess;
   protected
     method SetLength(value: Int64); override;
     method IsValid: Boolean; override;
@@ -26,40 +28,27 @@ type
     method CanSeek: Boolean; override;
     method CanWrite: Boolean; override;
     method Seek(Offset: Int64; Origin: SeekOrigin): Int64; override;
-    method Close; override;  
+    method Close; override;
     method &Read(const buf: ^Void; Count: UInt32): UInt32; override;
     method &Write(const buf: ^Void; Count: UInt32): UInt32;override;
-    property Name: String; readonly; 
+    property Name: String; readonly;
   end;
 
-{$IFDEF WINDOWS}
-method CheckForIOError(value: Boolean);
-{$ENDIF}
 implementation
-
-{$IFDEF WINDOWS}
-method CheckForIOError(value: Boolean);
-begin
-  if value then Exit;
-  var code := rtl.GetLastError;
-  if code = 0 then Exit;
-  raise new IOException('Error code is '+code.ToString);
-end;
-{$ENDIF}
 
 constructor FileStream(FileName: String; Mode: FileMode; Access: FileAccess; Share: FileShare );
 begin
   Name := FileName;
   fAccess := Access;
   {$IFDEF WINDOWS}
-  var lName: rtl.LPCWSTR := fileName.ToFileName;
+  var lName: rtl.LPCWSTR := fileName.ToFileName();
   var laccess: UInt32 :=  case Access of
                             FileAccess.Read: rtl.GENERIC_READ;
                             FileAccess.Write: rtl.GENERIC_WRITE;
                             FileAccess.ReadWrite: rtl.GENERIC_READ and rtl.GENERIC_WRITE;
                           end;
 
-  var lmode: UInt32 :=    case Mode of 
+  var lmode: UInt32 :=    case Mode of
                             FileMode.CreateNew: rtl.CREATE_NEW;
                             FileMode.Create: rtl.CREATE_ALWAYS;
                             FileMode.Open: rtl.OPEN_EXISTING;
@@ -77,7 +66,16 @@ begin
   fHandle := rtl.CreateFileW(lname, lAccess, lShare, nil, lmode, rtl.FILE_ATTRIBUTE_NORMAL, nil);
   CheckForIOError(fHandle <> rtl.INVALID_HANDLE_VALUE);
   {$ELSEIF POSIX}
-  {$HINT POSIX: implement constructor FileStream}
+  var s: AnsiChar := AnsiChar(case Mode of
+                                FileMode.CreateNew: 'w';
+                                FileMode.Create: 'w';
+                                FileMode.Open: 'r';
+                                FileMode.OpenOrCreate: 'a';
+                                FileMode.Truncate: 'w';
+                              end);
+
+  fHandle := rtl.fopen64(FileName.ToFileName(),@s);
+  if fHandle = nil then CheckForIOError(1);
   {$ELSE}
     {$ERROR}
   {$ENDIF}
@@ -108,8 +106,7 @@ begin
   {$IFDEF WINDOWS}
   exit fHandle <> rtl.INVALID_HANDLE_VALUE;
   {$ELSEIF POSIX}
-  {$HINT POSIX: implement FileStream.IsOpened}
-  exit true;
+  exit fHandle <> nil;
   {$ELSE}
     {$ERROR}
   {$ENDIF}
@@ -130,13 +127,20 @@ begin
 
   var lresult := rtl.SetFilePointer(fHandle,offset_lo,@offset_hi,lorigin);
   if (lresult = rtl.INVALID_SET_FILE_POINTER) then begin
-    if rtl.GetLastError <> 0 then 
+    if rtl.GetLastError <> 0 then
       CheckForIOError(True);
   end;
   exit lresult + offset shl 32;
   {$ELSEIF POSIX}
-  {$HINT POSIX: implement FileStream.Seek}
-  exit -1;
+  var lorigin: Int32 :=  case Origin of
+                          SeekOrigin.Begin: rtl.SEEK_SET;
+                          SeekOrigin.Current: rtl.SEEK_CUR;
+                          SeekOrigin.End:  rtl.SEEK_END;
+                        end;
+  CheckForIOError(rtl.fseeko64(fHandle,Offset,lorigin));
+  var pos: rtl._G_fpos64_t;
+  CheckForIOError(rtl.fgetpos64(fHandle,@pos));
+  exit pos.__pos;
   {$ELSE}
     {$ERROR}
   {$ENDIF}
@@ -144,16 +148,17 @@ end;
 
 method FileStream.Close;
 begin
-  {$IFDEF WINDOWS}
   if IsValid then begin
-    rtl.CloseHandle(fHandle);  
+  {$IFDEF WINDOWS}
+    rtl.CloseHandle(fHandle);
     fHandle := rtl.INVALID_HANDLE_VALUE;
-  end;  
   {$ELSEIF POSIX}
-  {$HINT POSIX: implement FileStream.Close}
+    CheckForIOError(rtl.fclose(fHandle));
+    fHandle := nil;
   {$ELSE}
     {$ERROR}
   {$ENDIF}
+  end;
 end;
 
 method FileStream.SetLength(value: Int64);
@@ -161,9 +166,11 @@ begin
   if not (CanWrite and CanSeek) then raise new NotSupportedException;
   Seek(value, SeekOrigin.Begin);
   {$IFDEF WINDOWS}
-    CheckForIOError(rtl.SetEndOfFile(fHandle));
+  CheckForIOError(rtl.SetEndOfFile(fHandle));
   {$ELSEIF POSIX}
-  {$HINT POSIX: implement FileStream.SetLength}
+  {$HINT POSIX FileStream.SetLength. it may not work correctly, because _IO_FILE could be no updated }
+  var fd := rtl.fileno(fHandle);
+  CheckForIOError(rtl.ftruncate64(fd, value));
   {$ELSE}
     {$ERROR}
   {$ENDIF}
@@ -175,11 +182,11 @@ begin
   if buf = nil then raise new Exception("argument is null");
   if Count = 0 then exit 0;
   {$IFDEF WINDOWS}
-    var res: rtl.DWORD;
-    CheckForIOError(rtl.ReadFile(fHandle,buf,Count,@res,nil));
-    exit res;
-  {$ELSEIF POSIX}
-  {$HINT POSIX: implement FileStream.Read}
+  var res: rtl.DWORD;
+  CheckForIOError(rtl.ReadFile(fHandle,buf,Count,@res,nil));
+  exit res;
+{$ELSEIF POSIX}
+  exit rtl.fread(buf, Count, 1, fHandle);
   {$ELSE}
     {$ERROR}
   {$ENDIF}
@@ -191,11 +198,11 @@ begin
   if buf = nil then raise new Exception("argument is null");
   if Count = 0 then exit 0;
   {$IFDEF WINDOWS}
-    var res: rtl.DWORD;
-    CheckForIOError(rtl.WriteFile(fHandle,buf,Count,@res,nil));
-    exit res;
+  var res: rtl.DWORD;
+  CheckForIOError(rtl.WriteFile(fHandle,buf,Count,@res,nil));
+  exit res;
   {$ELSEIF POSIX}
-  {$HINT POSIX: implement FileStream.Write}
+  exit rtl.fwrite(buf, Count, 1, fHandle);
   {$ELSE}
     {$ERROR}
   {$ENDIF}

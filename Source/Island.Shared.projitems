@@ -13,6 +13,7 @@
     <Compile Include="$(MSBuildThisFileDirectory)Convert.pas" />
     <Compile Include="$(MSBuildThisFileDirectory)EqualityComparer.pas" />
     <Compile Include="$(MSBuildThisFileDirectory)Exceptions.pas" />
+    <Compile Include="$(MSBuildThisFileDirectory)FileUtils.pas" />
     <Compile Include="$(MSBuildThisFileDirectory)GCHandle.pas" />
     <Compile Include="$(MSBuildThisFileDirectory)Guid.pas" />
     <Compile Include="$(MSBuildThisFileDirectory)HashSet.pas" />

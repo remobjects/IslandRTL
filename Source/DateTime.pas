@@ -150,7 +150,8 @@ type
     const UnixDateOffset      : Int64 = DaysTo1970 * TicksPerDay; // = 621355968000000000                                         
     const MaxMillis           : Int64 = DaysTo10000/10000 * TicksPerDay; // = 315537897600000; ticks per 1 year
     const MaxYear             : Int32 = 10000;    
-    {$IFDEF WINDOWS}
+
+{$IFDEF WINDOWS}
     class method FromFileTime(aFileTime: rtl.FILETIME): DateTime;
     begin
       var filetime: Int64 := (aFileTime.dwHighDateTime shl 32 + aFileTime.dwLowDateTime);
@@ -181,7 +182,13 @@ type
     begin
       exit ToSystemTime(self);
     end;
-    {$ENDIF}
+{$ELSEIF POSIX}
+    class method FromUnixTime(aStruct: rtl.__struct_timespec): DateTime;
+    begin
+      {$HINT FromUnixTime can give wrong result}
+      exit new DateTime(DateTime.UnixDateOffset + aStruct.tv_sec * DateTime.TicksPerSecond + aStruct.tv_nsec / 100);
+    end;
+{$ENDIF}
 
     constructor;
     begin
@@ -356,7 +363,7 @@ type
     begin
       exit (Value1.fTicks = Value2.fTicks);
     end;
-
   end;
+
 
 end.

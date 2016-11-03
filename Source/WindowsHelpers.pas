@@ -242,23 +242,14 @@ method elements_tls_callback(aHandle: ^Void; aReason: rtl.DWORD; aReserved: ^Voi
 method ElementsThreadHelper(aParam: ^Void): rtl.DWORD;
 
 
+method CheckForIOError(value: Boolean);
 method CheckForLastError(aMessage: String := '');
-
-extension method String.ToFileName: rtl.LPCWSTR; assembly;
-extension method String.ToLPCWSTR: rtl.LPCWSTR; assembly;
 implementation
 
-extension method String.ToLPCWSTR: rtl.LPCWSTR;
+method CheckForIOError(value: Boolean);
 begin
-  if String.IsNullOrEmpty(self) then exit nil;
-  var arr := ToCharArray(true);
-  exit rtl.LPCWSTR(@arr[0]);
-end;
-
-extension method String.ToFileName: rtl.LPCWSTR;
-begin
-  if String.IsNullOrEmpty(self) then exit nil;
-  exit ((if not self.StartsWith('\\?\') then '\\?\' else '')+self).ToLPCWSTR;
+  if value then Exit;
+  CheckForLastError('');
 end;
 
 method CheckForLastError(aMessage: String := '');
