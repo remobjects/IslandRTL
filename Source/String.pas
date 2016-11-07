@@ -151,7 +151,7 @@ begin
   var lNewLen: rtl.size_t := iconv_helper(String.fCurrentToUtf16, c, aCharCount, aCharCount * 2 + 5, out lNewData);
   // method iconv_helper(cd: rtl.iconv_t; inputdata: ^AnsiChar; inputdatalength: rtl.size_t;outputdata: ^^AnsiChar; outputdatalength: ^rtl.size_t; suggested_output_length: Integer): Integer;
   if lNewLen <> -1  then begin
-    result := String.FromPChar(^Char(lNewData), lNewLen);
+    result := String.FromPChar(^Char(lNewData), lNewLen / 2);
     rtl.free(lNewData);
   end;
   {$ENDIF}
