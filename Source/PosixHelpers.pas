@@ -38,14 +38,14 @@ type
     [SymbolName('ElementsRethrow')]
     method ElementsRethrow;
 
-    [SymbolName('__elements_entry_point')]
+    [SymbolName('__elements_entry_point'), &Weak]
     method UserEntryPoint(args: array of String): Integer; external;
     [SYmbolName({$IFDEF EMSCRIPTEN}'_start'{$ELSE}'__elements_entry_point_helper'{$ENDIF})]
     method Entrypoint(argc: Integer; argv: ^^ansichar; envp: ^^ansichar): Integer;
     {$IFNDEF EMSCRIPTEN}
     [SymbolName('_start'), Naked]
     method _start;
-    [SymbolName('__libc_start_main', 'libc.so.6')]
+    [SymbolName('__libc_start_main', 'libc.so.6'), &weak]
     method libc_main(main: LibCEntryHelper; argc: Integer; argv: ^^char; init: LibCEntryHelper; fini: LibCFinalizerHelper); external;
     {$ENDIF}
     [SymbolName('__elements_init')]
@@ -231,7 +231,7 @@ begin
     movq __elements_fini@GOTPCREL(%rip), %r8
     movq __elements_init@GOTPCREL(%rip), %rcx
     movq __elements_entry_point_helper@GOTPCREL(%rip), %rdi
-    callq  __libc_start_main
+    callq  __libc_start_main@PLT
     hlt
   ", "", false, false);
 end;
