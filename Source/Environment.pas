@@ -79,6 +79,18 @@ type
       rtl.free(lCwd);
       {$ELSE}{$ERROR}{$ENDIF}
     end;
+
+    method UserHomeFolder: Folder;
+    begin
+      var fn: string;
+      {$IFDEF WINDOWS}
+      fn := Environment.GetEnvironmentVariable('USERPROFILE');
+      {$ELSEIF POSIX}
+      //var pw: ^rtl.__struct_passwd := rtl.getpwuid(rtl.getuid());
+      fn := String.FromPAnsiChars(rtl.getpwuid(rtl.getuid())^.pw_dir);
+      {$ELSE}{$ERROR}{$ENDIF}
+      exit new Folder(fn);
+    end;    
   end;
 
 end.

@@ -7,6 +7,13 @@ type
   private
     fTicks : Int64;
   private
+    method TwoCharStr(aInt: Integer): String;inline;
+    begin
+      if aInt < 10 then 
+        exit '0'+aInt.ToString
+      else
+        exit aInt.ToString;
+    end;
 
 {
     const DaysPerMonth: array [Boolean, 1..12] of Integer =
@@ -110,11 +117,7 @@ type
       {$ELSEIF POSIX}
       var ts: rtl.__struct_timespec;
       rtl.timespec_get(@ts, rtl.TIME_UTC);
-      if InternalCalls.Exchange(var fLocalInitialized, 1) = 0 then 
-        rtl.tzset();
-      var tom: rtl.__struct_tm;
-      rtl.localtime_r(@ts.tv_sec, @tom);
-      exit new DateTime(UnixDateOffset + (ts.tv_sec * TicksPerMillisecond) + (ts.tv_nsec / 100000) + tom.tm_gmtoff + TicksPerSecond);
+      exit FromUnixTimeUTC(ts);
       {$ELSE}{$ERROR}
       {$ENDIF}
     end;
@@ -147,7 +150,7 @@ type
 
     const FileTimeOffset      : Int64 = DaysTo1601 * TicksPerDay; // = 504911232000000000
     const DoubleDateOffset    : Int64 = DaysTo1899 * TicksPerDay; // = 599264352000000000
-    const UnixDateOffset      : Int64 = DaysTo1970 * TicksPerDay; // = 621355968000000000                                         
+    const UnixDateOffset      : Int64 = DaysTo1970 * TicksPerDay + TicksPerDay; // = 621356832000000000
     const MaxMillis           : Int64 = DaysTo10000/10000 * TicksPerDay; // = 315537897600000; ticks per 1 year
     const MaxYear             : Int32 = 10000;    
 
@@ -183,9 +186,17 @@ type
       exit ToSystemTime(self);
     end;
 {$ELSEIF POSIX}
+    class method FromUnixTimeUTC(aStruct: rtl.__struct_timespec): DateTime;
+    begin
+      if InternalCalls.Exchange(var fLocalInitialized, 1) = 0 then 
+        rtl.tzset();
+      var tom: rtl.__struct_tm;
+      rtl.localtime_r(@aStruct.tv_sec, @tom);
+      exit new DateTime(DateTime.UnixDateOffset + (aStruct.tv_sec+tom.tm_gmtoff) * DateTime.TicksPerSecond + aStruct.tv_nsec / 100 );
+    end;
+
     class method FromUnixTime(aStruct: rtl.__struct_timespec): DateTime;
     begin
-      {$HINT FromUnixTime can give wrong result}
       exit new DateTime(DateTime.UnixDateOffset + aStruct.tv_sec * DateTime.TicksPerSecond + aStruct.tv_nsec / 100);
     end;
 {$ENDIF}
@@ -322,6 +333,7 @@ type
       k1 := rtl.GetTimeFormatEx(l1,0,@sysdate,nil,rtl.LPWSTR(@buf1[0]),k+1);
       exit r.TrimEnd+' ' + string.FromPChar(@buf1[0],k1).TrimEnd;      
       {$ELSEIF POSIX}
+      exit String.Format('{0}-{1}-{2} {3}:{4}:{5}',[Year.ToString,TwoCharStr(Month),TwoCharStr(Day),TwoCharStr(Hour),TwoCharStr(Minute), TwoCharStr(Second)]);
       {$ELSE}{$ERROR}
       {$ENDIF}
     end;

@@ -186,7 +186,7 @@ begin
   CheckForIOError(rtl.ReadFile(fHandle,buf,Count,@res,nil));
   exit res;
 {$ELSEIF POSIX}
-  exit rtl.fread(buf, Count, 1, fHandle);
+  exit rtl.fread(buf, 1, Count, fHandle);
   {$ELSE}
     {$ERROR}
   {$ENDIF}
@@ -202,7 +202,7 @@ begin
   CheckForIOError(rtl.WriteFile(fHandle,buf,Count,@res,nil));
   exit res;
   {$ELSEIF POSIX}
-  exit rtl.fwrite(buf, Count, 1, fHandle);
+  exit rtl.fwrite(buf, 1, Count, fHandle);
   {$ELSE}
     {$ERROR}
   {$ENDIF}

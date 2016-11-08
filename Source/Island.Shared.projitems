@@ -10,6 +10,7 @@
   </PropertyGroup>
   <ItemGroup>
     <Compile Include="$(MSBuildThisFileDirectory)Attributes.pas" />
+    <Compile Include="$(MSBuildThisFileDirectory)BaseFile.pas" />
     <Compile Include="$(MSBuildThisFileDirectory)Convert.pas" />
     <Compile Include="$(MSBuildThisFileDirectory)EqualityComparer.pas" />
     <Compile Include="$(MSBuildThisFileDirectory)Exceptions.pas" />
