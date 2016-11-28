@@ -24,6 +24,7 @@ implementation
 
 class method Console.Write(s: String);
 begin
+  if s = nil then exit;
   {$IFDEF WINDOWS}
   if fOutputHandle = nil then
     fOutputHandle := rtl.GetStdHandle(rtl.STD_OUTPUT_HANDLE);
@@ -44,6 +45,7 @@ end;
 
 class method Console.WriteLine(s: String);
 begin
+  if s = nil then s := '';
   {$IFDEF WINDOWS}
   Write(s + Environment.NewLine);
   {$ELSE}
