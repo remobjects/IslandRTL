@@ -591,7 +591,6 @@ begin
     movq %r13, +56(%rcx)
     movq %r14, +64(%rcx)
     movq %r15, +72(%rcx)
-    movq %rip, +80(%rcx)
     // SPARE
 
     movups %xmm6, +96(%rcx)
