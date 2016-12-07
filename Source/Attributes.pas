@@ -90,6 +90,12 @@ type
     constructor; empty;
   end;
 
+  [AttributeUsage(AttributeTargets.Field)]
+  StaticAddressAttribute = public class(Attribute)
+  public 
+    constructor(aAddress: NativeInt); empty;
+  end;
+
   [AttributeUsage(AttributeTargets.Enum)]
   FlagsAttribute = public class(Attribute)
   public 
