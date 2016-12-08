@@ -1,6 +1,6 @@
 ﻿namespace RemObjects.Elements.System;
 type
-  OleString = public class(Object)
+  OleString = public record
   private
     bstr: ^Char;
   protected
@@ -50,7 +50,7 @@ type
       if assigned(Value) then
         exit new OleString(Value)
       else
-        exit nil;
+        exit default(OleString);
     end;
   end;
 
@@ -58,10 +58,7 @@ type
   public
     class operator Implicit(Value: OleString): String;
     begin
-      if assigned(Value) then
-        exit Value.ToString
-      else 
-        exit nil;
+      exit Value.ToString;
     end;
   end;
 
