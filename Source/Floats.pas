@@ -51,7 +51,7 @@ type
     class method MaxValue: Double;
     class method PositiveInfinity: Double;
     class method NegativeInfinity: Double;
-    class method NAN: Double;
+    class method NaN: Double;
 
     class method IsNaN(Value: Double): Boolean;
     class method IsInfinity(Value: Double): Boolean;

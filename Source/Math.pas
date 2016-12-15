@@ -180,7 +180,7 @@ begin
   // from https://msdn.microsoft.com/en-us/library/system.math.ieeeremainder%28v=vs.110%29.aspx
   // IEEERemainder = dividend - (divisor * Math.Round(dividend / divisor))
 
-  if y = 0 then exit Double.NAN;
+  if y = 0 then exit Double.NaN;
   exit (x - y * Round(x / y));
 end;
 

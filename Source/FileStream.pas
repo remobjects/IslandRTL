@@ -22,7 +22,7 @@ type
     method SetLength(value: Int64); override;
     method IsValid: Boolean; override;
   public
-    constructor(FileName: String; Mode: FileMode; Access: FileAccess; Share: FileShare);
+    constructor(FileName: String; Mode: FileMode; Access: FileAccess; Share: FileShare := FileShare.Read);
     finalizer;
     method CanRead: Boolean; override;
     method CanSeek: Boolean; override;
@@ -36,7 +36,7 @@ type
 
 implementation
 
-constructor FileStream(FileName: String; Mode: FileMode; Access: FileAccess; Share: FileShare );
+constructor FileStream(FileName: String; Mode: FileMode; Access: FileAccess; Share: FileShare := FileShare.Read);
 begin
   Name := FileName;
   fAccess := Access;
