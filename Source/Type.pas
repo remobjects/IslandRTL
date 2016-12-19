@@ -50,10 +50,8 @@ type
     &Interface = 5,
     &Extension = 6,
     &Array = 7,
-    Generic = 1 shl 3,
-    // next: 1 shl 3
-
-    ExtraDataPresent = 1 shl 64) of UInt64;
+    MemberInfoPresent = 16,
+    Generic = 1 shl 3) of UInt64;
 
 implementation
 

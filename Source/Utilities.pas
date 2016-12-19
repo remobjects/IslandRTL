@@ -4,13 +4,14 @@ type
   Utilities = public static class
   private
     class var fFinalizer: ^Void;
+    class var fLoaded: Integer;
   public
     [SymbolName('__abstract')]
     class method AbstractCall;
     begin
       raise new AbstractMethodException;
     end;
-  
+
     [SymbolName('__isinst')]
     class method IsInstance(aInstance: Object; aType: ^Void): Object;
     begin
@@ -22,7 +23,7 @@ type
         if lTTY = nil then exit nil;
       end;
     end;
-    
+
     [SymbolName('__isintfinst')]
     class method IsInterfaceInstance(aInstance: Object; aType: ^Void; aHashCode: Cardinal): ^Void;
     begin
@@ -39,20 +40,26 @@ type
       until lHashEntry^ = nil;
       exit nil;
     end;
-    
+
     [SymbolName('__newinvalidcast')]
     class method CreateInvalidCastException: Exception;
     begin
       exit new InvalidCastException('Invalid cast');
     end;
-    
+
     [SymbolName('__newinst')]
     class method NewInstance(aTTY: ^Void; aSize: NativeInt): ^Void;
     begin
       if fFinalizer = nil then begin
         fFinalizer := ^^Void(InternalCalls.GetTypeInfo<Object>())[4];
       end;
-    
+
+      if fLoaded = 0 then
+        if InternalCalls.CompareExchange(var fLoaded, 1, 0 ) <> 1 then begin
+          gc.GC_INIT;
+          result := ^void(-1);
+        end;
+
       result := gc.GC_malloc(aSize);
       ^^void(result)^ := aTTY;
       {$IFDEF WINDOWS}ExternalCalls.{$ELSE}rtl.{$ENDIF}memset(^Byte(result) + sizeof(^Void), 0, aSize - sizeof(^Void));
@@ -60,14 +67,14 @@ type
         gc.GC_register_finalizer_no_order(result, @GC_finalizer, nil, nil, nil);
       end;
     end;
-    
+
     [SymbolName('__newarray')]
     class method NewArray(aTY: ^Void; aElementSize, aElements: NativeInt): ^Void;
     begin
       result := NewInstance(aTY, sizeof(^Void) + Sizeof(NativeInt) + aElementSize * aElements);
       InternalCalls.Cast<&Array>(result).fLength := aElements;
     end;
-    
+
     [SymbolName('__newdelegate')]
     class method NewDelegate(aTY: ^Void; aSelf: Object; aPtr: ^Void): &Delegate;
     begin
@@ -75,13 +82,12 @@ type
       result.fSelf := aSelf;
       result.fPtr := aPtr;
     end;
-    
+
     [SymbolName('__init')]
     class method Initialize;
     begin
-      gc.GC_INIT();
     end;
-    
+
     [SymbolName('llvm.returnaddress')]
     class method GetReturnAddress(aLevel: Integer): ^Void; external;
 
@@ -90,13 +96,13 @@ type
       if o <> nil then
         GC.GC_register_finalizer_no_order(InternalCalls.Cast(o), nil, nil, nil, nil);
     end;
-    
+
     class method Collect(c: Integer);
     begin
       for i: Integer := 0 to c -1 do
         GC.GC_gcollect();
     end;
-    
+
     class method SpinLockEnter(var x: Integer);
     begin
      loop begin
@@ -105,37 +111,37 @@ type
          Thread.Sleep(1);
      end;
     end;
-    
+
     class method SpinLockExit(var x: Integer);
     begin
       InternalCalls.VolatileWrite(var x, 0);
     end;
-    
+
     class method SpinLockClassEnter(var x: NativeInt): Boolean;
     begin
       var cid := Thread.CurrentThreadId;
-    
+
       var lValue := InternalCalls.CompareExchange(var x, cid, NativeInt(0)); // returns old
-    
+
       if lValue = NativeInt(0) then exit true; // value was zero, we should run.
       if lValue = cid then exit false; // same thread, but already running, don't go again.
       if lValue = NativeInt(Int64(-1)) then exit false; // it's done in the mean time, we should exit.
-    
+
       // At this point it's NOT the same thread, and not done loading yet;
       repeat
         if not Thread.&Yield() then
           Thread.Sleep(1);
-    
+
         lValue := InternalCalls.VolatileRead(var x); // returns old
       until lValue = NativeInt(Int64(-1));
       exit false;
     end;
-    
+
     class method SpinLockClassExit(var x: NativeInt);
     begin
       InternalCalls.VolatileWrite(var x, NativeInt(Int64(-1)));
     end;
-    
+
     method CalcHash(const buf: ^Void; len: Integer): Integer;
     begin
       var pb:= ^Byte(buf);

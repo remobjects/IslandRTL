@@ -4,8 +4,8 @@
 type
   Attribute = public class(Object)
   end;
-  
-  AttributeTargets = public flags (  
+
+  AttributeTargets = public flags (
     &Assembly = 1 shl 0,
     &Class = 1 shl 2,
     &Struct = 1 shl 3,
@@ -25,29 +25,31 @@ type
   private
     fValidOn: AttributeTargets;
   public
-  
+
     constructor (aTargets: AttributeTargets);
     begin
       fValidOn := aTargets;
     end;
-     
-    property ValidOn: AttributeTargets read fValidOn; 
+
+    property ValidOn: AttributeTargets read fValidOn;
     property AllowMultiple: Boolean;
+    {$HINT Handle `AttributeUsageAttribute.Inherited` in compiler}
+    property &Inherited: Boolean;
   end;
 
   CallingConvention = public enum (Default, FastCall, Stdcall, Cdecl);
-  
+
   [AttributeUsage(AttributeTargets.Method or AttributeTargets.Delegate)]
   CallingConventionAttribute = public class(Attribute)
   private
     fCC: CallingConvention;
   public
-  
+
     constructor(aCC: CallingConvention);
     begin
       fCC := aCC;
     end;
-    
+
     property CC: CallingConvention read fCC;
   end;
 
@@ -59,26 +61,26 @@ type
     fLibrary: String;
   protected
   public
-  
+
     constructor(aName: String);
     begin
       fName := aName;
     end;
-    
+
     constructor(aName, aLibrary: String);
     begin
       fName := aName;
       fLibrary := aLibrary;
     end;
-    
+
     constructor(aName, aLibrary, aVersion: String);
     begin
-    
+
       fName := aName;
       fLibrary := aLibrary;
       FVersion := aVersion;
     end;
-    
+
     property Name: String read fName;
     property Library: String read fLibrary;
     property Version: String read fVersion;
@@ -86,33 +88,33 @@ type
 
   [AttributeUsage(AttributeTargets.Field)]
   ThreadLocalAttribute = public class(Attribute)
-  public 
+  public
     constructor; empty;
   end;
 
   [AttributeUsage(AttributeTargets.Field)]
   StaticAddressAttribute = public class(Attribute)
-  public 
+  public
     constructor(aAddress: NativeInt); empty;
   end;
 
   [AttributeUsage(AttributeTargets.Enum)]
   FlagsAttribute = public class(Attribute)
-  public 
+  public
     constructor; empty;
   end;
-  
+
   [AttributeUsage(AttributeTargets.Method)]
   NakedAttribute = public class(Attribute)
   private
   public
     constructor(); empty;
   end;
-  
-  [AttributeUsage(AttributeTargets.Class or AttributeTargets.Struct or 
-                  AttributeTargets.Enum or AttributeTargets.Constructor or 
-                  AttributeTargets.Method or AttributeTargets.Property or 
-                  AttributeTargets.Field or AttributeTargets.Event or 
+
+  [AttributeUsage(AttributeTargets.Class or AttributeTargets.Struct or
+                  AttributeTargets.Enum or AttributeTargets.Constructor or
+                  AttributeTargets.Method or AttributeTargets.Property or
+                  AttributeTargets.Field or AttributeTargets.Event or
                   AttributeTargets.Interface or AttributeTargets.Delegate)]
   ObsoleteAttribute = public class(Attribute)
   private
@@ -123,8 +125,8 @@ type
       Message := aMsg;
       Fail := aFail;
     end;
-     
-    
+
+
     property Message: String; readonly;
     property Fail: Boolean; readonly;
   end;
@@ -135,18 +137,18 @@ type
     begin
       Conditional := aCond;
     end;
-    
+
     property Conditional: String; readonly;
   end;
-  
-  
+
+
   [AttributeUsage(AttributeTargets.Method or AttributeTargets.Field)]
   UsedAttribute = public class(Attribute)
   private
   public
     constructor(); empty;
   end;
-  
+
   [AttributeUsage(AttributeTargets.Method or AttributeTargets.Field)]
   WeakAttribute = public class(Attribute)
   private
@@ -167,7 +169,7 @@ type
   public
     constructor(); empty;
   end;
-  
+
   [AttributeUsage(AttributeTargets.Method or AttributeTargets.Field)]
   SectionNameAttribute = public class(Attribute)
   private
@@ -178,10 +180,10 @@ type
     begin
       fName := aName;
     end;
-    
+
     property Name: String read fName;
   end;
-  
+
   [AttributeUsage(AttributeTargets.Method)]
   DllImportAttribute = public class(Attribute)
   private
@@ -191,11 +193,11 @@ type
     begin
       fDllName := aDllName;
     end;
-    
+
     property DllName: String read fDllName;
     property EntryPoint: String;
   end;
-  
+
   [AttributeUsage(AttributeTargets.Method or AttributeTargets.Field)]
   DllExportAttribute = public class(Attribute)
   end;
@@ -205,8 +207,8 @@ type
   public
     constructor(); empty;
   end;
-  
-  [AttributeUsage(AttributeTargets.Interface)]
+
+  [AttributeUsage(AttributeTargets.Interface, AllowMultiple := false)]
   GuidAttribute = public class(Attribute)
   private
     fGuid: Guid;
@@ -217,13 +219,13 @@ type
     end;
 
     property &Guid: Guid read fGuid;
-  end; 
+  end;
   // Inline asm *METHOD*
   [AttributeUsage(AttributeTargets.Method)]
   InlineAsmAttribute = public class(Attribute)
-  public 
+  public
     constructor(aAsm: String; aConstraints: String; aSideEffects, aAlign: Boolean);
-    begin 
+    begin
       Asm := aAsm;
       Constraints := aConstraints;
       SideEffects := aSideEffects;

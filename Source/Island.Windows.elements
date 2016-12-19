@@ -80,6 +80,7 @@
     <Folder Include="Properties\" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="IDispatch.pas" />
     <Compile Include="OleString.pas" />
     <Compile Include="Interfaces.pas" />
     <Compile Include="Registry.pas" />
