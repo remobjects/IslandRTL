@@ -142,7 +142,7 @@ type
   end;
 
 
-  [AttributeUsage(AttributeTargets.Method or AttributeTargets.Field)]
+  [AttributeUsage(AttributeTargets.Method or AttributeTargets.Field or AttributeTargets.Class or AttributeTargets.Method or AttributeTargets.Interface)]
   UsedAttribute = public class(Attribute)
   private
   public

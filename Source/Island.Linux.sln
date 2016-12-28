@@ -1,0 +1,25 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio 14
+VisualStudioVersion = 14.0.25420.1
+MinimumVisualStudioVersion = 10.0.40219.1
+Project("{656346D9-4656-40DA-A068-22D5425D4639}") = "Island.Linux", "Island.Linux.elements", "{A2C670B6-DB38-401A-AE00-71515C87CCC5}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug-armv6|Default = Debug-armv6|Default
+		Debug-x86_64|Default = Debug-x86_64|Default
+		Release-x86_64|Default = Release-x86_64|Default
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{A2C670B6-DB38-401A-AE00-71515C87CCC5}.Debug-armv6|Default.ActiveCfg = Debug-armv6
+		{A2C670B6-DB38-401A-AE00-71515C87CCC5}.Debug-armv6|Default.Build.0 = Debug-armv6
+		{A2C670B6-DB38-401A-AE00-71515C87CCC5}.Debug-x86_64|Default.ActiveCfg = Debug-x86_64
+		{A2C670B6-DB38-401A-AE00-71515C87CCC5}.Debug-x86_64|Default.Build.0 = Debug-x86_64
+		{A2C670B6-DB38-401A-AE00-71515C87CCC5}.Release-x86_64|Default.ActiveCfg = Release-x86_64
+		{A2C670B6-DB38-401A-AE00-71515C87CCC5}.Release-x86_64|Default.Build.0 = Release-x86_64
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+EndGlobal

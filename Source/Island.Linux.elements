@@ -45,6 +45,37 @@
     <EnableUnmanagedDebugging>False</EnableUnmanagedDebugging>
     <Architecture>x86_64</Architecture>
   </PropertyGroup>
+  <PropertyGroup Condition=" '$(Configuration)' == 'Debug-armv6' ">
+    <OutputPath>Bin\Debug</OutputPath>
+    <DefineConstants>Linux</DefineConstants>
+    <EnableAsserts>True</EnableAsserts>
+    <Optimize>False</Optimize>
+    <GeneratePDB>True</GeneratePDB>
+    <GenerateMDB>False</GenerateMDB>
+    <CaptureConsoleOutput>False</CaptureConsoleOutput>
+    <StartMode>Project</StartMode>
+    <CpuType>x86</CpuType>
+    <RuntimeVersion>v25</RuntimeVersion>
+    <XmlDoc>False</XmlDoc>
+    <XmlDocWarningLevel>WarningOnPublicMembers</XmlDocWarningLevel>
+    <EnableUnmanagedDebugging>False</EnableUnmanagedDebugging>
+    <Architecture>armv6</Architecture>
+  </PropertyGroup>
+  <PropertyGroup Condition=" '$(Configuration)' == 'Release-armv6' ">
+    <OutputPath>Bin\Release</OutputPath>
+    <DefineConstants>Linux</DefineConstants>
+    <EnableAsserts>False</EnableAsserts>
+    <GeneratePDB>False</GeneratePDB>
+    <GenerateMDB>False</GenerateMDB>
+    <CaptureConsoleOutput>False</CaptureConsoleOutput>
+    <StartMode>Project</StartMode>
+    <CpuType>x86</CpuType>
+    <RuntimeVersion>v25</RuntimeVersion>
+    <XmlDoc>False</XmlDoc>
+    <XmlDocWarningLevel>WarningOnPublicMembers</XmlDocWarningLevel>
+    <EnableUnmanagedDebugging>False</EnableUnmanagedDebugging>
+    <Architecture>armv6</Architecture>
+  </PropertyGroup>
   <ItemGroup>
     <Folder Include="Properties\" />
   </ItemGroup>
@@ -56,9 +87,11 @@
     <Reference Include="gc.fx" />
     <Reference Include="rtl.fx" />
   </ItemGroup>
+  <PropertyGroup>
+  </PropertyGroup>
   <Import Project="$(MSBuildExtensionsPath)\RemObjects Software\Elements\RemObjects.Elements.Island.Linux.targets" />
+  <Import Project="Island.Shared.projitems" Label="Shared" />
   <PropertyGroup>
     <PreBuildEvent />
   </PropertyGroup>
-  <Import Project="Island.Shared.projitems" Label="Shared" />
 </Project>

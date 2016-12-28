@@ -2,7 +2,7 @@ Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio 14
 VisualStudioVersion = 14.0.25123.0
 MinimumVisualStudioVersion = 10.0.40219.1
-Project("{656346D9-4656-40DA-A068-22D5425D4639}") = "Island.Ubuntu", "Island.Ubuntu.elements", "{A2C670B6-DB38-401A-AE00-71515C87CCC5}"
+Project("{656346D9-4656-40DA-A068-22D5425D4639}") = "Island.Linux", "Island.Linux.elements", "{A2C670B6-DB38-401A-AE00-71515C87CCC5}"
 EndProject
 Project("{656346D9-4656-40DA-A068-22D5425D4639}") = "Island.Windows", "Island.Windows.elements", "{00BBBADD-8D31-439B-9495-1F35080E299E}"
 EndProject

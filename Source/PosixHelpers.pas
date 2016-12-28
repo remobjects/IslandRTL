@@ -13,13 +13,13 @@ type
     func: atexitfunc;
     next: ^atexitrec;
   end;
-
+  {$IFDEF ARM}rtl.__struct__Unwind_Exception = rtl.__struct__Unwind_Control_Block;{$ENDIF}
   ExternalCalls = public static class
   private
     class var atexitlist: ^atexitrec;
   public
     [SymbolName('_elements_posix_exception_handler'), CallingConvention(CallingConvention.Stdcall)] // 32bits windows only!!
-    method ExceptionHandler(aVersion: Integer; aState: rtl._Unwind_Action; aClass: UInt64; aEx: ^rtl.__struct__Unwind_Exception; aCtx: ^Void): rtl._Unwind_Reason_Code;
+    method ExceptionHandler({$IFNDEF ARM}aVersion: Integer; {$ENDIF} aState: rtl._Unwind_Action; aClass: UInt64; aEx: ^rtl.__struct__Unwind_Exception; aCtx: ^Void): rtl._Unwind_Reason_Code;
     [SymbolName('ElementsRaiseException')]
     method RaiseException(aRaiseAddress: ^Void; aRaiseFrame: ^Void; aRaiseObject: Object);
 
@@ -129,7 +129,7 @@ begin
     lExp.ExceptionAddress := aRaiseAddress;
   end;
 
-  lRecord^.Unwind.exception_class := ElementsExceptionCode;
+  ^UInt64(@lRecord^.Unwind.exception_class)^ := ElementsExceptionCode;
   lRecord^.Object := aRaiseObject;
   // No need to set anything, we use a GC so no cleanup needed
   rtl._Unwind_RaiseException(@lRecord^.Unwind);
@@ -142,11 +142,18 @@ begin
   exit InternalCalls.Cast(^ElementsException(val)^.Object);
 end;
 
-method ExternalCalls.ExceptionHandler(aVersion: Integer; aState: rtl._Unwind_Action; aClass: UInt64; aEx: ^rtl.__struct__Unwind_Exception; aCtx: ^Void): rtl._Unwind_Reason_Code;
+method ExternalCalls.ExceptionHandler({$IFNDEF ARM}aVersion: Integer; {$ENDIF}aState: rtl._Unwind_Action; aClass: UInt64; aEx: ^rtl.__struct__Unwind_Exception; aCtx: ^Void): rtl._Unwind_Reason_Code;
 begin
-  if (aVersion <> 1) or (aEx = nil) or (aCtx = nil) then exit rtl._Unwind_Reason_Code._URC_FATAL_PHASE1_ERROR;
+  if {$IFNDEF ARM}(aVersion <> 1) or{$ENDIF} (aEx = nil) or (aCtx = nil) then exit {$IFNDEF ARM}rtl._Unwind_Reason_Code._URC_FATAL_PHASE1_ERROR{$ELSE}rtl._Unwind_Reason_Code._URC_FAILURE{$ENDIF};
   var lMine := aClass = ElementsExceptionCode;
-
+  {$IFDEF ARM}
+  if (aState  and rtl._Unwind_State._US_ACTION_MASK) <> rtl._Unwind_State._US_UNWIND_FRAME_STARTING then begin
+     if rtl.__gnu_unwind_frame (aEx, aCtx) <> rtl._Unwind_Reason_Code._URC_OK  then 
+      exit rtl._Unwind_Reason_Code._URC_FAILURE;
+    exit rtl._Unwind_Reason_Code._URC_CONTINUE_UNWIND;
+  end;
+  rtl._Unwind_SetGR (aCtx, UNWIND_POINTER_REG, rtl._Unwind_Word(aEx));
+  {$ENDIF}
   var lTypeInfo: rtl.int64_t;
   var lLandingPad: rtl.uintptr_t;
   if 0 <> (aState and rtl.{$IFDEF EMSCRIPTEN}_Unwind_Action.{$ENDIF}_UA_SEARCH_PHASE)  then begin
@@ -160,6 +167,10 @@ begin
       end;
       exit rtl._Unwind_Reason_Code._URC_HANDLER_FOUND;
     end;
+    {$IFDEF ARM}
+     if rtl.__gnu_unwind_frame (aEx, aCtx) <> rtl._Unwind_Reason_Code._URC_OK  then 
+      exit rtl._Unwind_Reason_Code._URC_FAILURE;
+    {$ENDIF}
     exit rtl._Unwind_Reason_Code._URC_CONTINUE_UNWIND;
   end;
 
@@ -170,9 +181,18 @@ begin
       if Parselsda(aState, lMine, aEx, aCtx, out lTypeInfo, out lLandingPad) then begin
         rtl._Unwind_SetGR(aCtx, 0, rtl.uintptr_t(aEx));
         rtl._Unwind_SetGR(aCtx, 1, rtl.uintptr_t(lTypeInfo));
+        {$IFDEF ARM}
+        rtl._Unwind_SetGR(aCtx, 15, lLandingPad or (rtl._Unwind_GetGR(aCtx, 15)and 1));
+        {$ELSE}
         rtl._Unwind_SetIP(aCtx, lLandingPad);
+        {$ENDIF}
         exit rtl._Unwind_Reason_Code._URC_INSTALL_CONTEXT;
       end;
+
+      {$IFDEF ARM}
+       if rtl.__gnu_unwind_frame (aEx, aCtx) <> rtl._Unwind_Reason_Code._URC_OK  then 
+        exit rtl._Unwind_Reason_Code._URC_FAILURE;
+      {$ENDIF}
       exit rtl._Unwind_Reason_Code._URC_CONTINUE_UNWIND;
     end;
     // exception
@@ -180,27 +200,35 @@ begin
       if Parselsda(aState, lMine, aEx, aCtx, out lTypeInfo, out lLandingPad) then begin
         rtl._Unwind_SetGR(aCtx, 0, rtl.uintptr_t(aEx));
         rtl._Unwind_SetGR(aCtx, 1, rtl.uintptr_t(lTypeInfo));
+        {$IFDEF ARM}
+        rtl._Unwind_SetGR(aCtx, 15, lLandingPad or (rtl._Unwind_GetGR(aCtx, 15)and 1));
+        {$ELSE}
         rtl._Unwind_SetIP(aCtx, lLandingPad);
+        {$ENDIF}
         exit rtl._Unwind_Reason_Code._URC_INSTALL_CONTEXT;
       end;
       // we can't parse the LSDA table and the exception isn't ours, touble.
-      exit rtl._Unwind_Reason_Code._URC_FATAL_PHASE1_ERROR;
+      exit {$IFNDEF ARM}rtl._Unwind_Reason_Code._URC_FATAL_PHASE1_ERROR{$ELSE}rtl._Unwind_Reason_Code._URC_FAILURE{$ENDIF};
     end;
     var lRecord := ^ElementsException(aEx);
     lRecord := ^ElementsException(@^Byte(lRecord)[-Int32((^Byte(@lRecord^.Unwind) - ^Byte(lRecord)))]);
     rtl._Unwind_SetGR(aCtx, 0, rtl.uintptr_t(aEx));
     rtl._Unwind_SetGR(aCtx, 1, rtl.uintptr_t(lRecord^.handlerSwitchValue));
+    {$IFDEF ARM}
+    rtl._Unwind_SetGR(aCtx, 15, lLandingPad or (rtl._Unwind_GetGR(aCtx, 15)and 1));
+    {$ELSE}  
     rtl._Unwind_SetIP(aCtx, lRecord^.landingPad);
+    {$ENDIF}
     exit rtl._Unwind_Reason_Code._URC_INSTALL_CONTEXT;
   end;
-  exit rtl._Unwind_Reason_Code._URC_FATAL_PHASE1_ERROR;
+  exit {$IFNDEF ARM}rtl._Unwind_Reason_Code._URC_FATAL_PHASE1_ERROR{$ELSE}rtl._Unwind_Reason_Code._URC_FAILURE{$ENDIF};
 end;
 
 method ExternalCalls.ElementsBeginCatch(obj: ^Void): ^Void;
 begin
   var lRecord := ^ElementsException(obj);
   lRecord := ^ElementsException(@^Byte(lRecord)[-Int32((^Byte(@lRecord^.Unwind) - ^Byte(lRecord)))]);
-  if lRecord^.Unwind.exception_class = ElementsExceptionCode then begin
+  if ^UInt64(@lRecord^.Unwind.exception_class)^ = ElementsExceptionCode then begin
     exit InternalCalls.Cast(lRecord^.Object);
   end;
   exit @lRecord^.Object;
@@ -275,7 +303,11 @@ method ExternalCalls.Parselsda(aAction: _Unwind_Action; aNative: Boolean; aEx: ^
 begin
   var lLSD := ^Byte(rtl._Unwind_GetLanguageSpecificData(aCtx));
   if lLSD = nil then exit false;
+  {$IFDEF ARM}
+  var lOffset := Integer ((^Byte(rtl._Unwind_GetGR(aCtx, 15) and not 1) - ^Byte(rtl._Unwind_GetRegionStart(aCtx)))-1 );
+  {$ELSE}
   var lOffset := Integer ((^Byte(rtl._Unwind_GetIP(aCtx)) - ^Byte(rtl._Unwind_GetRegionStart(aCtx)))-1 );
+  {$ENDIF}
 
   var lLandingPadStart := DwarfEHReadPointer(var lLSD);
   if lLandingPadStart = 0 then lLandingPadStart := uintptr_t(^Byte(rtl._Unwind_GetRegionStart(aCtx)));
