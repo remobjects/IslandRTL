@@ -87,11 +87,11 @@ type
 
     class method highbit(i: UInt64): Integer;
 
-    [SymbolName(#1'__aullrem'), CallingConvention(CallingConvention.stdcall)]
+    [SymbolName(#1'__aullrem'), CallingConvention(CallingConvention.stdcall), Used]
     class method uint64remainder(dividend, divisor: UInt64): UInt64;
     [SymbolName(#1'__allrem'), CallingConvention(CallingConvention.stdcall)]
     class method int64remainder(dividend, divisor: Int64): Int64;
-    [SymbolName(#1'__aulldiv'), CallingConvention(CallingConvention.stdcall)]
+    [SymbolName(#1'__aulldiv'), CallingConvention(CallingConvention.stdcall), Used]
     class method uint64divide(dividend, divisor: UInt64): UInt64;
     [SymbolName(#1'__alldiv'), CallingConvention(CallingConvention.stdcall)]
     class method int64divide(dividend, divisor: Int64): Int64;
@@ -225,7 +225,7 @@ var
   [SectionName(".CRT$XLZ"), SymbolName('__xl_z')]
   __xl_z: rtl.PIMAGE_TLS_CALLBACK := 0;public;
 
-  [SectionName('.rdata$T'), SymbolName('_tls_used')]
+  [SectionName('.rdata$T'), SymbolName('_tls_used'), Used]
   _tls_used: {$IFDEF _WIN64}rtl.IMAGE_TLS_DIRECTORY64{$ELSE}rtl.IMAGE_TLS_DIRECTORY {$ENDIF}:=
     new {$IFDEF _WIN64}rtl.IMAGE_TLS_DIRECTORY64{$ELSE}rtl.IMAGE_TLS_DIRECTORY {$ENDIF}(
       StartAddressOfRawData := NativeUInt(@_tls_start),
