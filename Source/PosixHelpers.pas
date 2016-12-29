@@ -40,7 +40,7 @@ type
 
     [SymbolName('__elements_entry_point'), &Weak]
     method UserEntryPoint(args: array of String): Integer; external;
-    [SYmbolName({$IFDEF EMSCRIPTEN}'_start'{$ELSE}'__elements_entry_point_helper'{$ENDIF})]
+    [SYmbolName({$IFDEF EMSCRIPTEN}'_start'{$ELSE}'__elements_entry_point_helper'{$ENDIF}), Used]
     method Entrypoint(argc: Integer; argv: ^^ansichar; envp: ^^ansichar): Integer;
     {$IFNDEF EMSCRIPTEN}
     [SymbolName('_start'), Naked]
@@ -48,9 +48,9 @@ type
     [SymbolName('__libc_start_main', 'libc.so.6'), &weak]
     method libc_main(main: LibCEntryHelper; argc: Integer; argv: ^^char; init: LibCEntryHelper; fini: LibCFinalizerHelper); external;
     {$ENDIF}
-    [SymbolName('__elements_init')]
+    [SymbolName('__elements_init'), Used]
     method init(nargs: Integer; args: ^^ansichar; envp: ^^ansichar): Integer;
-    [SymbolnAme('__elements_fini')]
+    [SymbolName('__elements_fini'), Used]
     method fini;
 
     method Parselsda(aAction: rtl._Unwind_Action; aNative: Boolean; aEx: ^rtl.__struct__Unwind_Exception; aCtx: ^Void;
@@ -247,7 +247,40 @@ end;
 {$IFNDEF EMSCRIPTEN}
 method ExternalCalls._start;
 begin
+{$IFDEF ARM}
+  InternalCalls.VoidAsm(
+    "
+  // r0 contains the rtld fini
+  // sp contains: argc, argc (data), null, envp (data), null (rev order)
+    mov     fp, #0
+    mov     lr, #0
 
+    pop     {r1}    // argc         
+    mov     r2, sp 
+    mov     r11, r0
+    ldr     r0, .l1
+    ldr     r3, .l2
+    ldr     r12, .l3
+
+    push    {r2}            
+    push    {r11}     
+    push    {r12}            
+  // main: r0
+  // argc: r1
+  // argc: r2
+  // fini: r3
+  // stacktop: stackfini, 
+  /* __libc_start_main (main, argc, argv, init, fini, rtld_fini, stack_end) */
+    bl     __libc_start_main
+    bl abort
+.l1:
+    .long __elements_entry_point_helper
+.l2:
+    .long __elements_init
+.l3:
+    .long __elements_fini
+  ", "", false, false);
+{$ELSE}
   InternalCalls.VoidAsm(
     "xor %ebp, %ebp
     movq %rdx, %r9
@@ -262,6 +295,7 @@ begin
     callq  __libc_start_main@PLT
     hlt
   ", "", false, false);
+{$ENDIF}
 end;
 {$ENDIF}
 {$HIDE W27}
