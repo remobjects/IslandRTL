@@ -10,7 +10,7 @@ type
     fLength: Integer;
     fFirstChar: Char;{$SHOW H6}
     method get_Item(i: Integer): Char;
-    constructor; external; // not callable
+    constructor; empty; // not callable
     method IndexOf(Value: String; aStartFromIndex: Integer): Int32;
     {$IFDEF WINDOWS}
     method doLCMapString(aInvariant: Boolean := false; aMode:LCMapStringTransformMode := LCMapStringTransformMode.None):String;
