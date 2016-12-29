@@ -315,6 +315,9 @@ end;
 
 method ExternalCalls.init(nargs: Integer; args: ^^ansichar; envp: ^^ansichar): Integer;
 begin
+  ExternalCalls.nargs := nargs;
+  ExternalCalls.args := args;
+  ExternalCalls.envp := envp;
   var n := (@__init_array_end) - (@__init_array_start);
   for i: Integer := 0 to (n) -1 do begin
     ^LibCEntryHelper(@__init_array_start)[i](nargs, args, envp);
