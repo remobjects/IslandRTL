@@ -8,7 +8,6 @@ type
   Stream = public abstract class
   protected
     method GetLength: Int64; virtual;
-    method SetLength(value: Int64); virtual;
     method SetPosition(value: Int64); virtual;
     method GetPosition: Int64; virtual;
     method IsValid: Boolean; abstract;
@@ -20,7 +19,10 @@ type
     method Close; virtual;
     method &Read(const buf: ^Void; Count: UInt32): UInt32; abstract;
     method &Write(const buf: ^Void; Count: UInt32): UInt32; abstract;
+    method &Read(Buffer: array of Byte; Offset: UInt32; Count: UInt32): UInt32; 
+    method &Write(Buffer: array of Byte; Offset: UInt32; Count: UInt32): UInt32;
     method CopyTo(Destination: Stream);
+    method SetLength(value: Int64); virtual;
     property Length: Int64 read GetLength write SetLength;
     property Position: Int64 read GetPosition write SetPosition;
   end;
@@ -69,6 +71,26 @@ begin
     if rest > 0 then rest := Destination.Write(@buf[0],rest);
     if rest <> bufsize then break;
   end;
+end;
+
+method Stream.Read(Buffer: array of Byte; Offset: UInt32; Count: UInt32): UInt32;
+begin
+  if not CanRead then raise new NotSupportedException;
+  if Buffer.Length < Offset then raise new Exception("offset was out of range.");
+  if Buffer.Length < Offset + Count  then raise new ArgumentOutOfRangeException('Offset plus Count is greater than the length of Buffer.');
+  if Count = 0 then exit 0;
+  var buf: ^Void := @(Buffer[Offset]);
+  exit &Read(buf,Count);
+end;
+
+method Stream.Write(Buffer: array of Byte; Offset: UInt32; Count: UInt32): UInt32;
+begin
+  if not CanWrite then raise new NotSupportedException;
+  if Buffer.Length < Offset then raise new Exception("offset was out of range.");
+  if Buffer.Length < Offset + Count  then raise new ArgumentOutOfRangeException('Offset plus Count is greater than the length of Buffer.');
+  if Count = 0 then exit 0;
+  var buf: ^Void := @(Buffer[Offset]);
+  exit &Write(buf,Count);
 end;
 
 end.

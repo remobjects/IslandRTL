@@ -13,7 +13,6 @@ type
     method CheckCapacity(value: Int32);
     method CalcCapacity(aNewCapacity: Int32): Int32;
   protected
-    method SetLength(value: Int64); override;
     method IsValid: Boolean; override;
   public
     method CanRead: Boolean; override;
@@ -26,6 +25,7 @@ type
     method WriteTo(Destination: Stream);
     method LoadFromFile(FileName: string);
     method SaveToFile(FileName: string);
+    method SetLength(value: Int64); override;
   public
     property Capacity: Int32 read fCapacity write SetCapacity;
 

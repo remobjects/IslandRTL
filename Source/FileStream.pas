@@ -19,7 +19,6 @@ type
     {$ENDIF}
     fAccess: FileAccess;
   protected
-    method SetLength(value: Int64); override;
     method IsValid: Boolean; override;
   public
     constructor(FileName: String; Mode: FileMode; Access: FileAccess; Share: FileShare := FileShare.Read);
@@ -28,9 +27,11 @@ type
     method CanSeek: Boolean; override;
     method CanWrite: Boolean; override;
     method Seek(Offset: Int64; Origin: SeekOrigin): Int64; override;
+    method Flush;
     method Close; override;
     method &Read(const buf: ^Void; Count: UInt32): UInt32; override;
     method &Write(const buf: ^Void; Count: UInt32): UInt32;override;
+    method SetLength(value: Int64); override;
     property Name: String; readonly;
   end;
 
@@ -149,6 +150,7 @@ end;
 method FileStream.Close;
 begin
   if IsValid then begin
+    if CanWrite then Flush;
   {$IFDEF WINDOWS}
     rtl.CloseHandle(fHandle);
     fHandle := rtl.INVALID_HANDLE_VALUE;
@@ -185,7 +187,7 @@ begin
   var res: rtl.DWORD;
   CheckForIOError(rtl.ReadFile(fHandle,buf,Count,@res,nil));
   exit res;
-{$ELSEIF POSIX}
+  {$ELSEIF POSIX}
   exit rtl.fread(buf, 1, Count, fHandle);
   {$ELSE}
     {$ERROR}
@@ -203,6 +205,19 @@ begin
   exit res;
   {$ELSEIF POSIX}
   exit rtl.fwrite(buf, 1, Count, fHandle);
+  {$ELSE}
+    {$ERROR}
+  {$ENDIF}
+end;
+
+method FileStream.Flush;
+begin
+  if not CanWrite then raise new NotSupportedException;
+  {$IFDEF WINDOWS}
+  rtl.FlushFileBuffers(fHandle);
+  {$ELSEIF POSIX}
+  var fd := rtl.fileno(fHandle);
+  CheckForIOError(rtl.fsync(fd));
   {$ELSE}
     {$ERROR}
   {$ENDIF}
