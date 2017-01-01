@@ -28,6 +28,7 @@ type
     method GetHashCode: Integer; override;
     method &Equals(obj: Object): Boolean; override;
     class method IsWhiteSpace(aChar: Char): Boolean;
+    class method IsNumber(aChar: Char): Boolean;
   end;
 
   AnsiChar = public record
@@ -98,6 +99,11 @@ begin
          $2029, //Paragraph Separator
          $0009, $000A, $000B, $000C, $000D,$0085,$00A0 // other special symbols
         );
+end;
+
+class method Char.IsNumber(aChar: Char): Boolean;
+begin
+  exit aChar in ['0'..'9'];
 end;
 
 method AnsiChar.ToString: String;
