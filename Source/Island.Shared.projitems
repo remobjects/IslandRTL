@@ -20,6 +20,7 @@
     <Compile Include="$(MSBuildThisFileDirectory)HashSet.pas" />
     <Compile Include="$(MSBuildThisFileDirectory)Nullable.pas" />
     <Compile Include="$(MSBuildThisFileDirectory)ObjectPool.pas" />
+    <Compile Include="$(MSBuildThisFileDirectory)Queue.pas" />
     <Compile Include="$(MSBuildThisFileDirectory)Random.pas" />
     <Compile Include="$(MSBuildThisFileDirectory)Task.pas" />
     <Compile Include="$(MSBuildThisFileDirectory)TextConvert.pas" />
