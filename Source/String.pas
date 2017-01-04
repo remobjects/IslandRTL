@@ -26,7 +26,7 @@ type
     class method AllocString(aLen: Integer): String;
   public
     class constructor;
-    
+
     //constructor(aArray: array of Char);
     //constructor(c: ^Char; aCharCount: Integer): String;
     class method FromCharArray(aArray: array of Char): String;
@@ -46,6 +46,7 @@ type
     method CompareTo(Value: String): Integer;
     method CompareToIgnoreCase(Value: String): Integer;
     method &Equals(Value: String): Boolean;
+    method &Equals(obj: Object): Boolean; override;
     method EqualsIgnoreCase(Value: String): Boolean;
     class method &Join(Separator: String; Value: array of String): String;
     class method &Join(Separator: String; Value: IEnumerable<String>): String;
@@ -324,6 +325,14 @@ end;
 method String.&Equals(Value: String): Boolean;
 begin
   exit self = Value;
+end;
+
+method String.Equals(obj: Object): Boolean;
+begin
+ if Assigned(obj) and (obj is String) then
+   exit self = String(obj)
+ else
+   exit false;
 end;
 
 method String.EqualsIgnoreCase(Value: String): Boolean;
@@ -847,7 +856,7 @@ class method String.Join(Separator: String; Value: IEnumerable<String>): String;
 begin
   if Value = nil then raise new ArgumentNullException('Value is nil.');
   if String.IsNullOrEmpty(Separator) then Separator := '';
-  var str:= new StringBuilder;  
+  var str:= new StringBuilder;
   var lenum := Value.GetEnumerator;
   if lenum.MoveNext then str.Append(lenum.Current);
 
@@ -862,7 +871,7 @@ class method String.Join<T>(Separator: String; Value: IEnumerable<T>): String;
 begin
   if Value = nil then raise new ArgumentNullException('Value is nil.');
   if String.IsNullOrEmpty(Separator) then Separator := '';
-  var str:= new StringBuilder;  
+  var str:= new StringBuilder;
   var lenum := Value.GetEnumerator;
   if lenum.MoveNext then str.Append(lenum.Current.ToString);
 
