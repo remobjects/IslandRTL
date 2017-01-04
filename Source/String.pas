@@ -147,6 +147,10 @@ begin
   var len := rtl.MultiByteToWideChar(rtl.CP_ACP, 0, c, aCharCount, nil, 0);
   result := AllocString(len);
   rtl.MultiByteToWideChar(rtl.CP_ACP, 0, c, aCharCount, @result.fFirstChar, len);
+  {$ELSEIF ANDROID}
+  var b := new Byte[aCharCount];
+  Array.Copy(^Byte(c), b, 0, aCharCount);
+  exit TextConvert.UTF8ToString(b);
   {$ELSE}
   var lNewData: ^AnsiChar := nil;
   var lNewLen: rtl.size_t := iconv_helper(String.fCurrentToUtf16, c, aCharCount, aCharCount * 2 + 5, out lNewData);
@@ -164,6 +168,10 @@ begin
   var len := rtl.WideCharToMultiByte(rtl.CP_ACP, 0, @self.fFirstChar, Length, nil, 0, nil, nil);
   result := new AnsiChar[len+ if aNullTerminate then 1 else 0];
   rtl.WideCharToMultiByte(rtl.CP_ACP, 0, @self.fFirstChar, Length, rtl.LPSTR(@result[0]), len, nil, nil);
+  {$ELSEIF ANDROID}
+  var b := TextConvert.StringToUtf8(self, false);
+  result := new AnsiChar[b.Length + if aNullTerminate then 1 else 0];
+  {$IFDEF WINDOWS}ExternalCalls.{$ELSE}rtl.{$ENDIF}memcpy(@result[0], @b[0], b.Length);
   {$ELSE}
   var lNewData: ^AnsiChar := nil;
   var lNewLen: rtl.size_t := iconv_helper(String.fUTF16ToCurrent, ^AnsiChar(@fFirstChar), Length * 2, Length + 5, out lNewData);
@@ -329,7 +337,7 @@ end;
 
 method String.Equals(obj: Object): Boolean;
 begin
- if Assigned(obj) and (obj is String) then
+ if assigned(obj) and (obj is String) then
    exit self = String(obj)
  else
    exit false;
@@ -666,7 +674,7 @@ end;
 
 class constructor String;
 begin
-  {$IFDEF POSIX}
+  {$IFDEF POSIX and not ANDROID}
   rtl.setlocale(rtl.LC_ALL, "");
   fUTF16ToCurrent := rtl.iconv_open("", "UTF-16LE");
   fCurrentToUtf16 := rtl.iconv_open("UTF-16LE", "");

@@ -13,6 +13,14 @@ type
     method GetNonGenericEnumerator: IEnumerator; abstract; implements IEnumerable.GetEnumerator;
   public
     property Length: Integer read fLength;
+    
+    
+    class method Copy<T>(aSource: ^T; aDest: Array of T; aDestOffset: Integer; aCount: Integer);
+    begin 
+      if aCount = 0 then exit;
+      if (aSource = nil) or (aDestOffset < 0) or (aDestOffset + aCount > length(aDest)) then raise new ArgumentOutOfRangeException('Array.Copy ranges');
+      {$IFDEF WINDOWS}ExternalCalls.{$ELSE}rtl.{$ENDIF}memcpy(@aDest[aDestOffset], aSource, aCount * sizeOf(T));
+    end;
 
     class method Copy<T>(aSource: array of T; aSourceOffset: Integer; aDest: Array of T; aDestOffset: Integer; aCount: Integer);
     begin 

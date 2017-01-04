@@ -17,18 +17,26 @@ type
                                    case aMode of
                                      TimeModifier.Accessed: lastaccess;
                                      TimeModifier.Created: created;
-                                     TimeModifier.Updated: lastwrite;
+                                      else lastwrite;
                                    end);
       finally
         rtl.CloseHandle(handle);
       end;
+      {$ELSEIF ANDROID}
+      var str := FileUtils.Get__struct_stat(FullName);
+      exit DateTime.FromUnixTimeUTC(
+                                   case aMode of
+                                     TimeModifier.Accessed: new rtl.__struct_timespec(tv_sec := str^.st_atime, tv_nsec := str^.st_atime_nsec);
+                                     TimeModifier.Created: new rtl.__struct_timespec(tv_sec := str^.st_ctime, tv_nsec := str^.st_ctime_nsec);
+                                     else new rtl.__struct_timespec(tv_sec := str^.st_mtime, tv_nsec := str^.st_mtime_nsec);
+                                   end);
       {$ELSEIF POSIX}
       var str := FileUtils.Get__struct_stat(FullName);
       exit DateTime.FromUnixTimeUTC(
                                    case aMode of
                                      TimeModifier.Accessed: str^.st_atim;
                                      TimeModifier.Created: str^.st_ctim;
-                                     TimeModifier.Updated: str^.st_mtim;
+                                     else str^.st_mtim;
                                    end);
       {$ELSE}{$ERROR}
       {$ENDIF}

@@ -73,6 +73,19 @@ type
         end;
       end;
       CheckForLastError;
+      {$ELSEIF ANDROID}
+      var len := 1024;
+      loop begin
+        var buf := new AnsiChar[len];
+        if rtl.getcwd(@buf[0], len) = nil then begin
+          if rtl.errno = rtl.ERANGE then 
+            len := len  *2
+          else 
+            exit nil;
+        end else
+          exit new String(@buf[0]);
+        
+      end;
       {$ELSEIF POSIX}
       var lCwd := rtl.get_current_dir_name();
       result := String.FromPAnsiChars(lCwd);

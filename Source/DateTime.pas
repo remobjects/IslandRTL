@@ -98,6 +98,10 @@ type
       var temp: rtl.SYSTEMTIME;
       rtl.GetSystemTime(@temp);
       exit DateTime.FromSystemTime(temp);
+      {$ELSEIF ANDROID}
+      var ts: rtl.__struct_timespec;
+      rtl.clock_gettime(rtl.CLOCK_REALTIME, @ts);
+      exit new DateTime(UnixDateOffset + (ts.tv_sec * TicksPerMillisecond) + (ts.tv_nsec / 100000));
       {$ELSEIF POSIX}
       var ts: rtl.__struct_timespec;
       rtl.timespec_get(@ts, rtl.TIME_UTC);
@@ -114,6 +118,10 @@ type
       var temp: rtl.SYSTEMTIME;
       rtl.GetLocalTime(@temp);
       exit DateTime.FromSystemTime(temp);
+      {$ELSEIF ANDROID}
+      var ts: rtl.__struct_timespec;
+      rtl.clock_gettime(rtl.CLOCK_REALTIME, @ts);
+      exit new DateTime(UnixDateOffset + (ts.tv_sec * TicksPerMillisecond) + (ts.tv_nsec / 100000));
       {$ELSEIF POSIX}
       var ts: rtl.__struct_timespec;
       rtl.timespec_get(@ts, rtl.TIME_UTC);
