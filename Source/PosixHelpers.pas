@@ -40,9 +40,9 @@ type
 
     [SymbolName('__elements_entry_point'), &Weak]
     method UserEntryPoint(args: array of String): Integer; external;
-    [SYmbolName({$IFDEF EMSCRIPTEN}'_start'{$ELSE}'__elements_entry_point_helper'{$ENDIF}), Used]
-    method Entrypoint(argc: Integer; argv: ^^ansichar; envp: ^^ansichar): Integer;
-    {$IFNDEF EMSCRIPTEN}
+    [SymbolName({$IF EMSCRIPTEN OR ANDROID}'_start'{$ELSE}'__elements_entry_point_helper'{$ENDIF}), Used]
+    method Entrypoint(argc: Integer; argv: ^^ansichar; envp: ^^ansichar): Integer;    
+    {$IF NOT EMSCRIPTEN AND NOT ANDROID}
     [SymbolName('_start'), Naked]
     method _start;
     [SymbolName('__libc_start_main', 'libc.so.6'), &weak]
@@ -244,7 +244,7 @@ begin
   // FAIL
 end;
 
-{$IFNDEF EMSCRIPTEN}
+{$IF NOT EMSCRIPTEN AND NOT ANDROID}
 method ExternalCalls._start;
 begin
 {$IFDEF ARM}
