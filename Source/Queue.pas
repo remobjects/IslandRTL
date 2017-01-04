@@ -23,7 +23,7 @@ type
     fHead: Integer := 0;
     fCount: Integer := 0;
     method Grow(aCapacity: Integer);
-    method IsEmpty: Boolean;
+    method IsEmpty: Boolean; inline;
     method CalcCapacity(aNewCapacity: Integer): Integer;
     method Init;
     method GetNonGenericEnumerator: IEnumerator; implements IEnumerable.GetEnumerator;
@@ -101,6 +101,7 @@ begin
     raise new Exception('Queue is empty');
 
   result := fItems[fTail];
+  fItems[fTail] := nil;
   inc(fTail);
   dec(fCount);
   if fTail = length(fItems) then
@@ -150,7 +151,7 @@ end;
 
 method Queue<T>.IsEmpty: Boolean;
 begin
-  result := fTail = fHead;
+  result := fCount = 0;
 end;
 
 method Queue<T>.IsEqual(Item1: T; Item2: T): Boolean;
