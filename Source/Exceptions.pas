@@ -27,7 +27,7 @@ type
     constructor(aCode: Cardinal);
     begin
       inherited constructor('Windows Exception: '+aCode.ToString);
-      fCode := acode;
+      fCode := aCode;
     end;
 
     property Code: Cardinal read fCode;

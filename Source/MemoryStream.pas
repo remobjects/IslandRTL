@@ -94,7 +94,7 @@ begin
   if not CanWrite then raise new NotSupportedException;
   if buf = nil then raise new Exception("argument is null");
   if Count = 0 then exit 0;
-  CheckCapacity(FPosition+Count);
+  CheckCapacity(fPosition+Count);
   {$IFDEF WINDOWS}ExternalCalls.{$ELSE}rtl.{$ENDIF}memcpy(@fbuf[fPosition], buf, Count);  
   fPosition := fPosition+Count;
   if fPosition > fLength then fLength := fPosition;
@@ -115,9 +115,9 @@ end;
 
 method MemoryStream.CalcCapacity(aNewCapacity: Int32): Int32;
 begin
-  var ldelta: Int32;
-  if aNewCapacity > 64 then ldelta := aNewCapacity / 4
-  else if aNewCapacity > 8 then ldelta := 16
+  var lDelta: Int32;
+  if aNewCapacity > 64 then lDelta := aNewCapacity / 4
+  else if aNewCapacity > 8 then lDelta := 16
   else lDelta := 4;
   exit aNewCapacity + lDelta;
 end;

@@ -27,8 +27,8 @@ implementation
 
 method File.Copy(NewFile: not nullable File);
 begin
-  if Newfile = nil then raise new Exception('NewFile is nil');
-  if String.IsNullOrEmpty(Newfile.FullName) then raise new Exception('NewFile.FullName is nil or empty');
+  if NewFile = nil then raise new Exception('NewFile is nil');
+  if String.IsNullOrEmpty(NewFile.FullName) then raise new Exception('NewFile.FullName is nil or empty');
   &Copy(NewFile.FullName);
 end;
 
@@ -72,8 +72,8 @@ end;
 
 method File.Move(NewFile: not nullable File);
 begin
-  if Newfile = nil then raise new Exception('NewFile is nil');
-  if String.IsNullOrEmpty(Newfile.FullName) then raise new Exception('NewFile.FullName is nil or empty');
+  if NewFile = nil then raise new Exception('NewFile is nil');
+  if String.IsNullOrEmpty(NewFile.FullName) then raise new Exception('NewFile.FullName is nil or empty');
   Move(NewFile.FullName);
 end;
 
@@ -108,9 +108,9 @@ end;
 
 method File.ReadBytes: array of Byte;
 begin
-  var stream := new MemoryStream;
-  stream.LoadFromFile(FullName);
-  exit Stream.ToArray;
+  var lStream := new MemoryStream;
+  lStream.LoadFromFile(FullName);
+  exit lStream.ToArray;
 end;
 
 method File.GetLength: Int64;

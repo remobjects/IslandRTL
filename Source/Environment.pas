@@ -45,7 +45,7 @@ type
     begin     
       {$IFDEF WINDOWS}
       var buf:= new array of Char(32768);
-      var len := rtl.GetEnvironmentVariableW(name.ToLPCWSTR,rtl.LPWSTR(@buf[0]),32767);
+      var len := rtl.GetEnvironmentVariableW(Name.ToLPCWSTR,rtl.LPWSTR(@buf[0]),32767);
       if len = 0 then begin
         CheckForLastError;
       end;

@@ -35,64 +35,64 @@ type
 
   IDispatchPtr = public record(IUnknown, IDispatch)
   private
-    fInst: ComObject;
+    fInstance: ComObject;
   public
     method __QueryInterface(riid: ^rtl.GUID; ppvObject: ^^Void): rtl.HRESULT; implements IUnknown.QueryInterface;
     begin
-      exit IUnknown_VMTImpl_QueryInterface(fInst, riid, ppvObject);
+      exit IUnknown_VMTImpl_QueryInterface(fInstance, riid, ppvObject);
     end;
 
     method __Release: rtl.ULONG; implements IUnknown.Release;
     begin
-      exit IUnknown_VMTImpl_Release(fInst);
+      exit IUnknown_VMTImpl_Release(fInstance);
     end;
 
     method __AddRef: rtl.ULONG; implements IUnknown.AddRef;
     begin
-      exit IUnknown_VMTImpl_AddRef(fInst);
+      exit IUnknown_VMTImpl_AddRef(fInstance);
     end;
 
     method __GetTypeInfoCount(pctinfo: ^rtl.UINT): rtl.HRESULT; implements IDispatch.GetTypeInfoCount;
     begin
-      exit IDispatch_VMTImpl_GetTypeInfoCount(self.fInst, pctinfo);
+      exit IDispatch_VMTImpl_GetTypeInfoCount(self.fInstance, pctinfo);
     end;
 
     method __GetTypeInfo(iTInfo: rtl.UINT; lcid: rtl.LCID; ppTInfo: ^^rtl.ITypeInfo): rtl.HRESULT; implements IDispatch.GetTypeInfo;
     begin
-      exit IDispatch_VMTImpl_GetTypeInfo(self.fInst, iTInfo, lcid, ppTInfo);
+      exit IDispatch_VMTImpl_GetTypeInfo(self.fInstance, iTInfo, lcid, ppTInfo);
     end;
 
     method __GetIDsOfNames(riid: ^rtl.GUID; rgszNames: ^^rtl.WCHAR; cNames: rtl.UINT; lcid: rtl.LCID; rgDispId: ^rtl.DISPID): rtl.HRESULT; implements IDispatch.GetIDsOfNames;
     begin
-      exit IDispatch_VMTImpl_GetIDsOfNames(self.fInst, riid, rgszNames, cNames, lcid, rgDispId);
+      exit IDispatch_VMTImpl_GetIDsOfNames(self.fInstance, riid, rgszNames, cNames, lcid, rgDispId);
     end;
 
     method __Invoke(dispIdMember: rtl.DISPID; riid: ^rtl.GUID; lcid: rtl.LCID; wFlags: rtl.WORD; pDispParams: ^rtl.DISPPARAMS; pVarResult: ^rtl.VARIANT; pExcepInfo: ^rtl.EXCEPINFO; puArgErr: ^rtl.UINT): rtl.HRESULT; implements IDispatch.Invoke;
     begin
-      exit IDispatch_VMTImpl_Invoke(self.fInst, dispIdMember, riid, lcid, wFlags, pDispParams, pVarResult, pExcepInfo, puArgErr);
+      exit IDispatch_VMTImpl_Invoke(self.fInstance, dispIdMember, riid, lcid, wFlags, pDispParams, pVarResult, pExcepInfo, puArgErr);
     end;
 
     constructor(aIntf: ComObject);
     begin
-      fInst := aIntf;
+      fInstance := aIntf;
     end;
 
     constructor(var aCopyFrom: IDispatchPtr);
     begin
-      fInst := aCopyFrom.fInst;
-      if fInst <> nil then fInst^^.AddRef(fInst);
+      fInstance := aCopyFrom.fInstance;
+      if fInstance <> nil then fInstance^^.AddRef(fInstance);
     end;
 
     finalizer;
     begin
-      var lInst := fInst;
-      fInst := nil;
+      var lInst := fInstance;
+      fInstance := nil;
       if lInst <> nil then lInst^^.Release(lInst);
     end;
 
     class operator Explicit(aVal: IDispatchPtr): ComObject;
     begin
-      exit aval.fInst;
+      exit aVal.fInstance;
     end;
 
     class operator Explicit(aVal: IDispatch): IDispatchPtr;
@@ -102,17 +102,17 @@ type
 
     class operator Explicit(aVal: IDispatchPtr): IDispatch;
     begin
-      exit IDispatch(coalesce(COMHelpers.ComObjectToObject(aVal.fInst), Object(aVal)));
+      exit IDispatch(coalesce(COMHelpers.ComObjectToObject(aVal.fInstance), Object(aVal)));
     end;
 
     class operator Equal(a,b: IDispatchPtr): Boolean;
     begin
-      exit a.finst = b.finst;
+      exit a.fInstance = b.fInstance;
     end;
 
     class operator NotEqual(a,b: IDispatchPtr): Boolean;
     begin
-      exit a.finst <> b.finst;
+      exit a.fInstance <> b.fInstance;
     end;
   end;
 

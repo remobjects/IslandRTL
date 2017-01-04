@@ -140,7 +140,7 @@ begin
   len := rtl.GetFullPathNameW(lname,len,rtl.LPWSTR(@buf[0]), nil);
   CheckForIOError(len <> 0);
   if len <= rtl.MAX_PATH then begin
-    if (Len>4) and  (buf[0] = '\') and (buf[1] = '\') and (buf[2] = '?') and (buf[3] = '\') then 
+    if (len>4) and  (buf[0] = '\') and (buf[1] = '\') and (buf[2] = '?') and (buf[3] = '\') then 
       exit String.FromPChar(@buf[4], len -4) as not nullable String
     else
       exit String.FromPChar(@buf[0],len) as not nullable String;
@@ -149,7 +149,7 @@ begin
     var buf1 := new array of Char(len+1);
     len := rtl.GetFullPathNameW(lname,len,rtl.LPWSTR(@buf1[0]), nil);
     CheckForIOError(len <> 0);  
-    if (Len>4) and (buf1[0] = '\') and (buf1[1] = '\') and (buf1[2] = '?') and (buf1[3] = '\') then 
+    if (len>4) and (buf1[0] = '\') and (buf1[1] = '\') and (buf1[2] = '?') and (buf1[3] = '\') then 
       exit String.FromPChar(@buf1[4], len-4)as not nullable String
     else
       exit String.FromPChar(@buf1[0],len) as not nullable String;

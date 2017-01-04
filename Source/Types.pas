@@ -41,7 +41,7 @@ type
   Debug = public static class
   public
     [Conditional('DEBUG')]
-    class method Assert(aFail: Boolean; aMessage: String; aFile: String := currentFilename(); aLine: Integer := currentLineNumber());
+    class method Assert(aFail: Boolean; aMessage: String; aFile: String := currentFileName(); aLine: Integer := currentLineNumber());
     begin
       if aFail then
         raise new AssertionException('Assertion failed: '+aMessage+' at '+aFile+'('+aLine+')');

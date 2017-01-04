@@ -15,7 +15,7 @@ type
     begin
       var newname := Path.Combine(FullName,FileName);
       if FileUtils.isFileExists(newname) then raise new Exception('file exists');
-      exit new File(Filename);
+      exit new File(FileName);
     end;
 
     method CreateSubfolder(SubfolderName: String; FailIfExists: Boolean := false): Folder;
@@ -62,7 +62,7 @@ type
       {$IFDEF WINDOWS}
       var find: rtl.WIN32_FIND_DATAW;
       var hFind  := rtl.FindFirstFileW((FullName + '\*').ToFileName(),@find);
-      if hfind = rtl.INVALID_HANDLE_VALUE then exit;
+      if hFind = rtl.INVALID_HANDLE_VALUE then exit;
       repeat
         if FileUtils.isFile(find.dwFileAttributes) then
           result.Add(new File(Path.Combine(FullName,String.FromPChar(@find.cFileName[0]))));
@@ -104,7 +104,7 @@ type
       {$IFDEF WINDOWS}
       var find: rtl.WIN32_FIND_DATAW;
       var hFind  := rtl.FindFirstFileW((FullName + '\*').ToFileName(),@find);
-      if hfind = rtl.INVALID_HANDLE_VALUE then exit;
+      if hFind = rtl.INVALID_HANDLE_VALUE then exit;
       repeat
         if FileUtils.isFolder(find.dwFileAttributes) then begin
           var fn := String.FromPChar(@find.cFileName[0]);

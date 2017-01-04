@@ -11,7 +11,7 @@ type
     {$IFDEF WINDOWS}
     fCS: rtl.CRITICAL_SECTION;
     {$ELSE}
-    fcs: RTL.pthread_mutex_t;
+    fcs: rtl.pthread_mutex_t;
     {$ENDIF}
   public 
     constructor;

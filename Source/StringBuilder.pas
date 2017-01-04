@@ -7,7 +7,7 @@ type
   private
     const sizeOfChar = 2;
   private
-    fbuf: array of Char;
+    fBuf: array of Char;
     fCapacity: Integer;
     fLength: Integer;
 
@@ -18,7 +18,7 @@ type
       for i: Integer := StartIndex to Count-Value_Length-1 do begin
         var lfound:= true;
         for j: Integer :=0 to Value_Length-1 do begin
-          lfound:=lfound and (fbuf[i+j] = OldValue.Item[j]);
+          lfound:=lfound and (fBuf[i+j] = OldValue.Item[j]);
           if not lfound then break;
         end;
         if lfound then exit i;
@@ -35,15 +35,15 @@ type
     method IntMove(SourceIndex, DestIndex: Int32;  CharCount: Integer);
     begin
       if CharCount = 0 then exit;
-      {$IFDEF WINDOWS}ExternalCalls.{$ELSEIF POSIX}rtl.{$ELSE}{$ERROR}{$ENDIF}memmove(@fbuf[DestIndex], @fbuf[SourceIndex], CharCount*sizeOfChar);
+      {$IFDEF WINDOWS}ExternalCalls.{$ELSEIF POSIX}rtl.{$ELSE}{$ERROR}{$ENDIF}memmove(@fBuf[DestIndex], @fBuf[SourceIndex], CharCount*sizeOfChar);
     end;
 
     method CalcCapacity(aNewCapacity: Integer): Integer;
     begin
       if aNewCapacity > MaxCapacity then RaiseError('Enlarging the value of this instance would exceed MaxCapacity');
-      var ldelta: Integer;
-      if aNewCapacity > 64 then ldelta := aNewCapacity / 4 
-      else if aNewCapacity > 8 then ldelta := 16
+      var lDelta: Integer;
+      if aNewCapacity > 64 then lDelta := aNewCapacity / 4 
+      else if aNewCapacity > 8 then lDelta := 16
       else lDelta := 4;
       var r := aNewCapacity + lDelta;
       exit if r > MaxCapacity then MaxCapacity else r;
@@ -53,8 +53,8 @@ type
     begin
       var newbuf:= new array of Char(Value);
       fCapacity := Value;
-      intCopy(@fbuf[0],@newbuf[0], fLength);
-      fbuf := newbuf;
+      intCopy(@fBuf[0],@newbuf[0], fLength);
+      fBuf := newbuf;
     end;
 
     method SetLength(value: Integer);
@@ -69,13 +69,13 @@ type
     method SetChars(&Index: Integer; value: Char);
     begin
       if (&Index<0) or (&Index> fLength) then RaiseError('Argument Out Of Range');
-      fbuf[&Index] := value;
+      fBuf[&Index] := value;
     end;
 
     method GetChars(&Index: Integer): Char;
     begin
       if (&Index<0) or (&Index> fLength) then RaiseError('Index Out Of Range');
-      exit fbuf[&Index];
+      exit fBuf[&Index];
     end;
 
     method SetCapacity(value: Integer);
@@ -142,7 +142,7 @@ type
       var old_Length:=Length;
       Length := Length + Count;
       var c := Value.ToCharArray;
-      intCopy(@c[StartIndex], @fbuf[old_Length], Count);
+      intCopy(@c[StartIndex], @fBuf[old_Length], Count);
       exit self;
     end;
 
@@ -179,7 +179,7 @@ type
       if (StartIndex < 0) then RaiseError('StartIndex less than zero') ;
       if (StartIndex + Count > Length) then RaiseError('StartIndex + Count is greater than the length');      
       if StartIndex+Count < Length then
-        intCopy(@fbuf[StartIndex+Count], @fbuf[StartIndex], Length-(StartIndex+Count));
+        intCopy(@fBuf[StartIndex+Count], @fBuf[StartIndex], Length-(StartIndex+Count));
       Length := Length - Count;
       exit self;
     end;
@@ -190,7 +190,7 @@ type
       if (StartIndex < 0) then RaiseError('StartIndex less than zero') ;
       if (StartIndex + Count > Length) then RaiseError('StartIndex + Count is greater than the length');      
       for i: Integer := 0 to fLength - 1 do
-        if fbuf[i] = OldChar then fbuf[i] := NewChar;
+        if fBuf[i] = OldChar then fBuf[i] := NewChar;
       exit self;
     end;
 
@@ -202,7 +202,7 @@ type
       if (StartIndex < 0) then RaiseError('StartIndex less than zero') ;
       if (StartIndex + Count > Length) then RaiseError('StartIndex + Count is greater than the length');      
       if String.IsNullOrEmpty(NewValue) then NewValue := '';
-      var oldlen := OldValue.Length;      
+      var oldLen := OldValue.Length;      
       var newLen := NewValue.Length;
 
       var idx := intIndexOf(OldValue, StartIndex, StartIndex+Count);
@@ -210,7 +210,7 @@ type
       var old_idx := idx;
       var curpos := idx;
       
-      if oldlen >= newLen then begin
+      if oldLen >= newLen then begin
         var NewBuf := NewValue.ToCharArray;
         repeat
           var delta := idx - old_idx;
@@ -218,9 +218,9 @@ type
             IntMove(old_idx, curpos, delta); // move the non-changed text
             inc(curpos, delta);
           end;
-          IntCopy(@NewBuf[0], @fBuf[curpos], newlen);
-          inc(curpos, newlen);
-          old_idx := idx + oldlen;
+          intCopy(@NewBuf[0], @fBuf[curpos], newLen);
+          inc(curpos, newLen);
+          old_idx := idx + oldLen;
           idx := intIndexOf(OldValue, old_idx, StartIndex+Count);
         until idx = -1;
         IntMove(old_idx, curpos, Length-old_idx); // move the rest of non-changed text
@@ -230,23 +230,23 @@ type
       else begin         
         var tempStr := String.FromPChar(@fBuf[StartIndex],Count).Replace(OldValue,NewValue);        
         if fLength - (StartIndex+ Count)+ tempStr.Length > MaxCapacity then RaiseError('Enlarging the value of this instance would exceed MaxCapacity');
-        var newbuflen := tempstr.Length+fLength -Count;
-        var tempstrbuf := tempstr.ToCharArray;
+        var newbuflen := tempStr.Length+fLength -Count;
+        var tempstrbuf := tempStr.ToCharArray;
         if newbuflen >= fCapacity then begin
           // new buf is required
           var newCapacity:= CalcCapacity(newbuflen);
           var newbuf:= new array of Char(newCapacity);
-          intCopy(@fbuf[0],@newbuf[0], StartIndex);
-          intCopy(@tempstrbuf[0],@fbuf[StartIndex],tempstrbuf.Length);
-          intCopy(@fbuf[StartIndex+Count],@newbuf[0], Length-(StartIndex+Count));
-          fbuf := newbuf;
+          intCopy(@fBuf[0],@newbuf[0], StartIndex);
+          intCopy(@tempstrbuf[0],@fBuf[StartIndex],tempstrbuf.Length);
+          intCopy(@fBuf[StartIndex+Count],@newbuf[0], Length-(StartIndex+Count));
+          fBuf := newbuf;
           fLength := newbuflen;
           fCapacity :=newCapacity;
         end
         else begin
           // old buf can be used
-          IntMove(StartIndex+Count, StartIndex+tempstrbuf.length,fLength-(StartIndex+Count));// move the rest into proper place
-          intCopy(@tempstrbuf[0],@fbuf[StartIndex],tempstrbuf.length);
+          IntMove(StartIndex+Count, StartIndex+tempstrbuf.Length,fLength-(StartIndex+Count));// move the rest into proper place
+          intCopy(@tempstrbuf[0],@fBuf[StartIndex],tempstrbuf.Length);
           fLength := newbuflen;
         end;
       end;
@@ -265,7 +265,7 @@ type
 
     method ToString: String; override;
     begin
-      exit String.FromPChar(@fbuf[0], fLength);
+      exit String.FromPChar(@fBuf[0], fLength);
     end;
 
     method ToString(StartIndex, Count: Integer): String; 
@@ -274,7 +274,7 @@ type
       if (Count < 0) then RaiseError('Count less than zero') ;
       if (StartIndex < 0) then RaiseError('StartIndex less than zero') ;
       if (StartIndex + Count > Length) then RaiseError('StartIndex + Count is greater than the length');      
-      exit String.FromPChar(@fbuf[StartIndex], Count);
+      exit String.FromPChar(@fBuf[StartIndex], Count);
     end;
 
     method Insert(Offset: Integer; Value: String): StringBuilder;
@@ -283,9 +283,9 @@ type
       if (Offset + Value.Length > MaxCapacity) then RaiseError('The current length of this StringBuilder object plus the length of value exceeds MaxCapacity.');
       var newLength := fLength+Value.Length;
       if newLength > fCapacity then Grow(CalcCapacity(newLength));
-      IntMove(offset, offset + Value.Length, Length - offset);
-      var c := value.ToCharArray;
-      intCopy(c,  @fbuf[offset], Value.Length);
+      IntMove(Offset, Offset + Value.Length, Length - Offset);
+      var c := Value.ToCharArray;
+      intCopy(c,  @fBuf[Offset], Value.Length);
       Length := newLength;
       exit self;
     end;

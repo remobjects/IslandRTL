@@ -28,9 +28,9 @@ type
     [SymbolName('atol')]
     class method atol(a: ^AnsiChar): Integer; empty; // used by GC but since getenv never returns a value, this will never hit
     [SymbolName('strtoul')]
-    class method strtoul(a: ^AnsiChar; endptr: ^^AnsiChar; abase: Integer): cardinal; empty; // used by GC but since getenv never returns a value, this will never hit
+    class method strtoul(a: ^AnsiChar; endptr: ^^AnsiChar; abase: Integer): Cardinal; empty; // used by GC but since getenv never returns a value, this will never hit
     [SymbolName('_strtoui64')]
-    class method _strtoui64(a: ^AnsiChar; endptr: ^^AnsiChar; abase: Integer): uint64; empty; // used by GC but since getenv never returns a value, this will never hit
+    class method _strtoui64(a: ^AnsiChar; endptr: ^^AnsiChar; abase: Integer): UInt64; empty; // used by GC but since getenv never returns a value, this will never hit
     [SymbolName('_errno')]
     class var _errno: Integer;
     [SymbolName('_fltused')]
@@ -215,7 +215,7 @@ var
   [SymbolName('_tls_array'), Alias]
   _tls_array: ^Int32 := ^Int32($2c);
   [SymbolName('_tls_index')]
-  _tls_index: cardinal := 0; public;
+  _tls_index: Cardinal := 0; public;
   [SectionName('.tls'), SymbolName('_tls_start')]
   _tls_start: NativeInt := 0;public;
   [SectionName('.tls$ZZZ'), SymbolName('_tls_end')]
@@ -274,7 +274,7 @@ begin
 end;
 
 
-method ExternalCalls.&exit(Ex: Integer);
+method ExternalCalls.&exit(ex: Integer);
 begin
   while atexitlist <> nil do begin
     atexitlist^.func();
@@ -370,7 +370,7 @@ begin
     end;
   end
   else begin
-    exit memcpy(destination, source, anum);
+    exit memcpy(destination, source, aNum);
   end;
 end;
 
@@ -655,9 +655,9 @@ begin
 end;
 {$ELSE}
 // This version is dual licensed under the MIT and the University of Illinois Open Source Licenses. See LICENSE.TXT for details; from the llvm compiler-RT project.
-class method externalcalls._chkstk;
+class method ExternalCalls._chkstk;
 begin
-  internalcalls.voidasm(
+  InternalCalls.voidasm(
   "
         push   %rcx
         push   %rax
@@ -760,7 +760,7 @@ begin
 
 end;
 
-type CatchHelper = method (pExcept: ^rtl.EXCEPTION_RECORD): Nativeint;
+type CatchHelper = method (pExcept: ^rtl.EXCEPTION_RECORD): NativeInt;
 method IntCallCatch(pExcept: ^rtl.EXCEPTION_RECORD): NativeInt;
 begin
   exit CallCatch(pExcept^.ExceptionInformation[2], pExcept^.ExceptionInformation[1]);
@@ -768,16 +768,16 @@ end;
 
 method CallCatch(aCatch: ^MSVCTryMap; aHandler: ^MSVCHandlerType; arec: ^rtl.EXCEPTION_RECORD; EstFrame: UInt64; context: rtl.PCONTEXT; dispatcher: rtl.PDISPATCHER_CONTEXT);
 begin 
-  var EH := &default(rtl.EXCEPTION_RECORD);
-  EH.ExceptionCode := rtl.STATUS_UNWIND_CONSOLIDATE;
-  EH.ExceptionFlags := rtl.EXCEPTION_NONCONTINUABLE;
-  EH.NumberParameters := 15;
-  var ch : CatchHElper:= @IntCallCatch;
-  EH.ExceptionInformation[0] := UInt64(^Void(ch));
-  EH.ExceptionInformation[1] := EstFrame;
-  EH.ExceptionInformation[2] := dispatcher^.ImageBase + aHandler^.Handler;
-  EH.ExceptionInformation[3] := aCatch^.TryLow;
-  rtl.RtlUnwindEx(rtl.PVoid(EstFrame), rtl.PVoid(dispatcher^.ControlPc),  @eh, nil, Context, dispatcher^.HistoryTable);
+  var eh := &default(rtl.EXCEPTION_RECORD);
+  eh.ExceptionCode := rtl.STATUS_UNWIND_CONSOLIDATE;
+  eh.ExceptionFlags := rtl.EXCEPTION_NONCONTINUABLE;
+  eh.NumberParameters := 15;
+  var ch : CatchHelper:= @IntCallCatch;
+  eh.ExceptionInformation[0] := UInt64(^Void(ch));
+  eh.ExceptionInformation[1] := EstFrame;
+  eh.ExceptionInformation[2] := dispatcher^.ImageBase + aHandler^.Handler;
+  eh.ExceptionInformation[3] := aCatch^.TryLow;
+  rtl.RtlUnwindEx(rtl.PVOID(EstFrame), rtl.PVOID(dispatcher^.ControlPc),  @eh, nil, context, dispatcher^.HistoryTable);
 end;
     
 
@@ -830,7 +830,7 @@ begin
             if (lCatchOffset <> 0) then
               ^Exception(EstablisherFrame + lCatchOffset)^ := exo;
             var cond := htt^.Filter;
-            if (cond = nil) or (cond(^Void(context^.rSP))) then begin
+            if (cond = nil) or (cond(^Void(context^.Rsp))) then begin
               result := 0;
               CallCatch(tb, ht, arec, EstablisherFrame, context, dispatcher);
             end;

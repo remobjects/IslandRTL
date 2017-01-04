@@ -352,7 +352,7 @@ end;
 
 method EventWaitHandle.Set;
 begin
-  rtl.SetEvent(fhandle);
+  rtl.SetEvent(fHandle);
 end;
 
 method EventWaitHandle.Reset;
@@ -422,14 +422,14 @@ begin
     rtl.pthread_cond_signal(@fCV)
   else 
     rtl.pthread_cond_broadcast(@fCV);
-  rtl.pthread_mutex_unlock(@Fmutex);
+  rtl.pthread_mutex_unlock(@fMutex);
 end;
 
 method EventWaitHandle.Reset;
 begin
   rtl.pthread_mutex_lock(@fMutex);
   fValue := false;
-  rtl.pthread_mutex_unlock(@Fmutex);
+  rtl.pthread_mutex_unlock(@fMutex);
 end;
 
 method EventWaitHandle.Wait(aTimeMS: Integer): Boolean;
@@ -440,7 +440,7 @@ begin
   ts.tv_sec := ts.tv_sec + (aTimeMS /1000);
   rtl.pthread_mutex_lock(@fMutex);
   loop begin 
-    rtl.pthread_cond_wait(@fCV, @fmutex);
+    rtl.pthread_cond_wait(@fCV, @fMutex);
     if fValue then begin
       result := true;
       if fAutoReset then fValue := false;
@@ -450,20 +450,20 @@ begin
     rtl.clock_gettime(rtl.CLOCK_REALTIME , @ts2); 
     if (ts2.tv_sec > ts.tv_sec) or (ts2.tv_nsec > ts.tv_nsec) then break;
   end;
-  rtl.pthread_mutex_unlock(@fmutex);
+  rtl.pthread_mutex_unlock(@fMutex);
 end;
 
 method EventWaitHandle.Wait;
 begin
   rtl.pthread_mutex_lock(@fMutex);
   loop begin 
-    rtl.pthread_cond_wait(@fCV, @fmutex);
+    rtl.pthread_cond_wait(@fCV, @fMutex);
     if fValue then begin
       if fAutoReset then fValue := false;
       break;
     end;
   end;
-  rtl.pthread_mutex_unlock(@fmutex);
+  rtl.pthread_mutex_unlock(@fMutex);
 end;
 
 method EventWaitHandle.Dispose;

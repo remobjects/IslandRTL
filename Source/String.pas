@@ -160,9 +160,9 @@ end;
 method String.ToAnsiChars(aNullTerminate: Boolean := false): array of AnsiChar;
 begin
   {$IFDEF WINDOWS}
-  var len := rtl.WideCharToMultiByte(rtl.CP_ACP, 0, @self.fFirstChar, length, nil, 0, nil, nil);
+  var len := rtl.WideCharToMultiByte(rtl.CP_ACP, 0, @self.fFirstChar, Length, nil, 0, nil, nil);
   result := new AnsiChar[len+ if aNullTerminate then 1 else 0];
-  rtl.WideCharToMultiByte(rtl.CP_ACP, 0, @self.fFirstChar, length, rtl.LPSTR(@result[0]), len, nil, nil);
+  rtl.WideCharToMultiByte(rtl.CP_ACP, 0, @self.fFirstChar, Length, rtl.LPSTR(@result[0]), len, nil, nil);
   {$ELSE}
   var lNewData: ^AnsiChar := nil;
   var lNewLen: rtl.size_t := iconv_helper(String.fUTF16ToCurrent, ^AnsiChar(@fFirstChar), Length * 2, Length + 5, out lNewData);
@@ -339,7 +339,7 @@ begin
      ((Object(Value1) <> nil) and (Object(Value2) = nil)) then exit false;
   if Value1.Length <> Value2.Length then exit false;
   for i: Integer :=0 to Value1.Length-1 do
-    if Value1.item[i] <> Value2.item[i] then exit false;
+    if Value1.Item[i] <> Value2.Item[i] then exit false;
   exit true;
 end;
 
@@ -417,7 +417,7 @@ begin
   var min_length := iif(Value1.Length > Value2.Length, Value2.Length, Value1.Length);
 
   for i: Integer := 0 to min_length-1 do
-    if Value1.item[i] <= Value2.item[i] then exit false; //  a <= b
+    if Value1.Item[i] <= Value2.Item[i] then exit false; //  a <= b
 
   exit Value1.Length > Value2.Length;  // xxxy > xxx
 end;
@@ -430,7 +430,7 @@ begin
   var min_length := iif(Value1.Length > Value2.Length, Value2.Length, Value1.Length);
 
   for i: Integer :=0 to min_length-1 do
-    if Value1.item[i] >= Value2.item[i] then exit false;  // b >= a
+    if Value1.Item[i] >= Value2.Item[i] then exit false;  // b >= a
 
   exit Value1.Length < Value2.Length; // xxx < xxxy
 end;
@@ -443,7 +443,7 @@ begin
   var min_length := iif(Value1.Length > Value2.Length, Value2.Length, Value1.Length);
 
   for i: Integer :=0 to min_length-1 do
-    if Value1.item[i] < Value2.item[i] then exit false; //  a <= b
+    if Value1.Item[i] < Value2.Item[i] then exit false; //  a <= b
 
   exit Value1.Length >= Value2.Length;  // xxxy > xxx
 end;
@@ -456,7 +456,7 @@ begin
   var min_length := iif(Value1.Length > Value2.Length, Value2.Length, Value1.Length);
 
   for i: Integer :=0 to min_length-1 do
-    if Value1.item[i] > Value2.item[i] then exit false;  // b > a
+    if Value1.Item[i] > Value2.Item[i] then exit false;  // b > a
 
   exit Value1.Length <= Value2.Length; // xxx <= xxxy
 end;
@@ -475,8 +475,8 @@ begin
   if (Object(aRight) = nil) then exit 1;
   var min_length := iif(aLeft.Length > aRight.Length, aRight.Length, aLeft.Length);
   for i: Integer :=0 to min_length-1 do begin
-    if aLeft.item[i] > aRight.item[i] then exit 1;
-    if aLeft.item[i] < aRight.item[i] then exit -1;
+    if aLeft.Item[i] > aRight.Item[i] then exit 1;
+    if aLeft.Item[i] < aRight.Item[i] then exit -1;
   end;
   exit aLeft.Length - aRight.Length;
 end;
@@ -687,12 +687,12 @@ begin
 
         inc(cur_pos);
         // N = argument number (non-negative Integer)
-        var N: Integer := 0;
+        var n: Integer := 0;
         var fl:= true;
         while cur_pos < aFormat.Length-1 do begin
           if (aFormat[cur_pos] >='0') and (aFormat[cur_pos] <='9') then begin
             fl:= false;
-            N:= N*10+ ord(aFormat[cur_pos])- ord('0');
+            n := n*10+ ord(aFormat[cur_pos])- ord('0');
             inc(cur_pos);
           end
           else begin
@@ -761,7 +761,7 @@ begin
             inc(cur_pos);
           end;
           dec(cur_pos);
-          {$HINT 'String.Format: custom format aren''t supported yet'}
+          {$HINT String.Format: custom format aren't supported yet}
           RaiseError('String.Format: custom format aren''t supported yet');
         end;
         if aFormat[cur_pos] <> '}' then RaiseError('format error');

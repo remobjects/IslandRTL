@@ -446,37 +446,37 @@ end;
 method Int64.ToString: String;
 begin
   if self = 0 then exit '0';
-  var buffer: array[0..50] of Char;
+  var lBuffer: array[0..50] of Char;
   var i := 50;
-  var isneg := self < 0;
+  var isNeg := self < 0;
   var n1: UInt64 := if isNeg then -self else self;
 
   while n1 <> 0 do begin
-    buffer[i] := Char(ord('0') + (n1 mod 10));
+    lBuffer[i] := Char(ord('0') + (n1 mod 10));
     dec(i);
     n1 :=n1 /10;
   end;
 
   if isNeg then begin
-    buffer[i] := '-';
+    lBuffer[i] := '-';
     dec(i);
   end;
-  exit String.FromPChar(@Buffer[i+1], 50 -i);
+  exit String.FromPChar(@lBuffer[i+1], 50 -i);
 end;
 
 method UInt64.ToString: String;
 begin
   if self = 0 then exit '0';
-  var buffer: array[0..50] of Char;
+  var lBuffer: array[0..50] of Char;
   var i := 50;
   var n1: UInt64 := self;
 
   while n1 <> 0 do begin
-    buffer[i] := Char(ord('0') + (n1 mod 10));
+    lBuffer[i] := Char(ord('0') + (n1 mod 10));
     dec(i);
     n1 :=n1 /10;
   end;
-  exit String.FromPChar(@Buffer[i+1], 50 -i);
+  exit String.FromPChar(@lBuffer[i+1], 50 -i);
 end;
 
 method Byte.ToString: String;

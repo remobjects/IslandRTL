@@ -75,10 +75,9 @@ type
 
     constructor(aName, aLibrary, aVersion: String);
     begin
-
       fName := aName;
       fLibrary := aLibrary;
-      FVersion := aVersion;
+      fVersion := aVersion;
     end;
 
     property Name: String read fName;

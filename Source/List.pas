@@ -313,7 +313,7 @@ begin
     for i:Integer := &Index to it_len-1 do
       temp[i] := Items[i];
     // copy old rest
-    for i:Integer := &Index to fcount-1 do
+    for i:Integer := &Index to fCount-1 do
       temp[i+&Index] := self[i];
     fItems := temp;
     fCount := newCapacity;
@@ -357,7 +357,7 @@ method List<T>.RemoveRange(&Index: Integer; aCount: Integer);
 begin
   CheckIndex(&Index);
   if aCount = 0 then exit;
-  if (aCount < 0) or (&Index + aCount > fCount) then raiseError('aCount does not denote a valid range of elements');
+  if (aCount < 0) or (&Index + aCount > fCount) then RaiseError('aCount does not denote a valid range of elements');
 
   var newlength := fCount-aCount;
   {$IFDEF WINDOWS}ExternalCalls.{$ELSEIF POSIX}rtl.{$ELSE}{$ERROR}{$ENDIF}memmove(@fItems[&Index], @fItems[&Index+aCount], (newlength-&Index) * sizeOf(T));
@@ -405,9 +405,9 @@ end;
 
 method List<T>.CalcCapacity(aNewCapacity: Integer): Integer;
 begin
-  var ldelta: Integer;
-  if aNewCapacity > 64 then ldelta := aNewCapacity / 4
-  else if aNewCapacity > 8 then ldelta := 16
+  var lDelta: Integer;
+  if aNewCapacity > 64 then lDelta := aNewCapacity / 4
+  else if aNewCapacity > 8 then lDelta := 16
   else lDelta := 4;
   exit aNewCapacity + lDelta;
 end;
@@ -425,7 +425,7 @@ begin
     P := fItems[(L + R) shr 1];
     repeat
       while Comparison(fItems[I], P) < 0 do inc(I);
-      while Comparison(fItems[j], P) > 0 do dec(J);
+      while Comparison(fItems[J], P) > 0 do dec(J);
       if I <= J then begin
         temp := fItems[I];
         fItems[I]:=fItems[J];

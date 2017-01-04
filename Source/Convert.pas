@@ -3,7 +3,7 @@
 type
   Convert = public static class
   private
-    method ParseString(s:String; out aSign: boolean; out arr: array of Byte): Boolean;
+    method ParseString(s:String; out aSign: Boolean; out arr: array of Byte): Boolean;
     begin
       if String.IsNullOrEmpty(s) then exit False;
       var len:= s.Length;
@@ -76,12 +76,12 @@ type
   public
     method TryParseInt64(s: String; out Value: Int64; aRaiseOverflowException: Boolean):Boolean;
     begin
-      var sign: Boolean;
+      var lSign: Boolean;
       var arr: array of Byte;
-      if not ParseString(s,out sign,out arr) then exit false;
+      if not ParseString(s, out lSign, out arr) then exit false;
       var sValue:UInt64 := arr[0];
-      var aMaxValue: UInt64 := iif(sign, - Int64.MinValue, Int64.MaxValue);
-      var aMaxValue1: UInt64 := (UInt64(iif(sign, - Int64.MinValue, Int64.MaxValue)) / 10)+1;
+      var aMaxValue: UInt64 := iif(lSign, - Int64.MinValue, Int64.MaxValue);
+      var aMaxValue1: UInt64 := (UInt64(iif(lSign, - Int64.MinValue, Int64.MaxValue)) / 10)+1;
       
       for i:Integer := 1 to arr.Length-1 do begin
         if (sValue> aMaxValue1) or (sValue*10 > (aMaxValue- arr[i])) then begin
@@ -92,17 +92,17 @@ type
         end;
         sValue := sValue*10+arr[i];
       end;
-      value := sValue;
-      if Sign then Value := -Value;       
+      Value := sValue;
+      if lSign then Value := -Value;       
       exit true;
     end;
 
-    method TryParseUInt64(s: String; out Value: UInt64; aRaiseOverflowException: Boolean):Boolean;
+    method TryParseUInt64(s: String; out Value: UInt64; aRaiseOverflowException: Boolean): Boolean;
     begin
-      var sign: Boolean;
+      var lSign: Boolean;
       var arr: array of Byte;
-      if not ParseString(s,out sign,out arr) then exit false;
-      if Sign then exit False; 
+      if not ParseString(s, out lSign, out arr) then exit false;
+      if lSign then exit False; 
       var sValue : UInt64 := arr[0];
       
       for i:Integer := 1 to arr.Length-1 do begin
@@ -114,11 +114,11 @@ type
         end;
         sValue := sValue*10+arr[i];
       end;
-      value := sValue;
+      Value := sValue;
       exit true;
     end;
 
-    method HexStringToUInt64(s: String):UInt64;
+    method HexStringToUInt64(s: String): UInt64;
     begin
       var arr: array of Byte;
       if not ParseHex(s,out arr) then RaiseBadHexString;
@@ -131,7 +131,7 @@ type
       exit sValue;
     end;
 
-    method UInt64ToHexString(v: UInt64; aDigits: Integer):String;
+    method UInt64ToHexString(v: UInt64; aDigits: Integer): String;
     begin
       if aDigits < 1 then raise new Exception('aDigits must be great than 0');
       var arr:= new array of Char(aDigits);
@@ -142,15 +142,15 @@ type
         var lv1 := lv shr 4;
         var lv2 := lv - (lv1 shl 4);
         case lv2 of
-          0..9 : arr[a_Pos] := Char(lv2+48);
-          10..15: arr[a_Pos] := Char(lv2+87);
+          0..9 : arr[a_pos] := Char(lv2+48);
+          10..15: arr[a_pos] := Char(lv2+87);
         else
           raise new Exception('this place should be never reached');
         end;
         lv := lv1;
-        dec(a_Pos);
+        dec(a_pos);
       end;
-      for i: Integer := 0 to a_Pos do
+      for i: Integer := 0 to a_pos do
         arr[i] := '0';
       exit String.FromPChar(@arr[0],aDigits);
     end;

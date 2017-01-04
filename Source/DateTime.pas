@@ -75,7 +75,7 @@ type
             ltotal := ltotal - GetDaysPerMonth(lisleap, i);
           end;    
           // this point should be not reachable
-          raise new exception('something is wrong with decoding data')
+          raise new Exception('something is wrong with decoding data')
         end;
         DateTimePart.DayOfWeek: exit (fTicks div TicksPerDay +1) mod 7;    
         DateTimePart.Hour: exit (fTicks div TicksPerHour) mod 24;    
@@ -87,7 +87,7 @@ type
 
     method &Add(Value: Integer; scale: Integer): DateTime;
     begin
-      var num: Int64 := Int64(value) * Int64(scale);
+      var num: Int64 := Int64(Value) * Int64(scale);
       if (num <= -MaxMillis) or ( num >= MaxMillis) then raise new Exception('Argument Out Of Range');
       exit AddTicks(num * TicksPerMillisecond);
     end;
@@ -157,9 +157,9 @@ type
 {$IFDEF WINDOWS}
     class method FromFileTime(aFileTime: rtl.FILETIME): DateTime;
     begin
-      var filetime: Int64 := (aFileTime.dwHighDateTime shl 32 + aFileTime.dwLowDateTime);
-      if (fileTime < 0) or (fileTime > 2650467743999999999) then raise new Exception("Argument Out Of Range");
-      var ticks := fileTime + FileTimeOffset;
+      var lFileTime: Int64 := (aFileTime.dwHighDateTime shl 32 + aFileTime.dwLowDateTime);
+      if (lFileTime < 0) or (lFileTime > 2650467743999999999) then raise new Exception("Argument Out Of Range");
+      var ticks := lFileTime + FileTimeOffset;
       exit new DateTime(ticks);
     end;
 
@@ -240,13 +240,13 @@ type
       var lDays := aDay;
       for i: Integer := 0 to aMonth -1 do lDays := lDays + GetDaysPerMonth(lisleap, i);
       var lYear := aYear-1;
-      fTicks := int64((lYear*365 + lYear div 4 - lYear div 100 + lYear div 400 + lDays)*TicksPerDay + 
+      fTicks := Int64((lYear*365 + lYear div 4 - lYear div 100 + lYear div 400 + lDays)*TicksPerDay + 
                  anHour*TicksPerHour + aMinute*TicksPerMinute + aSecond*TicksPerSecond + aMillisecond*TicksPerMillisecond);
     end;
 
     method AddDays(Value: Integer): DateTime;
     begin
-      exit new Datetime(fTicks + Value * TicksPerDay);
+      exit new DateTime(fTicks + Value * TicksPerDay);
     end;
 
     method AddHours(Value: Integer): DateTime;
@@ -259,9 +259,9 @@ type
       exit new DateTime(fTicks + Value * TicksPerMinute);
     end;
 
-    method AddMilliseconds(Value: Integer): Datetime;
+    method AddMilliseconds(Value: Integer): DateTime;
     begin
-      exit new DateTime(fTicks + value * TicksPerMillisecond);
+      exit new DateTime(fTicks + Value * TicksPerMillisecond);
     end;
 
     method AddMonths(Value: Integer): DateTime;
@@ -277,11 +277,11 @@ type
         lYear := lYear + 1;
         lMonth := lMonth - 12;
       end;
-      var newday := GetDaysPerMonth(isLeapYear(lYear), lmonth); 
+      var lNewDay := GetDaysPerMonth(isLeapYear(lYear), lMonth); 
       var lDay  := Day;
-      if lDay > newday then lDay := newDay;
+      if lDay > lNewDay then lDay := lNewDay;
       
-      exit new DateTime(new DateTime(lYear, lmonth, lDay).Ticks + fTicks mod TicksPerDay);
+      exit new DateTime(new DateTime(lYear, lMonth, lDay).Ticks + fTicks mod TicksPerDay);
     end;
 
     method AddSeconds(Value: Integer): DateTime;
@@ -291,7 +291,7 @@ type
 
     method AddYears(Value: Integer): DateTime;
     begin
-      if (value < -MaxYear) or (value > MaxYear) then raise new Exception("Argument Out Of Range");
+      if (Value < -MaxYear) or (Value > MaxYear) then raise new Exception("Argument Out Of Range");
       exit AddMonths(Value * 12);
     end;
 

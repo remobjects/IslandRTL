@@ -42,8 +42,8 @@ begin
   Name := FileName;
   fAccess := Access;
   {$IFDEF WINDOWS}
-  var lName: rtl.LPCWSTR := fileName.ToFileName();
-  var laccess: UInt32 :=  case Access of
+  var lName: rtl.LPCWSTR := FileName.ToFileName();
+  var lAccess: UInt32 :=  case Access of
                             FileAccess.Read: rtl.GENERIC_READ;
                             FileAccess.Write: rtl.GENERIC_WRITE;
                             FileAccess.ReadWrite: rtl.GENERIC_READ and rtl.GENERIC_WRITE;
@@ -57,14 +57,14 @@ begin
                             FileMode.Truncate: rtl.TRUNCATE_EXISTING;
                           end;
 
-  var lShare: Uint32 := case Share of
+  var lShare: UInt32 := case Share of
                           FileShare.None: 0;
                           FileShare.Read: rtl.FILE_SHARE_READ;
                           FileShare.Write: rtl.FILE_SHARE_WRITE;
                           FileShare.ReadWrite: rtl.FILE_SHARE_READ or rtl.FILE_SHARE_WRITE;
                           FileShare.Delete: rtl.FILE_SHARE_DELETE;
                         end;
-  fHandle := rtl.CreateFileW(lname, lAccess, lShare, nil, lmode, rtl.FILE_ATTRIBUTE_NORMAL, nil);
+  fHandle := rtl.CreateFileW(lName, lAccess, lShare, nil, lmode, rtl.FILE_ATTRIBUTE_NORMAL, nil);
   CheckForIOError(fHandle <> rtl.INVALID_HANDLE_VALUE);
   {$ELSEIF POSIX}
   var s: AnsiChar := AnsiChar(case Mode of
@@ -117,28 +117,28 @@ method FileStream.Seek(Offset: Int64; Origin: SeekOrigin): Int64;
 begin
   if not CanSeek then raise new NotSupportedException();
   {$IFDEF WINDOWS}
-  var lorigin: Uint32 :=  case Origin of
+  var lOrigin: UInt32 :=  case Origin of
                             SeekOrigin.Begin: rtl.FILE_BEGIN;
                             SeekOrigin.Current: rtl.FILE_CURRENT;
                             SeekOrigin.End:  rtl.FILE_END;
                           end;
 
-  var offset_lo: rtl.Long := offset and $FFFFFFFF;
-  var offset_hi: rtl.Long := offset shr 32;
+  var offset_lo: rtl.LONG := Offset and $FFFFFFFF;
+  var offset_hi: rtl.LONG := Offset shr 32;
 
-  var lresult := rtl.SetFilePointer(fHandle,offset_lo,@offset_hi,lorigin);
-  if (lresult = rtl.INVALID_SET_FILE_POINTER) then begin
+  var lResult := rtl.SetFilePointer(fHandle, offset_lo, @offset_hi, lOrigin);
+  if (lResult = rtl.INVALID_SET_FILE_POINTER) then begin
     if rtl.GetLastError <> 0 then
       CheckForIOError(True);
   end;
-  exit lresult + offset shl 32;
+  exit lResult + Offset shl 32;
   {$ELSEIF POSIX}
-  var lorigin: Int32 :=  case Origin of
+  var lOrigin: Int32 :=  case Origin of
                           SeekOrigin.Begin: rtl.SEEK_SET;
                           SeekOrigin.Current: rtl.SEEK_CUR;
                           SeekOrigin.End:  rtl.SEEK_END;
                         end;
-  CheckForIOError(rtl.fseeko64(fHandle,Offset,lorigin));
+  CheckForIOError(rtl.fseeko64(fHandle, Offset, lOrigin));
   var pos: rtl._G_fpos64_t;
   CheckForIOError(rtl.fgetpos64(fHandle,@pos));
   exit pos.__pos;

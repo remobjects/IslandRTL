@@ -175,7 +175,7 @@ begin
   if d < 0 then exit -1 else exit 1;
 end;
 
-class method math.IEEERemainder(x, y: Double): Double;
+class method Math.IEEERemainder(x, y: Double): Double;
 begin
   // from https://msdn.microsoft.com/en-us/library/system.math.ieeeremainder%28v=vs.110%29.aspx
   // IEEERemainder = dividend - (divisor * Math.Round(dividend / divisor))
@@ -214,7 +214,7 @@ atan2(2,0.5) =
   1,3258165931712   vs
   1,32581766366803
 }
-  var t0, t1, t3, t4: double;
+  var t0, t1, t3, t4: Double;
 
   t3 := Abs(y);
   t1 := Abs(x);

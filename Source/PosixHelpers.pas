@@ -41,7 +41,7 @@ type
     [SymbolName('__elements_entry_point'), &Weak]
     method UserEntryPoint(args: array of String): Integer; external;
     [SymbolName({$IF EMSCRIPTEN OR ANDROID}'_start'{$ELSE}'__elements_entry_point_helper'{$ENDIF}), Used]
-    method Entrypoint(argc: Integer; argv: ^^AnsiChar; envp: ^^AnsiChar): Integer;    
+    method Entrypoint(argc: Integer; argv: ^^AnsiChar; _envp: ^^AnsiChar): Integer;    
     {$IF NOT EMSCRIPTEN AND NOT ANDROID}
     [SymbolName('_start'), Naked]
     method _start;
@@ -49,7 +49,7 @@ type
     method libc_main(main: LibCEntryHelper; argc: Integer; argv: ^^Char; init: LibCEntryHelper; fini: LibCFinalizerHelper); external;
     {$ENDIF}
     [SymbolName('__elements_init'), Used]
-    method init(nargs: Integer; args: ^^AnsiChar; envp: ^^AnsiChar): Integer;
+    method init(_nargs: Integer; _args: ^^AnsiChar; _envp: ^^AnsiChar): Integer;
     [SymbolName('__elements_fini'), Used]
     method fini;
 
@@ -299,11 +299,11 @@ begin
 end;
 {$ENDIF}
 {$HIDE W27}
-method ExternalCalls.Entrypoint(argc: Integer; argv: ^^AnsiChar; envp: ^^AnsiChar): Integer;
+method ExternalCalls.Entrypoint(argc: Integer; argv: ^^AnsiChar; _envp: ^^AnsiChar): Integer;
 begin
   ExternalCalls.nargs := nargs;
   ExternalCalls.args := args;
-  ExternalCalls.envp := envp;
+  ExternalCalls.envp := _envp;
   Utilities.Initialize;
   exit UserEntryPoint([]);
   {$IFNDEF EMSCRIPTEN}
@@ -313,11 +313,11 @@ begin
   {$ENDIF}
 end;
 
-method ExternalCalls.init(nargs: Integer; args: ^^AnsiChar; envp: ^^AnsiChar): Integer;
+method ExternalCalls.init(_nargs: Integer; _args: ^^AnsiChar; _envp: ^^AnsiChar): Integer;
 begin
-  ExternalCalls.nargs := nargs;
-  ExternalCalls.args := args;
-  ExternalCalls.envp := envp;
+  ExternalCalls.nargs := _nargs;
+  ExternalCalls.args := _args;
+  ExternalCalls.envp := _envp;
   var n := (@__init_array_end) - (@__init_array_start);
   for i: Integer := 0 to (n) -1 do begin
     ^LibCEntryHelper(@__init_array_start)[i](nargs, args, envp);
@@ -386,7 +386,7 @@ begin
         if lIndexInTypeInfoTable = 0 then begin
           // cleanup pad
           if ((aAction and {$IFDEF EMSCRIPTEN}_Unwind_Action.{$ENDIF}_UA_CLEANUP_PHASE) <> 0) and not ((aAction and {$IFDEF EMSCRIPTEN}_Unwind_Action.{$ENDIF}_UA_HANDLER_FRAME) <> 0) then begin
-            atypeIndex := lIndexInTypeInfoTable;
+            aTypeIndex := lIndexInTypeInfoTable;
             exit true;
           end;
         end;
@@ -404,7 +404,7 @@ begin
           if catchType = nil then begin
             // catch all
             if ((aAction and {$IFDEF EMSCRIPTEN}_Unwind_Action.{$ENDIF}_UA_SEARCH_PHASE) <> 0) or ((aAction and {$IFDEF EMSCRIPTEN}_Unwind_Action.{$ENDIF}_UA_HANDLER_FRAME) <>0) then begin
-              atypeIndex := lIndexInTypeInfoTable;
+              aTypeIndex := lIndexInTypeInfoTable;
               exit true;
             end
             else begin
@@ -419,7 +419,7 @@ begin
 
             if Utilities.IsInstance(exception_header^.Object, catchType) <> nil then begin
               if 0 <> (aAction and {$IFDEF EMSCRIPTEN}_Unwind_Action.{$ENDIF}_UA_SEARCH_PHASE) then begin
-                atypeIndex := lIndexInTypeInfoTable;
+                aTypeIndex := lIndexInTypeInfoTable;
                 exit true;
               end
               else begin

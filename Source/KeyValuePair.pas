@@ -38,13 +38,13 @@ end;
 
 method KeyValuePair<T,U>.Equals(obj: Object): Boolean;
 begin
-  if Obj = nil then
+  if obj = nil then
     exit false;
 
-  if not (Obj is KeyValuePair<T,U>) then
+  if not (obj is KeyValuePair<T,U>) then
     exit false;
 
-  var Item := KeyValuePair<T, U>(Obj);
+  var Item := KeyValuePair<T, U>(obj);
   exit Key.Equals(Item.Key) and ( ((Value = nil) and (Item.Value = nil)) or ((Value <> nil) and Value.Equals(Item.Value)));
 end;
 

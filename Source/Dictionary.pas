@@ -79,7 +79,7 @@ type
       inc(fCount);
     end;
 
-    method DoRemove(Hash, Idx: Integer);
+    method DoRemove(Hash, idx: Integer);
     begin
       var fbucketidx := CalcIndex(Hash);
       if fbucketTable[fbucketidx] = idx then begin
@@ -97,7 +97,7 @@ type
       fEntriesTable[idx].Next := fFirstHole;
       fEntriesTable[idx].Key := nil;
       fEntriesTable[idx].Value := nil;
-      fFirstHole := Idx;
+      fFirstHole := idx;
       dec(fCount);
     end;
 

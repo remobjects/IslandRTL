@@ -64,24 +64,24 @@ type
       inc(fCount);
     end;
 
-    method DoRemove(Hash, Idx: Integer);
+    method DoRemove(Hash, aIndex: Integer);
     begin
       var fbucketidx := CalcIndex(Hash);
-      if fbucketTable[fbucketidx] = idx then begin
+      if fbucketTable[fbucketidx] = aIndex then begin
         // bucket table references to fEntriesTable entry
-        fbucketTable[fbucketidx] := fEntriesTable[idx].Next;
+        fbucketTable[fbucketidx] := fEntriesTable[aIndex].Next;
       end
       else begin
         // idx is specifies index from "Next"
         var idx1 := fbucketTable[fbucketidx];
-        while fEntriesTable[idx1].Next <> idx do idx1 := fEntriesTable[idx1].Next;
-        fEntriesTable[idx1].Next := fEntriesTable[idx].Next;
+        while fEntriesTable[idx1].Next <> aIndex do idx1 := fEntriesTable[idx1].Next;
+        fEntriesTable[idx1].Next := fEntriesTable[aIndex].Next;
       end;
       // clear "item"
-      fEntriesTable[idx].HashCode := EMPTYHASH;
-      fEntriesTable[idx].Next := fFirstHole;
-      fEntriesTable[idx].Item := nil;
-      fFirstHole := Idx;
+      fEntriesTable[aIndex].HashCode := EMPTYHASH;
+      fEntriesTable[aIndex].Next := fFirstHole;
+      fEntriesTable[aIndex].Item := nil;
+      fFirstHole := aIndex;
       dec(fCount);
     end;
 

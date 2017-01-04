@@ -99,7 +99,7 @@ type
     class method NewGuid: Guid;
     begin
       {$IFDEF WINDOWS}
-      var lg: RTL.GUID;
+      var lg: rtl.GUID;
       if rtl.CoCreateGuid(@lg) = rtl.S_OK then begin
         var r := new Guid;
         r.Data1 := lg.Data1;

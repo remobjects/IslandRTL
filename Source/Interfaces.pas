@@ -25,11 +25,11 @@ type
   end;
   IUnknownPtr = public record(IUnknown)
   private
-    fInst: ComObject;
+    fInstance: ComObject;
   public
     class operator Explicit(aVal: IUnknownPtr): ComObject;
     begin
-      exit aval.fInst;
+      exit aVal.fInstance;
     end;
     class operator Explicit(aVal: IUnknown): IUnknownPtr;
     begin
@@ -38,45 +38,45 @@ type
 
     class operator Explicit(aVal: IUnknownPtr): IUnknown;
     begin
-      exit coalesce(COMHelpers.ComObjectToObject(aVal.fInst), IUnknown(Object(aVal)));
+      exit coalesce(COMHelpers.ComObjectToObject(aVal.fInstance), IUnknown(Object(aVal)));
     end;
 
     class operator Equal(a,b: IUnknownPtr): Boolean;
     begin
-      exit a.finst = b.finst;
+      exit a.fInstance = b.fInstance;
     end;
 
     class operator NotEqual(a,b: IUnknownPtr): Boolean;
     begin
-      exit a.finst <> b.finst;
+      exit a.fInstance <> b.fInstance;
     end;
 
     method Release: rtl.ULONG;
     begin
-      exit fInst^^.Release(fInst);
+      exit fInstance^^.Release(fInstance);
     end;
     method AddRef: rtl.ULONG;
     begin
-      exit fInst^^.AddRef(fInst);
+      exit fInstance^^.AddRef(fInstance);
     end;
     method QueryInterface(riid: ^rtl.GUID; ppvObject: ^^Void): rtl.HRESULT;
     begin
-      exit fInst^^.QueryInterface(fInst, riid, ppvObject);
+      exit fInstance^^.QueryInterface(fInstance, riid, ppvObject);
     end;
 
     constructor(aIntf: ComObject);
     begin
-      fInst := aIntf;
+      fInstance := aIntf;
     end;
     constructor(var aCopyFrom: IUnknownPtr);
     begin
-      fInst := aCopyFrom.fInst;
-      if fInst <> nil then fInst^^.AddRef(fInst);
+      fInstance := aCopyFrom.fInstance;
+      if fInstance <> nil then fInstance^^.AddRef(fInstance);
     end;
     finalizer;
     begin
-      var lInst := fInst;
-      fInst := nil;
+      var lInst := fInstance;
+      fInstance := nil;
       if lInst <> nil then lInst^^.Release(lInst);
     end;
   end;
@@ -147,14 +147,14 @@ type
   method IUnknown_VMTImpl_AddRef(aSelf: ComObject): rtl.ULONG; public;static;
   begin
     IUnknown(^ElementsCOMInterface(aSelf)^.Object).AddRef(); // Increase the internal count so that we keep around the gc handle
-    exit InternalCalls.Increment(var ^ElementsCOMInterface(aSelf)^.fMyRc)+1; // returns the old value
+    exit InternalCalls.Increment(var ^ElementsCOMInterface(aSelf)^.fMyRC)+1; // returns the old value
   end;
 
   [CallingConvention(CallingConvention.Stdcall)]
   method IUnknown_VMTImpl_Release(aSelf: ComObject): rtl.ULONG; public;static;
   begin
     IUnknown(^ElementsCOMInterface(aSelf)^.Object).Release();
-    result := InternalCalls.Decrement(var ^ElementsCOMInterface(aSelf)^.fMyRc)-1;
+    result := InternalCalls.Decrement(var ^ElementsCOMInterface(aSelf)^.fMyRC)-1;
     if result = 0 then
       ExternalCalls.free(aSelf);
   end;

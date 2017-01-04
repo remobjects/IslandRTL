@@ -46,7 +46,7 @@ type
         if (fFirstFree = -1) and (fFirstEmpty >= length(fSlots)) then begin 
           var lNewArray := new Object[length(fSlots) + 1024];
           &Array.Copy(fSlots, lNewArray, length(fSlots));
-          fSlots := lnewarray;
+          fSlots := lNewArray;
         end;
         if fFirstEmpty < length(fSlots) then begin
           fSlots[fFirstEmpty] := aValue;

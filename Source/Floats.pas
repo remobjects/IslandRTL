@@ -130,7 +130,7 @@ begin
   exit ^Double(@k)^;
 end;
 
-class method Double.NAN: Double;
+class method Double.NaN: Double;
 begin
   var k: UInt64 := UInt64_NAN;
   exit ^Double(@k)^;

@@ -121,16 +121,16 @@ type
     class var fMinThreads: UInt32;
     class var fMaxThreads: UInt32;
   {$ELSE}
-    class var fThreadpool: ManagedThreadPool;
+    class var fThreadPool: ManagedThreadPool;
   {$ENDIF}
-    class method RaiseError(value: String);
+    class method RaiseError(Value: String);
     class method SetMinThreads(Value: UInt32);
     class method SetMaxThreads(Value: UInt32);
   public
     constructor;
     class method QueueUserWorkItem(Callback: WaitCallback; State: Object);
-    class property MinThreads: UInt32 read {$IFDEF WINDOWS}fMinThreads{$ELSE}fThreadpool.MinThreads{$ENDIF} write SetMinThreads;
-    class property MaxThreads: UInt32 read {$IFDEF WINDOWS}fMaxThreads{$ELSE}fThreadpool.MaxThreads{$ENDIF} write SetMaxThreads;
+    class property MinThreads: UInt32 read {$IFDEF WINDOWS}fMinThreads{$ELSE}fThreadPool.MinThreads{$ENDIF} write SetMinThreads;
+    class property MaxThreads: UInt32 read {$IFDEF WINDOWS}fMaxThreads{$ELSE}fThreadPool.MaxThreads{$ENDIF} write SetMaxThreads;
   end;
 
   Task1<T> = public class(Task)
@@ -406,7 +406,7 @@ end;
 
 class method ThreadPool.QueueUserWorkItem(Callback: WaitCallback; State: Object);
 begin
-  var lcallback:= new ThreadPoolCallback(Callback, State);
+  var lCallback:= new ThreadPoolCallback(Callback, State);
   var work := rtl.CreateThreadpoolWork(@ThreadCallBack, @lCallback, @pcbe);
   if work = nil then RaiseError('error at calling CreateThreadpoolWork'); 
   rtl.SubmitThreadpoolWork(work);
@@ -441,7 +441,7 @@ begin
   end;
 end;
 
-class method ThreadPool.RaiseError(value: String);
+class method ThreadPool.RaiseError(Value: String);
 begin
   CheckForLastError(Value);
 end;
@@ -449,25 +449,25 @@ end;
 {$ELSE}
 class method ThreadPool.QueueUserWorkItem(Callback: WaitCallback; State: Object);
 begin
-  fThreadpool.Queue(new ThreadPoolCallback(Callback, State));
+  fThreadPool.Queue(new ThreadPoolCallback(Callback, State));
 end;
 
 constructor ThreadPool;
 begin
-  fThreadPool := new ManagedThreadpool;
+  fThreadPool := new ManagedThreadPool;
 end;
 
 class method ThreadPool.SetMinThreads(Value: UInt32);
 begin
-  fThreadpool.MinThreads := Value;
+  fThreadPool.MinThreads := Value;
 end;
 
 class method ThreadPool.SetMaxThreads(Value: UInt32);
 begin
-  fThreadpool.MaxThreads := Value;
+  fThreadPool.MaxThreads := Value;
 end;
 
-class method ThreadPool.RaiseError(value: String);
+class method ThreadPool.RaiseError(Value: String);
 begin
   CheckForLastError(Value);
 end;
