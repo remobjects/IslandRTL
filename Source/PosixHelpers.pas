@@ -156,7 +156,7 @@ begin
   {$ENDIF}
   var lTypeInfo: rtl.int64_t;
   var lLandingPad: rtl.uintptr_t;
-  if 0 <> (aState and rtl.{$IFDEF EMSCRIPTEN}_Unwind_Action.{$ENDIF}_UA_SEARCH_PHASE)  then begin
+  if 0 <> (aState and rtl.{$IFDEF EMSCRIPTEN or ANDROID}_Unwind_Action.{$ENDIF}_UA_SEARCH_PHASE)  then begin
     if Parselsda(aState, lMine, aEx, aCtx, out lTypeInfo, out lLandingPad) then begin
       if lMine then begin
         var lRecord := ^ElementsException(aEx);
@@ -174,9 +174,9 @@ begin
     exit rtl._Unwind_Reason_Code._URC_CONTINUE_UNWIND;
   end;
 
-  if 0 <> (aState and rtl.{$IFDEF EMSCRIPTEN}_Unwind_Action.{$ENDIF}_UA_CLEANUP_PHASE) then begin
+  if 0 <> (aState and rtl.{$IFDEF EMSCRIPTEN or ANDROID}_Unwind_Action.{$ENDIF}_UA_CLEANUP_PHASE) then begin
     // This is either unwinding OR catching
-    if (0 = (aState and rtl.{$IFDEF EMSCRIPTEN}_Unwind_Action.{$ENDIF}_UA_HANDLER_FRAME))  then begin
+    if (0 = (aState and rtl.{$IFDEF EMSCRIPTEN or ANDROID}_Unwind_Action.{$ENDIF}_UA_HANDLER_FRAME))  then begin
       // finally, always parse
       if Parselsda(aState, lMine, aEx, aCtx, out lTypeInfo, out lLandingPad) then begin
         rtl._Unwind_SetGR(aCtx, 0, rtl.uintptr_t(aEx));
@@ -306,7 +306,7 @@ begin
   ExternalCalls.envp := _envp;
   Utilities.Initialize;
   exit UserEntryPoint([]);
-  {$IFNDEF EMSCRIPTEN}
+  {$IF NOT EMSCRIPTEN AND NOT ANDROID}
   {$HIDE H14}
   libc_main(nil, 0, nil, nil, nil); // do not remove, this is there to ensure it's linked in.
   {$SHOW H14}
@@ -373,7 +373,7 @@ begin
 
       if lCallsiteEntryActionTable = 0 then begin
         // entry = 0; Cleanup
-        if ((aAction and {$IFDEF EMSCRIPTEN}_Unwind_Action.{$ENDIF}_UA_CLEANUP_PHASE) <> 0) and not ((aAction and {$IFDEF EMSCRIPTEN}_Unwind_Action.{$ENDIF}_UA_HANDLER_FRAME) <> 0) then begin
+        if ((aAction and {$IFDEF EMSCRIPTEN or ANDROID}_Unwind_Action.{$ENDIF}_UA_CLEANUP_PHASE) <> 0) and not ((aAction and {$IFDEF EMSCRIPTEN or ANDROID}_Unwind_Action.{$ENDIF}_UA_HANDLER_FRAME) <> 0) then begin
           aTypeIndex := 0;
           exit true;
         end;
@@ -385,7 +385,7 @@ begin
         var lIndexInTypeInfoTable: Int64 := DwarfEHReadSLEB128(var lCurrentActionTable);
         if lIndexInTypeInfoTable = 0 then begin
           // cleanup pad
-          if ((aAction and {$IFDEF EMSCRIPTEN}_Unwind_Action.{$ENDIF}_UA_CLEANUP_PHASE) <> 0) and not ((aAction and {$IFDEF EMSCRIPTEN}_Unwind_Action.{$ENDIF}_UA_HANDLER_FRAME) <> 0) then begin
+          if ((aAction and {$IFDEF EMSCRIPTEN or ANDROID}_Unwind_Action.{$ENDIF}_UA_CLEANUP_PHASE) <> 0) and not ((aAction and {$IFDEF EMSCRIPTEN or ANDROID}_Unwind_Action.{$ENDIF}_UA_HANDLER_FRAME) <> 0) then begin
             aTypeIndex := lIndexInTypeInfoTable;
             exit true;
           end;
@@ -403,7 +403,7 @@ begin
           var catchType := ^Void(DwarfEHReadPointer(var lTypeReadOffset, lTypeEncoding));
           if catchType = nil then begin
             // catch all
-            if ((aAction and {$IFDEF EMSCRIPTEN}_Unwind_Action.{$ENDIF}_UA_SEARCH_PHASE) <> 0) or ((aAction and {$IFDEF EMSCRIPTEN}_Unwind_Action.{$ENDIF}_UA_HANDLER_FRAME) <>0) then begin
+            if ((aAction and {$IFDEF EMSCRIPTEN or ANDROID}_Unwind_Action.{$ENDIF}_UA_SEARCH_PHASE) <> 0) or ((aAction and {$IFDEF EMSCRIPTEN or ANDROID}_Unwind_Action.{$ENDIF}_UA_HANDLER_FRAME) <>0) then begin
               aTypeIndex := lIndexInTypeInfoTable;
               exit true;
             end
@@ -418,12 +418,12 @@ begin
             exception_header := ^ElementsException(@^Byte(exception_header)[-Int32((^Byte(@exception_header^.Unwind) - ^Byte(exception_header)))]);
 
             if Utilities.IsInstance(exception_header^.Object, catchType) <> nil then begin
-              if 0 <> (aAction and {$IFDEF EMSCRIPTEN}_Unwind_Action.{$ENDIF}_UA_SEARCH_PHASE) then begin
+              if 0 <> (aAction and {$IFDEF EMSCRIPTEN or ANDROID}_Unwind_Action.{$ENDIF}_UA_SEARCH_PHASE) then begin
                 aTypeIndex := lIndexInTypeInfoTable;
                 exit true;
               end
               else begin
-                if 0 = (aAction and {$IFDEF EMSCRIPTEN}_Unwind_Action.{$ENDIF}_UA_FORCE_UNWIND) then begin
+                if 0 = (aAction and {$IFDEF EMSCRIPTEN or ANDROID}_Unwind_Action.{$ENDIF}_UA_FORCE_UNWIND) then begin
                   //call_terminate(native_exception, unwind_exception);
                   exit false;
                 end;

@@ -55,7 +55,7 @@ type
     end;
     {$ENDIF}
 
-    {$IFDEF POSIX}
+    {$IFDEF POSIX AND NOT ANDROID}
     [SymbolName('stat')]
     method stat(file: ^AnsiChar; buf: ^rtl.__struct_stat): Int32;
     begin

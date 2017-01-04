@@ -14,6 +14,8 @@ type
   private
     {$IFDEF WINDOWS}
     fHandle: rtl.HANDLE := rtl.INVALID_HANDLE_VALUE;
+    {$ELSEIF ANDROID}
+    fHandle: ^rtl.FILE;
     {$ELSEIF POSIX}
     fHandle: ^rtl._IO_FILE;
     {$ENDIF}
@@ -74,8 +76,11 @@ begin
                                 FileMode.OpenOrCreate: 'a';
                                 FileMode.Truncate: 'w';
                               end);
-
+  {$IFDEF ANDROID}
+  fHandle := rtl.fopen(FileName.ToFileName(),@s);
+  {$ELSE}
   fHandle := rtl.fopen64(FileName.ToFileName(),@s);
+  {$ENDIF}
   if fHandle = nil then CheckForIOError(1);
   {$ELSE}
     {$ERROR}
@@ -138,10 +143,15 @@ begin
                           SeekOrigin.Current: rtl.SEEK_CUR;
                           SeekOrigin.End:  rtl.SEEK_END;
                         end;
+  {$IFDEF ANDROID}
+  result := rtl.fseek(fHandle, Offset, lOrigin);
+  CheckForIOError(result);
+  {$ELSE}  
   CheckForIOError(rtl.fseeko64(fHandle, Offset, lOrigin));
   var pos: rtl._G_fpos64_t;
   CheckForIOError(rtl.fgetpos64(fHandle,@pos));
   exit pos.__pos;
+  {$ENDIF}
   {$ELSE}
     {$ERROR}
   {$ENDIF}
