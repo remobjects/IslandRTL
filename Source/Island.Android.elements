@@ -10,11 +10,11 @@
         <AllowLegacyCreate>False</AllowLegacyCreate>
         <Configuration Condition="'$(Configuration)' == ''">Debug-x86_64</Configuration>
         <TargetFrameworkVersion>v4.0</TargetFrameworkVersion>
-        <Name>Island (Linux)</Name>
-        <ProjectGuid>{a2c670b6-db38-401a-ae00-71515c87ccc5}</ProjectGuid>
+        <Name>Island (Android NDK)</Name>
+        <ProjectGuid>{961edd39-0901-480d-97a6-c775095d5ebc}</ProjectGuid>
         <Mode>Island</Mode>
     </PropertyGroup>
-    <PropertyGroup Condition=" '$(Configuration)' == 'Debug-x86_64' ">
+    <PropertyGroup Condition=" '$(Configuration)' == 'Debug' ">
         <OutputPath>Bin\Debug</OutputPath>
         <DefineConstants>Linux</DefineConstants>
         <EnableAsserts>True</EnableAsserts>
@@ -28,9 +28,8 @@
         <XmlDoc>False</XmlDoc>
         <XmlDocWarningLevel>WarningOnPublicMembers</XmlDocWarningLevel>
         <EnableUnmanagedDebugging>False</EnableUnmanagedDebugging>
-        <Architecture>x86_64</Architecture>
     </PropertyGroup>
-    <PropertyGroup Condition=" '$(Configuration)' == 'Release-x86_64' ">
+    <PropertyGroup Condition=" '$(Configuration)' == 'Release' ">
         <OutputPath>Bin\Release</OutputPath>
         <DefineConstants>Linux</DefineConstants>
         <EnableAsserts>False</EnableAsserts>
@@ -43,38 +42,6 @@
         <XmlDoc>False</XmlDoc>
         <XmlDocWarningLevel>WarningOnPublicMembers</XmlDocWarningLevel>
         <EnableUnmanagedDebugging>False</EnableUnmanagedDebugging>
-        <Architecture>x86_64</Architecture>
-    </PropertyGroup>
-    <PropertyGroup Condition=" '$(Configuration)' == 'Debug-armv6' ">
-        <OutputPath>Bin\Debug</OutputPath>
-        <DefineConstants>Linux</DefineConstants>
-        <EnableAsserts>True</EnableAsserts>
-        <Optimize>False</Optimize>
-        <GeneratePDB>True</GeneratePDB>
-        <GenerateMDB>False</GenerateMDB>
-        <CaptureConsoleOutput>False</CaptureConsoleOutput>
-        <StartMode>Project</StartMode>
-        <CpuType>x86</CpuType>
-        <RuntimeVersion>v25</RuntimeVersion>
-        <XmlDoc>False</XmlDoc>
-        <XmlDocWarningLevel>WarningOnPublicMembers</XmlDocWarningLevel>
-        <EnableUnmanagedDebugging>False</EnableUnmanagedDebugging>
-        <Architecture>armv6</Architecture>
-    </PropertyGroup>
-    <PropertyGroup Condition=" '$(Configuration)' == 'Release-armv6' ">
-        <OutputPath>Bin\Release</OutputPath>
-        <DefineConstants>Linux</DefineConstants>
-        <EnableAsserts>False</EnableAsserts>
-        <GeneratePDB>False</GeneratePDB>
-        <GenerateMDB>False</GenerateMDB>
-        <CaptureConsoleOutput>False</CaptureConsoleOutput>
-        <StartMode>Project</StartMode>
-        <CpuType>x86</CpuType>
-        <RuntimeVersion>v25</RuntimeVersion>
-        <XmlDoc>False</XmlDoc>
-        <XmlDocWarningLevel>WarningOnPublicMembers</XmlDocWarningLevel>
-        <EnableUnmanagedDebugging>False</EnableUnmanagedDebugging>
-        <Architecture>armv6</Architecture>
     </PropertyGroup>
     <ItemGroup/>
     <ItemGroup>
@@ -86,7 +53,7 @@
         <Reference Include="rtl.fx"/>
     </ItemGroup>
     <PropertyGroup/>
-    <Import Project="$(MSBuildExtensionsPath)\RemObjects Software\Elements\RemObjects.Elements.Island.Linux.targets"/>
+    <Import Project="$(MSBuildExtensionsPath)\RemObjects Software\Elements\RemObjects.Elements.Island.Android.targets"/>
     <Import Project="Island.Shared.projitems" Label="Shared"/>
     <PropertyGroup>
         <PreBuildEvent/>
