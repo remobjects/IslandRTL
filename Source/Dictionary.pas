@@ -59,7 +59,7 @@ type
         fFirstHole := fEntriesTable[fFirstHole].Next;
       end
       else begin
-        if fCount = length(fEntriesTable) - 2 then DoResize(CalcNextCapacity(length(fEntriesTable)));
+        if fCount = length(fEntriesTable) - (DEFAULT_MAX_INDEX+1) then DoResize(CalcNextCapacity(length(fEntriesTable)));
         pos := fMaxUsedIndex;
         inc(fMaxUsedIndex);
       end;
@@ -68,7 +68,7 @@ type
       fEntriesTable[pos].Key := Key;
       fEntriesTable[pos].Value := Value;
 
-      var idx := CalcIndex(hash);
+      var idx := CalcIndex(hash, length(fEntriesTable));
       if fbucketTable[idx] = EMPTY_BUCKET then
         fbucketTable[idx] := pos
       else begin
@@ -81,7 +81,7 @@ type
 
     method DoRemove(Hash, Idx: Integer);
     begin
-      var fbucketidx := CalcIndex(Hash);
+      var fbucketidx := CalcIndex(Hash, length(fEntriesTable));
       if fbucketTable[fbucketidx] = idx then begin
         // bucket table references to fEntriesTable entry
         fbucketTable[fbucketidx] := fEntriesTable[idx].Next;
@@ -95,8 +95,8 @@ type
       // clear "item"
       fEntriesTable[idx].HashCode := EMPTYHASH;
       fEntriesTable[idx].Next := fFirstHole;
-      fEntriesTable[idx].Key := nil;
-      fEntriesTable[idx].Value := nil;
+      fEntriesTable[idx].Key := default(T);
+      fEntriesTable[idx].Value := default(U);
       fFirstHole := Idx;
       dec(fCount);
     end;
@@ -121,16 +121,19 @@ type
         DoAdd(hash, Key,Value);
     end;
 
-    method CalcIndex(Hash: Integer): Integer;
+    method CalcIndex(Hash: Integer; aTableLen: Integer): Integer;
     begin
-      if length(fEntriesTable) = 0 then DoResize(CalcNextCapacity(0));
+      if aTableLen = 0 then begin
+        aTableLen := CalcNextCapacity(0);
+        DoResize(aTableLen);
+      end;
       var k := Hash and POSITIVE_INTEGER_MASK;
-      exit k - (k/length(fEntriesTable))*length(fEntriesTable);
+      exit k - (k/aTableLen)*aTableLen;
     end;
 
     method IndexOfKey(Hash: Integer; Key: T): Integer;
     begin
-      var lIndex := CalcIndex(Hash);
+      var lIndex := CalcIndex(Hash, length(fEntriesTable));
       var k := fbucketTable[lIndex];
       while (k <> EMPTY_BUCKET) and (fEntriesTable[k].HashCode <> EMPTYHASH) do begin
         if (fEntriesTable[k].HashCode = Hash) and fComparer.Equals(fEntriesTable[k].Key,Key) then
@@ -179,21 +182,20 @@ type
         fEntriesTable[i].Next := EMPTY_BUCKET;
       end;
 
-      if fMaxUsedIndex > DEFAULT_MAX_INDEX then 
-        for i:Integer := 0 to fMaxUsedIndex-1 do begin
-          var idx := CalcIndex(fEntriesTable[i].HashCode);
+      for i:Integer := DEFAULT_MAX_INDEX to fMaxUsedIndex-1 do begin
+        var idx := CalcIndex(fEntriesTable[i].HashCode, aNewCapacity);
 
-          if new_fbucketTable[idx] = EMPTY_BUCKET then begin
-            new_fbucketTable[idx] := i;
-            fEntriesTable[i].Next := EMPTY_BUCKET;
-          end
-          else begin
-            idx := new_fbucketTable[idx];
-            while (fEntriesTable[idx].Next <> EMPTY_BUCKET) do
-              idx := fEntriesTable[idx].Next;
-            fEntriesTable[idx].Next := i;
-          end;
+        if new_fbucketTable[idx] = EMPTY_BUCKET then begin
+          new_fbucketTable[idx] := i;
+          fEntriesTable[i].Next := EMPTY_BUCKET;
+        end
+        else begin
+          idx := new_fbucketTable[idx];
+          while (fEntriesTable[idx].Next <> EMPTY_BUCKET) do
+            idx := fEntriesTable[idx].Next;
+          fEntriesTable[idx].Next := i;
         end;
+      end;
       var new_fEntriesTable := new array of Entry<T,U>(aNewCapacity);
       if fMaxUsedIndex > DEFAULT_MAX_INDEX then begin
         {$IFDEF WINDOWS}ExternalCalls.{$ELSEIF POSIX}rtl.{$ELSE}{$ERROR}{$ENDIF}memmove(@new_fEntriesTable[0], @fEntriesTable[0], fMaxUsedIndex * sizeOf(Entry<T,U>));
@@ -277,7 +279,7 @@ type
     begin
       exit IndexOfValue(Value) <> -1;
     end;
-  
+
     method &Remove(Key: T): Boolean;
     begin
       var hash := CalcHashCode(Key);
