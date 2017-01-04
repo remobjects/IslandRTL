@@ -18,7 +18,7 @@ type
     method ToString: String; override;
     method GetHashCode: Integer; override;
     method &Equals(obj: Object): Boolean; override;
-    
+
     class method MinValue: Single;
     class method MaxValue: Single;
     class method PositiveInfinity: Single;
@@ -28,7 +28,7 @@ type
     class method IsNaN(Value: Single): Boolean;
     class method IsInfinity(Value: Single): Boolean;
     class method IsPositiveInfinity(Value: Single): Boolean;
-    class method IsNegativeInfinity(Value: Single): Boolean;    
+    class method IsNegativeInfinity(Value: Single): Boolean;
   end;
 
   Double = public record
@@ -42,6 +42,13 @@ type
     const UInt64_PositiveInfinity: UInt64 = $7FF0000000000000;
     const UInt64_NegativeInfinity: UInt64 = $FFF0000000000000;
     const UInt64_NAN: UInt64              = $FFF8000000000000;
+    method IsInt: Boolean;
+    begin
+      var pIEEE_754_raw := ^UInt64(@self)^;
+      var tmp := pIEEE_754_raw and not Double.SignificantBitmask;
+      var exponent: Int32 := (tmp shr 52)-1023;
+      exit (tmp and (FractionBitmask shr exponent)) = 0;
+    end;
   public
     method ToString: String; override;
     method GetHashCode: Integer; override;
@@ -60,7 +67,7 @@ type
   end;
 
   FloatToString = static private class
-  private  
+  private
     class const DecimalChar: Char = '.';
     class const maxpos = 1024;
     class method CalcLastDigit(var data: array[0..maxpos] of Byte; aStart, aCount: Integer);
@@ -219,11 +226,11 @@ begin
 end;
 
 class method FloatToString.Convert(aValue: Double; aPrecision: Integer): String;
-const 
+const
   digits: not nullable String = '0123456789';
-begin  
+begin
   if aValue = 0 then exit '0';
-  
+
   var data: array[0..maxpos] of Byte;
   var pos := 0;
   var exp := 0;
@@ -243,13 +250,13 @@ begin
     var t_orig:= Math.Truncate(lValue);
     var t_calc := t_orig;
     t_calc := 0;
-    var t_work := t_orig;    
+    var t_work := t_orig;
     var t_pos1:UInt64 := 1;
     while (t_calc <> t_orig) do begin
       var t1 := Int32(t_work mod 10);
       t_work := Math.Truncate(t_work div 10);
       if pos1 < maxpos then begin
-        buf[pos1] := t1;        
+        buf[pos1] := t1;
         inc(pos1);
       end;
       if (t_work = 0) then break;
@@ -281,7 +288,7 @@ begin
       else begin
         fl := false;
         data[pos]:= t1;
-        inc(pos);        
+        inc(pos);
       end;
       if pos >= maxpos then break;
     end;
@@ -297,7 +304,7 @@ begin
     inc(bufpos);
   end;
 
-  if (nexp > aPrecision) or (exp < -4) then begin// => #.#####E+## | #.#####E-##    
+  if (nexp > aPrecision) or (exp < -4) then begin// => #.#####E+## | #.#####E-##
     buf[bufpos] := digits[data[0]];
     inc(bufpos);
     buf[bufpos] := DecimalChar;
@@ -386,15 +393,15 @@ begin
       end;
     end
     else begin
-      // none 
+      // none
     end;
     for i:Integer := aCount-1 downto aStart do begin
       if data[i] = 10 then begin
         data[i] := 0;
-        data[i-1] := data[i-1]+1;                    
+        data[i-1] := data[i-1]+1;
       end
-      else 
-        break;                 
+      else
+        break;
     end;
   end;
 end;

@@ -64,7 +64,7 @@ type
     {$ENDREGION}
   public
     [SymbolName('fabs')]
-    class method Abs(i: Double): Double;  
+    class method Abs(i: Double): Double;
     class method Abs(i: Int64): Int64;
     class method Abs(i: Integer): Integer;
     class method Max(a,b: Double): Double;
@@ -100,6 +100,7 @@ type
     class method Log2(a: Double): Double;
     [SymbolName('log10')]
     class method Log10(a: Double): Double;
+    class method Pow(x:Double; y: Integer): Double;
     [SymbolName('pow')]
     class method Pow(x, y: Double): Double;
     [SymbolName('round')]
@@ -386,9 +387,21 @@ begin
   exit Log(a)/Log(10);
 end;
 
+
+class method Math.Pow(x: Double; y: Integer): Double;
+begin
+  result := x;
+  for i: Integer := 1 to y-1 do
+    result := result*x;
+  exit result;
+end;
+
 class method Math.Pow(x, y: Double): Double;
 begin
-  exit Exp(y * Log(x));
+  if (y>0) and (y.IsInt) then
+    exit Pow(x, Integer(y))
+  else
+    exit Exp(y * Log(x));
 end;
 
 class method Math.Round(a: Double): Int64;
@@ -455,8 +468,8 @@ end;
 class method Math.fmod(x: Double; y: Double): Double;
 begin
   // from https://msdn.microsoft.com/en-us/library/system.math.ieeeremainder%28v=vs.110%29.aspx
-  // Modulus = (Math.Abs(dividend) - (Math.Abs(divisor) * 
-  //           (Math.Floor(Math.Abs(dividend) / Math.Abs(divisor))))) * 
+  // Modulus = (Math.Abs(dividend) - (Math.Abs(divisor) *
+  //           (Math.Floor(Math.Abs(dividend) / Math.Abs(divisor))))) *
   //           Math.Sign(dividend)
   exit (Abs(x) - (Abs(y) *  (Floor(Abs(x) / Abs(y))))) * Sign(x);
 end;
