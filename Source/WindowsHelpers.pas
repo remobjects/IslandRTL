@@ -22,25 +22,25 @@ type
     end;
   public
     [SymbolName('getenv')]
-    class method getenv(name: ^ansichar): ^ansichar; empty;
+    class method getenv(name: ^AnsiChar): ^AnsiChar; empty;
     [SymbolName('atoi')]
-    class method atoi(a: ^ansichar): integer; empty; // used by GC but since getenv never returns a value, this will never hit
+    class method atoi(a: ^AnsiChar): Integer; empty; // used by GC but since getenv never returns a value, this will never hit
     [SymbolName('atol')]
-    class method atol(a: ^ansichar): integer; empty; // used by GC but since getenv never returns a value, this will never hit
+    class method atol(a: ^AnsiChar): Integer; empty; // used by GC but since getenv never returns a value, this will never hit
     [SymbolName('strtoul')]
-    class method strtoul(a: ^ansichar; endptr: ^^ansichar; abase: Integer): cardinal; empty; // used by GC but since getenv never returns a value, this will never hit
+    class method strtoul(a: ^AnsiChar; endptr: ^^AnsiChar; abase: Integer): cardinal; empty; // used by GC but since getenv never returns a value, this will never hit
     [SymbolName('_strtoui64')]
-    class method _strtoui64(a: ^ansichar; endptr: ^^ansichar; abase: Integer): uint64; empty; // used by GC but since getenv never returns a value, this will never hit
+    class method _strtoui64(a: ^AnsiChar; endptr: ^^AnsiChar; abase: Integer): uint64; empty; // used by GC but since getenv never returns a value, this will never hit
     [SymbolName('_errno')]
     class var _errno: Integer;
     [SymbolName('_fltused')]
     class var _fltused: Integer;
     [SymbolName('_beginthreadex')]
     class method _beginthreadex(
-       security: ^void;
+       security: ^Void;
        stack_size: Int32;
        proc: rtl.PTHREAD_START_ROUTINE;
-       arglist: ^void;
+       arglist: ^Void;
        initflag: Cardinal;
        thrdaddr: rtl.LPDWORD): rtl.HANDLE;
     [SymbolName('_endthreadex')]
@@ -50,15 +50,15 @@ type
     [SymbolName('exit')]
     class method &exit(ex: Integer);
     [SymbolName('memcpy')]
-    class method memcpy(destination, source: ^void; aNum: NativeInt): ^void;
+    class method memcpy(destination, source: ^Void; aNum: NativeInt): ^Void;
     [SymbolName('memmove')]
-    class method memmove(destination, source: ^void; aNum: NativeInt): ^void;
+    class method memmove(destination, source: ^Void; aNum: NativeInt): ^Void;
     [SymbolName('memset')]
-    class method memset(ptr: ^void; value: Integer; aNum: NativeInt): ^void;
+    class method memset(ptr: ^Void; value: Integer; aNum: NativeInt): ^Void;
     [SymbolName('strlen')]
-    class method strlen(c: ^ansichar): Integer;
+    class method strlen(c: ^AnsiChar): Integer;
     [SymbolName('wcslen')]
-    class method wcslen(c: ^char): Integer;
+    class method wcslen(c: ^Char): Integer;
 
     {$IFDEF _WIN64}
     [SymbolName('__chkstk'), Naked]
@@ -69,9 +69,9 @@ type
 
     // WARNING, malloc/free are NOT good functions to use, but libgc needs these to get started
     [SymbolName('malloc')]
-    class method malloc(size: Integer): ^void;
+    class method malloc(size: Integer): ^Void;
     [SymbolName('free')]
-    class method free(v: ^void);
+    class method free(v: ^Void);
     //{$IFNDEF _WIN64}
     [SymbolName('_vsnprintf')]
     class method noop__vsnprintf; empty;
@@ -87,13 +87,13 @@ type
 
     class method highbit(i: UInt64): Integer;
 
-    [SymbolName(#1'__aullrem'), CallingConvention(CallingConvention.stdcall), Used]
+    [SymbolName(#1'__aullrem'), CallingConvention(CallingConvention.Stdcall), Used]
     class method uint64remainder(dividend, divisor: UInt64): UInt64;
-    [SymbolName(#1'__allrem'), CallingConvention(CallingConvention.stdcall), Used]
+    [SymbolName(#1'__allrem'), CallingConvention(CallingConvention.Stdcall), Used]
     class method int64remainder(dividend, divisor: Int64): Int64;
-    [SymbolName(#1'__aulldiv'), CallingConvention(CallingConvention.stdcall), Used]
+    [SymbolName(#1'__aulldiv'), CallingConvention(CallingConvention.Stdcall), Used]
     class method uint64divide(dividend, divisor: UInt64): UInt64;
-    [SymbolName(#1'__alldiv'), CallingConvention(CallingConvention.stdcall), Used]
+    [SymbolName(#1'__alldiv'), CallingConvention(CallingConvention.Stdcall), Used]
     class method int64divide(dividend, divisor: Int64): Int64;
     {$IFDEF _WIN64}
     [SymbolName('_setjmp'), Naked]
@@ -283,7 +283,7 @@ begin
   rtl.ExitProcess(ex);
 end;
 
-method ExternalCalls.memcpy(destination: ^void; source: ^void; aNum: NativeInt): ^Void;
+method ExternalCalls.memcpy(destination: ^Void; source: ^Void; aNum: NativeInt): ^Void;
 begin
   result := destination;
   if aNum = 0 then exit;
@@ -295,20 +295,20 @@ begin
   // TODO: Optimize this
   while aNum >= 8 do begin
     ^Int64(destination)^ := ^Int64(source)^;
-    destination := ^void(^Byte(destination) + 8);
-    source := ^void(^Byte(source) + 8);
+    destination := ^Void(^Byte(destination) + 8);
+    source := ^Void(^Byte(source) + 8);
     dec(aNum, 8);
   end;
   if aNum >= 4 then begin
     ^Int32(destination)^ := ^Int32(source)^;
-    destination := ^void(^Byte(destination) + 4);
-    source := ^void(^Byte(source) + 4);
+    destination := ^Void(^Byte(destination) + 4);
+    source := ^Void(^Byte(source) + 4);
     dec(aNum, 4);
   end;
   if aNum >= 2 then begin
     ^Int16(destination)^ := ^Int16(source)^;
-    destination := ^void(^Byte(destination) + 2);
-    source := ^void(^Byte(source) + 2);
+    destination := ^Void(^Byte(destination) + 2);
+    source := ^Void(^Byte(source) + 2);
     dec(aNum, 2);
   end;
   if aNum >= 1 then begin
@@ -316,7 +316,7 @@ begin
   end;
 end;
 
-method ExternalCalls.memset(ptr: ^void; value: Integer; aNum: NativeInt): ^Void;
+method ExternalCalls.memset(ptr: ^Void; value: Integer; aNum: NativeInt): ^Void;
 begin
   value := value and $FF;
   var vval: UInt64 := value or (value shl 8) or (value shl 16) or (value shl 24);
@@ -324,17 +324,17 @@ begin
   // TODO: Optimize this
   while aNum >= 8 do begin
     ^Int64(ptr)^ := 0;
-    ptr := ^void(^Byte(ptr) + 8);
+    ptr := ^Void(^Byte(ptr) + 8);
     dec(aNum, 8);
   end;
   if aNum >= 4 then begin
     ^Int32(ptr)^ := 0;
-    ptr := ^void(^Byte(ptr) + 4);
+    ptr := ^Void(^Byte(ptr) + 4);
     dec(aNum, 4);
   end;
   if aNum >= 2 then begin
     ^Int16(ptr)^ := 0;
-    ptr := ^void(^Byte(ptr) + 2);
+    ptr := ^Void(^Byte(ptr) + 2);
     dec(aNum, 2);
   end;
   if aNum >= 1 then begin
@@ -342,7 +342,7 @@ begin
   end;
 end;
 
-method ExternalCalls.memmove(destination: ^void; source: ^void; aNum: NativeInt): ^void;
+method ExternalCalls.memmove(destination: ^Void; source: ^Void; aNum: NativeInt): ^Void;
 begin
   result := destination;
   if aNum = 0 then exit;
@@ -351,7 +351,7 @@ begin
   if aNum < 0 then raise new Exception('aNum less than zero');
   if destination = source then exit;
 
-  if (source < destination) and (^void(^Byte(source)+aNum) >= destination) then begin
+  if (source < destination) and (^Void(^Byte(source)+aNum) >= destination) then begin
     // TODO: Optimize this
     while aNum >= 8 do begin
       dec(aNum, 8);
@@ -378,7 +378,7 @@ method ExternalCalls.strlen(c: ^AnsiChar): Integer;
 begin
   if c = nil then exit 0;
   result := 0;
-  while byte(c^) <> 0 do begin
+  while Byte(c^) <> 0 do begin
     inc(c);
     inc(result);
   end;
@@ -418,14 +418,14 @@ begin
   rtl.ExitThread(aval);
 end;
 
-class method ExternalCalls.malloc(size: Integer): ^void;
+class method ExternalCalls.malloc(size: Integer): ^Void;
 begin
   if processheap = nil then processheap := rtl.GetProcessHeap;
 
   exit rtl.HeapAlloc(processheap, 0, size);
 end;
 
-class method ExternalCalls.free(v: ^void);
+class method ExternalCalls.free(v: ^Void);
 begin
   rtl.HeapFree(processheap, 0, v);
 end;
@@ -902,7 +902,7 @@ method ExternalCalls.wcslen(c: ^Char): Integer;
 begin
   if c = nil then exit 0;
   result := 0;
-  while byte(c^) <> 0 do begin
+  while Byte(c^) <> 0 do begin
     inc(c);
     inc(result);
   end;

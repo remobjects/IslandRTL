@@ -25,25 +25,25 @@ type
     class method MalformedError;
     begin
       {$IFDEF DEBUG_UTF8}
-      writeln('malformed string is detected');
+      writeln('malformed String is detected');
       {$ELSE}
-      raise new Exception('malformed string is detected');
+      raise new Exception('malformed String is detected');
       {$ENDIF}
     end;
     class method BadUTF8Error;
     begin
       {$IFDEF DEBUG_UTF8}
-      writeLn('bad UTF8 string is detected');
+      writeLn('bad UTF8 String is detected');
       {$ELSE}
-      raise new Exception('bad UTF8 string is detected');
+      raise new Exception('bad UTF8 String is detected');
       {$ENDIF}
     end;
     class method BadStringError;
     begin
       {$IFDEF DEBUG_UTF8}
-      writeLn('bad string is detected');
+      writeLn('bad String is detected');
       {$ELSE}
-      raise new Exception('bad string is detected');
+      raise new Exception('bad String is detected');
       {$ENDIF}
     end;
     class method BadArray;
@@ -75,7 +75,7 @@ type
         var code := UInt32(Value[pos]);
         case code of
           0..$7F: begin  // 0xxxxxxx
-            arr[pos1] := byte(code);  
+            arr[pos1] := Byte(code);  
             inc(pos1);
           end;
           $80..$7FF: begin  // 110xxxxx 10xxxxxx
@@ -253,7 +253,7 @@ type
       end;
       while pos < len do begin
         var ch := Value[pos];
-        {$REGION 4 bytes char}
+        {$REGION 4 bytes Char}
         if ch and $F0 = $F0 then begin
           //   11110xxx 10xxxxxx 10xxxxxx 10xxxxxx
           if pos+4 > len then BadUTF8Error;
@@ -272,7 +272,7 @@ type
           inc(pos,4);
         end
         {$ENDREGION}
-        {$REGION 3 bytes char}
+        {$REGION 3 bytes Char}
         else if (ch and $E0) = $E0 then begin
           //1110xxxx 10xxxxxx 10xxxxxx
           if pos+3 > len then BadUTF8Error;
@@ -288,7 +288,7 @@ type
           inc(pos,3);
         end
         {$ENDREGION}      
-        {$REGION 2 bytes char}
+        {$REGION 2 bytes Char}
         else if (ch and $C0) = $C0 then begin
           // 110xxxxx 10xxxxxx
           if pos+2 > len then BadUTF8Error;
@@ -303,7 +303,7 @@ type
           inc(pos,2);
         end
         {$ENDREGION}      
-        {$REGION 1 byte char}
+        {$REGION 1 Byte Char}
         else if (ch or $7f) = $7f then begin
           // 0xxxxxxx
           var code := ch;                        

@@ -41,15 +41,15 @@ type
     [SymbolName('__elements_entry_point'), &Weak]
     method UserEntryPoint(args: array of String): Integer; external;
     [SymbolName({$IF EMSCRIPTEN OR ANDROID}'_start'{$ELSE}'__elements_entry_point_helper'{$ENDIF}), Used]
-    method Entrypoint(argc: Integer; argv: ^^ansichar; envp: ^^ansichar): Integer;    
+    method Entrypoint(argc: Integer; argv: ^^AnsiChar; envp: ^^AnsiChar): Integer;    
     {$IF NOT EMSCRIPTEN AND NOT ANDROID}
     [SymbolName('_start'), Naked]
     method _start;
     [SymbolName('__libc_start_main', 'libc.so.6'), &weak]
-    method libc_main(main: LibCEntryHelper; argc: Integer; argv: ^^char; init: LibCEntryHelper; fini: LibCFinalizerHelper); external;
+    method libc_main(main: LibCEntryHelper; argc: Integer; argv: ^^Char; init: LibCEntryHelper; fini: LibCFinalizerHelper); external;
     {$ENDIF}
     [SymbolName('__elements_init'), Used]
-    method init(nargs: Integer; args: ^^ansichar; envp: ^^ansichar): Integer;
+    method init(nargs: Integer; args: ^^AnsiChar; envp: ^^AnsiChar): Integer;
     [SymbolName('__elements_fini'), Used]
     method fini;
 
@@ -61,8 +61,8 @@ type
     method DwarfEHReadSLEB128(var aData: ^Byte): rtl.intptr_t;
 
     class var nargs: Integer;
-    class var args: ^^ansichar;
-    class var envp: ^^ansichar;
+    class var args: ^^AnsiChar;
+    class var envp: ^^AnsiChar;
     class var
       [SymbolName('__init_array_start')]
       __init_array_start: Integer; external;
@@ -89,7 +89,7 @@ type
     DW_EH_PE_aligned = $50,
     DW_EH_PE_indirect = $80) of Byte;
 
-  LibCEntryHelper = public method (nargs: Integer; args: ^^ansichar; envp: ^^ansichar): Integer;
+  LibCEntryHelper = public method (nargs: Integer; args: ^^AnsiChar; envp: ^^AnsiChar): Integer;
   LibCFinalizerHelper = public method();
 
   ElementsException = public record
@@ -122,7 +122,7 @@ end;
 
 method ExternalCalls.RaiseException(aRaiseAddress: ^Void; aRaiseFrame: ^Void; aRaiseObject: Object);
 begin
-  var lRecord := ^ElementsException(gc.GC_malloc(sizeof(ElementsException))); // we use gc memory for this
+  var lRecord := ^ElementsException(gc.GC_malloc(sizeOf(ElementsException))); // we use gc memory for this
   rtl.memset(lRecord, 0, sizeOf(ElementsException));
   var lExp := Exception(aRaiseObject);
   if lExp <> nil then begin
@@ -299,7 +299,7 @@ begin
 end;
 {$ENDIF}
 {$HIDE W27}
-method ExternalCalls.Entrypoint(argc: Integer; argv: ^^ansichar; envp: ^^ansichar): Integer;
+method ExternalCalls.Entrypoint(argc: Integer; argv: ^^AnsiChar; envp: ^^AnsiChar): Integer;
 begin
   ExternalCalls.nargs := nargs;
   ExternalCalls.args := args;
@@ -313,7 +313,7 @@ begin
   {$ENDIF}
 end;
 
-method ExternalCalls.init(nargs: Integer; args: ^^ansichar; envp: ^^ansichar): Integer;
+method ExternalCalls.init(nargs: Integer; args: ^^AnsiChar; envp: ^^AnsiChar): Integer;
 begin
   ExternalCalls.nargs := nargs;
   ExternalCalls.args := args;
@@ -394,13 +394,13 @@ begin
           // this is a catch
           if lTypeInfoTable = nil then exit false; // shouldn't happen
           var lTypeReadOffset := @lTypeInfoTable[- lIndexInTypeInfoTable * case DwarfEHEncodingType(lTypeEncoding and $F) of
-            DwarfEHEncodingType.DW_EH_PE_absptr: sizeof(^byte);
+            DwarfEHEncodingType.DW_EH_PE_absptr: sizeOf(^Byte);
             DwarfEHEncodingType.DW_EH_PE_udata2, DwarfEHEncodingType.DW_EH_PE_sdata2: 2;
             DwarfEHEncodingType.DW_EH_PE_udata4, DwarfEHEncodingType.DW_EH_PE_sdata4: 4;
             DwarfEHEncodingType.DW_EH_PE_udata8, DwarfEHEncodingType.DW_EH_PE_sdata8: 8;
             else 1;
           end];
-          var catchType := ^void(DwarfEHReadPointer(var lTypeReadOffset, lTypeEncoding));
+          var catchType := ^Void(DwarfEHReadPointer(var lTypeReadOffset, lTypeEncoding));
           if catchType = nil then begin
             // catch all
             if ((aAction and {$IFDEF EMSCRIPTEN}_Unwind_Action.{$ENDIF}_UA_SEARCH_PHASE) <> 0) or ((aAction and {$IFDEF EMSCRIPTEN}_Unwind_Action.{$ENDIF}_UA_HANDLER_FRAME) <>0) then begin

@@ -57,13 +57,13 @@ type
       if fLoaded = 0 then
         if InternalCalls.CompareExchange(var fLoaded, 1, 0 ) <> 1 then begin
           gc.GC_INIT;
-          result := ^void(-1);
+          result := ^Void(-1);
         end;
 
       result := gc.GC_malloc(aSize);
-      ^^void(result)^ := aTTY;
-      {$IFDEF WINDOWS}ExternalCalls.{$ELSE}rtl.{$ENDIF}memset(^Byte(result) + sizeof(^Void), 0, aSize - sizeof(^Void));
-      if ^^void(aTTY)[4] <> fFinalizer then begin
+      ^^Void(result)^ := aTTY;
+      {$IFDEF WINDOWS}ExternalCalls.{$ELSE}rtl.{$ENDIF}memset(^Byte(result) + sizeOf(^Void), 0, aSize - sizeOf(^Void));
+      if ^^Void(aTTY)[4] <> fFinalizer then begin
         gc.GC_register_finalizer_no_order(result, @GC_finalizer, nil, nil, nil);
       end;
     end;
@@ -71,14 +71,14 @@ type
     [SymbolName('__newarray')]
     class method NewArray(aTY: ^Void; aElementSize, aElements: NativeInt): ^Void;
     begin
-      result := NewInstance(aTY, sizeof(^Void) + Sizeof(NativeInt) + aElementSize * aElements);
+      result := NewInstance(aTY, sizeOf(^Void) + sizeOf(NativeInt) + aElementSize * aElements);
       InternalCalls.Cast<&Array>(result).fLength := aElements;
     end;
 
     [SymbolName('__newdelegate')]
     class method NewDelegate(aTY: ^Void; aSelf: Object; aPtr: ^Void): &Delegate;
     begin
-      result := InternalCalls.Cast<&Delegate>(NewInstance(aTY, SizeOf(^Void) * 3));
+      result := InternalCalls.Cast<&Delegate>(NewInstance(aTY, sizeOf(^Void) * 3));
       result.fSelf := aSelf;
       result.fPtr := aPtr;
     end;
@@ -119,7 +119,7 @@ type
 
     class method SpinLockClassEnter(var x: NativeInt): Boolean;
     begin
-      var cid := Thread.CurrentThreadId;
+      var cid := Thread.CurrentThreadID;
 
       var lValue := InternalCalls.CompareExchange(var x, cid, NativeInt(0)); // returns old
 
@@ -146,9 +146,9 @@ type
     begin
       var pb:= ^Byte(buf);
       var r: UInt32:= $811C9DC5;
-      for i:Integer := 0 to Len-1 do begin
+      for i:Integer := 0 to len-1 do begin
         r := (r xor pb^) * $01000193;
-        Inc(pb);
+        inc(pb);
       end;
       exit ^Integer(@r)^;
     end;
@@ -218,7 +218,7 @@ type
   end;
 
 {$G+}
-method GC_finalizer(obj, d: ^void); assembly;
+method GC_finalizer(obj, d: ^Void); assembly;
 begin
   InternalCalls.Cast<Object>(obj).Finalize;
 end;

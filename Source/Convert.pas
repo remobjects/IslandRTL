@@ -3,7 +3,7 @@
 type
   Convert = public static class
   private
-    method ParseString(s:String; out aSign: boolean; out arr: array of byte): Boolean;
+    method ParseString(s:String; out aSign: boolean; out arr: array of Byte): Boolean;
     begin
       if String.IsNullOrEmpty(s) then exit False;
       var len:= s.Length;
@@ -22,7 +22,7 @@ type
         dec(len);
         inc(start);
       end;
-      arr := new array of byte(len);
+      arr := new array of Byte(len);
       for i: Integer := 0 to len-1 do begin
         var b:= Integer(s[i+start]);
         if (b>=48) and (b<=57) then arr[i] := b-48 else exit false;
@@ -30,7 +30,7 @@ type
       exit true;
     end;
 
-    method ParseHex(s:String; out arr: array of byte): Boolean;
+    method ParseHex(s:String; out arr: array of Byte): Boolean;
     begin
       if String.IsNullOrEmpty(s) then exit False;
       var si := s.ToLower(True);
@@ -44,7 +44,7 @@ type
       while si[start+len-1] = ' ' do
         dec(len);
 
-      arr := new array of byte(len);
+      arr := new array of Byte(len);
       for i: Integer := 0 to len-1 do begin
         var b:= Integer(si[i+start]);
         case b of 
@@ -77,7 +77,7 @@ type
     method TryParseInt64(s: String; out Value: Int64; aRaiseOverflowException: Boolean):Boolean;
     begin
       var sign: Boolean;
-      var arr: array of byte;
+      var arr: array of Byte;
       if not ParseString(s,out sign,out arr) then exit false;
       var sValue:UInt64 := arr[0];
       var aMaxValue: UInt64 := iif(sign, - Int64.MinValue, Int64.MaxValue);
@@ -100,7 +100,7 @@ type
     method TryParseUInt64(s: String; out Value: UInt64; aRaiseOverflowException: Boolean):Boolean;
     begin
       var sign: Boolean;
-      var arr: array of byte;
+      var arr: array of Byte;
       if not ParseString(s,out sign,out arr) then exit false;
       if Sign then exit False; 
       var sValue : UInt64 := arr[0];
@@ -120,7 +120,7 @@ type
 
     method HexStringToUInt64(s: String):UInt64;
     begin
-      var arr: array of byte;
+      var arr: array of Byte;
       if not ParseHex(s,out arr) then RaiseBadHexString;
       var sValue : UInt64 := arr[0];
       

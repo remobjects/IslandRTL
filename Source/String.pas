@@ -18,7 +18,7 @@ type
     method TestChar(c: Char; Arr : array of Char): Boolean;
     method MakeInvariantString: String;
     class method RaiseError(aMessage: String);
-    method CheckIndex(aIndex: integer);
+    method CheckIndex(aIndex: Integer);
   assembly
     {$IFDEF POSIX}
     class var fUTF16ToCurrent, fCurrentToUtf16: rtl.iconv_t;
@@ -100,7 +100,7 @@ type
   end;
 
 {$IFDEF POSIX}
-method iconv_helper(cd: rtl.iconv_t; inputdata: ^AnsiChar; inputdatalength: rtl.size_t; suggestedlength: Integer; out aresult: ^ansichar): integer; public;
+method iconv_helper(cd: rtl.iconv_t; inputdata: ^AnsiChar; inputdatalength: rtl.size_t; suggestedlength: Integer; out aresult: ^AnsiChar): Integer; public;
 {$ENDIF}
 
 implementation
@@ -108,11 +108,11 @@ implementation
 class method String.FromPChar(c: ^Char; aCharCount: Integer): String;
 begin
   result := AllocString(aCharCount);
-  {$IFDEF WINDOWS}ExternalCalls.{$ELSEIF POSIX}rtl.{$ELSE}{$ERROR}{$ENDIF}memcpy(@result.ffirstChar, c, aCharCount * 2);
+  {$IFDEF WINDOWS}ExternalCalls.{$ELSEIF POSIX}rtl.{$ELSE}{$ERROR}{$ENDIF}memcpy(@result.fFirstChar, c, aCharCount * 2);
 end;
 
 {$IFDEF POSIX}
-method iconv_helper(cd: rtl.iconv_t; inputdata: ^AnsiChar; inputdatalength: rtl.size_t; suggestedlength: Integer; out aresult: ^ansichar): integer;
+method iconv_helper(cd: rtl.iconv_t; inputdata: ^AnsiChar; inputdatalength: rtl.size_t; suggestedlength: Integer; out aresult: ^AnsiChar): Integer;
 begin
   var outputdata := ^AnsiChar(rtl.malloc(suggestedlength));
   if outputdata = nil then begin
@@ -127,7 +127,7 @@ begin
   if (count = rtl.size_t(- 1)) and (rtl.errno = 7) then begin
     suggestedlength := suggestedlength + 16;
     var cu := outpos - outputdata;
-    outputdata := ^ansichar(rtl.realloc(outputdata, suggestedlength));
+    outputdata := ^AnsiChar(rtl.realloc(outputdata, suggestedlength));
     outpos := outputdata + cu;
     goto retry;
   end;
@@ -225,7 +225,7 @@ end;
 
 class method String.AllocString(aLen: Integer): String;
 begin
-  result := InternalCalls.Cast<String>(Utilities.NewInstance(InternalCalls.GetTypeInfo<String>(), (sizeof(Object) + sizeof(Integer)) + 2 * aLen));
+  result := InternalCalls.Cast<String>(Utilities.NewInstance(InternalCalls.GetTypeInfo<String>(), (sizeOf(Object) + sizeOf(Integer)) + 2 * aLen));
   result.fLength := aLen;
 end;
 
@@ -244,7 +244,7 @@ begin
   if String.IsNullOrEmpty(self) then exit self;
   var lresult := new array of Char(self.Length);
   var pos:=0;
-  for i: integer := 0 to self.Length-1 do
+  for i: Integer := 0 to self.Length-1 do
     if self.Item[i] > ' ' then begin
       lresult[pos] := self.Item[i];
       inc(pos);
@@ -256,7 +256,7 @@ method String.Trim(aChars: array of Char): String;
 begin
   if String.IsNullOrEmpty(self) then exit self;
   var lresult := '';
-  for i: integer := 0 to self.Length-1 do
+  for i: Integer := 0 to self.Length-1 do
     if not TestChar(self.Item[i], aChars) then
       lresult := lresult + self.Item[i];
   exit lresult;
@@ -265,7 +265,7 @@ end;
 method String.TrimStart: String;
 begin
   if String.IsNullOrEmpty(self) then exit self;
-  var i: integer := 0;
+  var i: Integer := 0;
   while (i < self.Length) and (self.Item[i] <= ' ') do i:=i+1;
   if i < self.Length then
     exit self.Substring(i)
@@ -276,7 +276,7 @@ end;
 method String.TrimStart(aChars: array of Char): String;
 begin
   if String.IsNullOrEmpty(self) then exit self;
-  var i: integer := 0;
+  var i: Integer := 0;
   while (i < self.Length) and TestChar(self.Item[i], aChars) do i:=i+1;
   if i < self.Length then
     exit self.Substring(i)
@@ -573,11 +573,11 @@ begin
   else if aMode = LCMapStringTransformMode.Upper then options := LCMAP_UPPERCASE
   else aMode := 0;
 
-  var buf := @self.ffirstChar;
+  var buf := @self.fFirstChar;
   var lrequired_size := rtl.LCMapStringW(locale, options,buf, self.Length, nil, 0);
   if (lrequired_size = 0) and (rtl.GetLastError <> 0) then RaiseError('Problem with calling LCMapString (1st call)');
   result := AllocString(lrequired_size);
-  lrequired_size := rtl.LCMapStringW(locale, options,@self.ffirstChar, self.Length, @result.ffirstChar, lrequired_size);
+  lrequired_size := rtl.LCMapStringW(locale, options,@self.fFirstChar, self.Length, @result.fFirstChar, lrequired_size);
   if (lrequired_size = 0) and (rtl.GetLastError <> 0) then RaiseError('Problem with calling LCMapString (2nd call)');
 end;
 {$ENDIF}
@@ -618,7 +618,7 @@ end;
 method String.ToCharArray(aNullTerminate: Boolean := false): array of Char;
 begin
   var r := new array of Char(fLength + if aNullTerminate then 1 else 0);
-  {$IFDEF WINDOWS}ExternalCalls.{$ELSEIF POSIX}rtl.{$ELSE}{$ERROR}{$ENDIF}memcpy(@r[0], @ffirstChar, fLength * 2);
+  {$IFDEF WINDOWS}ExternalCalls.{$ELSEIF POSIX}rtl.{$ELSE}{$ERROR}{$ENDIF}memcpy(@r[0], @fFirstChar, fLength * 2);
   if aNullTerminate then r[fLength] := #0;
   exit r;
 end;
@@ -686,8 +686,8 @@ begin
         //   {N,[\ +[-]M][:F]}
 
         inc(cur_pos);
-        // N = argument number (non-negative integer)
-        var N: integer := 0;
+        // N = argument number (non-negative Integer)
+        var N: Integer := 0;
         var fl:= true;
         while cur_pos < aFormat.Length-1 do begin
           if (aFormat[cur_pos] >='0') and (aFormat[cur_pos] <='9') then begin
@@ -761,8 +761,8 @@ begin
             inc(cur_pos);
           end;
           dec(cur_pos);
-          {$HINT 'string.Format: custom format aren''t supported yet'}
-          RaiseError('string.Format: custom format aren''t supported yet');
+          {$HINT 'String.Format: custom format aren''t supported yet'}
+          RaiseError('String.Format: custom format aren''t supported yet');
         end;
         if aFormat[cur_pos] <> '}' then RaiseError('format error');
 
@@ -817,7 +817,7 @@ begin
   if StartIndex + Count > length(Value) then raise new ArgumentOutOfRangeException('StartIndex plus Count is greater than the number of elements in Value.');
   if String.IsNullOrEmpty(Separator) then Separator := '';
   var str:= new StringBuilder;
-  var len := Length(Value);
+  var len := length(Value);
   if len > StartIndex then str.Append(Value[StartIndex]);
 
   for i: Integer := StartIndex+1 to StartIndex+Count-1 do begin
@@ -833,7 +833,7 @@ begin
   if Value = nil then raise new ArgumentNullException('Value is nil.');
   if String.IsNullOrEmpty(Separator) then Separator := '';
   var str:= new StringBuilder;
-  var len := Length(Value);
+  var len := length(Value);
   if len >0 then str.Append(Value[0].ToString);
 
   for i: Integer := 1 to len-1 do begin

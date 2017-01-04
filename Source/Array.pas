@@ -18,7 +18,7 @@ type
     begin 
       if aCount = 0 then exit;
       if (aSourceOffset < 0) or (aDestOffset < 0) or (aSourceOffset + aCount > length(aSource)) or (aDestOffset + aCount > length(aDest)) then raise new ArgumentOutOfRangeException('Array.Copy ranges');
-      {$IFDEF WINDOWS}ExternalCalls.{$ELSE}rtl.{$ENDIF}memcpy(@aDest[aDestOffset], @aSource[aSourceOffset], aCount * sizeof(T));
+      {$IFDEF WINDOWS}ExternalCalls.{$ELSE}rtl.{$ENDIF}memcpy(@aDest[aDestOffset], @aSource[aSourceOffset], aCount * sizeOf(T));
     end;
     
     class method Copy<T>(aSource: array of T; aDest: Array of T; aCount: Integer);

@@ -319,19 +319,19 @@ type
     begin
       {$IFDEF WINDOWS}
       var sysdate:= ToSystemTime;
-      var local := new array of char(rtl.LOCALE_NAME_MAX_LENGTH+1);
+      var local := new array of Char(rtl.LOCALE_NAME_MAX_LENGTH+1);
       var l1 := rtl.LPWSTR(@local[0]);
       rtl.GetUserDefaultLocaleName(l1,rtl.LOCALE_NAME_MAX_LENGTH);
       var k := rtl.GetDateFormatEx(l1,0,@sysdate,nil,nil,0, nil);
       if k = 0 then CheckForLastError;
       var buf:= new array of Char(k+1);      
       var k1 := rtl.GetDateFormatEx(l1,0,@sysdate,nil,rtl.LPWSTR(@buf[0]),k+1, nil);
-      var r := string.FromPChar(@buf[0],k1);      
+      var r := String.FromPChar(@buf[0],k1);      
       
       k := rtl.GetTimeFormatEx(l1,0,@sysdate,nil,nil,0);
       var buf1:= new array of Char(k+1);      
       k1 := rtl.GetTimeFormatEx(l1,0,@sysdate,nil,rtl.LPWSTR(@buf1[0]),k+1);
-      exit r.TrimEnd+' ' + string.FromPChar(@buf1[0],k1).TrimEnd;      
+      exit r.TrimEnd+' ' + String.FromPChar(@buf1[0],k1).TrimEnd;      
       {$ELSEIF POSIX}
       exit String.Format('{0}-{1}-{2} {3}:{4}:{5}',[Year.ToString,TwoCharStr(Month),TwoCharStr(Day),TwoCharStr(Hour),TwoCharStr(Minute), TwoCharStr(Second)]);
       {$ELSE}{$ERROR}
@@ -340,7 +340,7 @@ type
 
     method &Equals(obj: Object): Boolean; override;
     begin
-      if Assigned(obj) and (obj is DateTime) then
+      if assigned(obj) and (obj is DateTime) then
         exit self = DateTime(obj)
       else
         exit False;

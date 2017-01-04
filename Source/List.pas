@@ -26,7 +26,7 @@ type
     method SetItem(&Index: Integer; Value: T);
     method GetItem(&Index: Integer): T;
     method Grow(aCapacity: Integer);
-    method RaiseError(aMessage: string);
+    method RaiseError(aMessage: String);
     method CheckIndex(&Index: Integer);
     method IsEqual(Item1, Item2: T): Boolean;
     method CalcCapacity(aNewCapacity: Integer): Integer;
@@ -90,8 +90,8 @@ end;
 
 method ListEnumerator<T>.MoveNext: Boolean;
 begin
-  Result := fCurrentIndex < Length(fList)-1;
-  if Result then Inc(fCurrentIndex);
+  Result := fCurrentIndex < length(fList)-1;
+  if Result then inc(fCurrentIndex);
 end;
 
 method ListEnumerator<T>.GetCurrent: T;
@@ -194,7 +194,7 @@ end;
 method List<T>.AddRange(Items: array of T);
 begin
   if (length(Items)>0) then begin
-    if fCount + Length(Items) >= Capacity then begin
+    if fCount + length(Items) >= Capacity then begin
       Grow(fCount + Items.Count);
     end;
     for i: Integer := 0 to length(Items)-1 do begin
@@ -360,7 +360,7 @@ begin
   if (aCount < 0) or (&Index + aCount > fCount) then raiseError('aCount does not denote a valid range of elements');
 
   var newlength := fCount-aCount;
-  {$IFDEF WINDOWS}ExternalCalls.{$ELSEIF POSIX}rtl.{$ELSE}{$ERROR}{$ENDIF}memmove(@fItems[&Index], @fItems[&Index+aCount], (newlength-&Index) * SizeOf(T));
+  {$IFDEF WINDOWS}ExternalCalls.{$ELSEIF POSIX}rtl.{$ELSE}{$ERROR}{$ENDIF}memmove(@fItems[&Index], @fItems[&Index+aCount], (newlength-&Index) * sizeOf(T));
   {$IFDEF WINDOWS}ExternalCalls.{$ELSEIF POSIX}rtl.{$ELSE}{$ERROR}{$ENDIF}memset(@fItems[newlength], 0, (fCount - newlength) * sizeOf(T));
   fCount := newlength;
 end;
@@ -405,7 +405,7 @@ end;
 
 method List<T>.CalcCapacity(aNewCapacity: Integer): Integer;
 begin
-  var ldelta: integer;
+  var ldelta: Integer;
   if aNewCapacity > 64 then ldelta := aNewCapacity / 4
   else if aNewCapacity > 8 then ldelta := 16
   else lDelta := 4;
@@ -422,16 +422,16 @@ begin
   repeat
     I := L;
     J := R;
-    P := fitems[(L + R) shr 1];
+    P := fItems[(L + R) shr 1];
     repeat
-      while Comparison(fitems[I], P) < 0 do Inc(I);
-      while Comparison(fitems[j], P) > 0 do Dec(J);
+      while Comparison(fItems[I], P) < 0 do inc(I);
+      while Comparison(fItems[j], P) > 0 do dec(J);
       if I <= J then begin
-        temp := fitems[I];
-        fitems[I]:=fitems[J];
-        fitems[J]:= temp;
-        Inc(I);
-        Dec(J);
+        temp := fItems[I];
+        fItems[I]:=fItems[J];
+        fItems[J]:= temp;
+        inc(I);
+        dec(J);
       end;
     until I > J;
     if L < J then QuickSort(L, J, Comparison);

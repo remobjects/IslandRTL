@@ -40,7 +40,7 @@ type
 
     method GetValue(keyName: String; valueName: String;  defaultValue: Object): Object;
     begin
-      var subKeyName: string;
+      var subKeyName: String;
       var lrootkey := ParseKeyName(keyName, out subKeyName);
       var lsubKey := subKeyName.ToLPCWSTR;
       var lvaluename := valueName.ToLPCWSTR;
@@ -50,7 +50,7 @@ type
       var res := rtl.RegGetValueW(lrootkey, lsubKey, lvaluename,&flags,@dwtype,nil, @pcbData);
       if res = rtl.ERROR_SUCCESS  then begin
         var buf := new array of Byte(pcbData);
-        var bufref: ^void := @buf[0];
+        var bufref: ^Void := @buf[0];
         res:= rtl.RegGetValueW(lrootkey, lsubKey, lvaluename,&flags,@dwtype,bufref, @pcbData);
         if res = rtl.ERROR_SUCCESS  then begin
           case dwtype of
@@ -90,7 +90,7 @@ type
 
     method SetValue(keyName: String; valueName: String;  value: Object; valueKind: RegistryValueKind);
     begin
-      var cbData: ^void;
+      var cbData: ^Void;
       var cbDataSize: rtl.DWORD;
       var cbDatatype: rtl.DWORD;
 
@@ -108,8 +108,8 @@ type
           cbDatatype := rtl.REG_EXPAND_SZ;
         end;
         RegistryValueKind.Binary: begin
-          if value is array of byte then begin
-            var temp := value as array of byte ;
+          if value is array of Byte then begin
+            var temp := value as array of Byte ;
             cbData := @temp[0];
             cbDataSize := temp.Length;
             cbDatatype := rtl.REG_BINARY;
@@ -130,8 +130,8 @@ type
           end;
         end;
         RegistryValueKind.MultiString: begin
-          if value is array of string then begin
-            var temp := value as array of string;
+          if value is array of String then begin
+            var temp := value as array of String;
             var cb:= new StringBuilder;
             for each m in temp do begin
               cb.Append(m);
@@ -161,14 +161,14 @@ type
           if value is String then SetValue(keyName,valueName,value,RegistryValueKind.String)
           else if value is Int32 then SetValue(keyName,valueName,value,RegistryValueKind.DWord)
           else if value is Int64 then SetValue(keyName,valueName,value,RegistryValueKind.QWord)
-          else if value is array of string then SetValue(keyName,valueName,value,RegistryValueKind.MultiString)
-          else if value is array of byte then SetValue(keyName,valueName,value,RegistryValueKind.Binary)
+          else if value is array of String then SetValue(keyName,valueName,value,RegistryValueKind.MultiString)
+          else if value is array of Byte then SetValue(keyName,valueName,value,RegistryValueKind.Binary)
           else raise new Exception('unsupported value');
           exit;
         end;
       end;
 
-      var subKeyName: string;
+      var subKeyName: String;
       var lrootkey := ParseKeyName(keyName, out subKeyName);
       var lsubKey := subKeyName.ToLPCWSTR;
 

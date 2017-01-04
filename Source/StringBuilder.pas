@@ -11,7 +11,7 @@ type
     fCapacity: Integer;
     fLength: Integer;
 
-    method intIndexOf(OldValue: String; StartIndex: Integer; Count: Integer): integer;
+    method intIndexOf(OldValue: String; StartIndex: Integer; Count: Integer): Integer;
     begin
       var Value_Length := OldValue.Length;
       if Value_Length > Count-StartIndex then exit -1;
@@ -41,7 +41,7 @@ type
     method CalcCapacity(aNewCapacity: Integer): Integer;
     begin
       if aNewCapacity > MaxCapacity then RaiseError('Enlarging the value of this instance would exceed MaxCapacity');
-      var ldelta: integer;
+      var ldelta: Integer;
       if aNewCapacity > 64 then ldelta := aNewCapacity / 4 
       else if aNewCapacity > 8 then ldelta := 16
       else lDelta := 4;
@@ -51,7 +51,7 @@ type
 
     method Grow(Value: Integer);
     begin
-      var newbuf:= new array of char(Value);
+      var newbuf:= new array of Char(Value);
       fCapacity := Value;
       intCopy(@fbuf[0],@newbuf[0], fLength);
       fbuf := newbuf;
@@ -235,7 +235,7 @@ type
         if newbuflen >= fCapacity then begin
           // new buf is required
           var newCapacity:= CalcCapacity(newbuflen);
-          var newbuf:= new array of char(newCapacity);
+          var newbuf:= new array of Char(newCapacity);
           intCopy(@fbuf[0],@newbuf[0], StartIndex);
           intCopy(@tempstrbuf[0],@fbuf[StartIndex],tempstrbuf.Length);
           intCopy(@fbuf[StartIndex+Count],@newbuf[0], Length-(StartIndex+Count));

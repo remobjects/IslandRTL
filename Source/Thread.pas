@@ -29,7 +29,7 @@ type
     method GetPriority: ThreadPriority;
     method SetPriority(Value: ThreadPriority);
     method GetAlive: Boolean;
-    //class method GetCurrentThread: Thread;external;//HANDLE WINAPI GetCurrentThread(void); ???
+    //class method GetCurrentThread: Thread;external;//HANDLE WINAPI GetCurrentThread(Void); ???
   public
     method Start(parameter: Object := nil);
     method Abort;
@@ -303,7 +303,7 @@ begin
     lThreadNameInfo.FThreadID := fThreadID;
     lThreadNameInfo.FFlags := 0;
     try
-      rtl.RaiseException( $406D1388, 0, sizeof(lThreadNameInfo) / sizeof(NativeUInt), {$IFDEF _WIN64}^UInt64{$ELSE}^UInt32{$ENDIF}(^Void(@lThreadNameInfo)));
+      rtl.RaiseException( $406D1388, 0, sizeOf(lThreadNameInfo) / sizeOf(NativeUInt), {$IFDEF _WIN64}^UInt64{$ELSE}^UInt32{$ENDIF}(^Void(@lThreadNameInfo)));
     except
     end;
     {$ELSE}

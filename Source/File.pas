@@ -101,7 +101,7 @@ end;
 method File.Rename(NewName: not nullable String): not nullable File;
 begin
   if String.IsNullOrEmpty(NewName)then raise new Exception('NewName should be specified');
-  var newFullName: not nullable string := Path.Combine(Path.GetParentDirectory(FullName), NewName);
+  var newFullName: not nullable String := Path.Combine(Path.GetParentDirectory(FullName), NewName);
   if not Exists then raise new Exception('File is not exist:'+FullName);
   exit Move(newFullName);
 end;

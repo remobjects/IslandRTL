@@ -13,6 +13,7 @@
         <Name>Island (Android NDK)</Name>
         <ProjectGuid>{961edd39-0901-480d-97a6-c775095d5ebc}</ProjectGuid>
         <Mode>Island</Mode>
+        <WarnOnCaseMismatch>True</WarnOnCaseMismatch>
     </PropertyGroup>
     <PropertyGroup Condition=" '$(Configuration)' == 'Debug' ">
         <OutputPath>Bin\Debug</OutputPath>

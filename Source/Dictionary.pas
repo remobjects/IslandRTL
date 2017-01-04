@@ -172,7 +172,7 @@ type
       if (aNewCapacity <= length(fEntriesTable)) and (fCount>0) then exit;
       var new_fbucketTable := new array of Integer(aNewCapacity);
 {
-      for i:Integer :=0 to Length(new_fbucketTable)-1 do
+      for i:Integer :=0 to length(new_fbucketTable)-1 do
         new_fbucketTable[i] := EMPTY_BUCKET;
 }
       for i:Integer := 0 to length(fEntriesTable)-1 do begin
@@ -196,7 +196,7 @@ type
         end;
       var new_fEntriesTable := new array of Entry<T,U>(aNewCapacity);
       if fMaxUsedIndex > DEFAULT_MAX_INDEX then begin
-        {$IFDEF WINDOWS}ExternalCalls.{$ELSEIF POSIX}rtl.{$ELSE}{$ERROR}{$ENDIF}memmove(@new_fEntriesTable[0], @fEntriesTable[0], fMaxUsedIndex * SizeOf(Entry<T,U>));
+        {$IFDEF WINDOWS}ExternalCalls.{$ELSEIF POSIX}rtl.{$ELSE}{$ERROR}{$ENDIF}memmove(@new_fEntriesTable[0], @fEntriesTable[0], fMaxUsedIndex * sizeOf(Entry<T,U>));
       end;
       fbucketTable := new_fbucketTable;
       fEntriesTable := new_fEntriesTable;

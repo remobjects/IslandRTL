@@ -66,10 +66,10 @@ type
         if len1 > len then begin
           var newbuf := new array of Char(len1+1);
           len1 := rtl.GetCurrentDirectoryW(len1+1,@newbuf[0]);
-          exit string.FromPChar(@newbuf[0],len1);
+          exit String.FromPChar(@newbuf[0],len1);
         end
         else begin
-          exit string.FromPChar(@buf[0],len1);
+          exit String.FromPChar(@buf[0],len1);
         end;
       end;
       CheckForLastError;
@@ -82,7 +82,7 @@ type
 
     method UserHomeFolder: Folder;
     begin
-      var fn: string;
+      var fn: String;
       {$IFDEF WINDOWS}
       fn := Environment.GetEnvironmentVariable('USERPROFILE');
       {$ELSEIF POSIX}

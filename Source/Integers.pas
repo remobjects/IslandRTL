@@ -26,7 +26,7 @@ type
 
     method &Equals(obj: Object): Boolean; override;
     begin
-      if Assigned(obj) and (obj is SByte) then
+      if assigned(obj) and (obj is SByte) then
         exit self = SByte(obj)
       else
         exit False;
@@ -62,7 +62,7 @@ type
     method GetHashCode: Integer; override;
     method &Equals(obj: Object): Boolean; override;
     begin
-      if Assigned(obj) and (obj is Byte) then
+      if assigned(obj) and (obj is Byte) then
         exit self = Byte(obj)
       else
         exit False;
@@ -104,7 +104,7 @@ type
     method GetHashCode: Integer; override;
     method &Equals(obj: Object): Boolean; override;
     begin
-      if Assigned(obj) and (obj is Int16) then
+      if assigned(obj) and (obj is Int16) then
         exit self = Int16(obj)
       else
         exit False;
@@ -140,7 +140,7 @@ type
     method GetHashCode: Integer; override;
     method &Equals(obj: Object): Boolean; override;
     begin
-      if Assigned(obj) and (obj is UInt16) then
+      if assigned(obj) and (obj is UInt16) then
         exit self = UInt16(obj)
       else
         exit False;
@@ -183,7 +183,7 @@ type
 
     method &Equals(obj: Object): Boolean; override;
     begin
-      if Assigned(obj) and (obj is Int32) then
+      if assigned(obj) and (obj is Int32) then
         exit self = Int32(obj)
       else
         exit False;
@@ -220,7 +220,7 @@ type
     
     method &Equals(obj: Object): Boolean; override;
     begin
-      if Assigned(obj) and (obj is UInt32) then
+      if assigned(obj) and (obj is UInt32) then
         exit self = UInt32(obj)
       else
         exit False;
@@ -253,7 +253,7 @@ type
     
     method &Equals(obj: Object): Boolean; override;
     begin
-      if Assigned(obj) and (obj is Int64) then
+      if assigned(obj) and (obj is Int64) then
         exit self = Int64(obj)
       else
         exit False;
@@ -285,7 +285,7 @@ type
     
     method &Equals(obj: Object): Boolean; override;
     begin
-      if Assigned(obj) and (obj is UInt64) then
+      if assigned(obj) and (obj is UInt64) then
         exit self = UInt64(obj)
       else
         exit False;
@@ -329,7 +329,7 @@ type
     method GetHashCode: Integer; override;
     method &Equals(obj: Object): Boolean; override;
     begin
-      if Assigned(obj) and (obj is NativeInt) then
+      if assigned(obj) and (obj is NativeInt) then
         exit self = NativeInt(obj)
       else
         exit False;
@@ -367,7 +367,7 @@ type
     method GetHashCode: Integer; override;
     method &Equals(obj: Object): Boolean; override;
     begin
-      if Assigned(obj) and (obj is NativeUInt) then
+      if assigned(obj) and (obj is NativeUInt) then
         exit self = NativeUInt(obj)
       else
         exit False;
@@ -452,7 +452,7 @@ begin
   var n1: UInt64 := if isNeg then -self else self;
 
   while n1 <> 0 do begin
-    buffer[i] := char(ord('0') + (n1 mod 10));
+    buffer[i] := Char(ord('0') + (n1 mod 10));
     dec(i);
     n1 :=n1 /10;
   end;
@@ -472,7 +472,7 @@ begin
   var n1: UInt64 := self;
 
   while n1 <> 0 do begin
-    buffer[i] := char(ord('0') + (n1 mod 10));
+    buffer[i] := Char(ord('0') + (n1 mod 10));
     dec(i);
     n1 :=n1 /10;
   end;

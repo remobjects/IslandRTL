@@ -23,8 +23,8 @@ type
     method &Write(const buf: ^Void; Count: UInt32): UInt32; override;
     method ToArray: array of Byte;
     method WriteTo(Destination: Stream);
-    method LoadFromFile(FileName: string);
-    method SaveToFile(FileName: string);
+    method LoadFromFile(FileName: String);
+    method SaveToFile(FileName: String);
     method SetLength(value: Int64); override;
   public
     property Capacity: Int32 read fCapacity write SetCapacity;

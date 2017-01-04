@@ -65,7 +65,7 @@ type
     class const maxpos = 1024;
     class method CalcLastDigit(var data: array[0..maxpos] of Byte; aStart, aCount: Integer);
   public
-    class method Convert(aValue: Double; aPrecision: integer): String;
+    class method Convert(aValue: Double; aPrecision: Integer): String;
   end;
 
 implementation
@@ -138,7 +138,7 @@ end;
 
 method Double.&Equals(obj: Object): Boolean;
 begin
-  if Assigned(obj) and (obj is Double) then
+  if assigned(obj) and (obj is Double) then
     exit self = Double(obj)
   else
     exit False;
@@ -212,13 +212,13 @@ end;
 
 method Single.&Equals(obj: Object): Boolean;
 begin
-  if Assigned(obj) and (obj is Single) then
+  if assigned(obj) and (obj is Single) then
     exit self = Single(obj)
   else
     exit False;
 end;
 
-class method FloatToString.Convert(aValue: Double; aPrecision: integer): String;
+class method FloatToString.Convert(aValue: Double; aPrecision: Integer): String;
 const 
   digits: not nullable String = '0123456789';
 begin  

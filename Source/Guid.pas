@@ -130,7 +130,7 @@ type
 
     method &Equals(obj: Object): Boolean; override;
     begin
-      if Assigned(obj) and (obj is Guid) then
+      if assigned(obj) and (obj is Guid) then
         exit self = Guid(obj)
       else
         exit False;

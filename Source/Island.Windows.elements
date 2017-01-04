@@ -13,6 +13,7 @@
         <Name>Island (Windows)</Name>
         <ProjectGuid>{00bbbadd-8d31-439b-9495-1f35080e299e}</ProjectGuid>
         <Mode>Island</Mode>
+        <WarnOnCaseMismatch>True</WarnOnCaseMismatch>
     </PropertyGroup>
     <PropertyGroup Condition="'$(Configuration)' == 'Debug-i386'">
         <OutputPath>Bin\Debug</OutputPath>
