@@ -72,6 +72,9 @@ type
     method Sort(Comparison: Comparison<T>);
 
     method ToArray: array of T;
+    method CopyTo(&array: array of T);
+    method CopyTo(&array: array of T; arrayIndex: Integer);
+    method CopyTo(&index: Integer; &array: array of T; arrayIndex: Integer; &count: Integer);
 
     property Capacity: Integer read length(fItems);
 
@@ -373,8 +376,7 @@ end;
 method List<T>.ToArray: array of T;
 begin
   result := new array of T(fCount);
-  for i: Integer :=0 to fCount -1 do
-    result[i] := self[i];
+  CopyTo(result);
 end;
 
 method List<T>.Grow(aCapacity: Integer);
@@ -442,6 +444,33 @@ end;
 method List<T>.GetEnumerator: IEnumerator<T>;
 begin
   exit new ListEnumerator<T>(Self);
+end;
+
+method List<T>.CopyTo(&array: array of T);
+begin
+  if length(&array)< fCount then new ArgumentException('The number of elements in the source List<T> is greater than the number of elements that the destination array can contain.');
+  CopyTo(0, &array, 0, fCount);
+end;
+
+method List<T>.CopyTo(&array: array of T; arrayIndex: Integer);
+begin
+  if arrayIndex <0 then new ArgumentOutOfRangeException('arrayIndex is less than 0.');
+  if length(&array)< fCount+arrayIndex then new ArgumentException('The number of elements in the source List<T> is greater than the available space from arrayIndex to the end of the destination array.');
+  CopyTo(0, &array, arrayIndex, fCount);
+end;
+
+method List<T>.CopyTo(&index: Integer; &array: array of T; arrayIndex: Integer; &count: Integer);
+begin
+  if not assigned(&array) then new ArgumentNullException('array is nil.');
+  if &index <0 then new ArgumentOutOfRangeException('index is less than 0.');
+  if arrayIndex <0 then new ArgumentOutOfRangeException('arrayIndex is less than 0.');
+  if &count <0 then new ArgumentOutOfRangeException('count is less than 0.');
+  if &index >= fCount then new ArgumentException('index is equal to or greater than the Count of the source List<T>.');
+  if &index+&count > fCount then new ArgumentException('index plus count is greater than the Count of the source List<T>.');
+  if arrayIndex+&count > length(&array) then new ArgumentException('count is greater than the available space from arrayIndex to the end of the destination array.');
+  
+  for i:Integer := 0 to &count -1 do 
+    &array[arrayIndex+i] := fItems[&index+i];
 end;
 
 
