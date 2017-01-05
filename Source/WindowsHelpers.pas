@@ -629,9 +629,9 @@ end;
 {$ENDIF}
 
 {$IFNDEF _WIN64}
-class method externalcalls._chkstk;
+class method ExternalCalls._chkstk;
 begin
-  internalcalls.voidasm(
+  InternalCalls.voidasm(
   "
     push %ecx  // save EcX as the caller doesn't expect ANY changes to registers, except EAX which holds the nr of bytes
     leal 4(%esp), %ecx // top of the stack after returning from this function
@@ -844,7 +844,7 @@ end;
 {$ELSE}
  method ExternalCalls.ExceptionHandler(msvcinfo: ^MSVCExceptionInfo; arec: ^rtl.EXCEPTION_RECORD; aOrgregFrame: ^ElementsRegistrationFrame; context: rtl.PCONTEXT; dispatcher: ^Void): Integer;
 begin
-  var regFrame := ^ElementsregistrationFrame(@^NativeInt(aOrgregFrame)[-1]);
+  var regFrame := ^ElementsRegistrationFrame(@^NativeInt(aOrgregFrame)[-1]);
 
   var lBaseAddress := NativeInt(@regFrame^.TryLevel) + 4;
   var lESP := NativeInt(regFrame^.ESP);
@@ -853,9 +853,9 @@ begin
 
   if 0 <> (arec^.ExceptionFlags and ( rtl.EXCEPTION_UNWINDING or rtl.EXCEPTION_EXIT_UNWIND)) then begin
     // unwinding, call finally
-    while (regframe^.TryLevel <> $FFFFFFFF) and (regframe^.TryLevel < msvcinfo^.NumUnwindMap)  do begin
-      if msvcinfo^.UnwindMap[regframe^.TryLevel].Cleanup <> nil then CallCatch(NativeInt(^Void(msvcinfo^.UnwindMap[regframe^.TryLevel].Cleanup)), lBaseAddress);
-      regframe^.TryLevel := msvcinfo^.UnwindMap[regframe^.TryLevel].ToState;
+    while (regFrame^.TryLevel <> $FFFFFFFF) and (regFrame^.TryLevel < msvcinfo^.NumUnwindMap)  do begin
+      if msvcinfo^.UnwindMap[regFrame^.TryLevel].Cleanup <> nil then CallCatch(NativeInt(^Void(msvcinfo^.UnwindMap[regFrame^.TryLevel].Cleanup)), lBaseAddress);
+      regFrame^.TryLevel := msvcinfo^.UnwindMap[regFrame^.TryLevel].ToState;
     end;
   end else begin
     // we're not unwinding, we're looking for an exception handler that takes it
@@ -883,9 +883,9 @@ begin
               result := 0;
               rtl.RtlUnwind(aOrgregFrame, nil, arec, nil);
               // no unwind locally
-              while (regframe^.TryLevel <> $FFFFFFFF) and (regframe^.TryLevel < tb^.CatchHigh) and (regFrame^.TryLevel >= tb^.TryLow) do begin
-                if msvcinfo^.UnwindMap[regframe^.TryLevel].Cleanup <> nil then CallCatch(NativeInt(^Void(msvcinfo^.UnwindMap[regframe^.TryLevel].Cleanup)), lBaseAddress);
-                regframe^.TryLevel := msvcinfo^.UnwindMap[regframe^.TryLevel].ToState;
+              while (regFrame^.TryLevel <> $FFFFFFFF) and (regFrame^.TryLevel < tb^.CatchHigh) and (regFrame^.TryLevel >= tb^.TryLow) do begin
+                if msvcinfo^.UnwindMap[regFrame^.TryLevel].Cleanup <> nil then CallCatch(NativeInt(^Void(msvcinfo^.UnwindMap[regFrame^.TryLevel].Cleanup)), lBaseAddress);
+                regFrame^.TryLevel := msvcinfo^.UnwindMap[regFrame^.TryLevel].ToState;
               end;
               var lCont := CallCatch(NativeInt(^Void(tb^.HandlerType^.Handler)), lBaseAddress);
               JumpToContinuation(lCont, lESP, lBaseAddress);
