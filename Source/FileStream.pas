@@ -10,7 +10,7 @@ type
   FileAccess = public enum(&Read, &Write, ReadWrite);
   FileShare = public enum(None, &Read, &Write, ReadWrite, Delete);
 
-  FileStream = class(Stream)
+  FileStream = public class(Stream)
   private
     {$IFDEF WINDOWS}
     fHandle: rtl.HANDLE := rtl.INVALID_HANDLE_VALUE;
