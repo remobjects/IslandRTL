@@ -51,6 +51,7 @@ type
     end;
   public
     method ToString: String; override;
+    method ToString(aNumberOfDecimalDigits: UInt32): String;
     method GetHashCode: Integer; override;
     method &Equals(obj: Object): Boolean; override;
 
@@ -73,6 +74,7 @@ type
     class method CalcLastDigit(var data: array[0..maxpos] of Byte; aStart, aCount: Integer);
   public
     class method Convert(aValue: Double; aPrecision: Integer): String;
+    class method ConvertToDecimal(aValue: Double; aNumberOfDecimalDigits: UInt32): String;
   end;
 
 implementation
@@ -149,6 +151,11 @@ begin
     exit self = Double(obj)
   else
     exit False;
+end;
+
+method Double.ToString(aNumberOfDecimalDigits: UInt32): String;
+begin
+  exit FloatToString.ConvertToDecimal(self, aNumberOfDecimalDigits);
 end;
 
 method Single.ToString: String;
@@ -404,6 +411,126 @@ begin
         break;
     end;
   end;
+end;
+
+class method FloatToString.ConvertToDecimal(aValue: Double; aNumberOfDecimalDigits: UInt32): String;
+const
+  digits: not nullable String = '0123456789';
+begin
+  if (aValue = 0) and (aNumberOfDecimalDigits = 0) then exit '0';
+
+  var data: array[0..maxpos + 1 {extra digits for rounding}] of Byte;
+  var pos := 0;
+  var exp := 0;
+  var positive_value:=True;
+  var lValue := aValue;
+
+  if lValue < 0 then begin
+    positive_value:=False;
+    lValue := Math.Abs(lValue);
+  end;
+
+  {$REGION process ####. }
+  if lValue >= 1 then begin
+    var buf: array[0..maxpos] of Byte;
+    var pos1 := 0;
+
+    var t_orig:= Math.Truncate(lValue);
+    var t_calc := t_orig;
+    t_calc := 0;
+    var t_work := t_orig;
+    var t_pos1:UInt64 := 1;
+    while (t_calc <> t_orig) do begin
+      var t1 := Int32(t_work mod 10);
+      t_work := Math.Truncate(t_work div 10);
+      if pos1 < maxpos then begin
+        buf[pos1] := t1;
+        inc(pos1);
+      end;
+      if (t_work = 0) then break;
+      t_calc := t_calc + t1*t_pos1;
+      t_pos1:= t_pos1*10;
+      inc(exp);
+    end;
+    for i:Integer := 0 to pos1-1 do
+      data[pos+i]:= buf[pos1-i-1];
+    inc(pos, pos1);
+  end
+  else begin
+    dec(exp);
+    inc(pos);// extra 0 at beginning
+  end;
+  {$ENDREGION}
+
+  {$REGION process .#### }
+  var fl:= true;  
+  var t_orig:= lValue mod 1;
+  if (t_orig <> 0) and (pos < maxpos) then begin
+    while t_orig <> 0 do begin
+      t_orig:= t_orig*10;
+      var t1 := Int32(t_orig mod 10);
+      if (t1 = 0) and fl and (exp<0) then begin
+        dec(exp);
+      end
+      else begin
+        fl := false;
+        data[pos]:= t1;
+        inc(pos);
+      end;
+      if pos >= maxpos then break;
+    end;
+  end;
+  {$ENDREGION}
+
+  var nexp := Math.Abs(exp);
+
+  var buf:= new array of Char(nexp + aNumberOfDecimalDigits + 2) ;
+  var bufpos:= 0;
+  if not positive_value then begin
+    buf[bufpos] := '-';
+    inc(bufpos);
+  end;
+
+
+  if exp>=0 then begin  //####.#####
+    CalcLastDigit(var data, 0, aNumberOfDecimalDigits+nexp+1);
+    for i:Integer:=0 to exp do begin
+      buf[bufpos] := digits[data[i]];
+      inc(bufpos);
+    end;
+    if aNumberOfDecimalDigits > 0 then begin
+      buf[bufpos] := DecimalChar;
+      inc(bufpos);
+      var st_cnt := aNumberOfDecimalDigits + exp + 1;
+      for i:Integer:=nexp+1 to st_cnt-1 do begin
+        buf[bufpos] := digits[data[i]];
+        inc(bufpos);
+      end;
+    end;
+  end
+  // 0.######
+  else if aNumberOfDecimalDigits = 0 then begin
+    CalcLastDigit(var data, 0, 1);
+    buf[bufpos] := digits[data[0]];
+    inc(bufpos);
+  end
+  else begin  // 0.######
+    CalcLastDigit(var data, 1, aNumberOfDecimalDigits+1);      
+    buf[bufpos] := '0';
+    inc(bufpos);
+    buf[bufpos] := DecimalChar;
+    inc(bufpos);
+    for i:Integer :=0 to nexp-2 do begin
+      buf[bufpos] := '0';
+      inc(bufpos);
+    end;
+    var st_cnt := aNumberOfDecimalDigits;
+    for i:Integer:=0 to st_cnt-1 do begin
+      buf[bufpos] := digits[data[i+1]];
+      inc(bufpos);
+    end;      
+  end;
+  exit  String.FromPChar(@buf[0],bufpos);
 end;
 
 end.
