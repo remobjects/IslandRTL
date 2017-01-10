@@ -11,7 +11,6 @@ type
     fFirstChar: Char;{$SHOW H6}
     method get_Item(i: Integer): Char;
     constructor; empty; // not callable
-    method IndexOf(Value: String; aStartFromIndex: Integer): Int32;
     {$IFDEF WINDOWS}
     method doLCMapString(aInvariant: Boolean := false; aMode:LCMapStringTransformMode := LCMapStringTransformMode.None):String;
     {$ENDIF}
@@ -55,11 +54,17 @@ type
     class method &Join(Separator: String; Value: array of Object): String;
     method Contains(Value: String): Boolean;
     method IndexOf(Value: String): Int32;
+    method IndexOf(Value: String; aStartFromIndex: Integer): Int32;
     method LastIndexOf(Value: String): Int32;
+    method LastIndexOf(Value: String; aStartFromIndex: Integer): Int32;
     method Substring(StartIndex: Int32): not nullable String;
     method Substring(StartIndex: Int32; aLength: Int32): not nullable String;
     method Split(Separator: String): array of String;
     method Replace(OldValue, NewValue: String): not nullable String;
+    method PadStart(TotalWidth: Integer): String; inline; 
+    method PadStart(TotalWidth: Integer; PaddingChar: Char): String; 
+    method PadEnd(TotalWidth: Integer): String; inline; 
+    method PadEnd(TotalWidth: Integer; PaddingChar: Char): String;
     method ToLower(aInvariant: Boolean := false): String;
     method ToUpper(aInvariant: Boolean := false): String;
     method Trim: String;
@@ -390,11 +395,16 @@ end;
 
 method String.LastIndexOf(Value: String): Int32;
 begin
+  result := LastIndexOf(Value, self.Length);
+end;
+
+method String.LastIndexOf(Value: String; aStartFromIndex: Integer): Int32;
+begin
   var Value_Length := Value.Length;
   if Value_Length > Self.Length then exit -1;
   if Value_Length = 0 then exit -1;
 
-  for i: Integer := Self.Length-Value_Length downto 0 do begin
+  for i: Integer := aStartFromIndex-Value_Length downto 0 do begin
     var lfound:= true;
     for j: Integer := 0 to Value_Length-1 do begin
       lfound := lfound and (self.Item[i+j] = Value.Item[j]);
@@ -598,6 +608,34 @@ begin
   if (lrequired_size = 0) and (rtl.GetLastError <> 0) then RaiseError('Problem with calling LCMapString (2nd call)');
 end;
 {$ENDIF}
+
+method String.PadStart(TotalWidth: Integer): String;
+begin
+  result := PadStart(TotalWidth, ' ');
+end;
+
+method String.PadStart(TotalWidth: Integer; PaddingChar: Char): String; 
+begin
+  var lTotal := TotalWidth - self.Length;
+  if lTotal < 0 then
+    result := self
+  else
+    result := FromPChar(@PaddingChar, lTotal) + self;
+end;
+
+method String.PadEnd(TotalWidth: Integer): String;
+begin
+  result := PadEnd(TotalWidth, ' ');
+end;
+
+method String.PadEnd(TotalWidth: Integer; PaddingChar: Char): String;
+begin
+  var lTotal := TotalWidth - self.Length;
+  if lTotal < 0 then
+    result := self
+  else
+    result := self + FromPChar(@PaddingChar, lTotal);
+end;
 
 method String.ToLower(aInvariant: Boolean := false): String;
 begin
