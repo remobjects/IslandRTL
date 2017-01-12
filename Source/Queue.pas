@@ -3,7 +3,7 @@
 interface
 
 type
-  QueueEnumerator<T> = class(IEnumerator<T>)
+  QueueEnumerator<T> = public class(IEnumerator<T>)
   private
     fArray: array of T;
     fCurrentIndex: Integer := 0;

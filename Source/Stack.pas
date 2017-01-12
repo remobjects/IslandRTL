@@ -3,7 +3,7 @@
 interface
 
 type
-  StackEnumerator<T> = class(IEnumerator<T>)
+  StackEnumerator<T> = public class(IEnumerator<T>)
   private
     fItems: array of T;
     fCurrentIndex: Integer := 0;

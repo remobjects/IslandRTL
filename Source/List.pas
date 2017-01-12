@@ -6,7 +6,7 @@ type
   Predicate<T> = public delegate (Obj: T): Boolean;
   Comparison<T> = public delegate (x: T; y: T): Integer;
 
-  ListEnumerator<T> = class(IEnumerator<T>)
+  ListEnumerator<T> = public class(IEnumerator<T>)
   private
     fList: List<T>;
     fCurrentIndex: Integer;

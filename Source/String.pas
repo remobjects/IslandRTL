@@ -37,11 +37,16 @@ type
     class method FromChar(c: Char): String;
     class method IsNullOrEmpty(value: String):Boolean;
     method ToAnsiChars(aNullTerminate: Boolean := false): array of AnsiChar;
-    method ToCharArray(aNullTerminate: Boolean := false): array of Char;
+    method ToCharArray(aNullTerminate: Boolean := false): array of Char; inline;
+    method ToCharArray(StartIndex: Integer; aLength: Integer; aNullTerminate: Boolean := false): array of Char;
     property Length: Integer read fLength;
     property Item[i: Integer]: Char read get_Item; default;
     property FirstChar: ^Char read @fFirstChar;
 
+    method CopyTo(SourceIndex: Integer; destination: array of Char; DestinationIndex: Integer; Count: Integer);
+    method Insert(aIndex: Int32; aNewValue: String): not nullable String;
+    method &Remove(StartIndex: Integer): String; inline;
+    method &Remove(StartIndex: Integer; Count: Integer): String; 
     method CompareTo(Value: String): Integer;
     method CompareToIgnoreCase(Value: String): Integer;
     method &Equals(Value: String): Boolean;
@@ -529,6 +534,33 @@ begin
   exit s1.IndexOf(s2, pos) = pos;
 end;
 
+method String.CopyTo(SourceIndex: Integer; destination: array of Char; DestinationIndex: Integer; Count: Integer);
+begin
+  {$IFDEF WINDOWS}ExternalCalls.{$ELSEIF POSIX}rtl.{$ELSE}{$ERROR}{$ENDIF}memcpy(@destination[DestinationIndex], (@fFirstChar) + SourceIndex, Count * 2);
+end;
+
+method String.Insert(aIndex: Int32; aNewValue: String): not nullable String;
+begin
+  {$HIDE W46}
+  result := AllocString(self.Length + aNewValue.Length);
+  {$SHOW W46}
+  {$IFDEF WINDOWS}ExternalCalls.{$ELSEIF POSIX}rtl.{$ELSE}{$ERROR}{$ENDIF}memcpy(@result.fFirstChar, @fFirstChar, aIndex * 2);
+  {$IFDEF WINDOWS}ExternalCalls.{$ELSEIF POSIX}rtl.{$ELSE}{$ERROR}{$ENDIF}memcpy((@result.fFirstChar) + aIndex, @aNewValue.fFirstChar, aNewValue.Length * 2);
+  {$IFDEF WINDOWS}ExternalCalls.{$ELSEIF POSIX}rtl.{$ELSE}{$ERROR}{$ENDIF}memcpy((@result.fFirstChar) + aIndex + aNewValue.Length, (@fFirstChar) + aIndex, (self.Length - aIndex) * 2);
+end;
+
+method String.&Remove(StartIndex: Integer): String;
+begin
+  result := &Remove(StartIndex, Length - StartIndex);
+end;
+
+method String.&Remove(StartIndex: Integer; Count: Integer): String; 
+begin
+  result := AllocString(self.Length - Count);
+  {$IFDEF WINDOWS}ExternalCalls.{$ELSEIF POSIX}rtl.{$ELSE}{$ERROR}{$ENDIF}memcpy(@result.fFirstChar, @fFirstChar, StartIndex * 2);
+  {$IFDEF WINDOWS}ExternalCalls.{$ELSEIF POSIX}rtl.{$ELSE}{$ERROR}{$ENDIF}memcpy((@result.fFirstChar) + StartIndex, (@fFirstChar) + StartIndex + Count, (self.Length - (StartIndex + Count)) * 2);
+end;
+
 method String.CompareTo(Value: String): Integer;
 begin
   exit String.Compare(self,Value);
@@ -672,9 +704,14 @@ end;
 
 method String.ToCharArray(aNullTerminate: Boolean := false): array of Char;
 begin
-  var r := new array of Char(fLength + if aNullTerminate then 1 else 0);
-  {$IFDEF WINDOWS}ExternalCalls.{$ELSEIF POSIX}rtl.{$ELSE}{$ERROR}{$ENDIF}memcpy(@r[0], @fFirstChar, fLength * 2);
-  if aNullTerminate then r[fLength] := #0;
+  result := ToCharArray(0, fLength, aNullTerminate);
+end;
+
+method String.ToCharArray(StartIndex: Integer; aLength: Integer; aNullTerminate: Boolean := false): array of Char;
+begin
+  var r := new array of Char(aLength + if aNullTerminate then 1 else 0);
+  {$IFDEF WINDOWS}ExternalCalls.{$ELSEIF POSIX}rtl.{$ELSE}{$ERROR}{$ENDIF}memcpy(@r[0], (@fFirstChar) + StartIndex, aLength * 2);
+  if aNullTerminate then r[aLength] := #0;
   exit r;
 end;
 
