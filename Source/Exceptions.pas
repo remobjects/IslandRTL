@@ -65,7 +65,7 @@ type
   public
     constructor;
     begin
-      inherited constructor('Member access on null Reference');
+      inherited constructor('Member access on null reference');
     end;
   end;
 
@@ -79,6 +79,14 @@ type
     constructor;
     begin
       inherited constructor('Abstract method');
+    end;
+  end;
+
+  DivideByZeroException = public class(Exception)
+  public
+    constructor;
+    begin
+      inherited constructor('Divide by zero');
     end;
   end;
 

@@ -47,6 +47,18 @@ type
       exit new InvalidCastException('Invalid cast');
     end;
 
+    [SymbolName('__newdividebyzero')]
+    class method CreateDivideByZeroException: Exception;
+    begin
+      exit new DivideByZeroException;
+    end;
+
+    [SymbolName('__newnullrefexception')]
+    class method CreateNullReferenceException: Exception;
+    begin
+      exit new NullReferenceException;
+    end;
+
     [SymbolName('__newinst')]
     class method NewInstance(aTTY: ^Void; aSize: NativeInt): ^Void;
     begin
