@@ -61,9 +61,9 @@ type
     class method wcslen(c: ^Char): Integer;
 
     {$IFDEF _WIN64}
-    [SymbolName('__chkstk'), Naked]
+    [SymbolName('__chkstk'), Naked, DisableOptimizations, DisableInliningAttribute]
     {$ELSE}
-    [SymbolName('_chkstk'), Naked]
+    [SymbolName('_chkstk'), Naked, DisableOptimizations, DisableInliningAttribute]
     {$ENDIF}
     class method _chkstk;
 
@@ -96,10 +96,10 @@ type
     [SymbolName(#1'__alldiv'), CallingConvention(CallingConvention.Stdcall), Used]
     class method int64divide(dividend, divisor: Int64): Int64;
     {$IFDEF _WIN64}
-    [SymbolName('_setjmp'), Naked]
+    [SymbolName('_setjmp'), Naked, DisableOptimizations, DisableInliningAttribute]
     class method setjmp(var buf: rtl.jmp_buf);
     {$ELSE}
-    [SymbolName('_setjmp3'), Naked]
+    [SymbolName('_setjmp3'), Naked, DisableOptimizations, DisableInliningAttribute]
     class method setjmp3(var buf: rtl.jmp_buf; var ctx: ^Void);
     {$ENDIF}
 
@@ -714,7 +714,7 @@ callq *%rcx
 addq $$32, %rsp
 popq %rbp
 retq
-", "", false, false)]
+", "", false, false), DisableInlining, DisableOptimizations]
 {$ELSE}
 [InlineAsm("
 pushl %ebp
@@ -723,7 +723,7 @@ movl 12(%esp), %ebp
 calll *%eax
 popl %ebp
 retl
-", "", false, false)]
+", "", false, false), DisableInlining, DisableOptimizations]
 {$ENDIF}
 method CallCatch(aCall: NativeInt; aEBP: NativeInt): NativeInt; external;
 
@@ -732,13 +732,13 @@ method CallCatch(aCall: NativeInt; aEBP: NativeInt): NativeInt; external;
     movq %r8, %rbp
     movq %rdx, %rsp
     jmpq *%rcx
-", "", false, false)] {$ELSE}
+", "", false, false), DisableInlining, DisableOptimizations] {$ELSE}
 [InlineAsm("
     movl 12(%esp), %ebp
     movl 4(%esp), %eax
     movl 8(%esp), %esp
     jmpl *%eax
-", "", false, false)]
+", "", false, false), DisableInlining, DisableOptimizations]
 {$ENDIF}
 method JumpToContinuation(aAddress, aESP, aEBP: NativeInt); external;
 {$IFDEF _WIN64}

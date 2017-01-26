@@ -110,6 +110,20 @@ type
     constructor(); empty;
   end;
 
+  [AttributeUsage(AttributeTargets.Method)]
+  DisableInliningAttribute = public class(Attribute)
+  private
+  public
+    constructor(); empty;
+  end;
+
+  [AttributeUsage(AttributeTargets.Method)]
+  DisableOptimizationsAttribute = public class(Attribute)
+  private
+  public
+    constructor(); empty;
+  end;
+
   [AttributeUsage(AttributeTargets.Class or AttributeTargets.Struct or
                   AttributeTargets.Enum or AttributeTargets.Constructor or
                   AttributeTargets.Method or AttributeTargets.Property or
