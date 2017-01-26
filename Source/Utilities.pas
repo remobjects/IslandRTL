@@ -84,7 +84,7 @@ type
     class method NewArray(aTY: ^Void; aElementSize, aElements: NativeInt): ^Void;
     begin
       result := NewInstance(aTY, sizeOf(^Void) + sizeOf(NativeInt) + aElementSize * aElements);
-      InternalCalls.Cast<&Array>(result).fLength := aElements;
+      (@InternalCalls.Cast<&Array>(result).fLength)^ := aElements;
     end;
 
     [SymbolName('__newdelegate')]

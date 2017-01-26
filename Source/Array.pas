@@ -5,7 +5,7 @@ type
   assembly
     // WARNING: Do not change without also changing the compiler! these are compiler created!
     {$HIDE H8}
-    fLength: NativeInt;
+    fLength: NativeInt; readonly;
     {$SHOW H8}
     
     constructor; empty;
