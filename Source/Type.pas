@@ -30,6 +30,8 @@ type
     Ext: ^IslandExtTypeInfo;
     ParentType: ^IslandTypeInfo;
     InterfaceType: ^IslandInterfaceTable;
+    InterfaceVMT: ^Void;
+    Hash: Integer;
   end;
 
   IslandInterfaceTable = public record
@@ -50,8 +52,10 @@ type
     &Interface = 5,
     &Extension = 6,
     &Array = 7,
+    Pointer = 8,
+    &Set = 9,
     MemberInfoPresent = 16,
-    Generic = 1 shl 3) of UInt64;
+    Generic = 32) of UInt64;
 
 implementation
 

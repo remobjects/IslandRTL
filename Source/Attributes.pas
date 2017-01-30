@@ -169,6 +169,13 @@ type
     constructor(); empty;
   end;
 
+  [AttributeUsage(AttributeTargets.Method or AttributeTargets.Field)]
+  LinkOnceAttribute = public class(Attribute)
+  private
+  public
+    constructor(); empty;
+  end;
+
   [AttributeUsage(AttributeTargets.Method)]
   NoReturnAttribute = public class(Attribute)
   private
