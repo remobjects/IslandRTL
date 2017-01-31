@@ -31,7 +31,8 @@ type
     ParentType: ^IslandTypeInfo;
     InterfaceType: ^IslandInterfaceTable;
     InterfaceVMT: ^Void;
-    Hash: Integer;
+    Hash1: Int64;
+    Hash2: Int64;
   end;
 
   IslandInterfaceTable = public record

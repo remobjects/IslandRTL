@@ -30,9 +30,10 @@ type
       if aInstance = nil then exit nil;
       if aType = nil then exit nil;
       var lTTY := ^^IslandTypeInfo(InternalCalls.Cast(aInstance))^;
-      var lTypeHash := ^IslandTypeInfo(aType)^.Hash;
+      var lTypeHash1 := ^IslandTypeInfo(aType)^.Hash1;
+      var lTypeHash2 := ^IslandTypeInfo(aType)^.Hash2;
       loop begin
-        if SameType(lTTY, aType, lTypeHash) then exit aInstance;
+        if SameType(lTTY, aType, lTypeHash1, lTypeHash2) then exit aInstance;
         lTTY := lTTY^.ParentType;
         if lTTY = nil then exit nil;
       end;
@@ -47,9 +48,9 @@ type
       end;
     end;
 
-    class method SameType(aLeft, aRight: ^Void; aRightHash: Integer): Boolean; inline; private;
+    class method SameType(aLeft, aRight: ^Void; aRightHash1, aRightHash2: Int64): Boolean; inline; private;
     begin // this is a fast way to check for type equivalence and support cross dll type matches.
-      exit (aLeft = aRight) or (assigned(aLeft) and (^IslandTypeInfo(aLeft)^.Hash = aRightHash) and (SameString(^IslandTypeInfo(aLeft)^.Ext^.Name, ^IslandTypeInfo(aRight)^.Ext^.Name)));
+      exit (aLeft = aRight) or (assigned(aLeft) and (^IslandTypeInfo(aLeft)^.Hash1 = aRightHash1)and (^IslandTypeInfo(aLeft)^.Hash2 = aRightHash2) and (SameString(^IslandTypeInfo(aLeft)^.Ext^.Name, ^IslandTypeInfo(aRight)^.Ext^.Name)));
     end;
 
     [SymbolName('__isintfinst')]
@@ -59,12 +60,13 @@ type
       if aType = nil then exit nil;
       var lIntf := ^^IslandTypeInfo(InternalCalls.Cast(aInstance))^^.InterfaceType;
       if lIntf = nil then exit nil;
-      var lIntfHash := ^IslandTypeInfo(aType)^.Hash;
+      var lIntfHash1 := ^IslandTypeInfo(aType)^.Hash1;
+      var lIntfHash2 := ^IslandTypeInfo(aType)^.Hash2;
       aHashCode := aHashCode mod lIntf^.HashTableSize;
       var lHashEntry := (@lIntf^.FirstEntry)[aHashCode];
       if lHashEntry = nil then exit nil;
       repeat
-        if SameType(lHashEntry^, aType, lIntfHash) then
+        if SameType(lHashEntry^, aType, lIntfHash1, lIntfHash2) then
           exit aType;
         inc(lHashEntry);
       until lHashEntry^ = nil;
@@ -130,10 +132,16 @@ type
 
         fMapping := rtl.CreateFileMappingW( rtl.INVALID_HANDLE_VALUE, nil, rtl.PAGE_READWRITE, 0, 8, @FN[0]); 
 
-        if fMapping = nil then raise new Exception('Cannot create file mapping for memory sharing, this should not happen!');
+        if fMapping = nil then begin 
+          LocalGC;
+          raise new Exception('Cannot create file mapping for memory sharing, this should not happen!');
+        end;
         var lNew := rtl.GetLastError <> rtl.ERROR_ALREADY_EXISTS;
         var p: ^NativeInt := ^NativeInt(rtl.MapViewOfFile(fMapping, rtl.FILE_MAP_WRITE, 0, 0, 8)); 
-        if p = nil then raise new Exception('Cannot create file mapping for memory sharing, this should not happen!');
+        if p = nil then begin 
+          LocalGC;
+          raise new Exception('Cannot create file mapping for memory sharing, this should not happen!');
+        end;
         if lNew then begin
           LocalGC;
           InternalCalls.VolatileWrite(var p^, NativeInt(@fSharedMemory));
@@ -170,19 +178,19 @@ type
     begin 
       gc.GC_register_finalizer_no_order(aVal, aProc, nil, nil, nil);
     end;
-
+    const FinalizerIndex = 4 + {$IFDEF I386}4{$ELSE}2{$ENDIF};
     [SymbolName('__newinst')]
     class method NewInstance(aTTY: ^Void; aSize: NativeInt): ^Void;
     begin
       if fFinalizer = nil then begin
-        fFinalizer := ^^Void(InternalCalls.GetTypeInfo<Object>())[5]; // keep in sync with compiler!
+        fFinalizer := ^^Void(InternalCalls.GetTypeInfo<Object>())[FinalizerIndex]; // keep in sync with compiler!
       end;
       result := ^Void(-1);
       if fLoaded = 0 then LoadGC;
       result := fSharedMemory.malloc(aSize);
       ^^Void(result)^ := aTTY;
       {$IFDEF WINDOWS}ExternalCalls.{$ELSE}rtl.{$ENDIF}memset(^Byte(result) + sizeOf(^Void), 0, aSize - sizeOf(^Void));
-      if ^^Void(aTTY)[5] <> fFinalizer then begin
+      if ^^Void(aTTY)[FinalizerIndex] <> fFinalizer then begin
         fSharedMemory.setfinalizer(result, @GC_finalizer);
       end;
     end;
