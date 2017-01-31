@@ -150,6 +150,7 @@ type
             var lData: ^SharedMemory := ^SharedMemory(InternalCalls.VolatileRead(var p^));
             if lData = nil then Thread.Sleep(1) else begin 
               fSharedMemory := lData^;
+              break;
             end;
           end;
         end;
