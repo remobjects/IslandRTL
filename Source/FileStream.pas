@@ -30,7 +30,7 @@ type
     property CanSeek: Boolean read IsValid; override;
     property CanWrite: Boolean read (fAccess <> FileAccess.Read) and IsValid; override;
     method Seek(Offset: Int64; Origin: SeekOrigin): Int64; override;
-    method Flush;
+    method Flush; override;
     method Close; override;
     method &Read(const buf: ^Void; Count: Int32): Int32; override;
     method &Write(const buf: ^Void; Count: Int32): Int32;override;

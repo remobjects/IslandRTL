@@ -18,7 +18,8 @@ type
     property CanSeek: Boolean read; abstract;
     property CanWrite: Boolean read; abstract;
     method Seek(Offset: Int64; Origin: SeekOrigin): Int64; abstract;
-    method Close; virtual;
+    method Close; virtual; empty;
+    method Flush; virtual; empty;
     method &Read(const buf: ^Void; Count: Int32): Int32; abstract;
     method &Write(const buf: ^Void; Count: Int32): Int32; abstract;
     method &Read(Buffer: array of Byte; Offset: Int32; Count: Int32): Int32;
@@ -52,11 +53,6 @@ end;
 method Stream.SetLength(value: Int64);
 begin
   raise new NotSupportedException;
-end;
-
-method Stream.Close;
-begin
- // empty
 end;
 
 method Stream.CopyTo(Destination: Stream);

@@ -16,6 +16,9 @@ type
   protected
     method IsValid: Boolean; override;
   public
+    constructor; empty;
+    constructor(aCapacity: Int32);
+
     property CanRead: Boolean read IsValid; override;
     property CanSeek: Boolean read IsValid; override;
     property CanWrite: Boolean read IsValid; override;
@@ -32,6 +35,11 @@ type
   end;
 
 implementation
+
+constructor MemoryStream(aCapacity: Int32);
+begin
+  Capacity := aCapacity;
+end;
 
 method MemoryStream.SetCapacity(value: Int32);
 begin
