@@ -30,7 +30,7 @@ begin
     fOutputHandle := rtl.GetStdHandle(rtl.STD_OUTPUT_HANDLE);
   var c := s.ToAnsiChars;
   var lOff: Integer := 0;
-  var l := Length(c);
+  var l := length(c);
   while l > 0 do begin
     var lOut: rtl.DWORD;
     if not rtl.WriteFile(fOutputHandle, @c[lOff], l, @lOut, nil) then break;
