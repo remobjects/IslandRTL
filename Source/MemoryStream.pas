@@ -12,7 +12,6 @@ type
     method SetCapacity(value: Int32);
     method CheckCapacity(value: Int32);
     method CalcCapacity(aNewCapacity: Int32): Int32;
-    method SetLength(value: Int64);
   protected
     method IsValid: Boolean; override;
   public
@@ -31,7 +30,8 @@ type
     method SaveToFile(FileName: String);
 
     property Capacity: Int32 read fCapacity write SetCapacity;
-    property Length: Int64 read inherited Length write SetLength; override;
+    property Length: Int64 read fLength; override;
+    method SetLength(value: Int64); override;
   end;
 
 implementation
@@ -130,7 +130,7 @@ end;
 method MemoryStream.LoadFromFile(FileName: String);
 begin
   var fs := new FileStream(FileName, FileMode.Open,FileAccess.Read, FileShare.Read);
-  self.Length := 0;
+  SetLength(0);
   self.Capacity := fs.Length;
   fs.Position := 0;
   fLength := fs.Read(@fbuf[0], fs.Length);
@@ -140,7 +140,7 @@ end;
 method MemoryStream.SaveToFile(FileName: String);
 begin
   var fs := new FileStream(FileName, FileMode.Create,FileAccess.Write, FileShare.None);
-  fs.Length := fLength;
+  SetLength(fLength);
   fs.Position := 0;
   fs.Write(@fbuf[0],fLength);
   fs.Close;

@@ -20,7 +20,7 @@ type
     fHandle: ^rtl._IO_FILE;
     {$ENDIF}
     fAccess: FileAccess;
-    method SetLength(value: Int64);
+    method GetLength: Int64;
   protected
     method IsValid: Boolean; override;
   public
@@ -34,7 +34,8 @@ type
     method Close; override;
     method &Read(const buf: ^Void; Count: Int32): Int32; override;
     method &Write(const buf: ^Void; Count: Int32): Int32;override;
-    property Length: Int64 read inherited Length write SetLength; override;
+    property Length: Int64 read GetLength; override;
+    method SetLength(value: Int64); override;
     property Name: String; readonly;
   end;
 
@@ -172,6 +173,12 @@ begin
   {$ELSE}
     {$ERROR}
   {$ENDIF}
+end;
+
+method FileStream.GetLength: Int64;
+begin
+  {$HINT implement properly}
+  result := inherited Length;
 end;
 
 method FileStream.Read(const buf: ^Void; Count: Int32): Int32;

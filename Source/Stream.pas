@@ -8,7 +8,6 @@ type
   Stream = public abstract class
   private
     method GetLength: Int64;
-    method SetLength(value: Int64);
     method SetPosition(value: Int64);
     method GetPosition: Int64;
   protected
@@ -25,7 +24,8 @@ type
     method &Read(Buffer: array of Byte; Offset: Int32; Count: Int32): Int32;
     method &Write(Buffer: array of Byte; Offset: Int32; Count: Int32): Int32;
     method CopyTo(Destination: Stream);
-    property Length: Int64 read GetLength write SetLength; virtual;
+    property Length: Int64 read GetLength; virtual;
+    method SetLength(value: Int64); virtual;
     property Position: Int64 read GetPosition write SetPosition; virtual;
   end;
 
