@@ -19,7 +19,7 @@ type
     property Arguments[i: Integer]: CustomAttributeArgument read fArguments[i];
   end;
 
-  CustomAttributeArgument = public record
+  CustomAttributeArgument = public class
   private 
     fName: String;
     fValue: Object;
@@ -451,7 +451,7 @@ type
     ExtensionMethod = 128,
     StaticExtension = 256);
 
-  &Type = public record
+  &Type = public class
    private
      method get_Constants: sequence of ConstantInfo; iterator;
      begin 
@@ -719,10 +719,22 @@ type
       fValue := aValue;
     end;
 
+    class operator Equal(a, b: &Type): Boolean;
+    begin 
+      if assigned(a) <> assigned(b) then exit false;
+      if assigned(a) then 
+        exit (a.fValue = b.fValue);
+      exit false;
+    end;
+
+    class operator NotEqual(a, b: &Type): Boolean;
+    begin 
+      exit not (a = b);
+    end;
+
     class property AllTypes: sequence of &Type read get_AllTypes;
 
     property RTTI: ^IslandTypeInfo read fValue;
-    property Valid: Boolean read fValue <> nil;
     property &Name: String read if fValue = nil then nil else String.FromPAnsiChars(fValue^.Ext^.Name);
     property &Flags: IslandTypeFlags read fValue^.Ext^.Flags;
     method Equals(other: Object): Boolean; override;
@@ -752,9 +764,16 @@ type
 
     method Instantiate: Object; // Creates a new instance of this type and calls the default constructor, fails if none is present!
     begin 
-
+      var lCtor: MethodInfo := Methods.FirstOrDefault(a -> (MethodFlags.Constructor in a.Flags) and not a.Arguments.Any);
+      if lCtor = nil then raise new Exception('No default constructor could be found!');
+      var lRealCtor := CtorHelper(lCtor.Pointer);
+      if lRealCtor = nil then raise new Exception('No default constructor could be found!');
+      result := InternalCalls.Cast<Object>(Utilities.NewInstance(fValue, SizeOfType));
+      lRealCtor(result);
     end;
   end;
+
+  CtorHelper = assembly procedure(aInst: Object);
 
 
   TypeDefFlags = public flags (
