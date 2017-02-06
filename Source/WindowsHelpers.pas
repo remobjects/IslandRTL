@@ -4,6 +4,18 @@ interface
 
 
 type
+  VersionResourceAttribute = public class(Attribute)
+  public 
+    property Copyright: String;
+    property Description: String;
+    property FileVersion: String;
+    property CompanyName: String;
+    property ProductName: String;
+    property LegalTrademarks: String;
+    property Title: String;
+    property Version: String;
+  end;
+
   atexitfunc = public procedure();
   atexitrec = record
   public
