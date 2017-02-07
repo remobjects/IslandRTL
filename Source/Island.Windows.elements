@@ -1,97 +1,97 @@
-<?xml version="1.0" encoding="utf-8" standalone="yes"?>
+﻿<?xml version="1.0" encoding="utf-8" standalone="yes"?>
 <Project xmlns="http://schemas.microsoft.com/developer/msbuild/2003" DefaultTargets="Build" ToolsVersion="4.0">
-    <PropertyGroup>
-        <ProductVersion>3.5</ProductVersion>
-        <RootNamespace>RemObjects.Elements.System</RootNamespace>
-        <OutputType>StaticLibrary</OutputType>
-        <AssemblyName>Island</AssemblyName>
-        <AllowGlobals>True</AllowGlobals>
-        <AllowLegacyOutParams>False</AllowLegacyOutParams>
-        <AllowLegacyCreate>False</AllowLegacyCreate>
-        <Configuration Condition="'$(Configuration)' == ''">Debug-i386</Configuration>
-        <TargetFrameworkVersion>v4.0</TargetFrameworkVersion>
-        <Name>Island (Windows)</Name>
-        <ProjectGuid>{00bbbadd-8d31-439b-9495-1f35080e299e}</ProjectGuid>
-        <Mode>Island</Mode>
-        <WarnOnCaseMismatch>True</WarnOnCaseMismatch>
-    </PropertyGroup>
-    <PropertyGroup Condition="'$(Configuration)' == 'Debug-i386'">
-        <OutputPath>Bin\Debug</OutputPath>
-        <DefineConstants>WINDOWS</DefineConstants>
-        <EnableAsserts>True</EnableAsserts>
-        <Optimize>False</Optimize>
-        <GeneratePDB>True</GeneratePDB>
-        <GenerateMDB>False</GenerateMDB>
-        <CaptureConsoleOutput>False</CaptureConsoleOutput>
-        <StartMode>Project</StartMode>
-        <CpuType>x86</CpuType>
-        <RuntimeVersion>v25</RuntimeVersion>
-        <XmlDoc>False</XmlDoc>
-        <XmlDocWarningLevel>WarningOnPublicMembers</XmlDocWarningLevel>
-        <EnableUnmanagedDebugging>False</EnableUnmanagedDebugging>
-        <Architecture>i386</Architecture>
-    </PropertyGroup>
-    <PropertyGroup Condition=" '$(Configuration)' == 'Debug-x86_64' ">
-        <OutputPath>Bin\Debug</OutputPath>
-        <DefineConstants>WINDOWS</DefineConstants>
-        <EnableAsserts>True</EnableAsserts>
-        <Optimize>False</Optimize>
-        <GeneratePDB>True</GeneratePDB>
-        <GenerateMDB>False</GenerateMDB>
-        <CaptureConsoleOutput>False</CaptureConsoleOutput>
-        <StartMode>Project</StartMode>
-        <CpuType>x86</CpuType>
-        <RuntimeVersion>v25</RuntimeVersion>
-        <XmlDoc>False</XmlDoc>
-        <XmlDocWarningLevel>WarningOnPublicMembers</XmlDocWarningLevel>
-        <EnableUnmanagedDebugging>False</EnableUnmanagedDebugging>
-        <Architecture>x86_64</Architecture>
-    </PropertyGroup>
-    <PropertyGroup Condition="'$(Configuration)' == 'Release-i386'">
-        <OutputPath>Bin\Release</OutputPath>
-        <DefineConstants>WINDOWS</DefineConstants>
-        <EnableAsserts>False</EnableAsserts>
-        <GeneratePDB>False</GeneratePDB>
-        <GenerateMDB>False</GenerateMDB>
-        <CaptureConsoleOutput>False</CaptureConsoleOutput>
-        <StartMode>Project</StartMode>
-        <CpuType>x86</CpuType>
-        <RuntimeVersion>v25</RuntimeVersion>
-        <XmlDoc>False</XmlDoc>
-        <XmlDocWarningLevel>WarningOnPublicMembers</XmlDocWarningLevel>
-        <EnableUnmanagedDebugging>False</EnableUnmanagedDebugging>
-        <Architecture>i386</Architecture>
-    </PropertyGroup>
-    <PropertyGroup Condition=" '$(Configuration)' == 'Release-x86_64' ">
-        <OutputPath>Bin\Release</OutputPath>
-        <DefineConstants>WINDOWS</DefineConstants>
-        <EnableAsserts>False</EnableAsserts>
-        <GeneratePDB>False</GeneratePDB>
-        <GenerateMDB>False</GenerateMDB>
-        <CaptureConsoleOutput>False</CaptureConsoleOutput>
-        <StartMode>Project</StartMode>
-        <CpuType>x86</CpuType>
-        <RuntimeVersion>v25</RuntimeVersion>
-        <XmlDoc>False</XmlDoc>
-        <XmlDocWarningLevel>WarningOnPublicMembers</XmlDocWarningLevel>
-        <EnableUnmanagedDebugging>False</EnableUnmanagedDebugging>
-        <Architecture>x86_64</Architecture>
-    </PropertyGroup>
-    <ItemGroup/>
-    <ItemGroup>
-        <Compile Include="IDispatch.pas"/>
-        <Compile Include="OleString.pas"/>
-        <Compile Include="Interfaces.pas"/>
-        <Compile Include="Registry.pas"/>
-        <Compile Include="WindowsHelpers.pas"/>
-    </ItemGroup>
-    <ItemGroup>
-        <Reference Include="gc.fx"/>
-        <Reference Include="rtl.fx"/>
-    </ItemGroup>
-    <Import Project="$(MSBuildExtensionsPath)\RemObjects Software\Elements\RemObjects.Elements.Island.Windows.targets"/>
-    <PropertyGroup>
-        <PreBuildEvent/>
-    </PropertyGroup>
-    <Import Project="Island.Shared.projitems" Label="Shared"/>
+  <PropertyGroup>
+    <ProductVersion>3.5</ProductVersion>
+    <RootNamespace>RemObjects.Elements.System</RootNamespace>
+    <OutputType>StaticLibrary</OutputType>
+    <AssemblyName>Island</AssemblyName>
+    <AllowGlobals>True</AllowGlobals>
+    <AllowLegacyOutParams>False</AllowLegacyOutParams>
+    <AllowLegacyCreate>False</AllowLegacyCreate>
+    <Configuration Condition="'$(Configuration)' == ''">Debug-i386</Configuration>
+    <TargetFrameworkVersion>v4.0</TargetFrameworkVersion>
+    <Name>Island (Windows)</Name>
+    <ProjectGuid>{00bbbadd-8d31-439b-9495-1f35080e299e}</ProjectGuid>
+    <Mode>Island</Mode>
+    <WarnOnCaseMismatch>True</WarnOnCaseMismatch>
+    <Platform Condition="'$(Platform)' == ''">AnyCPU</Platform>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)' == 'Debug-i386|AnyCPU'">
+    <OutputPath>Bin\Debug</OutputPath>
+    <DefineConstants>WINDOWS</DefineConstants>
+    <EnableAsserts>True</EnableAsserts>
+    <Optimize>False</Optimize>
+    <GeneratePDB>True</GeneratePDB>
+    <GenerateMDB>False</GenerateMDB>
+    <CaptureConsoleOutput>False</CaptureConsoleOutput>
+    <StartMode>Project</StartMode>
+    <CpuType>x86</CpuType>
+    <RuntimeVersion>v25</RuntimeVersion>
+    <XmlDoc>False</XmlDoc>
+    <XmlDocWarningLevel>WarningOnPublicMembers</XmlDocWarningLevel>
+    <EnableUnmanagedDebugging>False</EnableUnmanagedDebugging>
+    <Architecture>i386</Architecture>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)' == 'Debug-x86_64|AnyCPU'">
+    <OutputPath>Bin\Debug</OutputPath>
+    <DefineConstants>WINDOWS</DefineConstants>
+    <EnableAsserts>True</EnableAsserts>
+    <Optimize>False</Optimize>
+    <GeneratePDB>True</GeneratePDB>
+    <GenerateMDB>False</GenerateMDB>
+    <CaptureConsoleOutput>False</CaptureConsoleOutput>
+    <StartMode>Project</StartMode>
+    <CpuType>x86</CpuType>
+    <RuntimeVersion>v25</RuntimeVersion>
+    <XmlDoc>False</XmlDoc>
+    <XmlDocWarningLevel>WarningOnPublicMembers</XmlDocWarningLevel>
+    <EnableUnmanagedDebugging>False</EnableUnmanagedDebugging>
+    <Architecture>x86_64</Architecture>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)' == 'Release-i386|AnyCPU'">
+    <OutputPath>Bin\Release</OutputPath>
+    <DefineConstants>WINDOWS</DefineConstants>
+    <EnableAsserts>False</EnableAsserts>
+    <GeneratePDB>False</GeneratePDB>
+    <GenerateMDB>False</GenerateMDB>
+    <CaptureConsoleOutput>False</CaptureConsoleOutput>
+    <StartMode>Project</StartMode>
+    <CpuType>x86</CpuType>
+    <RuntimeVersion>v25</RuntimeVersion>
+    <XmlDoc>False</XmlDoc>
+    <XmlDocWarningLevel>WarningOnPublicMembers</XmlDocWarningLevel>
+    <EnableUnmanagedDebugging>False</EnableUnmanagedDebugging>
+    <Architecture>i386</Architecture>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)' == 'Release-x86_64|AnyCPU'">
+    <OutputPath>Bin\Release</OutputPath>
+    <DefineConstants>WINDOWS</DefineConstants>
+    <EnableAsserts>False</EnableAsserts>
+    <GeneratePDB>False</GeneratePDB>
+    <GenerateMDB>False</GenerateMDB>
+    <CaptureConsoleOutput>False</CaptureConsoleOutput>
+    <StartMode>Project</StartMode>
+    <CpuType>x86</CpuType>
+    <RuntimeVersion>v25</RuntimeVersion>
+    <XmlDoc>False</XmlDoc>
+    <XmlDocWarningLevel>WarningOnPublicMembers</XmlDocWarningLevel>
+    <EnableUnmanagedDebugging>False</EnableUnmanagedDebugging>
+    <Architecture>x86_64</Architecture>
+  </PropertyGroup>
+  <ItemGroup>
+    <Compile Include="IDispatch.pas" />
+    <Compile Include="OleString.pas" />
+    <Compile Include="Interfaces.pas" />
+    <Compile Include="Registry.pas" />
+    <Compile Include="WindowsHelpers.pas" />
+  </ItemGroup>
+  <ItemGroup>
+    <Reference Include="gc" />
+    <Reference Include="rtl" />
+  </ItemGroup>
+  <Import Project="$(MSBuildExtensionsPath)\RemObjects Software\Elements\RemObjects.Elements.Island.Windows.targets" />
+  <PropertyGroup>
+    <PreBuildEvent />
+  </PropertyGroup>
+  <Import Project="Island.Shared.projitems" Label="Shared" />
 </Project>
