@@ -218,7 +218,7 @@ type
     property EntryPoint: String;
   end;
 
-  [AttributeUsage(AttributeTargets.Method or AttributeTargets.Field or AttributeTargets.Property or AttributeTargets.Event or AttributeTargets.ValueType or AttributeTargets.Class or AttributeTargets.Enum or AttributeTargets.Delegate)]
+  [AttributeUsage(AttributeTargets.Method or AttributeTargets.Field or AttributeTargets.Property or AttributeTargets.Event or AttributeTargets.Struct or AttributeTargets.Class or AttributeTargets.Enum or AttributeTargets.Delegate)]
   DllExportAttribute = public class(Attribute)
   end;
 
