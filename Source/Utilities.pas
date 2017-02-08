@@ -166,7 +166,7 @@ type
         SpinLockExit(var fLock);
       end;
     end;
-    {$IFDEF POSIX}[LinkOnce]{$ENDIF}
+    {$IFDEF POSIX}[LinkOnce, DllExport]{$ENDIF}
     method LocalGC; private; 
     begin 
       gc.GC_INIT;
