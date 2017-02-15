@@ -491,8 +491,8 @@ type
      begin 
        var lWork := @fStart;
        loop begin 
-         inc(lWork);
          yield new &Type(lWork^);
+         inc(lWork);
          if lWork > @fEnd then break;
        end;
      end;
