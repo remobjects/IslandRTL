@@ -478,7 +478,7 @@ type
        loop begin 
          inc(lWork);
          if lWork = @fEnd then break;
-         yield lWork^;
+         if lWork^.fValue <> nil then yield lWork^;
        end;
      end;
     {$ELSE}
@@ -492,7 +492,7 @@ type
        var lWork := @fStart;
        loop begin 
          inc(lWork);
-         yield lWork^;
+         if lWork^.fValue <> nil then yield lWork^;
          if lWork > @fEnd then break;
        end;
      end;
@@ -745,13 +745,23 @@ type
     begin
       exit Integer({$ifdef cpu64}Int64(fValue) xor (Int64(fValue) shr 32) * 7{$else}fValue{$endif});
     end;
+    method IsSubclassOf(aType: &Type): Boolean;
+    begin
+      if aType = nil then exit false;
+      var b:^IslandTypeInfo := fValue;
+      while b <> nil do begin
+        if b = aType.fValue then exit true;
+        b := b^.ParentType;
+      end;
+      exit false;
+    end;
     property Code: Integer read get_Code;
     property DefFlags: TypeDefFlags read get_DefFlags;
     property SizeOfType: Integer read get_SizeOfType;
     property SubType: &Type read get_SubType;
     property IsValueType: Boolean read (fValue^.Ext^.Flags and (
       IslandTypeFlags.Enum or IslandTypeFlags.EnumFlags or IslandTypeFlags.Struct or IslandTypeFlags.Pointer or IslandTypeFlags.Set)) <> 0;
-    property BaseType: &Type read new &Type(fValue^.ParentType);
+    property BaseType: &Type read if fValue^.ParentType = nil then nil else new &Type(fValue^.ParentType);
     property Interfaces: sequence of &Type read get_Interfaces;
     property Attributes: sequence of CustomAttribute read get_Attributes;
     property NestedTypes: sequence of &Type read get_NestedTypes;
