@@ -468,9 +468,9 @@ type
      end;
     {$IFDEF WINDOWS}
     [SymbolName('__elements_RTTIStart'), SectionName('ELRTTLRR$a')]
-    class var fStart: &Type;
+    class var fStart: ^IslandTypeInfo;
     [SymbolName('__elements_RTTIEnd'), SectionName('ELRTTLRR$z')]
-    class var fEnd: &Type;
+    class var fEnd: ^IslandTypeInfo;
 
      class method get_AllTypes: sequence of &Type; iterator;
      begin 
@@ -478,21 +478,21 @@ type
        loop begin 
          inc(lWork);
          if lWork = @fEnd then break;
-         if lWork^.fValue <> nil then yield lWork^;
+         yield new &Type(lWork^);
        end;
      end;
     {$ELSE}
     [SymbolName('__start_ELRTTLRR')]
-    class var fStart: &Type; external;
+    class var fStart: ^IslandTypeInfo; external;
     [SymbolName('__stop_ELRTTLRR')]
-    class var fEnd: &Type;external;
+    class var fEnd: ^IslandTypeInfo;external;
 
      class method get_AllTypes: sequence of &Type; iterator;
      begin 
        var lWork := @fStart;
        loop begin 
          inc(lWork);
-         if lWork^.fValue <> nil then yield lWork^;
+         yield new &Type(lWork^);
          if lWork > @fEnd then break;
        end;
      end;
