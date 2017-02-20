@@ -256,5 +256,9 @@ type
     property SideEffects: Boolean;readonly;
     property Align: Boolean; readonly;
   end;
+  
+  [AttributeUsage(AttributeTargets.Struct)]
+  UnionAttribute = public class(Attribute)
+  end;
 
 end.
