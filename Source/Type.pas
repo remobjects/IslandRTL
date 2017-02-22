@@ -647,7 +647,6 @@ type
         else ProtoSkipValue(var lPtr, lTy)
       end;
       if lList <> nil then exit new CustomAttributeArgument(lName, lList.ToArray);
-      exit &default(CustomAttributeArgument);
     end;
 
     method get_Interfaces: sequence of &Type; iterator;
