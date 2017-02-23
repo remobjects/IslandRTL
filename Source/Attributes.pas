@@ -260,5 +260,9 @@ type
   [AttributeUsage(AttributeTargets.Struct)]
   UnionAttribute = public class(Attribute)
   end;
+  
+  [AttributeUsage(AttributeTargets.Struct)]
+  PackedAttribute = public class(Attribute)
+  end;
 
 end.
