@@ -348,7 +348,9 @@ type
 {$G+}
 method GC_finalizer(obj, d: ^Void); assembly;
 begin
+  {$HIDE W25}
   InternalCalls.Cast<Object>(obj).Finalize;
+  {$SHOW W25}
 end;
 
 end.

@@ -7,8 +7,8 @@ type
   assembly
   public
     constructor; empty;
-    [SymbolName('__default_finalize')]
-    method &Finalize; virtual; empty; // DO NOT MOVE THIS!, IT HAS TO BE IN THE FIRST SLOT!
+    [SymbolName('__default_finalize'), Warning('Do not call this method directly, it''s called by the finalizer')]
+    method &Finalize; virtual; assembly or protected; empty; // DO NOT MOVE THIS!, IT HAS TO BE IN THE FIRST SLOT!
     method ToString: String; virtual;
     method GetHashCode: Integer; virtual;
     method GetType: &Type;
