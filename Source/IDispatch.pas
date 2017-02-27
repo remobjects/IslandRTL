@@ -37,37 +37,37 @@ type
   private
     fInstance: ComObject;
   public
-    method __QueryInterface(riid: ^rtl.GUID; ppvObject: ^^Void): rtl.HRESULT; implements IUnknown.QueryInterface;
+    method QueryInterface(riid: ^rtl.GUID; ppvObject: ^^Void): rtl.HRESULT; implements IUnknown.QueryInterface;
     begin
       exit ^^IDispatch_VMTType(fInstance)^^.QueryInterface(fInstance, riid, ppvObject);
     end;
 
-    method __Release: rtl.ULONG; implements IUnknown.Release;
+    method Release: rtl.ULONG; implements IUnknown.Release;
     begin
       exit ^^IDispatch_VMTType(fInstance)^^.Release(fInstance);
     end;
 
-    method __AddRef: rtl.ULONG; implements IUnknown.AddRef;
+    method AddRef: rtl.ULONG; implements IUnknown.AddRef;
     begin
       exit ^^IDispatch_VMTType(fInstance)^^.AddRef(fInstance);
     end;
 
-    method __GetTypeInfoCount(pctinfo: ^rtl.UINT): rtl.HRESULT; implements IDispatch.GetTypeInfoCount;
+    method GetTypeInfoCount(pctinfo: ^rtl.UINT): rtl.HRESULT; implements IDispatch.GetTypeInfoCount;
     begin
       exit ^^IDispatch_VMTType(fInstance)^^.GetTypeInfoCount(self.fInstance, pctinfo);
     end;
 
-    method __GetTypeInfo(iTInfo: rtl.UINT; lcid: rtl.LCID; ppTInfo: ^^rtl.ITypeInfo): rtl.HRESULT; implements IDispatch.GetTypeInfo;
+    method GetTypeInfo(iTInfo: rtl.UINT; lcid: rtl.LCID; ppTInfo: ^^rtl.ITypeInfo): rtl.HRESULT; implements IDispatch.GetTypeInfo;
     begin
       exit ^^IDispatch_VMTType(fInstance)^^.GetTypeInfo(self.fInstance, iTInfo, lcid, ppTInfo);
     end;
 
-    method __GetIDsOfNames(riid: ^rtl.GUID; rgszNames: ^^rtl.WCHAR; cNames: rtl.UINT; lcid: rtl.LCID; rgDispId: ^rtl.DISPID): rtl.HRESULT; implements IDispatch.GetIDsOfNames;
+    method GetIDsOfNames(riid: ^rtl.GUID; rgszNames: ^^rtl.WCHAR; cNames: rtl.UINT; lcid: rtl.LCID; rgDispId: ^rtl.DISPID): rtl.HRESULT; implements IDispatch.GetIDsOfNames;
     begin
       exit ^^IDispatch_VMTType(fInstance)^^.GetIDsOfNames(self.fInstance, riid, rgszNames, cNames, lcid, rgDispId);
     end;
 
-    method __Invoke(dispIdMember: rtl.DISPID; riid: ^rtl.GUID; lcid: rtl.LCID; wFlags: rtl.WORD; pDispParams: ^rtl.DISPPARAMS; pVarResult: ^rtl.VARIANT; pExcepInfo: ^rtl.EXCEPINFO; puArgErr: ^rtl.UINT): rtl.HRESULT; implements IDispatch.Invoke;
+    method Invoke(dispIdMember: rtl.DISPID; riid: ^rtl.GUID; lcid: rtl.LCID; wFlags: rtl.WORD; pDispParams: ^rtl.DISPPARAMS; pVarResult: ^rtl.VARIANT; pExcepInfo: ^rtl.EXCEPINFO; puArgErr: ^rtl.UINT): rtl.HRESULT; implements IDispatch.Invoke;
     begin
       exit ^^IDispatch_VMTType(fInstance)^^.Invoke(self.fInstance, dispIdMember, riid, lcid, wFlags, pDispParams, pVarResult, pExcepInfo, puArgErr);
     end;
