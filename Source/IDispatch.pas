@@ -39,37 +39,37 @@ type
   public
     method __QueryInterface(riid: ^rtl.GUID; ppvObject: ^^Void): rtl.HRESULT; implements IUnknown.QueryInterface;
     begin
-      exit IUnknown_VMTImpl_QueryInterface(fInstance, riid, ppvObject);
+      exit ^^IDispatch_VMTType(fInstance)^^.QueryInterface(fInstance, riid, ppvObject);
     end;
 
     method __Release: rtl.ULONG; implements IUnknown.Release;
     begin
-      exit IUnknown_VMTImpl_Release(fInstance);
+      exit ^^IDispatch_VMTType(fInstance)^^.Release(fInstance);
     end;
 
     method __AddRef: rtl.ULONG; implements IUnknown.AddRef;
     begin
-      exit IUnknown_VMTImpl_AddRef(fInstance);
+      exit ^^IDispatch_VMTType(fInstance)^^.AddRef(fInstance);
     end;
 
     method __GetTypeInfoCount(pctinfo: ^rtl.UINT): rtl.HRESULT; implements IDispatch.GetTypeInfoCount;
     begin
-      exit IDispatch_VMTImpl_GetTypeInfoCount(self.fInstance, pctinfo);
+      exit ^^IDispatch_VMTType(fInstance)^^.GetTypeInfoCount(self.fInstance, pctinfo);
     end;
 
     method __GetTypeInfo(iTInfo: rtl.UINT; lcid: rtl.LCID; ppTInfo: ^^rtl.ITypeInfo): rtl.HRESULT; implements IDispatch.GetTypeInfo;
     begin
-      exit IDispatch_VMTImpl_GetTypeInfo(self.fInstance, iTInfo, lcid, ppTInfo);
+      exit ^^IDispatch_VMTType(fInstance)^^.GetTypeInfo(self.fInstance, iTInfo, lcid, ppTInfo);
     end;
 
     method __GetIDsOfNames(riid: ^rtl.GUID; rgszNames: ^^rtl.WCHAR; cNames: rtl.UINT; lcid: rtl.LCID; rgDispId: ^rtl.DISPID): rtl.HRESULT; implements IDispatch.GetIDsOfNames;
     begin
-      exit IDispatch_VMTImpl_GetIDsOfNames(self.fInstance, riid, rgszNames, cNames, lcid, rgDispId);
+      exit ^^IDispatch_VMTType(fInstance)^^.GetIDsOfNames(self.fInstance, riid, rgszNames, cNames, lcid, rgDispId);
     end;
 
     method __Invoke(dispIdMember: rtl.DISPID; riid: ^rtl.GUID; lcid: rtl.LCID; wFlags: rtl.WORD; pDispParams: ^rtl.DISPPARAMS; pVarResult: ^rtl.VARIANT; pExcepInfo: ^rtl.EXCEPINFO; puArgErr: ^rtl.UINT): rtl.HRESULT; implements IDispatch.Invoke;
     begin
-      exit IDispatch_VMTImpl_Invoke(self.fInstance, dispIdMember, riid, lcid, wFlags, pDispParams, pVarResult, pExcepInfo, puArgErr);
+      exit ^^IDispatch_VMTType(fInstance)^^.Invoke(self.fInstance, dispIdMember, riid, lcid, wFlags, pDispParams, pVarResult, pExcepInfo, puArgErr);
     end;
 
     constructor(aIntf: ComObject);

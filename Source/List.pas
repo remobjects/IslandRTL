@@ -74,7 +74,9 @@ type
     method ToArray: array of T;
     method CopyTo(&array: array of T);
     method CopyTo(&array: array of T; arrayIndex: Integer);
+    {$HIDE W27}
     method CopyTo(&index: Integer; &array: array of T; arrayIndex: Integer; &count: Integer);
+    {$SHOW W27}
 
     property Capacity: Integer read length(fItems);
 
