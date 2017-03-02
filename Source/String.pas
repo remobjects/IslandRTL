@@ -5,7 +5,7 @@ interface
 type
   LCMapStringTransformMode = assembly enum (None, Upper, Lower);
 
-  String = public class(Object)
+  String = public class(Object,IEnumerable<Char>, IEnumerable)
   assembly {$HIDE H6}
     fLength: Integer;
     fFirstChar: Char;{$SHOW H6}
@@ -18,14 +18,11 @@ type
     method MakeInvariantString: String;
     class method RaiseError(aMessage: String);
     method CheckIndex(aIndex: Integer);
+    method GetNonGenericEnumerator: IEnumerator; implements IEnumerable.GetEnumerator;
+    method GetEnumerator: IEnumerator<Char>;iterator;
   assembly
-    {$IFDEF POSIX AND NOT ANDROID}
-    class var fUTF16ToCurrent, fCurrentToUtf16: rtl.iconv_t;
-    {$ENDIF}
     class method AllocString(aLen: Integer): String;
   public
-    class constructor;
-
     //constructor(aArray: array of Char);
     //constructor(c: ^Char; aCharCount: Integer): String;
     class method FromCharArray(aArray: array of Char): String;
@@ -44,9 +41,9 @@ type
     property FirstChar: ^Char read @fFirstChar;
 
     method CopyTo(SourceIndex: Integer; destination: array of Char; DestinationIndex: Integer; Count: Integer);
-    method Insert(aIndex: Int32; aNewValue: String): not nullable String;
+    method Insert(aIndex: Integer; aNewValue: String): not nullable String;
     method &Remove(StartIndex: Integer): String; inline;
-    method &Remove(StartIndex: Integer; Count: Integer): String; 
+    method &Remove(StartIndex: Integer; Count: Integer): String;
     method CompareTo(Value: String): Integer;
     method CompareToIgnoreCase(Value: String): Integer;
     method &Equals(Value: String): Boolean;
@@ -58,20 +55,24 @@ type
     class method &Join(Separator: String; Value: array of String; StartIndex: Integer; Count: Integer): String;
     class method &Join(Separator: String; Value: array of Object): String;
     method Contains(Value: String): Boolean;
-    method IndexOf(Value: String): Int32;
-    method IndexOf(Value: String; aStartFromIndex: Integer): Int32;
-    method LastIndexOf(Value: String): Int32;
-    method LastIndexOf(Value: String; aStartFromIndex: Integer): Int32;
-    method Substring(StartIndex: Int32): not nullable String;
-    method Substring(StartIndex: Int32; aLength: Int32): not nullable String;
+    method IndexOf(Value: String): Integer;
+    method IndexOf(Value: String; aStartFromIndex: Integer): Integer;
+    method IndexOfAny(anyOf: array of Char): Integer;
+    method LastIndexOf(Value: String): Integer;
+    method LastIndexOf(Value: String; aStartFromIndex: Integer): Integer;
+    method LastIndexOfAny(anyOf: array of Char): Integer;
+    method Substring(StartIndex: Integer): not nullable String;
+    method Substring(StartIndex: Integer; aLength: Integer): not nullable String;
     method Split(Separator: String): array of String;
     method Replace(OldValue, NewValue: String): not nullable String;
-    method PadStart(TotalWidth: Integer): String; inline; 
-    method PadStart(TotalWidth: Integer; PaddingChar: Char): String; 
-    method PadEnd(TotalWidth: Integer): String; inline; 
+    method PadStart(TotalWidth: Integer): String; inline;
+    method PadStart(TotalWidth: Integer; PaddingChar: Char): String;
+    method PadEnd(TotalWidth: Integer): String; inline;
     method PadEnd(TotalWidth: Integer; PaddingChar: Char): String;
     method ToLower(aInvariant: Boolean := false): String;
     method ToUpper(aInvariant: Boolean := false): String;
+    method ToLowerInvariant: String;inline;
+    method ToUpperInvariant: String;inline;
     method Trim: String;
     method Trim(aChars: array of Char): String;
     method TrimStart: String;
@@ -115,6 +116,17 @@ method iconv_helper(cd: rtl.iconv_t; inputdata: ^AnsiChar; inputdatalength: rtl.
 {$ENDIF}
 
 implementation
+
+method String.GetNonGenericEnumerator: IEnumerator;
+begin
+  exit self.GetEnumerator;
+end;
+
+method String.GetEnumerator: IEnumerator<Char>;
+begin
+  for i: Integer := 0 to fLength -1 do
+    yield (@fFirstChar)[i];
+end;
 
 class method String.FromPChar(c: ^Char; aCharCount: Integer): String;
 begin
@@ -163,7 +175,7 @@ begin
   exit TextConvert.UTF8ToString(b);
   {$ELSE}
   var lNewData: ^AnsiChar := nil;
-  var lNewLen: rtl.size_t := iconv_helper(String.fCurrentToUtf16, c, aCharCount, aCharCount * 2 + 5, out lNewData);
+  var lNewLen: rtl.size_t := iconv_helper(TextConvert.fCurrentToUtf16, c, aCharCount, aCharCount * 2 + 5, out lNewData);
   // method iconv_helper(cd: rtl.iconv_t; inputdata: ^AnsiChar; inputdatalength: rtl.size_t;outputdata: ^^AnsiChar; outputdatalength: ^rtl.size_t; suggested_output_length: Integer): Integer;
   if lNewLen <> -1  then begin
     result := String.FromPChar(^Char(lNewData), lNewLen / 2);
@@ -184,7 +196,7 @@ begin
   {$IFDEF WINDOWS}ExternalCalls.{$ELSE}rtl.{$ENDIF}memcpy(@result[0], @b[0], b.Length);
   {$ELSE}
   var lNewData: ^AnsiChar := nil;
-  var lNewLen: rtl.size_t := iconv_helper(String.fUTF16ToCurrent, ^AnsiChar(@fFirstChar), Length * 2, Length + 5, out lNewData);
+  var lNewLen: rtl.size_t := iconv_helper(TextConvert.fUTF16ToCurrent, ^AnsiChar(@fFirstChar), Length * 2, Length + 5, out lNewData);
 
   if lNewLen <> -1  then begin
     result := new AnsiChar[lNewLen+ if aNullTerminate then 1 else 0];
@@ -325,13 +337,13 @@ begin
     exit self.Substring(0,i+1);
 end;
 
-method String.Substring(StartIndex: Int32): not nullable String;
+method String.Substring(StartIndex: Integer): not nullable String;
 begin
   CheckIndex(StartIndex);
   exit Substring(StartIndex, self.Length - StartIndex)
 end;
 
-method String.Substring(StartIndex: Int32; aLength: Int32): not nullable String;
+method String.Substring(StartIndex: Integer; aLength: Integer): not nullable String;
 begin
   CheckIndex(StartIndex);
   if aLength = 0 then exit '';
@@ -380,7 +392,7 @@ begin
   exit self.IndexOf(Value) > -1;
 end;
 
-method String.IndexOf(Value: String; aStartFromIndex: Integer): Int32;
+method String.IndexOf(Value: String; aStartFromIndex: Integer): Integer;
 begin
   var Value_Length := Value.Length;
   if Value_Length > Self.Length then exit -1;
@@ -398,12 +410,12 @@ begin
   exit -1;
 end;
 
-method String.LastIndexOf(Value: String): Int32;
+method String.LastIndexOf(Value: String): Integer;
 begin
   result := LastIndexOf(Value, self.Length);
 end;
 
-method String.LastIndexOf(Value: String; aStartFromIndex: Integer): Int32;
+method String.LastIndexOf(Value: String; aStartFromIndex: Integer): Integer;
 begin
   var Value_Length := Value.Length;
   if Value_Length > Self.Length then exit -1;
@@ -421,7 +433,7 @@ begin
   exit -1;
 end;
 
-method String.IndexOf(Value: String): Int32;
+method String.IndexOf(Value: String): Integer;
 begin
   exit self.IndexOf(Value,0);
 end;
@@ -539,7 +551,7 @@ begin
   {$IFDEF WINDOWS}ExternalCalls.{$ELSEIF POSIX}rtl.{$ELSE}{$ERROR}{$ENDIF}memcpy(@destination[DestinationIndex], (@fFirstChar) + SourceIndex, Count * 2);
 end;
 
-method String.Insert(aIndex: Int32; aNewValue: String): not nullable String;
+method String.Insert(aIndex: Integer; aNewValue: String): not nullable String;
 begin
   {$HIDE W46}
   result := AllocString(self.Length + aNewValue.Length);
@@ -554,7 +566,7 @@ begin
   result := &Remove(StartIndex, Length - StartIndex);
 end;
 
-method String.&Remove(StartIndex: Integer; Count: Integer): String; 
+method String.&Remove(StartIndex: Integer; Count: Integer): String;
 begin
   result := AllocString(self.Length - Count);
   {$IFDEF WINDOWS}ExternalCalls.{$ELSEIF POSIX}rtl.{$ELSE}{$ERROR}{$ENDIF}memcpy(@result.fFirstChar, @fFirstChar, StartIndex * 2);
@@ -643,30 +655,32 @@ end;
 
 method String.PadStart(TotalWidth: Integer): String;
 begin
-  result := PadStart(TotalWidth, ' ');
+  exit PadStart(TotalWidth, ' ');
 end;
 
-method String.PadStart(TotalWidth: Integer; PaddingChar: Char): String; 
+method String.PadStart(TotalWidth: Integer; PaddingChar: Char): String;
 begin
+  if TotalWidth < 0 then raise new ArgumentOutOfRangeException('TotalWidth is less than zero.');
   var lTotal := TotalWidth - self.Length;
-  if lTotal < 0 then
-    result := self
+  if lTotal < 1 then
+    exit self
   else
-    result := FromPChar(@PaddingChar, lTotal) + self;
+    exit FromRepeatedChar(PaddingChar, lTotal) + self;
 end;
 
 method String.PadEnd(TotalWidth: Integer): String;
 begin
-  result := PadEnd(TotalWidth, ' ');
+  exit PadEnd(TotalWidth, ' ');
 end;
 
 method String.PadEnd(TotalWidth: Integer; PaddingChar: Char): String;
 begin
+  if TotalWidth < 0 then raise new ArgumentOutOfRangeException('TotalWidth is less than zero.');
   var lTotal := TotalWidth - self.Length;
-  if lTotal < 0 then
+  if lTotal < 1 then
     result := self
   else
-    result := self + FromPChar(@PaddingChar, lTotal);
+    result := self + FromRepeatedChar(PaddingChar, lTotal);
 end;
 
 method String.ToLower(aInvariant: Boolean := false): String;
@@ -737,6 +751,7 @@ end;
 
 class method String.FromRepeatedChar(c: Char; aCharCount: Integer): String;
 begin
+  if aCharCount = 0 then exit '';
   result := AllocString(aCharCount);
   for i: Integer := 0 to aCharCount-1 do
     (@result.fFirstChar)[i] := c;
@@ -745,15 +760,6 @@ end;
 class method String.FromPAnsiChars(c: ^AnsiChar): String;
 begin
   exit FromPAnsiChars(c, {$IFDEF WINDOWS}ExternalCalls.{$ELSEIF POSIX}rtl.{$ELSE}{$ERROR}{$ENDIF}strlen(c));
-end;
-
-class constructor String;
-begin
-  {$IFDEF POSIX and not ANDROID}
-  rtl.setlocale(rtl.LC_ALL, "");
-  fUTF16ToCurrent := rtl.iconv_open("", "UTF-16LE");
-  fCurrentToUtf16 := rtl.iconv_open("UTF-16LE", "");
-  {$ENDIF}
 end;
 
 class method String.Format(aFormat: String; params aArguments: array of Object): String;
@@ -963,6 +969,34 @@ begin
     str.Append(lenum.Current.ToString);
   end;
   exit str.ToString;
+end;
+
+method String.IndexOfAny(anyOf: array of Char): Integer;
+begin
+  if anyOf = nil then raise new ArgumentNullException('anyOf is null.');
+  for i:Integer := 0 to fLength-1 do
+    for j:Integer := 0 to anyOf.Length-1 do
+      if (@fFirstChar)[i] = anyOf[j] then exit i;
+  exit -1;
+end;
+
+method String.LastIndexOfAny(anyOf: array of Char): Integer;
+begin
+  if anyOf = nil then raise new ArgumentNullException('anyOf is null.');
+  for i:Integer := fLength-1 downto 0 do
+    for j:Integer := 0 to anyOf.Length-1 do
+      if (@fFirstChar)[i] = anyOf[j] then exit i;
+  exit -1;
+end;
+
+method String.ToLowerInvariant: String;
+begin
+  exit ToLower(True);
+end;
+
+method String.ToUpperInvariant: String;
+begin
+  exit ToUpper(True);
 end;
 
 { String_Constructors }

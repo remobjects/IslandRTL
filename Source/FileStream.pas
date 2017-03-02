@@ -6,7 +6,7 @@ type
   IOException = public class(Exception)
   end;
 
-  FileMode = public enum(CreateNew, Create, Open, OpenOrCreate, Truncate);
+  FileMode = public enum(CreateNew, &Create, Open, OpenOrCreate, Truncate);
   FileAccess = public enum(&Read, &Write, ReadWrite);
   FileShare = public enum(None, &Read, &Write, ReadWrite, Delete);
 
