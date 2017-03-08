@@ -14,7 +14,7 @@ type
     method CreateFile(FileName: String; FailIfExists: Boolean := false): File;
     begin
       var newname := Path.Combine(FullName,FileName);
-      if FileUtils.isFileExists(newname) then raise new Exception('file exists');
+      if FileUtils.FileExists(newname) then raise new Exception('file exists');
       exit new File(FileName);
     end;
 
@@ -35,7 +35,7 @@ type
 
     method Exists: Boolean;override;
     begin
-      exit FileUtils.isFolderExists(fFullName);
+      exit FileUtils.FolderExists(fFullName);
     end;
 
     method Rename(NewName: String): Folder;
@@ -50,7 +50,7 @@ type
     method GetFile(FileName: String): File;
     begin
       var newname := Path.Combine(FullName,FileName);
-      if FileUtils.isFileExists(newname) then
+      if FileUtils.FileExists(newname) then
         exit new File(newname)
       else
         exit nil;
@@ -70,7 +70,7 @@ type
       {$ELSEIF POSIX}
       // code from http://pubs.opengroup.org/onlinepubs/9699919799/ was used as an example
       var dfd: Int32 := rtl.open(FullName.ToFileName(), rtl.O_RDONLY);
-      var d: ^rtl.DIR := rtl.fdopendir(dfd);     
+      var d: ^rtl.DIR := rtl.fdopendir(dfd);
       if d = nil then begin
         exit;
       end;
@@ -84,7 +84,7 @@ type
           try
             var statbuf: rtl.__struct_stat;
             if rtl.fstat(ffd,@statbuf) <> 0 then continue;
-            if FileUtils.isFile(statbuf.st_mode) then result.Add(new File(Path.Combine(FullName,fn)));        
+            if FileUtils.isFile(statbuf.st_mode) then result.Add(new File(Path.Combine(FullName,fn)));
           finally
             rtl.close(ffd);
           end;
@@ -116,7 +116,7 @@ type
       {$ELSEIF POSIX}
       // code from http://pubs.opengroup.org/onlinepubs/9699919799/ was used as an example
       var dfd: Int32 := rtl.open(FullName.ToFileName(), rtl.O_RDONLY);
-      var d: ^rtl.DIR := rtl.fdopendir(dfd);     
+      var d: ^rtl.DIR := rtl.fdopendir(dfd);
       if d = nil then exit;
       try
       var dp: ^rtl.__struct_dirent := rtl.readdir(d);
@@ -130,7 +130,7 @@ type
           try
             var statbuf: rtl.__struct_stat;
             if rtl.fstat(ffd,@statbuf) <> 0 then continue;
-            if FileUtils.isFolder(statbuf.st_mode) then result.Add(new Folder(Path.Combine(FullName,fn)));        
+            if FileUtils.isFolder(statbuf.st_mode) then result.Add(new Folder(Path.Combine(FullName,fn)));
           finally
             rtl.close(ffd);
           end;
@@ -146,7 +146,7 @@ type
 
     class method CreateFolder(FolderName: String; FailIfExists: Boolean := false): Folder;
     begin
-      if FileUtils.isFolderExists(FolderName) then begin
+      if FileUtils.FolderExists(FolderName) then begin
         if FailIfExists then
           raise new Exception('folder is exists')
         else
