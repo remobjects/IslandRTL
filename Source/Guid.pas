@@ -56,7 +56,7 @@ type
 
     method ToString: String; override;
     begin
-      exit 
+      exit
         Convert.UInt64ToHexString(Data1,8)+'-'+
         Convert.UInt64ToHexString(Data2,4)+'-'+
         Convert.UInt64ToHexString(Data3,4)+'-'+
@@ -75,9 +75,9 @@ type
       result := new array of Byte(16);
       result[0] := (Data1 and $000000FF);
       result[1] := (Data1 and $0000FF00) shr 8;
-      result[2] := (Data1 and $00FF0000) shr 16;  
-      result[3] := (Data1 and $FF000000) shr 24;  
-      result[4] := (Data2 and $00FF); 
+      result[2] := (Data1 and $00FF0000) shr 16;
+      result[3] := (Data1 and $FF000000) shr 24;
+      result[4] := (Data2 and $00FF);
       result[5] := (Data2 and $FF00) shr 8;
       result[6] := (Data3 and $00FF);
       result[7] := (Data3 and $FF00) shr 8;
@@ -128,6 +128,16 @@ type
       exit new Guid(Value);
     end;
 
+    class method TryParse(Value: String; out aResult: Guid):Boolean;
+    begin
+      try
+        aResult := new Guid(Value);
+        exit true;
+      except
+        exit false;
+      end;
+    end;
+
     method &Equals(obj: Object): Boolean; override;
     begin
       if assigned(obj) and (obj is Guid) then
@@ -138,16 +148,16 @@ type
 
     class operator Equal(Value1, Value2: Guid): Boolean;
     begin
-      exit (Value1.Data1 = Value2.Data1) and 
-           (Value1.Data2 = Value2.Data2) and 
-           (Value1.Data3 = Value2.Data3) and 
-           (Value1.Data4_0 = Value2.Data4_0) and 
-           (Value1.Data4_1 = Value2.Data4_1) and 
-           (Value1.Data4_2 = Value2.Data4_2) and 
-           (Value1.Data4_3 = Value2.Data4_3) and 
-           (Value1.Data4_4 = Value2.Data4_4) and 
-           (Value1.Data4_5 = Value2.Data4_5) and 
-           (Value1.Data4_6 = Value2.Data4_6) and 
+      exit (Value1.Data1 = Value2.Data1) and
+           (Value1.Data2 = Value2.Data2) and
+           (Value1.Data3 = Value2.Data3) and
+           (Value1.Data4_0 = Value2.Data4_0) and
+           (Value1.Data4_1 = Value2.Data4_1) and
+           (Value1.Data4_2 = Value2.Data4_2) and
+           (Value1.Data4_3 = Value2.Data4_3) and
+           (Value1.Data4_4 = Value2.Data4_4) and
+           (Value1.Data4_5 = Value2.Data4_5) and
+           (Value1.Data4_6 = Value2.Data4_6) and
            (Value1.Data4_7 = Value2.Data4_7);
     end;
 
@@ -158,16 +168,16 @@ type
     {$IFDEF WINDOWS}
     class operator Equal(Value1: rtl.GUID; Value2: Guid): Boolean;
     begin
-      exit (Value1.Data1 = Value2.Data1) and 
-           (Value1.Data2 = Value2.Data2) and 
-           (Value1.Data3 = Value2.Data3) and 
-           (Value1.Data4[0] = Value2.Data4_0) and 
-           (Value1.Data4[1] = Value2.Data4_1) and 
-           (Value1.Data4[2] = Value2.Data4_2) and 
-           (Value1.Data4[3] = Value2.Data4_3) and 
-           (Value1.Data4[4] = Value2.Data4_4) and 
-           (Value1.Data4[5] = Value2.Data4_5) and 
-           (Value1.Data4[6] = Value2.Data4_6) and 
+      exit (Value1.Data1 = Value2.Data1) and
+           (Value1.Data2 = Value2.Data2) and
+           (Value1.Data3 = Value2.Data3) and
+           (Value1.Data4[0] = Value2.Data4_0) and
+           (Value1.Data4[1] = Value2.Data4_1) and
+           (Value1.Data4[2] = Value2.Data4_2) and
+           (Value1.Data4[3] = Value2.Data4_3) and
+           (Value1.Data4[4] = Value2.Data4_4) and
+           (Value1.Data4[5] = Value2.Data4_5) and
+           (Value1.Data4[6] = Value2.Data4_6) and
            (Value1.Data4[7] = Value2.Data4_7);
     end;
     class operator Equal(Value2: Guid; Value1: rtl.GUID): Boolean;
@@ -175,11 +185,11 @@ type
       exit (Value1 = Value2);
     end;
     class operator NotEqual(Value1: rtl.GUID; Value2: Guid): Boolean;
-    begin 
+    begin
       exit not (Value1 = Value2);
     end;
     class operator NotEqual(Value1: Guid; Value2: rtl.GUID): Boolean;
-    begin 
+    begin
       exit not (Value2 = Value1);
     end;
     {$ENDIF}

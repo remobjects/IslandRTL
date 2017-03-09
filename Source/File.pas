@@ -12,8 +12,8 @@ type
     method &Copy(NewFile: not nullable File);
     method &Copy(FullPathName: not nullable String): not nullable File;
     method &Copy(Destination: not nullable Folder; NewName: not nullable String): not nullable File;
-    method Delete; override;    
-    method Exists: Boolean;override;
+    method Delete; override;
+    method Exists: Boolean; override;
     method Move(NewFile: not nullable File);
     method Move(FullPathName: not nullable String): not nullable File;
     method Move(DestinationFolder: not nullable Folder; NewName: not nullable String): not nullable File;
@@ -65,7 +65,7 @@ begin
   {$IFDEF WINDOWS}
   CheckForIOError(rtl.DeleteFileW(FullName.ToFileName()));
   {$ELSEIF POSIX}
-  CheckForIOError(rtl.remove(FullName.ToFileName()));  
+  CheckForIOError(rtl.remove(FullName.ToFileName()));
   {$ELSE}{$ERROR}
   {$ENDIF}
 end;
@@ -132,7 +132,7 @@ end;
 
 method File.Exists: Boolean;
 begin
-  exit FileUtils.isFileExists(fFullName)
+  exit FileUtils.FileExists(fFullName)
 end;
 
 method File.Validate;

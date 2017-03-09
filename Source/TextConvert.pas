@@ -54,8 +54,20 @@ type
       raise new Exception('bad array length is detected');
       {$ENDIF}
     end;
-  protected
+  assembly
+    {$IFDEF POSIX AND NOT ANDROID}
+    class var fUTF16ToCurrent, fCurrentToUtf16: rtl.iconv_t;
+    {$ENDIF}
   public
+    {$IFDEF POSIX and not ANDROID}
+    class constructor;
+    begin
+      rtl.setlocale(rtl.LC_ALL, "");
+      fUTF16ToCurrent := rtl.iconv_open("", "UTF-16LE");
+      fCurrentToUtf16 := rtl.iconv_open("UTF-16LE", "");
+    end;
+    {$ENDIF}
+
     class method StringToUTF8(Value: String; aGenerateBOM: Boolean := False): array of Byte;
     begin
       if Value = nil then new ArgumentNullException('Value is nil');
@@ -442,6 +454,51 @@ type
       end;
       exit str.ToString;
     end;
-  end;
+
+    class method StringToASCII(Value: String): array of Byte;
+    begin
+      {$IFDEF WINDOWS}
+      var len := rtl.WideCharToMultiByte(rtl.CP_ACP, 0, Value.FirstChar, Value.Length, nil, 0, nil, nil);
+      result := new Byte[len];
+      rtl.WideCharToMultiByte(rtl.CP_ACP, 0, Value.FirstChar, Value.Length, rtl.LPSTR(@result[0]), len, nil, nil);
+      {$ELSEIF ANDROID}
+      var b := StringToUTF8(Value, false);
+      result := new Byte[b.Length];
+      rtl.memcpy(@result[0], @b[0], b.Length);
+      {$ELSE}
+      var lNewData: ^AnsiChar := nil;
+      var lNewLen: rtl.size_t := iconv_helper(TextConvert.fUTF16ToCurrent, ^AnsiChar(Value.FirstChar), Value.Length * 2, Value.Length + 5, out lNewData);
+
+      if lNewLen <> -1  then begin
+        result := new Byte[lNewLen];
+        rtl.memcpy(@result[0], lNewData, lNewLen);
+        rtl.free(lNewData);
+      end;
+      {$ENDIF}
+    end;
+
+    class method ASCIIToString(Value: array of Byte): String;
+    begin
+      if Value = nil then exit nil;
+      var aCharCount := length(Value);
+      if aCharCount = 0 then exit '';
+      {$IFDEF WINDOWS}
+      var len := rtl.MultiByteToWideChar(rtl.CP_ACP, 0, rtl.LPCCH(@Value[0]), aCharCount, nil, 0);
+      result := String.AllocString(len);
+      rtl.MultiByteToWideChar(rtl.CP_ACP, 0, rtl.LPCCH(@Value[0]), aCharCount, @result.fFirstChar, len);
+      {$ELSEIF ANDROID}
+      exit TextConvert.UTF8ToString(Value);
+      {$ELSE}
+      var lNewData: ^AnsiChar := nil;
+      var lNewLen: rtl.size_t := iconv_helper(TextConvert.fCurrentToUtf16, ^AnsiChar(@Value[0]), aCharCount, aCharCount * 2 + 5, out lNewData);
+      // method iconv_helper(cd: rtl.iconv_t; inputdata: ^AnsiChar; inputdatalength: rtl.size_t;outputdata: ^^AnsiChar; outputdatalength: ^rtl.size_t; suggested_output_length: Integer): Integer;
+      if lNewLen <> -1  then begin
+        result := String.FromPChar(^Char(lNewData), lNewLen / 2);
+        rtl.free(lNewData);
+      end;
+      {$ENDIF}
+    end;
+
+end;
   
 end.
