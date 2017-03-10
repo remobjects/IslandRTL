@@ -219,6 +219,23 @@ type
     [SymbolName('llvm.returnaddress')]
     class method GetReturnAddress(aLevel: Integer): ^Void; external;
 
+    // These two functions are used for the debug engine, to find out the type & "ToString" value of an object.
+    [SymbolName('ElementsGetTypeName'), Used]
+    class method GetObjectTypeName(aObj: Object): ^WideChar;
+    begin 
+      if aObj = nil then exit nil;
+      var s := aObj.GetType.Name.ToCharArray(true); // this will work as the GC is paused during debug.
+      exit @s[0];
+    end;
+
+    [SymbolName('ElementsObjectToString'), Used]
+    class method GetTypeDescription(aObj: Object): ^WideChar;
+    begin
+      if aObj = nil then exit nil;
+      var s := aObj:ToString():ToCharArray(true);
+      exit @s[0];
+    end;
+
     class method SuppressFinalize(o: Object);
     begin
       if o <> nil then
