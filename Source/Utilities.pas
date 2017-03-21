@@ -116,20 +116,20 @@ type
         FN[13] := 's';
         FN[14] := 'l';
         FN[15] := 'a';
-        FN[17] := 'n';
-        FN[18] := 'd';
-        FN[19] := '0'; // Version, increase when adding stuff or making the class layout incompatible
+        FN[16] := 'n';
+        FN[17] := 'd';
+        FN[18] := '0'; // Version, increase when adding stuff or making the class layout incompatible
         var lID := rtl.GetCurrentProcessId;
-        FN[20] := Char(Integer('a')+Integer((lID shr 0) and $f));
-        FN[21] := Char(Integer('a')+Integer((lID shr 4) and $f));
-        FN[22] := Char(Integer('a')+Integer((lID shr 8) and $f));
-        FN[23] := Char(Integer('a')+Integer((lID shr 12) and $f));
-        FN[24] := Char(Integer('a')+Integer((lID shr 16) and $f));
-        FN[25] := Char(Integer('a')+Integer((lID shr 20) and $f));
-        FN[26] := Char(Integer('a')+Integer((lID shr 24) and $f));
-        FN[27] := Char(Integer('a')+Integer((lID shr 28) and $f));
-        FN[28] := #0;
-
+        FN[19] := Char(Integer('a')+Integer((lID shr 0) and $f));
+        FN[20] := Char(Integer('a')+Integer((lID shr 4) and $f));
+        FN[21] := Char(Integer('a')+Integer((lID shr 8) and $f));
+        FN[22] := Char(Integer('a')+Integer((lID shr 12) and $f));
+        FN[23] := Char(Integer('a')+Integer((lID shr 16) and $f));
+        FN[24] := Char(Integer('a')+Integer((lID shr 20) and $f));
+        FN[25] := Char(Integer('a')+Integer((lID shr 24) and $f));
+        FN[26] := Char(Integer('a')+Integer((lID shr 28) and $f));
+        FN[27] := #0;
+        
         fMapping := rtl.CreateFileMappingW( rtl.INVALID_HANDLE_VALUE, nil, rtl.PAGE_READWRITE, 0, 8, @FN[0]); 
 
         if fMapping = nil then begin 
