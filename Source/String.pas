@@ -760,6 +760,7 @@ end;
 
 class method String.FromPAnsiChars(c: ^AnsiChar): nullable String;
 begin
+  if not assigned(c) then exit nil;
   exit FromPAnsiChars(c, {$IFDEF WINDOWS}ExternalCalls.{$ELSEIF POSIX}rtl.{$ELSE}{$ERROR}{$ENDIF}strlen(c));
 end;
 
