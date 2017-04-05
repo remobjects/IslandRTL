@@ -5,10 +5,10 @@ type
   private
     fArguments: array of CustomAttributeArgument;
     fConstructor: ^Void;
-    fType: &Type; 
+    fType: &Type;
   public
     constructor(aType: &Type; aCtor: ^Void; aArgs: array of CustomAttributeArgument);
-    begin 
+    begin
       fType := aType;
       fConstructor := aCtor;
       fArguments := aArgs;
@@ -20,12 +20,12 @@ type
   end;
 
   CustomAttributeArgument = public class
-  private 
+  private
     fName: String;
     fValue: Object;
-  public 
+  public
     constructor(aName: String; aValue: Object);
-    begin 
+    begin
       fName := aName;
       fValue := aValue;
     end;
@@ -37,39 +37,39 @@ type
   MemberInfo = public abstract class
   private
     method get_Name: String;
-    begin 
+    begin
       var lPtr := fPtr;
       var lKey: Integer;
       var lTy: ProtoReadType;
-      while (lPtr < fEnd) and ProtoReadHeader(var lPtr, out lKey, out lTy) do begin 
+      while (lPtr < fEnd) and ProtoReadHeader(var lPtr, out lKey, out lTy) do begin
         if (lKey = 2) and (lTy = ProtoReadType.length) then begin
           exit ProtoReadString(var lPtr)
-        end else 
+        end else
           ProtoSkipValue(var lPtr, lTy);
       end;
     end;
     method get_Access: MemberAccess;
-    begin 
+    begin
       var lPtr := fPtr;
       var lKey: Integer;
       var lTy: ProtoReadType;
-      while (lPtr < fEnd) and ProtoReadHeader(var lPtr, out lKey, out lTy) do begin 
+      while (lPtr < fEnd) and ProtoReadHeader(var lPtr, out lKey, out lTy) do begin
         if (lKey = 9) and (lTy = ProtoReadType.varint) then begin
           exit  MemberAccess(ProtoReadVarInt(var lPtr))
-        end else 
+        end else
           ProtoSkipValue(var lPtr, lTy);
       end;
 
     end;
     method get_Attributes: sequence of CustomAttribute; iterator;
-    begin 
+    begin
       var lPtr := fPtr;
       var lKey: Integer;
       var lTy: ProtoReadType;
-      while (lPtr < fEnd) and ProtoReadHeader(var lPtr, out lKey, out lTy) do begin 
+      while (lPtr < fEnd) and ProtoReadHeader(var lPtr, out lKey, out lTy) do begin
         if (lKey = 0) and (lTy = ProtoReadType.startgroup) then begin
           yield &Type.ReadAttribute(fValue, var lPtr)
-        end else 
+        end else
           ProtoSkipValue(var lPtr, lTy);
       end;
     end;
@@ -78,21 +78,21 @@ type
     fPtr: ^Byte;
     fEnd: ^Byte;
     constructor(aValue: ^IslandTypeInfo; aPtr: ^Byte);
-    begin 
+    begin
       fValue := aValue;
       fEnd := ProtoReadFixed32(var aPtr) + aPtr;
       fPtr := aPtr;
     end;
 
     method get_Type: &Type;
-    begin 
+    begin
       var lPtr := fPtr;
       var lKey: Integer;
       var lTy: ProtoReadType;
-      while (lPtr < fEnd) and ProtoReadHeader(var lPtr, out lKey, out lTy) do begin 
+      while (lPtr < fEnd) and ProtoReadHeader(var lPtr, out lKey, out lTy) do begin
         if (lKey = 5) and (lTy = ProtoReadType.varint) then begin
           exit new &Type(^IslandTypeInfo(fValue^.Ext^.MemberInfoList[ProtoReadVarInt(var lPtr)]));
-        end else 
+        end else
           ProtoSkipValue(var lPtr, lTy);
       end;
     end;
@@ -110,50 +110,50 @@ type
   ArgumentInfo = public class
   private
     method get_Attributes: sequence of CustomAttribute; iterator;
-    begin 
+    begin
       var lPtr := fPtr;
       var lKey: Integer;
       var lTy: ProtoReadType;
-      while ProtoReadHeader(var lPtr, out lKey, out lTy) do begin 
+      while ProtoReadHeader(var lPtr, out lKey, out lTy) do begin
         if (lKey = 0) and (lTy = ProtoReadType.startgroup) then begin
           yield &Type.ReadAttribute(fValue, var lPtr)
-        end else 
+        end else
           ProtoSkipValue(var lPtr, lTy);
       end;
     end;
     method get_Mode: ArgumentMode;
-    begin 
+    begin
       var lPtr := fPtr;
       var lKey: Integer;
       var lTy: ProtoReadType;
-      while ProtoReadHeader(var lPtr, out lKey, out lTy) do begin 
+      while ProtoReadHeader(var lPtr, out lKey, out lTy) do begin
         if (lKey = 3) and (lTy = ProtoReadType.startgroup) then begin
           exit ArgumentMode(ProtoReadVarInt(var lPtr));
-        end else 
+        end else
           ProtoSkipValue(var lPtr, lTy);
       end;
     end;
     method get_Type: &Type;
-    begin 
+    begin
       var lPtr := fPtr;
       var lKey: Integer;
       var lTy: ProtoReadType;
-      while ProtoReadHeader(var lPtr, out lKey, out lTy) do begin 
+      while ProtoReadHeader(var lPtr, out lKey, out lTy) do begin
         if (lKey = 2) and (lTy = ProtoReadType.startgroup) then begin
           exit new &Type(^IslandTypeInfo(fValue^.Ext^.MemberInfoList[ProtoReadVarInt(var lPtr)]));
-        end else 
+        end else
           ProtoSkipValue(var lPtr, lTy);
       end;
     end;
     method get_Name: String;
-    begin 
+    begin
       var lPtr := fPtr;
       var lKey: Integer;
       var lTy: ProtoReadType;
-      while ProtoReadHeader(var lPtr, out lKey, out lTy) do begin 
+      while ProtoReadHeader(var lPtr, out lKey, out lTy) do begin
         if (lKey = 1) and (lTy = ProtoReadType.length) then begin
           exit ProtoReadString(var lPtr)
-        end else 
+        end else
           ProtoSkipValue(var lPtr, lTy);
       end;
     end;
@@ -161,11 +161,11 @@ type
     fValue: ^IslandTypeInfo;
   assembly
     constructor(aValue: ^IslandTypeInfo; aVal: ^Byte);
-    begin 
+    begin
       fValue := aValue;
       fPtr := aVal;
     end;
-  public 
+  public
     property Name: String read get_Name;
     property &Type: &Type read get_Type;
     property Mode: ArgumentMode read get_Mode;
@@ -174,11 +174,11 @@ type
 
 
   MemberAccess = public enum(
-    &Private = 0, 
+    &Private = 0,
     AssemblyAndProtected = 1,
-    &Assembly = 2, 
-    &Protected = 3, 
-    AssemblyOrProtected = 4, 
+    &Assembly = 2,
+    &Protected = 3,
+    AssemblyOrProtected = 4,
     &Public = 5,
     &Unit = 6,
     &UnitOrProtected = 7,
@@ -187,18 +187,18 @@ type
   ConstantInfo = public class(MemberInfo)
   private
     method get_Value: Object;
-    begin 
+    begin
       var lPtr := fPtr;
       var lKey: Integer;
       var lTy: ProtoReadType;
-      while (lPtr < fEnd) and ProtoReadHeader(var lPtr, out lKey, out lTy) do begin 
+      while (lPtr < fEnd) and ProtoReadHeader(var lPtr, out lKey, out lTy) do begin
         if (lKey = 3) and (lTy = ProtoReadType.startgroup) then begin
           exit &Type.ReadAttributeValue(var lPtr).Value
-        end else 
+        end else
           ProtoSkipValue(var lPtr, lTy);
       end;
     end;
-  public 
+  public
     property Value: Object read get_Value;
     property IsStatic: Boolean read true; override;
   end;
@@ -206,46 +206,46 @@ type
   FieldInfo = public class(MemberInfo)
   private
     method get_staticValuePointer: ^Void;
-    begin 
+    begin
       var lPtr := fPtr;
       var lKey: Integer;
       var lTy: ProtoReadType;
-      while (lPtr < fEnd) and ProtoReadHeader(var lPtr, out lKey, out lTy) do begin 
+      while (lPtr < fEnd) and ProtoReadHeader(var lPtr, out lKey, out lTy) do begin
         if (lKey = 4) and (lTy = ProtoReadType.varint) then begin
           exit fValue^.Ext^.MemberInfoList[ProtoReadVarInt(var lPtr)];
-        end else 
+        end else
         if (lKey = 3) and (lTy = ProtoReadType.varint) then begin
           if FieldFlags.Static not in FieldFlags(ProtoReadVarInt(var lPtr)) then raise new Exception('Not static!');
-        end else 
+        end else
           ProtoSkipValue(var lPtr, lTy);
       end;
     end;
     method get_InstanceOffset: Integer;
-    begin 
+    begin
       var lPtr := fPtr;
       var lKey: Integer;
       var lTy: ProtoReadType;
-      while (lPtr < fEnd) and ProtoReadHeader(var lPtr, out lKey, out lTy) do begin 
+      while (lPtr < fEnd) and ProtoReadHeader(var lPtr, out lKey, out lTy) do begin
         if (lKey = 3) and (lTy = ProtoReadType.varint) then begin
           exit  FieldFlags(ProtoReadVarInt(var lPtr))
-        end else 
+        end else
           ProtoSkipValue(var lPtr, lTy);
       end;
     end;
 
     method get_Flags: FieldFlags;
-    begin 
+    begin
       var lPtr := fPtr;
       var lKey: Integer;
       var lTy: ProtoReadType;
-      while (lPtr < fEnd) and ProtoReadHeader(var lPtr, out lKey, out lTy) do begin 
+      while (lPtr < fEnd) and ProtoReadHeader(var lPtr, out lKey, out lTy) do begin
         if (lKey = 3) and (lTy = ProtoReadType.varint) then begin
           exit  FieldFlags(ProtoReadVarInt(var lPtr))
-        end else 
+        end else
           ProtoSkipValue(var lPtr, lTy);
       end;
     end;
-  public 
+  public
     property Flags: FieldFlags read get_Flags;
     property InstanceOffset: Integer read get_InstanceOffset; // only for instances!
     property StaticValuePointer: ^Void read get_StaticValuePointer; // only for static
@@ -257,56 +257,56 @@ type
   PropertyInfo = public class(MemberInfo)
   private
     method get_Arguments: sequence of ArgumentInfo; iterator;
-    begin 
+    begin
       var lPtr := fPtr;
       var lKey: Integer;
       var lTy: ProtoReadType;
-      while (lPtr < fEnd) and ProtoReadHeader(var lPtr, out lKey, out lTy) do begin 
+      while (lPtr < fEnd) and ProtoReadHeader(var lPtr, out lKey, out lTy) do begin
         if (lKey = 4) and (lTy = ProtoReadType.startgroup) then begin
           yield new ArgumentInfo(fValue, lPtr);
           ProtoSkipValue(var lPtr, lTy);
-        end else 
+        end else
           ProtoSkipValue(var lPtr, lTy);
       end;
     end;
     method get_WriteMethod: ^Void;
-    begin 
+    begin
       var lPtr := fPtr;
       var lKey: Integer;
       var lTy: ProtoReadType;
-      while (lPtr < fEnd) and ProtoReadHeader(var lPtr, out lKey, out lTy) do begin 
+      while (lPtr < fEnd) and ProtoReadHeader(var lPtr, out lKey, out lTy) do begin
         if (lKey = 6) and (lTy = ProtoReadType.varint) then begin
           exit  fValue^.Ext^.MemberInfoList[ProtoReadVarInt(var lPtr)]
-        end else 
+        end else
           ProtoSkipValue(var lPtr, lTy);
       end;
     end;
     method get_ReadMethod: ^Void;
-    begin 
+    begin
       var lPtr := fPtr;
       var lKey: Integer;
       var lTy: ProtoReadType;
-      while (lPtr < fEnd) and ProtoReadHeader(var lPtr, out lKey, out lTy) do begin 
+      while (lPtr < fEnd) and ProtoReadHeader(var lPtr, out lKey, out lTy) do begin
         if (lKey = 7) and (lTy = ProtoReadType.varint) then begin
           exit  fValue^.Ext^.MemberInfoList[ProtoReadVarInt(var lPtr)]
-        end else 
+        end else
           ProtoSkipValue(var lPtr, lTy);
       end;
     end;
-    
+
     method get_Flags: PropertyFlags;
-    begin 
+    begin
       var lPtr := fPtr;
       var lKey: Integer;
       var lTy: ProtoReadType;
-      while (lPtr < fEnd) and ProtoReadHeader(var lPtr, out lKey, out lTy) do begin 
+      while (lPtr < fEnd) and ProtoReadHeader(var lPtr, out lKey, out lTy) do begin
         if (lKey = 3) and (lTy = ProtoReadType.varint) then begin
           exit  PropertyFlags(ProtoReadVarInt(var lPtr))
-        end else 
+        end else
           ProtoSkipValue(var lPtr, lTy);
       end;
     end;
-  public 
+  public
     property Flags: PropertyFlags read get_Flags;
     property IsStatic: Boolean read PropertyFlags.Static in &Flags; override;
     property ReadMethod: ^Void read get_ReadMethod;
@@ -314,61 +314,61 @@ type
     property Arguments: sequence of ArgumentInfo read get_Arguments;
   end;
 
-  
+
   PropertyFlags = public flags(
     &Static = 1);
 
   EventInfo = public class(MemberInfo)
   private
     method get_Flags: EventFlags;
-    begin 
+    begin
       var lPtr := fPtr;
       var lKey: Integer;
       var lTy: ProtoReadType;
-      while (lPtr < fEnd) and ProtoReadHeader(var lPtr, out lKey, out lTy) do begin 
+      while (lPtr < fEnd) and ProtoReadHeader(var lPtr, out lKey, out lTy) do begin
         if (lKey = 3) and (lTy = ProtoReadType.varint) then begin
           exit  EventFlags(ProtoReadVarInt(var lPtr))
-        end else 
+        end else
           ProtoSkipValue(var lPtr, lTy);
       end;
     end;
     method get_AddMethod: ^Void;
-    begin 
+    begin
       var lPtr := fPtr;
       var lKey: Integer;
       var lTy: ProtoReadType;
-      while (lPtr < fEnd) and ProtoReadHeader(var lPtr, out lKey, out lTy) do begin 
+      while (lPtr < fEnd) and ProtoReadHeader(var lPtr, out lKey, out lTy) do begin
         if (lKey = 6) and (lTy = ProtoReadType.varint) then begin
           exit  fValue^.Ext^.MemberInfoList[ProtoReadVarInt(var lPtr)]
-        end else 
+        end else
           ProtoSkipValue(var lPtr, lTy);
       end;
     end;
     method get_RemoveMethod: ^Void;
-    begin 
+    begin
       var lPtr := fPtr;
       var lKey: Integer;
       var lTy: ProtoReadType;
-      while (lPtr < fEnd) and ProtoReadHeader(var lPtr, out lKey, out lTy) do begin 
+      while (lPtr < fEnd) and ProtoReadHeader(var lPtr, out lKey, out lTy) do begin
         if (lKey = 6) and (lTy = ProtoReadType.varint) then begin
           exit  fValue^.Ext^.MemberInfoList[ProtoReadVarInt(var lPtr)]
-        end else 
+        end else
           ProtoSkipValue(var lPtr, lTy);
       end;
     end;
     method get_FireMethod: ^Void;
-    begin 
+    begin
       var lPtr := fPtr;
       var lKey: Integer;
       var lTy: ProtoReadType;
-      while (lPtr < fEnd) and ProtoReadHeader(var lPtr, out lKey, out lTy) do begin 
+      while (lPtr < fEnd) and ProtoReadHeader(var lPtr, out lKey, out lTy) do begin
         if (lKey = 6) and (lTy = ProtoReadType.varint) then begin
           exit  fValue^.Ext^.MemberInfoList[ProtoReadVarInt(var lPtr)]
-        end else 
+        end else
           ProtoSkipValue(var lPtr, lTy);
       end;
     end;
-  public 
+  public
     property Flags: EventFlags read get_Flags;
     property IsStatic: Boolean read EventFlags.Static in &Flags; override;
     property AddMethod: ^Void read get_AddMethod;
@@ -382,56 +382,56 @@ type
   MethodInfo = public class(MemberInfo)
   private
     method get_Arguments: sequence of ArgumentInfo; iterator;
-    begin 
+    begin
       var lPtr := fPtr;
       var lKey: Integer;
       var lTy: ProtoReadType;
-      while (lPtr < fEnd) and ProtoReadHeader(var lPtr, out lKey, out lTy) do begin 
+      while (lPtr < fEnd) and ProtoReadHeader(var lPtr, out lKey, out lTy) do begin
         if (lKey = 4) and (lTy = ProtoReadType.startgroup) then begin
           yield new ArgumentInfo(fValue, lPtr);
           ProtoSkipValue(var lPtr, lTy);
-        end else 
+        end else
           ProtoSkipValue(var lPtr, lTy);
       end;
     end;
     method get_Flags: MethodFlags;
-    begin 
+    begin
       var lPtr := fPtr;
       var lKey: Integer;
       var lTy: ProtoReadType;
-      while (lPtr < fEnd) and ProtoReadHeader(var lPtr, out lKey, out lTy) do begin 
+      while (lPtr < fEnd) and ProtoReadHeader(var lPtr, out lKey, out lTy) do begin
         if (lKey = 3) and (lTy = ProtoReadType.varint) then begin
           exit  MethodFlags(ProtoReadVarInt(var lPtr))
-        end else 
+        end else
           ProtoSkipValue(var lPtr, lTy);
       end;
     end;
     method get_Pointer: ^Void;
-    begin 
+    begin
       var lPtr := fPtr;
       var lKey: Integer;
       var lTy: ProtoReadType;
-      while (lPtr < fEnd) and ProtoReadHeader(var lPtr, out lKey, out lTy) do begin 
+      while (lPtr < fEnd) and ProtoReadHeader(var lPtr, out lKey, out lTy) do begin
         if (lKey = 6) and (lTy = ProtoReadType.varint) then begin
           exit  fValue^.Ext^.MemberInfoList[ProtoReadVarInt(var lPtr)]
-        end else 
+        end else
           ProtoSkipValue(var lPtr, lTy);
       end;
     end;
     method get_VmtOffset: Integer;
-    begin 
+    begin
       var lPtr := fPtr;
       var lKey: Integer;
       var lTy: ProtoReadType;
-      while (lPtr < fEnd) and ProtoReadHeader(var lPtr, out lKey, out lTy) do begin 
+      while (lPtr < fEnd) and ProtoReadHeader(var lPtr, out lKey, out lTy) do begin
         if (lKey = 7) and (lTy = ProtoReadType.varint) then begin
           exit  ProtoReadVarInt(var lPtr)
-        end else 
+        end else
           ProtoSkipValue(var lPtr, lTy);
       end;
       exit -1;
     end;
-  public 
+  public
     property Flags: MethodFlags read get_Flags;
     property IsStatic: Boolean read MethodFlags.Static in &Flags; override;
     property Arguments: sequence of ArgumentInfo read get_Arguments;
@@ -454,15 +454,15 @@ type
   &Type = public class
    private
      method get_Constants: sequence of ConstantInfo; iterator;
-     begin 
+     begin
        var lPtr := fValue^.Ext^.MemberInfoData;
        var lKey: Integer;
        var lTy: ProtoReadType;
-       while ProtoReadHeader(var lPtr, out lKey, out lTy) do begin 
+       while ProtoReadHeader(var lPtr, out lKey, out lTy) do begin
          if (lKey = 2) and (lTy = ProtoReadType.message) then begin
            yield new ConstantInfo(fValue, lPtr);
            ProtoSkipValue(var lPtr, lTy);
-         end else 
+         end else
            ProtoSkipValue(var lPtr, lTy);
        end;
      end;
@@ -473,9 +473,9 @@ type
     class var fEnd: ^IslandTypeInfo;
 
      class method get_AllTypes: sequence of &Type; iterator;
-     begin 
+     begin
        var lWork := @fStart;
-       loop begin 
+       loop begin
          inc(lWork);
          if lWork = @fEnd then break;
          yield new &Type(lWork^);
@@ -488,9 +488,9 @@ type
     class var fEnd: ^IslandTypeInfo;external;
 
      class method get_AllTypes: sequence of &Type; iterator;
-     begin 
+     begin
        var lWork := @fStart;
-       loop begin 
+       loop begin
          yield new &Type(lWork^);
          inc(lWork);
          if lWork > @fEnd then break;
@@ -498,147 +498,147 @@ type
      end;
     {$ENDIF}
      method get_Events: sequence of EventInfo;iterator;
-     begin 
+     begin
        var lPtr := fValue^.Ext^.MemberInfoData;
        var lKey: Integer;
        var lTy: ProtoReadType;
-       while ProtoReadHeader(var lPtr, out lKey, out lTy) do begin 
+       while ProtoReadHeader(var lPtr, out lKey, out lTy) do begin
          if (lKey = 5) and (lTy = ProtoReadType.message) then begin
            yield new EventInfo(fValue, lPtr);
            ProtoSkipValue(var lPtr, lTy);
-         end else 
+         end else
            ProtoSkipValue(var lPtr, lTy);
       end;
     end;
 
      method get_Properties: sequence of PropertyInfo;iterator;
-     begin 
+     begin
        var lPtr := fValue^.Ext^.MemberInfoData;
        var lKey: Integer;
        var lTy: ProtoReadType;
-       while ProtoReadHeader(var lPtr, out lKey, out lTy) do begin 
+       while ProtoReadHeader(var lPtr, out lKey, out lTy) do begin
          if (lKey = 4) and (lTy = ProtoReadType.message) then begin
            yield new PropertyInfo(fValue, lPtr);
            ProtoSkipValue(var lPtr, lTy);
-         end else 
+         end else
            ProtoSkipValue(var lPtr, lTy);
       end;
     end;
 
      method get_Fields: sequence of FieldInfo;iterator;
-     begin 
+     begin
        var lPtr := fValue^.Ext^.MemberInfoData;
        var lKey: Integer;
        var lTy: ProtoReadType;
-       while ProtoReadHeader(var lPtr, out lKey, out lTy) do begin 
+       while ProtoReadHeader(var lPtr, out lKey, out lTy) do begin
          if (lKey = 1) and (lTy = ProtoReadType.message) then begin
            yield new FieldInfo(fValue, lPtr);
            ProtoSkipValue(var lPtr, lTy);
-         end else 
+         end else
            ProtoSkipValue(var lPtr, lTy);
       end;
     end;
 
      method get_Methods: sequence of MethodInfo;iterator;
-     begin 
+     begin
        var lPtr := fValue^.Ext^.MemberInfoData;
        var lKey: Integer;
        var lTy: ProtoReadType;
-       while ProtoReadHeader(var lPtr, out lKey, out lTy) do begin 
+       while ProtoReadHeader(var lPtr, out lKey, out lTy) do begin
          if (lKey = 3) and (lTy = ProtoReadType.message) then begin
            yield new MethodInfo(fValue, lPtr);
            ProtoSkipValue(var lPtr, lTy);
-         end else 
+         end else
            ProtoSkipValue(var lPtr, lTy);
       end;
     end;
 
      method get_Members: sequence of MemberInfo;iterator;
-     begin 
+     begin
        var lPtr := fValue^.Ext^.MemberInfoData;
        var lKey: Integer;
        var lTy: ProtoReadType;
-       while ProtoReadHeader(var lPtr, out lKey, out lTy) do begin 
+       while ProtoReadHeader(var lPtr, out lKey, out lTy) do begin
          if (lKey = 1) and (lTy = ProtoReadType.message) then begin
            yield new FieldInfo(fValue, lPtr);
            ProtoSkipValue(var lPtr, lTy);
-         end else 
+         end else
          if (lKey = 2) and (lTy = ProtoReadType.message) then begin
            yield new ConstantInfo(fValue, lPtr);
            ProtoSkipValue(var lPtr, lTy);
-         end else 
+         end else
          if (lKey = 3) and (lTy = ProtoReadType.message) then begin
            yield new MethodInfo(fValue, lPtr);
            ProtoSkipValue(var lPtr, lTy);
-         end else 
+         end else
          if (lKey = 4) and (lTy = ProtoReadType.message) then begin
            yield new PropertyInfo(fValue, lPtr);
            ProtoSkipValue(var lPtr, lTy);
-         end else 
+         end else
          if (lKey = 5) and (lTy = ProtoReadType.message) then begin
            yield new EventInfo(fValue, lPtr);
            ProtoSkipValue(var lPtr, lTy);
-         end else 
+         end else
            ProtoSkipValue(var lPtr, lTy);
       end;
     end;
 
      method get_Attributes: sequence of CustomAttribute; iterator;
-     begin 
+     begin
        var lPtr := fValue^.Ext^.MemberInfoData;
        var lKey: Integer;
        var lTy: ProtoReadType;
-       while ProtoReadHeader(var lPtr, out lKey, out lTy) do begin 
+       while ProtoReadHeader(var lPtr, out lKey, out lTy) do begin
          if (lKey = 0) and (lTy = ProtoReadType.startgroup) then begin
            yield ReadAttribute(fValue, var lPtr)
-         end else 
+         end else
            ProtoSkipValue(var lPtr, lTy);
       end;
     end;
     method get_NestedTypes: sequence of &Type; iterator;
-    begin 
+    begin
       var lPtr := fValue^.Ext^.MemberInfoData;
       var lKey: Integer;
       var lTy: ProtoReadType;
-      while ProtoReadHeader(var lPtr, out lKey, out lTy) do begin 
+      while ProtoReadHeader(var lPtr, out lKey, out lTy) do begin
         if (lKey = 6) and (lTy = ProtoReadType.varint) then begin
           yield new &Type(^IslandTypeInfo(fValue^.Ext^.MemberInfoList[ProtoReadVarInt(var lPtr)]))
-        end else 
+        end else
           ProtoSkipValue(var lPtr, lTy);
       end;
     end;
     class method ReadAttribute(fValue: ^IslandTypeInfo; var lPtr: ^Byte): CustomAttribute; assembly;
-    begin 
+    begin
       var lKey: Integer;
       var lTy: ProtoReadType;
       var lAtt := new List<CustomAttributeArgument>;
       var lType: &Type;
       var lCtor: ^Void;
-      while ProtoReadHeader(var lPtr, out lKey, out lTy) do begin 
-        if (lKey = 0) and (lTy = ProtoReadType.varint) then 
+      while ProtoReadHeader(var lPtr, out lKey, out lTy) do begin
+        if (lKey = 0) and (lTy = ProtoReadType.varint) then
           lType := new &Type(^IslandTypeInfo(fValue^.Ext^.MemberInfoList[ProtoReadVarInt(var lPtr)]))
-        else if (lKey = 1) and (lTy = ProtoReadType.varint) then 
+        else if (lKey = 1) and (lTy = ProtoReadType.varint) then
           lCtor := fValue^.Ext^.MemberInfoList[ProtoReadVarInt(var lPtr)]
-        else if (lKey = 3) and (lTy = ProtoReadType.startgroup) then begin 
+        else if (lKey = 3) and (lTy = ProtoReadType.startgroup) then begin
           lAtt.Add(ReadAttributeValue(var lPtr));
         end else ProtoSkipValue(var lPtr, lTy);
       end;
       exit new CustomAttribute(lType, lCtor, lAtt.ToArray);
     end;
     class method ReadAttributeValue(var lPtr: ^Byte): CustomAttributeArgument; assembly;
-    begin 
+    begin
       var lName: String;
       var lKey: Integer;
       var lTy: ProtoReadType;
       var lList: List<Object>;
-      while ProtoReadHeader(var lPtr, out lKey, out lTy) do begin 
-        if (lKey = 0) and (lTy = ProtoReadType.length) then 
+      while ProtoReadHeader(var lPtr, out lKey, out lTy) do begin
+        if (lKey = 0) and (lTy = ProtoReadType.length) then
           lName := ProtoReadString(var lPtr)
-        else if (lKey = 1) and (lTy = ProtoReadType.varint) then 
+        else if (lKey = 1) and (lTy = ProtoReadType.varint) then
             result := new CustomAttributeArgument(lName, ProtoReadVarInt(var lPtr))
-        else if (lKey = 2) and (lTy = ProtoReadType.b64) then 
+        else if (lKey = 2) and (lTy = ProtoReadType.b64) then
             result := new CustomAttributeArgument(lName, ProtoReadDouble(var lPtr))
-        else if (lKey = 3) and (lTy = ProtoReadType.length) then 
+        else if (lKey = 3) and (lTy = ProtoReadType.length) then
             result := new CustomAttributeArgument(lName, ProtoReadString(var lPtr))
         else if (lKey = 4) and (lTy = ProtoReadType.startgroup) then begin
           if lList = nil then lList := new List<Object>;
@@ -650,66 +650,66 @@ type
     end;
 
     method get_Interfaces: sequence of &Type; iterator;
-    begin 
+    begin
       if fValue^.InterfaceType = nil then exit;
       for i: Integer := 0 to fValue^.InterfaceType^.HashTableSize -1 do begin
         var lHashEntry := (@fValue^.InterfaceType^.FirstEntry)[i];
-        if lHashEntry <> nil then 
-        while lHashEntry^ <> nil do begin 
+        if lHashEntry <> nil then
+        while lHashEntry^ <> nil do begin
           yield new &Type(lHashEntry^);
           inc(lHashEntry);
         end;
       end;
     end;
     method get_SubType: &Type;
-    begin 
+    begin
       var lPtr := fValue^.Ext^.MemberInfoData;
       var lKey: Integer;
       var lTy: ProtoReadType;
-      while ProtoReadHeader(var lPtr, out lKey, out lTy) do begin 
-        if (lKey = 13) and (lTy = ProtoReadType.varint) then 
+      while ProtoReadHeader(var lPtr, out lKey, out lTy) do begin
+        if (lKey = 13) and (lTy = ProtoReadType.varint) then
           exit new &Type(^IslandTypeInfo(fValue^.Ext^.MemberInfoList[ProtoReadVarInt(var lPtr)]))
-        else 
+        else
           ProtoSkipValue(var lPtr, lTy);
       end;
     end;
     method get_SizeOfType: Integer;
-    begin 
+    begin
       var lPtr := fValue^.Ext^.MemberInfoData;
       var lKey: Integer;
       var lTy: ProtoReadType;
-      while ProtoReadHeader(var lPtr, out lKey, out lTy) do begin 
-        if (lKey = 12) and (lTy = ProtoReadType.varint) then 
+      while ProtoReadHeader(var lPtr, out lKey, out lTy) do begin
+        if (lKey = 12) and (lTy = ProtoReadType.varint) then
           exit ProtoReadVarInt(var lPtr)
-        else 
+        else
           ProtoSkipValue(var lPtr, lTy);
       end;
     end;
     method get_DefFlags: TypeDefFlags;
-    begin 
+    begin
       var lPtr := fValue^.Ext^.MemberInfoData;
       var lKey: Integer;
       var lTy: ProtoReadType;
-      while ProtoReadHeader(var lPtr, out lKey, out lTy) do begin 
-        if (lKey = 11) and (lTy = ProtoReadType.varint) then 
+      while ProtoReadHeader(var lPtr, out lKey, out lTy) do begin
+        if (lKey = 11) and (lTy = ProtoReadType.varint) then
           exit TypeDefFlags(ProtoReadVarInt(var lPtr))
-        else 
+        else
           ProtoSkipValue(var lPtr, lTy);
       end;
     end;
     method get_Code: Integer;
-    begin 
+    begin
       var lPtr := fValue^.Ext^.MemberInfoData;
       var lKey: Integer;
       var lTy: ProtoReadType;
-      while ProtoReadHeader(var lPtr, out lKey, out lTy) do begin 
-        if (lKey = 10) and (lTy = ProtoReadType.varint) then 
+      while ProtoReadHeader(var lPtr, out lKey, out lTy) do begin
+        if (lKey = 10) and (lTy = ProtoReadType.varint) then
           exit ProtoReadVarInt(var lPtr)
-        else 
+        else
           ProtoSkipValue(var lPtr, lTy);
       end;
       exit -1;
-    end;  
+    end;
   assembly
     fValue: ^IslandTypeInfo;
   public
@@ -719,15 +719,15 @@ type
     end;
 
     class operator Equal(a, b: &Type): Boolean;
-    begin 
+    begin
       if assigned(a) <> assigned(b) then exit false;
-      if assigned(a) then 
+      if assigned(a) then
         exit (a.fValue = b.fValue);
       exit false;
     end;
 
     class operator NotEqual(a, b: &Type): Boolean;
-    begin 
+    begin
       exit not (a = b);
     end;
 
@@ -772,7 +772,7 @@ type
     property Events: sequence of EventInfo read get_Events;
 
     method Instantiate: Object; // Creates a new instance of this type and calls the default constructor, fails if none is present!
-    begin 
+    begin
       var lCtor: MethodInfo := Methods.FirstOrDefault(a -> (MethodFlags.Constructor in a.Flags) and not a.Arguments.Any);
       if lCtor = nil then raise new Exception('No default constructor could be found!');
       var lRealCtor := CtorHelper(lCtor.Pointer);
@@ -786,19 +786,19 @@ type
 
 
   TypeDefFlags = public flags (
-    &Global = 1 shl 0,     
+    &Global = 1 shl 0,
     &Sealed = 1 shl 1,
     &Static = 1 shl 2,
-    &Mapped = 1 shl 3, 
+    &Mapped = 1 shl 3,
     HasAnonymous = 1 shl 4,
     &Abstract = 1 shl 5,
-	  SoftInterface = 1 shl 6,
-	  &Extension = 1 shl 7,
-	  External = 1 shl 8,
-	  CompilerCategory = 1 shl 9,
-	  BlockHolder = 1 shl 10,
-	  JavaNested = 1 shl 11,
-	  SealedExternally = 1 shl 12
+    SoftInterface = 1 shl 6,
+    &Extension = 1 shl 7,
+    External = 1 shl 8,
+    CompilerCategory = 1 shl 9,
+    BlockHolder = 1 shl 10,
+    JavaNested = 1 shl 11,
+    SealedExternally = 1 shl 12
   );
 
 
@@ -878,17 +878,17 @@ begin
     ProtoReadType.b64: ProtoReadFixed64(var aSelf);
     ProtoReadType.message: aSelf := ProtoReadFixed32(var aSelf) + aSelf;
     ProtoReadType.endgroup: ;
-    ProtoReadType.startgroup: begin 
+    ProtoReadType.startgroup: begin
       var lCount := 1;
       loop begin
         var lRT := ProtoReadType(ProtoReadVarInt(var aSelf) and $7);
-        if lRT = ProtoReadType.startgroup then 
-          inc(lCount) 
+        if lRT = ProtoReadType.startgroup then
+          inc(lCount)
         else
         if lRT = ProtoReadType.endgroup then begin
           dec(lCount);
           if lCount = 0 then break;
-        end else 
+        end else
           ProtoSkipValue(var aSelf, lRT);
       end;
     end;
@@ -930,6 +930,6 @@ method ProtoReadFixed64(var aSelf: ^Byte): Int64; assembly;
 begin
   result := ^Int64(aSelf)^;
   aSelf := aSelf + 8;
-end;  
+end;
 
 end.
