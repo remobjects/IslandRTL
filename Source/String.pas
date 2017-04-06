@@ -28,8 +28,8 @@ type
     class method FromCharArray(aArray: array of Char): String;
     class method FromPChar(c: ^Char; aCharCount: Integer): String;
     class method FromPChar(c: ^Char): String;
-    class method FromPAnsiChars(c: ^AnsiChar; aCharCount: Integer): String;
-    class method FromPAnsiChars(c: ^AnsiChar): String;
+    class method FromPAnsiChars(c: ^AnsiChar; aCharCount: Integer): nullable String;
+    class method FromPAnsiChars(c: ^AnsiChar): nullable String;
     class method FromRepeatedChar(c: Char; aCharCount: Integer): String;
     class method FromChar(c: Char): String;
     class method IsNullOrEmpty(value: String):Boolean;
@@ -163,8 +163,9 @@ begin
 end;
 {$ENDIF}
 
-class method String.FromPAnsiChars(c: ^AnsiChar; aCharCount: Integer): String;
+class method String.FromPAnsiChars(c: ^AnsiChar; aCharCount: Integer): nullable String;
 begin
+  if not assigned(c) then exit nil;
   {$IFDEF WINDOWS}
   var len := rtl.MultiByteToWideChar(rtl.CP_ACP, 0, c, aCharCount, nil, 0);
   result := AllocString(len);
@@ -757,8 +758,9 @@ begin
     (@result.fFirstChar)[i] := c;
 end;
 
-class method String.FromPAnsiChars(c: ^AnsiChar): String;
+class method String.FromPAnsiChars(c: ^AnsiChar): nullable String;
 begin
+  if not assigned(c) then exit nil;
   exit FromPAnsiChars(c, {$IFDEF WINDOWS}ExternalCalls.{$ELSEIF POSIX}rtl.{$ELSE}{$ERROR}{$ENDIF}strlen(c));
 end;
 
@@ -1028,12 +1030,12 @@ end;
 
 constructor String_Constructors(c: ^AnsiChar; aCharCount: Integer);
 begin
-  result := String.FromPAnsiChars(c, aCharCount);
+  result := coalesce(String.FromPAnsiChars(c, aCharCount), "");
 end;
 
 constructor String_Constructors(c: ^AnsiChar);
 begin
-  result := String.FromPAnsiChars(c);
+  result := coalesce(String.FromPAnsiChars(c), "");
 end;
 
 end.
