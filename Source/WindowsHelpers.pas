@@ -726,7 +726,7 @@ callq *%rcx
 addq $$32, %rsp
 popq %rbp
 retq
-", "", false, false), DisableInlining, DisableOptimizations]
+", "", false, false), DisableInlining, DisableOptimizations, LinkOnce]
 {$ELSE}
 [InlineAsm("
 pushl %ebp
@@ -735,7 +735,7 @@ movl 12(%esp), %ebp
 calll *%eax
 popl %ebp
 retl
-", "", false, false), DisableInlining, DisableOptimizations]
+", "", false, false), DisableInlining, DisableOptimizations, LinkOnce]
 {$ENDIF}
 method CallCatch(aCall: NativeInt; aEBP: NativeInt): NativeInt; external;
 

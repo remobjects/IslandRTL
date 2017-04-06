@@ -478,6 +478,7 @@ type
        loop begin 
          inc(lWork);
          if lWork = @fEnd then break;
+         if lWork^ = nil then continue;
          yield new &Type(lWork^);
        end;
      end;
@@ -491,7 +492,9 @@ type
      begin 
        var lWork := @fStart;
        loop begin 
-         yield new &Type(lWork^);
+         if lWork^ <> nil then begin 
+           yield new &Type(lWork^);
+         end;
          inc(lWork);
          if lWork > @fEnd then break;
        end;
