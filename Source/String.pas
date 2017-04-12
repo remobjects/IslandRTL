@@ -688,7 +688,18 @@ method String.ToLower(aInvariant: Boolean := false): String;
 begin
   {$IFDEF WINDOWS}
   exit doLCMapString(aInvariant, LCMapStringTransformMode.Lower);
-  {$ELSEIF POSIX} raise new NotImplementedException;
+  {$ELSEIF POSIX}
+  {$HINT Non-Invariant ToLower is not implemented for Linux, yet}
+  var b := TextConvert.StringToUTF32LE(self);
+  for i: Int32 := 0 to RemObjects.Elements.System.length(b) step 4 do begin
+    var ch := b[i] + (Int32(b[i+1]) shl 8) + (Int32(b[i+2]) shl 16) + (Int32(b[i+3]) shl 24);
+    var u := rtl.towlower(ch);
+    b[i] := u and $ff;
+    b[i+1] := (u shr 8) and $ff;
+    b[i+2] := (u shr 16) and $ff;
+    b[i+3] := (u shr 25) and $ff;
+  end;
+  result := TextConvert.UTF32LEToString(b);
   {$ELSE}{$ERROR}
   {$ENDIF}
 end;
@@ -697,7 +708,18 @@ method String.ToUpper(aInvariant: Boolean := false): String;
 begin
   {$IFDEF WINDOWS}
   exit doLCMapString(aInvariant, LCMapStringTransformMode.Upper);
-  {$ELSEIF POSIX} raise new NotImplementedException;
+  {$ELSEIF POSIX}
+  {$HINT Non-Invariant ToUpper is not implemented for Linux, yet}
+  var b := TextConvert.StringToUTF32LE(self);
+  for i: Int32 := 0 to RemObjects.Elements.System.length(b) step 4 do begin
+    var ch := b[i] + (Int32(b[i+1]) shl 8) + (Int32(b[i+2]) shl 16) + (Int32(b[i+3]) shl 24);
+    var u := rtl.towupper(ch);
+    b[i] := u and $ff;
+    b[i+1] := (u shr 8) and $ff;
+    b[i+2] := (u shr 16) and $ff;
+    b[i+3] := (u shr 25) and $ff;
+  end;
+  result := TextConvert.UTF32LEToString(b);
   {$ELSE}{$ERROR}
   {$ENDIF}
 end;
