@@ -127,7 +127,7 @@ type
       var lKey: Integer;
       var lTy: ProtoReadType;
       while ProtoReadHeader(var lPtr, out lKey, out lTy) do begin
-        if (lKey = 3) and (lTy = ProtoReadType.startgroup) then begin
+        if (lKey = 3) and (lTy = ProtoReadType.varint) then begin
           exit ArgumentMode(ProtoReadVarInt(var lPtr));
         end else
           ProtoSkipValue(var lPtr, lTy);
@@ -139,7 +139,7 @@ type
       var lKey: Integer;
       var lTy: ProtoReadType;
       while ProtoReadHeader(var lPtr, out lKey, out lTy) do begin
-        if (lKey = 2) and (lTy = ProtoReadType.startgroup) then begin
+        if (lKey = 2) and (lTy = ProtoReadType.varint) then begin
           exit new &Type(^IslandTypeInfo(fValue^.Ext^.MemberInfoList[ProtoReadVarInt(var lPtr)]));
         end else
           ProtoSkipValue(var lPtr, lTy);
@@ -492,7 +492,7 @@ type
      begin
        var lWork := @fStart;
        loop begin
-         if lWork^ <> nil then begin 
+         if lWork^ <> nil then begin
            yield new &Type(lWork^);
          end;
          inc(lWork);
