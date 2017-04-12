@@ -132,7 +132,7 @@ begin
     if lLength > 0 then begin
       Grow(lLength);
       for i: Integer := 0 to lLength-1 do
-        SetItem(i, aItems[i]);
+        fItems[i] := aItems[i];
     end
     else begin
       Clear();
@@ -151,7 +151,7 @@ begin
     Grow(lLength);
     fCount := lLength;
     for i: Integer := 0 to lLength-1 do
-      SetItem(i, aArray[i]);    
+      fItems[i] := aArray[i];
   end
   else begin
     Clear();
@@ -162,7 +162,7 @@ constructor List<T>(aSequence: ISequence<T>);
 begin
   var lLength := aSequence.Count; // ineffficient; looks the sequence twice :(
   if lLength > 0 then begin
-    for each s in aSequence do 
+    for each s in aSequence do
       &Add(s);
   end
   else begin
@@ -179,8 +179,8 @@ end;
 method List<T>.Add(anItem: T);
 begin
   if fCount = Capacity then Grow(Capacity+1);
+  fItems[fCount] := anItem;
   inc(fCount);
-  SetItem(fCount-1, anItem);
 end;
 
 method List<T>.AddRange(Items: List<T>);
@@ -190,7 +190,7 @@ begin
       Grow(fCount + Items.Count);
     end;
     for i: Integer := 0 to Items.Count-1 do begin
-      SetItem(fCount, Items[i]);
+      fItems[fCount] := Items[i];
       inc(fCount);
     end;
   end;
@@ -203,7 +203,7 @@ begin
       Grow(fCount + Items.Count);
     end;
     for i: Integer := 0 to length(Items)-1 do begin
-      SetItem(fCount, Items[i]);
+      fItems[fCount] := Items[i];
       inc(fCount);
     end;
   end;
@@ -470,8 +470,8 @@ begin
   if &index >= fCount then new ArgumentException('index is equal to or greater than the Count of the source List<T>.');
   if &index+&count > fCount then new ArgumentException('index plus count is greater than the Count of the source List<T>.');
   if arrayIndex+&count > length(&array) then new ArgumentException('count is greater than the available space from arrayIndex to the end of the destination array.');
-  
-  for i:Integer := 0 to &count -1 do 
+
+  for i:Integer := 0 to &count -1 do
     &array[arrayIndex+i] := fItems[&index+i];
 end;
 
