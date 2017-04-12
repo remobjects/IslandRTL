@@ -16,7 +16,7 @@
     <WarnOnCaseMismatch>True</WarnOnCaseMismatch>
     <Platform Condition="'$(Platform)' == ''">AnyCPU</Platform>
   </PropertyGroup>
-  <PropertyGroup Condition="'$(Configuration)|$(Platform)' == 'Debug-x86_64|AnyCPU'">
+  <PropertyGroup Condition="'$(Configuration)' == 'Debug-x86_64'">
     <OutputPath>Bin\Debug</OutputPath>
     <DefineConstants>Linux</DefineConstants>
     <EnableAsserts>True</EnableAsserts>
@@ -32,7 +32,7 @@
     <EnableUnmanagedDebugging>False</EnableUnmanagedDebugging>
     <Architecture>x86_64</Architecture>
   </PropertyGroup>
-  <PropertyGroup Condition="'$(Configuration)|$(Platform)' == 'Release-x86_64|AnyCPU'">
+  <PropertyGroup Condition="'$(Configuration)' == 'Release-x86_64'">
     <OutputPath>Bin\Release</OutputPath>
     <DefineConstants>Linux</DefineConstants>
     <EnableAsserts>False</EnableAsserts>
@@ -47,7 +47,7 @@
     <EnableUnmanagedDebugging>False</EnableUnmanagedDebugging>
     <Architecture>x86_64</Architecture>
   </PropertyGroup>
-  <PropertyGroup Condition="'$(Configuration)|$(Platform)' == 'Debug-armv6|AnyCPU'">
+  <PropertyGroup Condition="'$(Configuration)' == 'Debug-armv6'">
     <OutputPath>Bin\Debug</OutputPath>
     <DefineConstants>Linux</DefineConstants>
     <EnableAsserts>True</EnableAsserts>
@@ -63,7 +63,7 @@
     <EnableUnmanagedDebugging>False</EnableUnmanagedDebugging>
     <Architecture>armv6</Architecture>
   </PropertyGroup>
-  <PropertyGroup Condition="'$(Configuration)|$(Platform)' == 'Release-armv6|AnyCPU'">
+  <PropertyGroup Condition="'$(Configuration)' == 'Release-armv6'">
     <OutputPath>Bin\Release</OutputPath>
     <DefineConstants>Linux</DefineConstants>
     <EnableAsserts>False</EnableAsserts>
