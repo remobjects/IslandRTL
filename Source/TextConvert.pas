@@ -454,8 +454,8 @@ type
     class method UTF32LEToString(aValue: array of Byte; aOffset: Integer; len: Integer): String;
     begin
       if aValue = nil then new ArgumentNullException('aValue is nil');
-      if len - (len /4)*4 > 0 then BadArray;
-      var str:= new StringBuilder;
+      if len - (len/4)*4 > 0 then BadArray;
+      var str:= new StringBuilder(len/2);
       var idx := aOffset;
       // ignore BOM
       if len>3 then begin

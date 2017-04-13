@@ -693,7 +693,7 @@ begin
   {$ELSEIF POSIX}
   {$HINT Non-Invariant ToLower is not implemented for Linux, yet}
   var b := TextConvert.StringToUTF32LE(self);
-  for i: Int32 := 0 to RemObjects.Elements.System.length(b) step 4 do begin
+  for i: Int32 := 0 to RemObjects.Elements.System.length(b)-1 step 4 do begin
     var ch := b[i] + (Int32(b[i+1]) shl 8) + (Int32(b[i+2]) shl 16) + (Int32(b[i+3]) shl 24);
     var u := rtl.towlower(ch);
     b[i] := u and $ff;
@@ -702,7 +702,8 @@ begin
     b[i+3] := (u shr 25) and $ff;
   end;
   result := TextConvert.UTF32LEToString(b);
-  {$ELSE}{$ERROR}
+  {$ELSE}
+  {$ERROR Not Implemented}
   {$ENDIF}
 end;
 
@@ -713,7 +714,7 @@ begin
   {$ELSEIF POSIX}
   {$HINT Non-Invariant ToUpper is not implemented for Linux, yet}
   var b := TextConvert.StringToUTF32LE(self);
-  for i: Int32 := 0 to RemObjects.Elements.System.length(b) step 4 do begin
+  for i: Int32 := 0 to RemObjects.Elements.System.length(b)-1 step 4 do begin
     var ch := b[i] + (Int32(b[i+1]) shl 8) + (Int32(b[i+2]) shl 16) + (Int32(b[i+3]) shl 24);
     var u := rtl.towupper(ch);
     b[i] := u and $ff;
@@ -722,7 +723,8 @@ begin
     b[i+3] := (u shr 25) and $ff;
   end;
   result := TextConvert.UTF32LEToString(b);
-  {$ELSE}{$ERROR}
+  {$ELSE}
+  {$ERROR Not Implemented}
   {$ENDIF}
 end;
 
@@ -732,7 +734,8 @@ begin
   exit doLCMapString(true, LCMapStringTransformMode.None);
   {$ELSEIF POSIX}
   exit self; {$WARNING POSIX: implement MakeInvariantString}
-  {$ELSE}{$ERROR}
+  {$ELSE}
+  {$ERROR Not Implemented}
   {$ENDIF}
 end;
 
@@ -749,7 +752,7 @@ end;
 method String.ToCharArray(StartIndex: Integer; aLength: Integer; aNullTerminate: Boolean := false): array of Char;
 begin
   var r := new array of Char(aLength + if aNullTerminate then 1 else 0);
-  {$IFDEF WINDOWS}ExternalCalls.{$ELSEIF POSIX}rtl.{$ELSE}{$ERROR}{$ENDIF}memcpy(@r[0], (@fFirstChar) + StartIndex, aLength * 2);
+  {$IFDEF WINDOWS}ExternalCalls.{$ELSEIF POSIX}rtl.{$ELSE}{$ERROR Not Implemented}{$ENDIF}memcpy(@r[0], (@fFirstChar) + StartIndex, aLength * 2);
   if aNullTerminate then r[aLength] := #0;
   exit r;
 end;
@@ -766,7 +769,7 @@ end;
 
 class method String.FromPChar(c: ^Char): String;
 begin
-  exit FromPChar(c, {$IFDEF WINDOWS}ExternalCalls.{$ELSEIF POSIX}rtl.{$ELSE}{$ERROR}{$ENDIF}wcslen(c));
+  exit FromPChar(c, {$IFDEF WINDOWS}ExternalCalls.{$ELSEIF POSIX}rtl.{$ELSE}{$ERROR Not Implemented}{$ENDIF}wcslen(c));
 end;
 
 class method String.FromChar(c: Char): String;
@@ -785,7 +788,7 @@ end;
 class method String.FromPAnsiChars(c: ^AnsiChar): nullable String;
 begin
   if not assigned(c) then exit nil;
-  exit FromPAnsiChars(c, {$IFDEF WINDOWS}ExternalCalls.{$ELSEIF POSIX}rtl.{$ELSE}{$ERROR}{$ENDIF}strlen(c));
+  exit FromPAnsiChars(c, {$IFDEF WINDOWS}ExternalCalls.{$ELSEIF POSIX}rtl.{$ELSE}{$ERROR Not Implemented}{$ENDIF}strlen(c));
 end;
 
 class method String.Format(aFormat: String; params aArguments: array of Object): String;

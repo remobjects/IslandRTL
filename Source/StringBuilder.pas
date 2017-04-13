@@ -53,7 +53,8 @@ type
     begin
       var newbuf:= new array of Char(Value);
       fCapacity := Value;
-      intCopy(@fBuf[0],@newbuf[0], fLength);
+      if fLength > 0 then
+        intCopy(@fBuf[0], @newbuf[0], fLength);
       fBuf := newbuf;
     end;
 
