@@ -437,6 +437,39 @@ type
     property Arguments: sequence of ArgumentInfo read get_Arguments;
     property VmtOffset: Integer read get_VmtOffset;
     property Pointer: ^Void read get_Pointer;
+    method Invoke(aInstance: Object; aArgs: array of Object): Object;
+    begin
+      var l_Arguments_Count := Arguments.Count;
+      if length(aArgs) <> l_Arguments_Count then raise new ArgumentException('incorrect size of aArgs parameter');
+      var cc: CallingConvention := CallingConvention.Default;
+      {$IFNDEF cpu64}
+      var lst := Attributes.Where(b->b.Type = typeOf(CallingConventionAttribute)).ToList;
+      if lst.Count >0 then cc := CallingConvention(Int64(lst[0].Arguments[0].Value));
+      {$ENDIF}
+      var dx := if IsStatic then 0 else 1;
+
+      var lParams := new array of Object(dx+l_Arguments_Count);
+      var lModes := new array of ArgumentMode(dx+l_Arguments_Count);
+      var lTypes := new array of &Type(dx+l_Arguments_Count);
+      if dx = 1 then begin
+        lParams[0] := aInstance;
+        lModes[0] := ArgumentMode.None;
+        lTypes[0] := typeOf(aInstance);
+      end;
+      for k in Arguments index i do begin
+        lModes[i+dx]:= k.Mode;
+        lTypes[i+dx]:= k.Type;
+        lParams[i+dx]:= aArgs[i];
+      end;
+      {$IFDEF WINDOWS}
+      result := FFI.Call(Pointer, cc, var lParams, lModes, lTypes, &Type);
+      {$ELSEIF POSIX}
+      raise NotImplementedException;
+      {$ELSE}{$ERROR}{$ENDIF}
+      for k in Arguments index i do
+        if lModes[i+dx] in [ArgumentMode.Var,ArgumentMode.Out] then
+          aArgs[i]:=lParams[i+dx];
+    end;
   end;
 
   MethodFlags = public flags(
@@ -851,6 +884,26 @@ type
 
     ProtoReadType = assembly (varint = 0, b64 = 1, length = 2, message = 3, b32 = 5, startgroup = 4, endgroup = 6);
 
+  TypeCodes = public flags(
+    Void = 0,
+    Boolean = 1,
+    Char = 2,
+    SByte = 3,
+    Byte = 4,
+    Int16 = 5,
+    UInt16 = 6,
+    Int32 = 7,
+    UInt32 = 8,
+    Int64 = 9,
+    UInt64 = 10,
+    Single = 11,
+    Double = 12,
+    IntPtr = 15,
+    UIntPtr = 16,
+    String = 13,
+    Object = 18,
+    AnsiChar = 207
+  );
 
 method ProtoReadHeader(var aSelf: ^Byte; out aKey: Integer; out aType: ProtoReadType): Boolean;assembly;
 begin

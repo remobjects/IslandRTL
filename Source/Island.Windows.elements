@@ -84,6 +84,8 @@
     <Compile Include="Interfaces.pas" />
     <Compile Include="Registry.pas" />
     <Compile Include="WindowsHelpers.pas" />
+    <Compile Include="Windows_FFI_x64.pas" />
+    <Compile Include="Windows_FFI_x86.pas" />
   </ItemGroup>
   <ItemGroup>
     <Reference Include="gc" />
