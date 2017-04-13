@@ -15,6 +15,7 @@
     <Mode>Island</Mode>
     <WarnOnCaseMismatch>True</WarnOnCaseMismatch>
     <Platform Condition="'$(Platform)' == ''">AnyCPU</Platform>
+    <GenerateDebugInfo>True</GenerateDebugInfo>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)' == 'Debug-i386'">
     <OutputPath>Bin\Debug</OutputPath>
@@ -31,6 +32,7 @@
     <XmlDocWarningLevel>WarningOnPublicMembers</XmlDocWarningLevel>
     <EnableUnmanagedDebugging>False</EnableUnmanagedDebugging>
     <Architecture>i386</Architecture>
+    <GenerateDebugInfo>True</GenerateDebugInfo>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)' == 'Debug-x86_64'">
     <OutputPath>Bin\Debug</OutputPath>
@@ -47,6 +49,7 @@
     <XmlDocWarningLevel>WarningOnPublicMembers</XmlDocWarningLevel>
     <EnableUnmanagedDebugging>False</EnableUnmanagedDebugging>
     <Architecture>x86_64</Architecture>
+    <GenerateDebugInfo>True</GenerateDebugInfo>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)' == 'Release-i386'">
     <OutputPath>Bin\Release</OutputPath>
@@ -62,6 +65,7 @@
     <XmlDocWarningLevel>WarningOnPublicMembers</XmlDocWarningLevel>
     <EnableUnmanagedDebugging>False</EnableUnmanagedDebugging>
     <Architecture>i386</Architecture>
+    <GenerateDebugInfo>True</GenerateDebugInfo>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)' == 'Release-x86_64'">
     <OutputPath>Bin\Release</OutputPath>
@@ -77,6 +81,7 @@
     <XmlDocWarningLevel>WarningOnPublicMembers</XmlDocWarningLevel>
     <EnableUnmanagedDebugging>False</EnableUnmanagedDebugging>
     <Architecture>x86_64</Architecture>
+    <GenerateDebugInfo>True</GenerateDebugInfo>
   </PropertyGroup>
   <ItemGroup>
     <Compile Include="IDispatch.pas" />
