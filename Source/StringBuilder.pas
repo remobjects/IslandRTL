@@ -267,6 +267,8 @@ type
 
     method ToString: String; override;
     begin
+      if fLength = 0 then
+        exit '';
       exit String.FromPChar(@fBuf[0], fLength);
     end;
 
