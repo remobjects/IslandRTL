@@ -626,7 +626,9 @@ begin
   until i = -1;
 
   if old_i < self_len then
-    result[len] := self.Substring(old_i, self_len -old_i);
+    result[len] := self.Substring(old_i, self_len-old_i)
+  else if old_i = self_len then
+    result[len] := '';
 end;
 
 {$IFDEF WINDOWS}
