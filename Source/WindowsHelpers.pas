@@ -5,7 +5,7 @@ interface
 
 type
   VersionResourceAttribute = public class(Attribute)
-  public 
+  public
     property Copyright: String;
     property Description: String;
     property FileVersion: String;
@@ -116,7 +116,7 @@ type
     {$ENDIF}
 
     [SymbolName('_elements_exception_handler'), CallingConvention(CallingConvention.Stdcall)] // 32bits windows only!!
-    
+
     {$IFDEF _WIN64}
   method ExceptionHandler(arec: ^rtl.EXCEPTION_RECORD; EstablisherFrame: UInt64; context: rtl.PCONTEXT; dispatcher: rtl.PDISPATCHER_CONTEXT ): Integer;
     {$ELSE}
@@ -145,7 +145,7 @@ type
     const ElementsExceptionCode = $E0428819;
   end;
 {$G+}
-  UserEntryPointType =public method (args: array of String): Integer; 
+  UserEntryPointType =public method (args: array of String): Integer;
   ThreadRec = public class
   public
     property Call: rtl.PTHREAD_START_ROUTINE;
@@ -184,8 +184,8 @@ type
     // EHFlags & 4 -> The function is noexcept(true), unwinding can't continue.
 
   end;
-  MSVCIpToSate = public record 
-  public 
+  MSVCIpToSate = public record
+  public
     IP: UInt32;
     State: Integer;
   end;
@@ -217,11 +217,11 @@ type
     {$IFDEF _WIN64}ParentFrameOffset: Int32;{$ENDIF}
   end;
   MSVCCleanup = public procedure();
-  
+
 
 
 // This is needed by anything msvc compiled; it's the offset in fs for the tls array
-var 
+var
   [Alias, SymbolName('__elements_entry_point'), &Weak]
   UserEntryPoint: UserEntryPointType := @ExternalCalls.DefaultUserEntryPoint;
   [SymbolName('_tls_array'), Alias]
@@ -763,10 +763,10 @@ begin
   var lIP := aIP - dispatcher^.ImageBase;
   var lMap := ^MSVCIpToSate(dispatcher^.ImageBase + msvcinfo^.IPMapEntry);
   result := -1;
-  for i: Integer := 0 to msvcinfo^.IPMapEntries -1 do begin 
-    if lIP > lMap[i].IP then 
+  for i: Integer := 0 to msvcinfo^.IPMapEntries -1 do begin
+    if lIP > lMap[i].IP then
       result := lMap[i].State
-    else 
+    else
       break;
   end;
 
@@ -779,7 +779,7 @@ begin
 end;
 
 method CallCatch(aCatch: ^MSVCTryMap; aHandler: ^MSVCHandlerType; arec: ^rtl.EXCEPTION_RECORD; EstFrame: UInt64; context: rtl.PCONTEXT; dispatcher: rtl.PDISPATCHER_CONTEXT);
-begin 
+begin
   var eh := &default(rtl.EXCEPTION_RECORD);
   eh.ExceptionCode := rtl.STATUS_UNWIND_CONSOLIDATE;
   eh.ExceptionFlags := rtl.EXCEPTION_NONCONTINUABLE;
@@ -791,20 +791,20 @@ begin
   eh.ExceptionInformation[3] := aCatch^.TryLow;
   rtl.RtlUnwindEx(rtl.PVOID(EstFrame), rtl.PVOID(dispatcher^.ControlPc),  @eh, nil, context, dispatcher^.HistoryTable);
 end;
-    
+
 
 method ExternalCalls.ExceptionHandler(arec: ^rtl.EXCEPTION_RECORD; EstablisherFrame: UInt64; context: rtl.PCONTEXT; dispatcher: rtl.PDISPATCHER_CONTEXT ): Integer;
 begin
   var msvcinfo := ^MSVCExceptionInfo(dispatcher^.ImageBase + ^Int32(dispatcher^.HandlerData)^);
-  
+
   result := 1; // continue searching
   if msvcinfo^.MagicNumber <> 429065506 then exit;
-  
+
   var index := GetMapIndex(dispatcher^.ControlPc, dispatcher);
 
   if 0 <> (arec^.ExceptionFlags and ( rtl.EXCEPTION_UNWINDING or rtl.EXCEPTION_EXIT_UNWIND)) then begin
     var lMap := ^MSVCUnwindMap(dispatcher^.ImageBase + msvcinfo^.UnwindMap);
-    if arec^.ExceptionCode = rtl.STATUS_UNWIND_CONSOLIDATE then begin 
+    if arec^.ExceptionCode = rtl.STATUS_UNWIND_CONSOLIDATE then begin
       var lTargetState := arec^.ExceptionInformation[3];
       // special exception, we're unwinding to a specific stat
       while (index < msvcinfo^.NumUnwindMap) and (&index <> lTargetState) do begin
@@ -932,7 +932,7 @@ begin
   &exit(main);
 end;
 
-type 
+type
   VoidMethod = method;
 
 method ExternalCalls.DllMainCRTStartup(aModule: rtl.HMODULE; aReason: rtl.DWORD; aReserved: ^Void): Boolean;
@@ -943,7 +943,7 @@ begin
     m := @DllEntry;
     if assigned(m) then m();
   end;
-  if aReason = rtl.DLL_PROCESS_ATTACH then 
+  if aReason = rtl.DLL_PROCESS_ATTACH then
     m := @DllExit;
     if assigned(m) then m();
   exit true;

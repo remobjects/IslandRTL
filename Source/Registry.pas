@@ -5,12 +5,12 @@ type
 
   Registry = public static class
   private
-  
+
     method ParseKeyName(KeyName: String; out subKeyName: String): rtl.HKEY;
     begin
       if KeyName = nil then raise new Exception('KeyName cannot be null');
       var idx := KeyName.IndexOf('\');
-      var l_hkey: String; 
+      var l_hkey: String;
       if idx <> -1 then begin
         l_hkey := KeyName.Substring(0, idx).ToUpper;
         subKeyName := KeyName.Substring(idx+1,KeyName.Length - idx-1);
@@ -55,11 +55,11 @@ type
         if res = rtl.ERROR_SUCCESS  then begin
           case dwtype of
             rtl.REG_NONE,
-            rtl.REG_BINARY:     exit buf;            
+            rtl.REG_BINARY:     exit buf;
 
             rtl.REG_DWORD:      exit ^Int32(bufref)^;
             rtl.REG_DWORD_BIG_ENDIAN: begin
-              var temp: UInt32 := UInt32(buf[0]) shl 24 + 
+              var temp: UInt32 := UInt32(buf[0]) shl 24 +
                                   UInt32(buf[1]) shl 16 +
                                   UInt32(buf[2]) shl 8  +
                                   UInt32(buf[3]);
@@ -78,8 +78,8 @@ type
             rtl.REG_QWORD:      exit ^Int64(bufref)^;
           end;
         end;
-      end;      
-      if res <> rtl.ERROR_SUCCESS then 
+      end;
+      if res <> rtl.ERROR_SUCCESS then
         raise new Exception('error code is '+res.ToString);
     end;
 
@@ -173,7 +173,7 @@ type
       var lsubKey := subKeyName.ToLPCWSTR;
 
       var res :=  rtl.RegSetKeyValueW(lrootkey, lsubKey, ValueName.ToLPCWSTR,cbDatatype,cbData, cbDataSize);
-      if res <> rtl.ERROR_SUCCESS then 
+      if res <> rtl.ERROR_SUCCESS then
         raise new Exception('error code is '+res.ToString);
     end;
   end;

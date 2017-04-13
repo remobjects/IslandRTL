@@ -217,7 +217,7 @@ type
   public
     method ToString: String; override;
     method GetHashCode: Integer; override;
-    
+
     method &Equals(obj: Object): Boolean; override;
     begin
       if assigned(obj) and (obj is UInt32) then
@@ -250,7 +250,7 @@ type
   public
     method ToString: String; override;
     method GetHashCode: Integer; override;
-    
+
     method &Equals(obj: Object): Boolean; override;
     begin
       if assigned(obj) and (obj is Int64) then
@@ -282,7 +282,7 @@ type
   public
     method ToString: String; override;
     method GetHashCode: Integer; override;
-    
+
     method &Equals(obj: Object): Boolean; override;
     begin
       if assigned(obj) and (obj is UInt64) then

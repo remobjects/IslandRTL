@@ -8,7 +8,7 @@ type
 
   DefaultEqualityComparer<T> = assembly class(IEqualityComparer<T>)
   public
-  
+
     method Equals(x: T; y: T): Boolean;
     begin
       exit x.Equals(y);
@@ -24,15 +24,15 @@ type
   private
     fComparator: block(a, b: T): Integer;
   public
-  
+
     constructor (aComparator: block(a, b: T): Integer := nil);
     begin
       fComparator := aComparator;
     end;
 
-    method Equals(x: T; y: T): Boolean; 
+    method Equals(x: T; y: T): Boolean;
     begin
-      if assigned(fComparator) then 
+      if assigned(fComparator) then
         exit fComparator(x,y) = 0
       else
         exit x.Equals(y);

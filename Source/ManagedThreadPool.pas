@@ -14,7 +14,7 @@ type
     class var Spare: Object;
 
     method StartThread;
-    begin 
+    begin
       var lThread := new Thread(@ThreadMain);
       if Spare = nil then Spare := new Object;
       lThread.Start(lThread);
@@ -23,26 +23,26 @@ type
 
     method ThreadMain(aParam: Object);
     begin
-      loop begin 
-        if fShutdown = 1 then begin 
+      loop begin
+        if fShutdown = 1 then begin
           fThreads.Remove(Thread(aParam));
           break;
         end;
         var lItem: ThreadPoolCallback := nil;
-        locking fLock do begin 
-          if fQueue.Count = 0 then begin 
+        locking fLock do begin
+          if fQueue.Count = 0 then begin
             if fThreads.Count > fMaxThreads then begin
               fThreads.Remove(Thread(aParam));
               break;
             end;
-          end else begin 
+          end else begin
             lItem := fQueue[0];
             fQueue.RemoveAt(0);
           end;
         end;
-        if lItem <> nil then begin 
+        if lItem <> nil then begin
           lItem.fCallback(lItem.fState);
-        end else 
+        end else
           fWakeup.Wait;
       end;
     end;
@@ -52,7 +52,7 @@ type
     property MinThreads: Integer read fMinThreads write fMinThreads;
 
     constructor;
-    begin 
+    begin
       fWakeup := new EventWaitHandle(true, false);
       fQueue := new List<ThreadPoolCallback>;
       fThreads := new List<Thread>;
@@ -62,7 +62,7 @@ type
     end;
 
     method Queue(aCallback: ThreadPoolCallback);
-    begin 
+    begin
       locking fLock do begin
         fQueue.Add(aCallback);
         if fThreads.Count = 0 then StartThread;
@@ -72,10 +72,10 @@ type
     end;
 
     method Dispose;
-    begin 
+    begin
       fShutdown := 1;
-      loop begin 
-        locking fLock do 
+      loop begin
+        locking fLock do
           if fThreads.Count = 0 then break;
         fWakeup.Set;
         Thread.Sleep(1);

@@ -29,7 +29,7 @@ type
     method GetNonGenericEnumerator: IEnumerator; implements IEnumerable.GetEnumerator;
     method IsEqual(Item1: T; Item2: T): Boolean;
   public
-    constructor; 
+    constructor;
 
     method GetEnumerator: IEnumerator<T>;
     method Contains(aItem: T): Boolean;
@@ -54,7 +54,7 @@ method Queue<T>.Init;
 begin
   fItems := new array of T(4);
   fHead := 0;
-  fTail := 0; 
+  fTail := 0;
 end;
 
 method Queue<T>.Contains(aItem: T): Boolean;
@@ -114,7 +114,7 @@ begin
   var lTotal := length(fItems) - fTail;
   for i: Integer := 0 to lTotal - 1 do
     result[i] := fItems[fTail + i];
- 
+
   for i: Integer := 0 to fHead - 1 do
     result[lTotal + i] := fItems[fHead + i];
 end;
@@ -141,7 +141,7 @@ begin
     var lTotal := length(fItems) - fTail;
     for i: Integer := 0 to lTotal - 1 do
       lArray[i] := fItems[fTail + i];
- 
+
     for i: Integer := 0 to fHead - 1 do
       lArray[lTotal + i] := fItems[fHead + i];
   end;

@@ -13,7 +13,7 @@ end;
 extension method ISequence<T>.Where(aBlock: not nullable block(aItem: not nullable T): Boolean): /*not nullable*/ ISequence<T>; public; iterator;
 begin
   for each el in self do begin
-    if aBlock(el) then 
+    if aBlock(el) then
       yield el;
   end;
 end;
@@ -27,7 +27,7 @@ end;
 
 extension method ISequence<T>.Take(aCount: Integer): /*not nullable*/ ISequence<T>; public; iterator;
 begin
-  for each el in self index n do begin 
+  for each el in self index n do begin
     if n >= aCount then break;
     yield el;
   end;
@@ -35,13 +35,13 @@ end;
 
 extension method ISequence<T>.Skip(aCount: Integer): /*not nullable*/ ISequence<T>; public; iterator;
 begin
-  for each el in self index n do begin 
+  for each el in self index n do begin
     if n < aCount then continue;
     yield el;
   end;
 end;
 
-extension method ISequence<T>.TakeWhile(aBlock: not nullable block(aItem: not nullable T): Boolean): /*not nullable*/ ISequence<T>; public; iterator; 
+extension method ISequence<T>.TakeWhile(aBlock: not nullable block(aItem: not nullable T): Boolean): /*not nullable*/ ISequence<T>; public; iterator;
 begin
   for each el in self do begin
     if not aBlock(el) then break;
@@ -49,7 +49,7 @@ begin
   end;
 end;
 
-extension method ISequence<T>.SkipWhile(aBlock: not nullable block(aItem: not nullable T): Boolean): /*not nullable*/ ISequence<T>; public; iterator; 
+extension method ISequence<T>.SkipWhile(aBlock: not nullable block(aItem: not nullable T): Boolean): /*not nullable*/ ISequence<T>; public; iterator;
 begin
   var lFound := true;
   for each el in self do begin
@@ -78,7 +78,7 @@ end;
 
 extension method ISequence<T>.Select<T, R>(aBlock: not nullable block(aItem: not nullable T): R): /*not nullable*/ ISequence<R>; public; iterator;
 begin
-  for each el in self do 
+  for each el in self do
     yield aBlock(el);
 end;
 
@@ -98,24 +98,24 @@ end;
 extension method ISequence<T>.Distinct(aComparator: block(a, b: T): Integer := nil): /*not nullable*/ ISequence<T>; public; iterator;
 begin
   var b: IEqualityComparer<T>;
-  if assigned(aComparator) then 
-    b := new EqualityComparer<T>(aComparator) 
-  else 
+  if assigned(aComparator) then
+    b := new EqualityComparer<T>(aComparator)
+  else
     b:= new DefaultEqualityComparer<T>;
   var list := new HashSet<T>(b);
-  for each el in self do 
+  for each el in self do
     if list.Add(el) then yield el;
 end;
 
 extension method ISequence<T>.Intersect(aSecond: not nullable ISequence<T>; aComparator: block(a, b: T): Integer := nil): /*not nullable*/ ISequence<T>; public;iterator;
 begin
   var b: IEqualityComparer<T>;
-  if assigned(aComparator) then 
-    b := new EqualityComparer<T>(aComparator) 
-  else 
+  if assigned(aComparator) then
+    b := new EqualityComparer<T>(aComparator)
+  else
     b:= new DefaultEqualityComparer<T>;
   var list := new HashSet<T>(b);
-  for each el in aSecond do 
+  for each el in aSecond do
     list.Add(el);
   for each el in self do
     if list.Contains(el) then yield el;
@@ -124,26 +124,26 @@ end;
 extension method ISequence<T>.Except(aSecond: not nullable ISequence<T>; aComparator: block(a, b: T): Integer := nil): /*not nullable*/ ISequence<T>; public; iterator;
 begin
   var b: IEqualityComparer<T>;
-  if assigned(aComparator) then 
-    b := new EqualityComparer<T>(aComparator) 
-  else 
+  if assigned(aComparator) then
+    b := new EqualityComparer<T>(aComparator)
+  else
     b:= new DefaultEqualityComparer<T>;
   var list := new HashSet<T>(b);
-  for each el in aSecond do 
+  for each el in aSecond do
     list.Add(el);
   for each el in self do
     if not list.Contains(el) then yield el;
 end;
 
-extension method ISequence<T>.FirstOrDefault: {nullable} T; public; 
+extension method ISequence<T>.FirstOrDefault: {nullable} T; public;
 begin
-  for each el in self do 
+  for each el in self do
     exit el;
 end;
 
-extension method ISequence<T>.FirstOrDefault(aBlock: not nullable block(aItem: not nullable T): Boolean): /*nullable*/ T; public; 
+extension method ISequence<T>.FirstOrDefault(aBlock: not nullable block(aItem: not nullable T): Boolean): /*nullable*/ T; public;
 begin
-  for each el in self do 
+  for each el in self do
   if aBlock(el) then
     exit  el;
 end;
@@ -159,7 +159,7 @@ extension method ISequence<T>.ToArray(): array of T; public;
 begin
   if self is array of T then exit self as array of T;
   if self is List<T> then exit (self as List<T>).ToArray();
-  
+
   var lCount := Count;
   result := new array of T(lCount);
 end;
@@ -168,7 +168,7 @@ extension method ISequence<T>.ToList(): List<T>; public;
 begin
   if self is List<T> then exit self as List<T>;
   if self is array of T then exit new List<T>(self as array of T);
-  
+
   result := new List<T>(self);
 end;
 

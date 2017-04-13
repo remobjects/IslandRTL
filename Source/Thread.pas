@@ -62,32 +62,32 @@ type
     AboveNormal,
     Highest
   );
-  
+
   {$IFDEF WINDOWS}
   WaitHandle = public abstract class(IDisposable)
   protected
-    fHandle: rtl.HANDLE; 
+    fHandle: rtl.HANDLE;
   protected
     constructor(aHandle: rtl.HANDLE);
-    
+
     method Wait(aTimeMS: Integer): Boolean;
     method Wait;
-    
+
     finalizer;
     method Dispose;
   end;
-  
+
   EventWaitHandle = public class(WaitHandle)
   public
     constructor(aAutoReset: Boolean; aInitialValue: Boolean);
     method &Set;
     method Reset;
   end;
-  
+
   Mutex = public class(WaitHandle)
-  public 
+  public
     constructor(aInitialValue: Boolean);
-    
+
     method Release;
   end;
   {$ELSE}
@@ -109,12 +109,12 @@ type
     finalizer;
     method Dispose; override;
   end;
-  
+
   EventWaitHandle = public class(WaitHandle)
   private
     fMutex: rtl.pthread_mutex_t;
     fCV: rtl.pthread_cond_t;
-    fValue: Boolean; 
+    fValue: Boolean;
     fAutoReset: Boolean;
   public
     constructor(aAutoReset: Boolean; aInitialValue: Boolean);
@@ -130,7 +130,7 @@ type
 
 method ThreadProc(aParam: ^Void): rtl.DWORD;
 {$ENDIF}
-  
+
 implementation
 
 method Thread.GetPriority: ThreadPriority;
@@ -233,7 +233,7 @@ begin
     fCallbackObject := parameter;
     {$IFDEF WINDOWS}
     var lStart: rtl.PTHREAD_START_ROUTINE := @ThreadProc;
-    
+
     self.fThread := rtl.CreateThread(nil,0, lStart, InternalCalls.Cast(self), 0, @fThreadID);
     if self.fThread = nil then RaiseError("Problem with creating thread");
     {$ELSE}
@@ -308,7 +308,7 @@ begin
     end;
     {$ELSE}
     {$IFNDEF EMSCRIPTEN}
-    rtl.pthread_setname_np(fthread, @Name.ToAnsiChars[0]) 
+    rtl.pthread_setname_np(fthread, @Name.ToAnsiChars[0])
     {$ENDIF}
     {$ENDIF}
   end;
@@ -332,7 +332,7 @@ end;
 
 finalizer WaitHandle;
 begin
-  if fHandle <> nil then 
+  if fHandle <> nil then
   rtl.CloseHandle(fHandle);
 end;
 
@@ -344,7 +344,7 @@ begin
     fHandle := nil;
   end;
 end;
-  
+
 constructor EventWaitHandle(aAutoReset: Boolean; aInitialValue: Boolean);
 begin
   inherited constructor(rtl.CreateEvent(nil, not aAutoReset, aInitialValue, nil));
@@ -366,7 +366,7 @@ begin
 end;
 
 method Mutex.Release;
-begin 
+begin
   rtl.ReleaseMutex(fHandle);
 end;
 {$ELSE}
@@ -384,7 +384,7 @@ end;
 method Mutex.Wait(aTimeMS: Integer): Boolean;
 begin
   var ts: rtl.__struct_timespec;
-  rtl.clock_gettime(rtl.CLOCK_REALTIME , @ts); 
+  rtl.clock_gettime(rtl.CLOCK_REALTIME , @ts);
   ts.tv_nsec := ts.tv_nsec + ((aTimeMS mod 1000)  *1000);
   ts.tv_sec := ts.tv_sec + (aTimeMS /1000);
   exit rtl.pthread_mutex_timedlock(@fMutex, @ts) = 0;
@@ -418,9 +418,9 @@ method EventWaitHandle.Set;
 begin
   rtl.pthread_mutex_lock(@fMutex);
   fValue := true;
-  if fAutoReset then 
+  if fAutoReset then
     rtl.pthread_cond_signal(@fCV)
-  else 
+  else
     rtl.pthread_cond_broadcast(@fCV);
   rtl.pthread_mutex_unlock(@fMutex);
 end;
@@ -435,11 +435,11 @@ end;
 method EventWaitHandle.Wait(aTimeMS: Integer): Boolean;
 begin
   var ts, ts2: rtl.__struct_timespec;
-  rtl.clock_gettime(rtl.CLOCK_REALTIME , @ts); 
+  rtl.clock_gettime(rtl.CLOCK_REALTIME , @ts);
   ts.tv_nsec := ts.tv_nsec + ((aTimeMS mod 1000)  *1000);
   ts.tv_sec := ts.tv_sec + (aTimeMS /1000);
   rtl.pthread_mutex_lock(@fMutex);
-  loop begin 
+  loop begin
     rtl.pthread_cond_wait(@fCV, @fMutex);
     if fValue then begin
       result := true;
@@ -447,7 +447,7 @@ begin
       break;
     end;
 
-    rtl.clock_gettime(rtl.CLOCK_REALTIME , @ts2); 
+    rtl.clock_gettime(rtl.CLOCK_REALTIME , @ts2);
     if (ts2.tv_sec > ts.tv_sec) or (ts2.tv_nsec > ts.tv_nsec) then break;
   end;
   rtl.pthread_mutex_unlock(@fMutex);
@@ -456,7 +456,7 @@ end;
 method EventWaitHandle.Wait;
 begin
   rtl.pthread_mutex_lock(@fMutex);
-  loop begin 
+  loop begin
     rtl.pthread_cond_wait(@fCV, @fMutex);
     if fValue then begin
       if fAutoReset then fValue := false;

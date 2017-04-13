@@ -136,7 +136,7 @@ type
         fEntriesTable[i].Next := EMPTY_BUCKET;
       end;
 
-      if fMaxUsedIndex > DEFAULT_MAX_INDEX then 
+      if fMaxUsedIndex > DEFAULT_MAX_INDEX then
         for i:Integer := 0 to fMaxUsedIndex-1 do begin
           var idx := CalcIndex(fEntriesTable[i].HashCode);
 
@@ -220,7 +220,7 @@ type
       var hash := CalcHashCode(Item);
       exit IndexOfItem(hash,Item) <> -1;
     end;
- 
+
     method &Remove(Item: T): Boolean;
     begin
       var hash := CalcHashCode(Item);

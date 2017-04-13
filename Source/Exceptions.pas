@@ -95,7 +95,7 @@ type
 
   OverflowException = public class(Exception)
   end;
- 
+
   ArgumentNullException = public class(Exception)
   end;
 

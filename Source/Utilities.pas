@@ -4,8 +4,8 @@ type
   MAllocFunc nested in SharedMemory = function(size: {$IFDEF WINDOWS}{$IFDEF i386}UInt32{$ELSE}UInt64{$ENDIF}{$ELSE}rtl.size_t{$ENDIF}): ^Void;
   CollectFunc nested in SharedMemory = procedure;
   SetFinalizerFunc nested in SharedMemory = procedure(val: ^Void; aFunc: gc.GC_finalization_proc);
-  SharedMemory = record 
-  public 
+  SharedMemory = record
+  public
     malloc: MAllocFunc;
     setfinalizer: SetFinalizerFunc;
     collect: CollectFunc;
@@ -40,7 +40,7 @@ type
     end;
 
     class method SameString(aLeft, aRight: ^AnsiChar): Boolean; private;
-    begin 
+    begin
       if (aLeft = nil) or (aRight = nil) then exit false;
       loop begin
         if aLeft^ <> aRight^ then exit false;
@@ -97,11 +97,11 @@ type
       exit new NullReferenceException;
     end;
     {$IFDEF WINDOWS}var fMapping: rtl.HANDLE;{$ENDIF}
-    method LoadGC; private; 
-    begin  
+    method LoadGC; private;
+    begin
       SpinLockEnter(var fLock);
       try
-        if InternalCalls.CompareExchange(var fLoaded, 1, 0 ) = 1 then begin 
+        if InternalCalls.CompareExchange(var fLoaded, 1, 0 ) = 1 then begin
           exit;
         end;
         {$IFDEF WINDOWS}
@@ -135,16 +135,16 @@ type
         FN[25] := Char(Integer('a')+Integer((lID shr 24) and $f));
         FN[26] := Char(Integer('a')+Integer((lID shr 28) and $f));
         FN[27] := #0;
-        
-        fMapping := rtl.CreateFileMappingW( rtl.INVALID_HANDLE_VALUE, nil, rtl.PAGE_READWRITE, 0, 8, @FN[0]); 
 
-        if fMapping = nil then begin 
+        fMapping := rtl.CreateFileMappingW( rtl.INVALID_HANDLE_VALUE, nil, rtl.PAGE_READWRITE, 0, 8, @FN[0]);
+
+        if fMapping = nil then begin
           LocalGC;
           raise new Exception('Cannot create file mapping for memory sharing, this should not happen!');
         end;
         var lNew := rtl.GetLastError <> rtl.ERROR_ALREADY_EXISTS;
-        var p: ^NativeInt := ^NativeInt(rtl.MapViewOfFile(fMapping, rtl.FILE_MAP_WRITE, 0, 0, 8)); 
-        if p = nil then begin 
+        var p: ^NativeInt := ^NativeInt(rtl.MapViewOfFile(fMapping, rtl.FILE_MAP_WRITE, 0, 0, 8));
+        if p = nil then begin
           LocalGC;
           raise new Exception('Cannot create file mapping for memory sharing, this should not happen!');
         end;
@@ -152,20 +152,20 @@ type
           LocalGC;
           InternalCalls.VolatileWrite(var p^, NativeInt(@fSharedMemory));
         end else begin
-          loop begin 
+          loop begin
             var lData: ^SharedMemory := ^SharedMemory(InternalCalls.VolatileRead(var p^));
-            if lData = nil then Thread.Sleep(1) else begin 
+            if lData = nil then Thread.Sleep(1) else begin
               fSharedMemory := lData^;
               break;
             end;
           end;
         end;
         rtl.UnmapViewOfFile(p);
-        if not lNew then begin 
+        if not lNew then begin
           rtl.CloseHandle(fMapping);
-          fMapping := rtl.INVALID_HANDLE_VALUE; 
+          fMapping := rtl.INVALID_HANDLE_VALUE;
         end;
-        {$ELSE}        
+        {$ELSE}
         LocalGC;
         {$ENDIF}
       finally
@@ -173,8 +173,8 @@ type
       end;
     end;
     {$IFDEF POSIX}[LinkOnce, DllExport]{$ENDIF}
-    method LocalGC; private; 
-    begin 
+    method LocalGC; private;
+    begin
       gc.GC_INIT;
       fSharedMemory.collect := @gc.GC_gcollect;
       fSharedMemory.malloc := @gc.GC_malloc;
@@ -182,7 +182,7 @@ type
     end;
 
     method SetFinalizer(aVal: ^Void; aProc: gc.GC_finalization_proc);
-    begin 
+    begin
       gc.GC_register_finalizer_no_order(aVal, aProc, nil, nil, nil);
     end;
     const FinalizerIndex = 4 + {$IFDEF I386}4{$ELSE}2{$ENDIF};
@@ -228,7 +228,7 @@ type
     // These two functions are used for the debug engine, to find out the type & "ToString" value of an object.
     [SymbolName('ElementsGetTypeName'), Used]
     class method GetObjectTypeName(aObj: Object): ^WideChar;
-    begin 
+    begin
       if aObj = nil then exit nil;
       var s := aObj.GetType.Name.ToCharArray(true); // this will work as the GC is paused during debug.
       exit @s[0];
