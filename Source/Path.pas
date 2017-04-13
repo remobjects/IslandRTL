@@ -13,7 +13,7 @@ type
     method GetFileName(FileName: not nullable String): not nullable String;
     method GetFileNameWithoutExtension(FileName: not nullable String): not nullable String;
     method GetFullPath(RelativePath: not nullable String): not nullable String;
-    
+
     property DirectorySeparatorChar: Char read Folder.Separator;
   end;
 
@@ -51,7 +51,7 @@ begin
   if LastChar = Folder.Separator then
     result := BasePath + Path
   else
-    result := BasePath + Folder.Separator + Path; 
+    result := BasePath + Folder.Separator + Path;
 end;
 
 method Path.Combine(BasePath: not nullable String; Path1: not nullable String; Path2: not nullable String): not nullable String;
@@ -63,7 +63,7 @@ method Path.GetParentDirectory(FileName: not nullable String): nullable String;
 begin
   if length(FileName) = 0 then
     raise new Exception("Invalid arguments");
-    
+
   var LastChar := FileName[FileName.Length - 1];
 
   if LastChar = Folder.Separator then
@@ -80,15 +80,15 @@ begin
       result := FileName.Substring(0, lIndex)
     else
       result := nil; // network share has no parent folder
-    
+
   end
   else begin
-  
+
     if lIndex > -1 then
       result := FileName.Substring(0, lIndex)
     else
       result := FileName+Folder.Separator+'..' // "fake" parent folder by appending ..
-      
+
   end;
 end;
 
@@ -96,7 +96,7 @@ method Path.GetExtension(FileName: not nullable String): not nullable String;
 begin
   FileName := GetFileName(FileName);
   var lIndex := FileName.LastIndexOf(".");
-  
+
   if (lIndex <> -1) and (lIndex < FileName.Length - 1) then
     exit FileName.Substring(lIndex);
 
@@ -113,10 +113,10 @@ begin
     FileName := FileName.Substring(0, FileName.Length - 1);
 
   var lIndex := FileName.LastIndexOf(Folder.Separator);
-  
+
   if (lIndex <> -1) and (lIndex < FileName.Length - 1) then
     exit FileName.Substring(lIndex + 1);
-  
+
   exit FileName;
 end;
 
@@ -124,7 +124,7 @@ method Path.GetFileNameWithoutExtension(FileName: not nullable String): not null
 begin
   FileName := GetFileName(FileName);
   var lIndex := FileName.LastIndexOf(".");
-  
+
   if lIndex <> -1 then
     exit FileName.Substring(0, lIndex);
 
@@ -136,11 +136,11 @@ begin
   {$IFDEF WINDOWS}
   var lname := RelativePath.ToFileName;
   var len: rtl.DWORD := rtl.MAX_PATH;
-  var buf:= new array of Char(len); 
+  var buf:= new array of Char(len);
   len := rtl.GetFullPathNameW(lname,len,rtl.LPWSTR(@buf[0]), nil);
   CheckForIOError(len <> 0);
   if len <= rtl.MAX_PATH then begin
-    if (len>4) and  (buf[0] = '\') and (buf[1] = '\') and (buf[2] = '?') and (buf[3] = '\') then 
+    if (len>4) and  (buf[0] = '\') and (buf[1] = '\') and (buf[2] = '?') and (buf[3] = '\') then
       exit String.FromPChar(@buf[4], len -4) as not nullable String
     else
       exit String.FromPChar(@buf[0],len) as not nullable String;
@@ -148,8 +148,8 @@ begin
   else begin
     var buf1 := new array of Char(len+1);
     len := rtl.GetFullPathNameW(lname,len,rtl.LPWSTR(@buf1[0]), nil);
-    CheckForIOError(len <> 0);  
-    if (len>4) and (buf1[0] = '\') and (buf1[1] = '\') and (buf1[2] = '?') and (buf1[3] = '\') then 
+    CheckForIOError(len <> 0);
+    if (len>4) and (buf1[0] = '\') and (buf1[1] = '\') and (buf1[2] = '?') and (buf1[3] = '\') then
       exit String.FromPChar(@buf1[4], len-4)as not nullable String
     else
       exit String.FromPChar(@buf1[0],len) as not nullable String;

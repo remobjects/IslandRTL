@@ -41,7 +41,7 @@ type
     [SymbolName('__elements_entry_point'), &Weak]
     method UserEntryPoint(args: array of String): Integer; external;
     [SymbolName({$IF EMSCRIPTEN OR ANDROID}'_start'{$ELSE}'__elements_entry_point_helper'{$ENDIF}), Used]
-    method Entrypoint(argc: Integer; argv: ^^AnsiChar; _envp: ^^AnsiChar): Integer;    
+    method Entrypoint(argc: Integer; argv: ^^AnsiChar; _envp: ^^AnsiChar): Integer;
     {$IF NOT EMSCRIPTEN AND NOT ANDROID}
     [SymbolName('_start'), Naked]
     method _start;
@@ -148,7 +148,7 @@ begin
   var lMine := aClass = ElementsExceptionCode;
   {$IFDEF ARM}
   if (aState  and rtl._Unwind_State._US_ACTION_MASK) <> rtl._Unwind_State._US_UNWIND_FRAME_STARTING then begin
-     if rtl.__gnu_unwind_frame (aEx, aCtx) <> rtl._Unwind_Reason_Code._URC_OK  then 
+     if rtl.__gnu_unwind_frame (aEx, aCtx) <> rtl._Unwind_Reason_Code._URC_OK  then
       exit rtl._Unwind_Reason_Code._URC_FAILURE;
     exit rtl._Unwind_Reason_Code._URC_CONTINUE_UNWIND;
   end;
@@ -168,7 +168,7 @@ begin
       exit rtl._Unwind_Reason_Code._URC_HANDLER_FOUND;
     end;
     {$IFDEF ARM}
-     if rtl.__gnu_unwind_frame (aEx, aCtx) <> rtl._Unwind_Reason_Code._URC_OK  then 
+     if rtl.__gnu_unwind_frame (aEx, aCtx) <> rtl._Unwind_Reason_Code._URC_OK  then
       exit rtl._Unwind_Reason_Code._URC_FAILURE;
     {$ENDIF}
     exit rtl._Unwind_Reason_Code._URC_CONTINUE_UNWIND;
@@ -190,7 +190,7 @@ begin
       end;
 
       {$IFDEF ARM}
-       if rtl.__gnu_unwind_frame (aEx, aCtx) <> rtl._Unwind_Reason_Code._URC_OK  then 
+       if rtl.__gnu_unwind_frame (aEx, aCtx) <> rtl._Unwind_Reason_Code._URC_OK  then
         exit rtl._Unwind_Reason_Code._URC_FAILURE;
       {$ENDIF}
       exit rtl._Unwind_Reason_Code._URC_CONTINUE_UNWIND;
@@ -216,7 +216,7 @@ begin
     rtl._Unwind_SetGR(aCtx, 1, rtl.uintptr_t(lRecord^.handlerSwitchValue));
     {$IFDEF ARM}
     rtl._Unwind_SetGR(aCtx, 15, lLandingPad or (rtl._Unwind_GetGR(aCtx, 15)and 1));
-    {$ELSE}  
+    {$ELSE}
     rtl._Unwind_SetIP(aCtx, lRecord^.landingPad);
     {$ENDIF}
     exit rtl._Unwind_Reason_Code._URC_INSTALL_CONTEXT;
@@ -255,21 +255,21 @@ begin
     mov     fp, #0
     mov     lr, #0
 
-    pop     {r1}    // argc         
-    mov     r2, sp 
+    pop     {r1}    // argc
+    mov     r2, sp
     mov     r11, r0
     ldr     r0, .l1
     ldr     r3, .l2
     ldr     r12, .l3
 
-    push    {r2}            
-    push    {r11}     
-    push    {r12}            
+    push    {r2}
+    push    {r11}
+    push    {r12}
   // main: r0
   // argc: r1
   // argc: r2
   // fini: r3
-  // stacktop: stackfini, 
+  // stacktop: stackfini,
   /* __libc_start_main (main, argc, argv, init, fini, rtld_fini, stack_end) */
     bl     __libc_start_main
     bl abort

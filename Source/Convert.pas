@@ -47,7 +47,7 @@ type
       arr := new array of Byte(len);
       for i: Integer := 0 to len-1 do begin
         var b:= Integer(si[i+start]);
-        case b of 
+        case b of
           48..57  {0..9}: arr[i] := b-48;
           97..102 {a..f}: arr[i] := b-87;
         else
@@ -60,7 +60,7 @@ type
   assembly
     method RaiseOverflowException;
     begin
-      raise new OverflowException('overflow.');    
+      raise new OverflowException('overflow.');
     end;
 
     method RaiseFormatException;
@@ -82,7 +82,7 @@ type
       var sValue:UInt64 := arr[0];
       var aMaxValue: UInt64 := iif(lSign, - Int64.MinValue, Int64.MaxValue);
       var aMaxValue1: UInt64 := (UInt64(iif(lSign, - Int64.MinValue, Int64.MaxValue)) / 10)+1;
-      
+
       for i:Integer := 1 to arr.Length-1 do begin
         if (sValue> aMaxValue1) or (sValue*10 > (aMaxValue- arr[i])) then begin
           if aRaiseOverflowException then
@@ -93,7 +93,7 @@ type
         sValue := sValue*10+arr[i];
       end;
       Value := sValue;
-      if lSign then Value := -Value;       
+      if lSign then Value := -Value;
       exit true;
     end;
 
@@ -102,11 +102,11 @@ type
       var lSign: Boolean;
       var arr: array of Byte;
       if not ParseString(s, out lSign, out arr) then exit false;
-      if lSign then exit False; 
+      if lSign then exit False;
       var sValue : UInt64 := arr[0];
-      
+
       for i:Integer := 1 to arr.Length-1 do begin
-        if (sValue > UInt64.MaxValue / 10) or (sValue*10 > UInt64.MaxValue - arr[i]) then begin 
+        if (sValue > UInt64.MaxValue / 10) or (sValue*10 > UInt64.MaxValue - arr[i]) then begin
           if aRaiseOverflowException then
             RaiseOverflowException
           else
@@ -123,9 +123,9 @@ type
       var arr: array of Byte;
       if not ParseHex(s,out arr) then RaiseBadHexString;
       var sValue : UInt64 := arr[0];
-      
+
       for i:Integer := 1 to arr.Length-1 do begin
-        if (sValue > UInt64.MaxValue shr 4) or (sValue shl 4 > UInt64.MaxValue - arr[i]) then RaiseOverflowException;        
+        if (sValue > UInt64.MaxValue shr 4) or (sValue shl 4 > UInt64.MaxValue - arr[i]) then RaiseOverflowException;
         sValue := (sValue shl 4)+arr[i];
       end;
       exit sValue;

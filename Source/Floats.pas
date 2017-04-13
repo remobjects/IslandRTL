@@ -463,7 +463,7 @@ begin
   {$ENDREGION}
 
   {$REGION process .#### }
-  var fl:= true;  
+  var fl:= true;
   var t_orig:= lValue mod 1;
   if (t_orig <> 0) and (pos < maxpos) then begin
     while t_orig <> 0 do begin
@@ -515,7 +515,7 @@ begin
     inc(bufpos);
   end
   else begin  // 0.######
-    CalcLastDigit(var data, 1, aNumberOfDecimalDigits+1);      
+    CalcLastDigit(var data, 1, aNumberOfDecimalDigits+1);
     buf[bufpos] := '0';
     inc(bufpos);
     buf[bufpos] := DecimalChar;
@@ -528,7 +528,7 @@ begin
     for i:Integer:=0 to st_cnt-1 do begin
       buf[bufpos] := digits[data[i+1]];
       inc(bufpos);
-    end;      
+    end;
   end;
   exit  String.FromPChar(@buf[0],bufpos);
 end;

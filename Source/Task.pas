@@ -11,7 +11,7 @@ type
     property State: Object;
   end;
 
-  TaskObject_Action = class(TaskObject) 
+  TaskObject_Action = class(TaskObject)
   private
     fIn: Action;
   public
@@ -45,7 +45,7 @@ type
 
   TaskObject_Func1<T> = class(TaskObject_Func<T>)
   private
-    fIn: Func<T>;    
+    fIn: Func<T>;
   public
     constructor(aIn: Func<T>);
     method Execute2: T; override;
@@ -87,7 +87,7 @@ type
     method ContinueWith(aAction: Action<Task,Object>; aState: Object): Task;
     method ContinueWith<T>(aAction: Func<Task, T>): Task1<T>;
     method ContinueWith<T>(aAction: Func<Task, Object, T>; aState: Object): Task1<T>;
-    class method Run(aIn: Action): Task;    
+    class method Run(aIn: Action): Task;
     class method Run(aIn: Action<Task>): Task;
     class method Run<T>(aIn: Func<T>): Task1<T>;
     class method Run<T>(aIn: Func<Task1<T>,T>): Task1<T>;
@@ -135,13 +135,13 @@ type
 
   Task1<T> = public class(Task)
   private
-    fTaskObject: TaskObject_Func<T>; 
+    fTaskObject: TaskObject_Func<T>;
   unit
     constructor();
     method Init2(aTaskObject : TaskObject_Func<T>);
   public
-    constructor(aIn: Func<T>); 
-    constructor(aIn: Func<Object, T>; aState: Object); 
+    constructor(aIn: Func<T>);
+    constructor(aIn: Func<Object, T>; aState: Object);
     property &Result: T read fTaskObject.Result;
   end;
 
@@ -185,7 +185,7 @@ end;
 constructor TaskObject_Action1(aIn: Action<Object>; aState: Object);
 begin
   inherited constructor(aState);
-  fIn := aIn;  
+  fIn := aIn;
 end;
 
 method TaskObject_Action1.Execute;
@@ -248,7 +248,7 @@ end;
 {$IFDEF WINDOWS}
 method ThreadCallBack(Instance: rtl.PTP_CALLBACK_INSTANCE; &Param: rtl.PVOID; Work: rtl.PTP_WORK);
 begin
-  Instance := nil; 
+  Instance := nil;
   Work := nil;
   var obj :ThreadPoolCallback := PThreadPoolCallback(&Param)^;
   obj.fCallback(obj.fState);
@@ -299,7 +299,7 @@ end;
 
 constructor Task(aIn: Action);
 begin
-  Init(new TaskObject_Action(aIn));  
+  Init(new TaskObject_Action(aIn));
 end;
 
 class method Task.Run<T>(aIn: Func<T>): Task1<T>;
@@ -310,10 +310,10 @@ end;
 
 method Task.Wait;
 begin
-  if not fStarted then 
+  if not fStarted then
     Start()
   else
-    while not fIsCompleted do 
+    while not fIsCompleted do
       rtl.Sleep(100);
 end;
 
@@ -408,7 +408,7 @@ class method ThreadPool.QueueUserWorkItem(Callback: WaitCallback; State: Object)
 begin
   var lCallback:= new ThreadPoolCallback(Callback, State);
   var work := rtl.CreateThreadpoolWork(@ThreadCallBack, @lCallback, @pcbe);
-  if work = nil then RaiseError('error at calling CreateThreadpoolWork'); 
+  if work = nil then RaiseError('error at calling CreateThreadpoolWork');
   rtl.SubmitThreadpoolWork(work);
 end;
 
@@ -419,7 +419,7 @@ begin
   fMinThreads := -1;
   MinThreads := 1;    // can be changed later manually by user
   fMaxThreads := -1;
-  MaxThreads := 100;  // can be changed later manually by user  
+  MaxThreads := 100;  // can be changed later manually by user
   rtl.InitializeThreadpoolEnvironment(@pcbe);
   rtl.SetThreadpoolCallbackPool(@pcbe, fThreadPool);
 end;

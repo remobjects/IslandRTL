@@ -9,7 +9,7 @@ type
   private
     method TwoCharStr(aInt: Integer): String;inline;
     begin
-      if aInt < 10 then 
+      if aInt < 10 then
         exit '0'+aInt.ToString
       else
         exit aInt.ToString;
@@ -23,7 +23,7 @@ type
   private
     method GetDaysPerMonth(aLeapYear: Boolean; aMonth: Integer): Integer;
     begin
-      // bug 75466 - can't use arrays 
+      // bug 75466 - can't use arrays
       // exit DaysPerMonth[aLeapYear, aMonth];
       case aMonth of
         1: exit 31;
@@ -43,11 +43,11 @@ type
 
     method ParseTicks(Index: DateTimePart): Integer;
     begin
-      case &Index of 
+      case &Index of
         DateTimePart.Year,
         DateTimePart.Month,
-        DateTimePart.Day: begin          
-          var ltotal := fTicks div TicksPerDay; 
+        DateTimePart.Day: begin
+          var ltotal := fTicks div TicksPerDay;
           var y := 1;
           var temp := ltotal div DaysPer400Years;
           y := y + temp*400;
@@ -73,15 +73,15 @@ type
               end;
             end;
             ltotal := ltotal - GetDaysPerMonth(lisleap, i);
-          end;    
+          end;
           // this point should be not reachable
           raise new Exception('something is wrong with decoding data')
         end;
-        DateTimePart.DayOfWeek: exit (fTicks div TicksPerDay +1) mod 7;    
-        DateTimePart.Hour: exit (fTicks div TicksPerHour) mod 24;    
+        DateTimePart.DayOfWeek: exit (fTicks div TicksPerDay +1) mod 7;
+        DateTimePart.Hour: exit (fTicks div TicksPerHour) mod 24;
         DateTimePart.Minute: exit (fTicks div TicksPerMinute) mod 60;
         DateTimePart.Second: exit (fTicks div TicksPerSecond) mod 60;
-        DateTimePart.MilliSeconds: exit (fTicks div TicksPerMillisecond) mod 1000;        
+        DateTimePart.MilliSeconds: exit (fTicks div TicksPerMillisecond) mod 1000;
       end;
     end;
 
@@ -91,7 +91,7 @@ type
       if (num <= -MaxMillis) or ( num >= MaxMillis) then raise new Exception('Argument Out Of Range');
       exit AddTicks(num * TicksPerMillisecond);
     end;
-    
+
     class method GetUtcNow: DateTime;
     begin
       {$IFDEF WINDOWS}
@@ -112,7 +112,7 @@ type
     {$IFDEF POSIX}
     class var fLocalInitialized: Integer;
     {$ENDIF}
-    class method GetNow: DateTime;    
+    class method GetNow: DateTime;
     begin
       {$IFDEF WINDOWS}
       var temp: rtl.SYSTEMTIME;
@@ -130,21 +130,21 @@ type
       {$ENDIF}
     end;
 
-    method GetDate: DateTime;     
+    method GetDate: DateTime;
     begin
       exit new DateTime(fTicks -  fTicks mod TicksPerDay);
     end;
 
   public
-    const MillisPerSecond     : Int32 = 1000;               
-    const MillisPerMinute     : Int32 = 60 * 1000;          // = 60000;         
+    const MillisPerSecond     : Int32 = 1000;
+    const MillisPerMinute     : Int32 = 60 * 1000;          // = 60000;
     const MillisPerHour       : Int32 = 60 * 60 *1000;      // = 3600000;
-    const MillisPerDay        : Int32 = 24 * 60 * 60 *1000; // = 86400000; 
+    const MillisPerDay        : Int32 = 24 * 60 * 60 *1000; // = 86400000;
 
     const TicksPerMillisecond : Int64 = 10000;
-    const TicksPerSecond      : Int64 = TicksPerMillisecond * MillisPerSecond;  // = 10000000;      
-    const TicksPerMinute      : Int64 = TicksPerMillisecond * MillisPerMinute;  // = 600000000;     
-    const TicksPerHour        : Int64 = TicksPerMillisecond * MillisPerHour;    // = 36000000000;   
+    const TicksPerSecond      : Int64 = TicksPerMillisecond * MillisPerSecond;  // = 10000000;
+    const TicksPerMinute      : Int64 = TicksPerMillisecond * MillisPerMinute;  // = 600000000;
+    const TicksPerHour        : Int64 = TicksPerMillisecond * MillisPerHour;    // = 36000000000;
     const TicksPerDay         : Int64 = TicksPerMillisecond * MillisPerDay;     // = 864000000000;
     const DaysTo1601          : Int32 = 584388;
     const DaysTo1899          : Int32 = 693593;
@@ -160,7 +160,7 @@ type
     const DoubleDateOffset    : Int64 = DaysTo1899 * TicksPerDay; // = 599264352000000000
     const UnixDateOffset      : Int64 = DaysTo1970 * TicksPerDay + TicksPerDay; // = 621356832000000000
     const MaxMillis           : Int64 = DaysTo10000/10000 * TicksPerDay; // = 315537897600000; ticks per 1 year
-    const MaxYear             : Int32 = 10000;    
+    const MaxYear             : Int32 = 10000;
 
 {$IFDEF WINDOWS}
     class method FromFileTime(aFileTime: rtl.FILETIME): DateTime;
@@ -196,7 +196,7 @@ type
 {$ELSEIF POSIX}
     class method FromUnixTimeUTC(aStruct: rtl.__struct_timespec): DateTime;
     begin
-      if InternalCalls.Exchange(var fLocalInitialized, 1) = 0 then 
+      if InternalCalls.Exchange(var fLocalInitialized, 1) = 0 then
         rtl.tzset();
       var tom: rtl.__struct_tm;
       rtl.localtime_r(@aStruct.tv_sec, @tom);
@@ -244,11 +244,11 @@ type
       if (aMinute < 0) or (aMinute > 59) then raise new Exception("invalid minute");
       if (aSecond < 0) or (aSecond > 59) then raise new Exception("invalid second");
       if (aMillisecond < 0) or (aMillisecond > 999) then raise new Exception("invalid millisecond");
-      
+
       var lDays := aDay;
       for i: Integer := 0 to aMonth -1 do lDays := lDays + GetDaysPerMonth(lisleap, i);
       var lYear := aYear-1;
-      fTicks := Int64((lYear*365 + lYear div 4 - lYear div 100 + lYear div 400 + lDays)*TicksPerDay + 
+      fTicks := Int64((lYear*365 + lYear div 4 - lYear div 100 + lYear div 400 + lDays)*TicksPerDay +
                  anHour*TicksPerHour + aMinute*TicksPerMinute + aSecond*TicksPerSecond + aMillisecond*TicksPerMillisecond);
     end;
 
@@ -276,7 +276,7 @@ type
     begin
       var lYear := Year + (Value div 12);
       var lMonth:= Month + (Value mod 12);
-      
+
       if (lMonth < 0) then begin
         lYear := lYear - 1;
         lMonth := lMonth + 12;
@@ -285,10 +285,10 @@ type
         lYear := lYear + 1;
         lMonth := lMonth - 12;
       end;
-      var lNewDay := GetDaysPerMonth(isLeapYear(lYear), lMonth); 
+      var lNewDay := GetDaysPerMonth(isLeapYear(lYear), lMonth);
       var lDay  := Day;
       if lDay > lNewDay then lDay := lNewDay;
-      
+
       exit new DateTime(new DateTime(lYear, lMonth, lDay).Ticks + fTicks mod TicksPerDay);
     end;
 
@@ -308,7 +308,7 @@ type
       exit new DateTime(fTicks + Value);
     end;
 
-    method CompareTo(Value: DateTime): Integer; 
+    method CompareTo(Value: DateTime): Integer;
     begin
       Result := fTicks - Value.Ticks;
     end;
@@ -332,14 +332,14 @@ type
       rtl.GetUserDefaultLocaleName(l1,rtl.LOCALE_NAME_MAX_LENGTH);
       var k := rtl.GetDateFormatEx(l1,0,@sysdate,nil,nil,0, nil);
       if k = 0 then CheckForLastError;
-      var buf:= new array of Char(k+1);      
+      var buf:= new array of Char(k+1);
       var k1 := rtl.GetDateFormatEx(l1,0,@sysdate,nil,rtl.LPWSTR(@buf[0]),k+1, nil);
-      var r := String.FromPChar(@buf[0],k1);      
-      
+      var r := String.FromPChar(@buf[0],k1);
+
       k := rtl.GetTimeFormatEx(l1,0,@sysdate,nil,nil,0);
-      var buf1:= new array of Char(k+1);      
+      var buf1:= new array of Char(k+1);
       k1 := rtl.GetTimeFormatEx(l1,0,@sysdate,nil,rtl.LPWSTR(@buf1[0]),k+1);
-      exit r.TrimEnd+' ' + String.FromPChar(@buf1[0],k1).TrimEnd;      
+      exit r.TrimEnd+' ' + String.FromPChar(@buf1[0],k1).TrimEnd;
       {$ELSEIF POSIX}
       exit String.Format('{0}-{1}-{2} {3}:{4}:{5}',[Year.ToString,TwoCharStr(Month),TwoCharStr(Day),TwoCharStr(Hour),TwoCharStr(Minute), TwoCharStr(Second)]);
       {$ELSE}{$ERROR}
@@ -363,15 +363,15 @@ type
     property Second: Integer read ParseTicks(DateTimePart.Second);
     property Milliseconds: Integer read ParseTicks(DateTimePart.MilliSeconds);
 
-    property Date: DateTime read GetDate;  
-    
+    property Date: DateTime read GetDate;
+
     class property Today: DateTime read Now.Date;
-    class property Now: DateTime read GetNow;    
-    class property UtcNow: DateTime read GetUtcNow;    
+    class property Now: DateTime read GetNow;
+    class property UtcNow: DateTime read GetUtcNow;
 
     //property TimeSince: TimeSpan read (UtcNow-self);
     //class method TimeSince(aOtherDateTime: DateTime): TimeSpan;
-                                  
+
     property Ticks: Int64 read fTicks;
 
     class method isLeapYear(Value: Integer): Boolean;

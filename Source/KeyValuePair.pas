@@ -3,7 +3,7 @@
 interface
 
 type
-  KeyValuePair<T, U> = public class 
+  KeyValuePair<T, U> = public class
   where T is Object, U is Object;
   public
     constructor(aKey: T; aValue: U);
@@ -23,11 +23,11 @@ begin
     raise new Exception("Key should be specified");
 
   Key := aKey;
-  Value := aValue;  
+  Value := aValue;
 end;
 
 method KeyValuePair<T,U>.GetHashCode: Integer;
-begin  
+begin
   exit Key.GetHashCode + if Value = nil then 0 else Value.GetHashCode;
 end;
 

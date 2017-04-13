@@ -10,24 +10,24 @@ type
   class var fHandle: FileStream;
   class var fLock: Monitor;
   {$ENDIF}
-  var 
+  var
     state: array[0..15] of UInt32;
     index: Integer;
   public
     constructor();
-    begin 
+    begin
       constructor(DateTime.Now.Ticks / DateTime.TicksPerMillisecond);
     end;
 
     constructor(aSeedData: Integer);
-    begin 
+    begin
       state[0] := aSeedData;
       // This needs to be better but this at should work.
-      for i: Integer := 1 to 15 do begin 
+      for i: Integer := 1 to 15 do begin
         state[i] := state[i-1] xor ((i shl (24 + (i and 5))) xor (i shl 7) xor (i shl 6) xor (i shr 2));
       end;
     end;
-    
+
     constructor(aSeedData: array[0..15] of UInt32);
     begin
       {$IFDEF WINDOWS}ExternalCalls.{$ELSE}rtl.{$ENDIF}memcpy(@state, @aSeedData[0], 16 * 4);
@@ -58,26 +58,26 @@ type
     begin
       if (aStart < 0) or (aStart + aLength > length(aDest)) then raise new ArgumentOutOfRangeException('start/length out of dest range!');
       {$IFDEF WINDOWS}
-      if fHandle = 0 then begin 
+      if fHandle = 0 then begin
         var lNew: rtl.HCRYPTPROV;
-        if not rtl.CryptAcquireContext(@lNew, nil, nil, rtl.PROV_RSA_FULL, 0) then 
+        if not rtl.CryptAcquireContext(@lNew, nil, nil, rtl.PROV_RSA_FULL, 0) then
           if not rtl.CryptAcquireContext(@lNew, nil, nil, rtl.PROV_RSA_FULL, rtl.CRYPT_NEWKEYSET) then raise new Exception('Cannot acquire crypto provider for random bits');
-        if InternalCalls.CompareExchange(var fHandle, lNew, 0) <> 0 then begin 
+        if InternalCalls.CompareExchange(var fHandle, lNew, 0) <> 0 then begin
           rtl.CryptReleaseContext(lNew, 0);
         end;
       end;
       rtl.CryptGenRandom(fHandle, aLength, @aDest[aStart]);
       {$ELSEIF POSIX}
-      if fHandle = nil then begin 
+      if fHandle = nil then begin
         var lNew := new FileStream('/dev/urandom', FileMode.Open, FileAccess.Read, FileShare.ReadWrite);
-        if InternalCalls.CompareExchange(var fHandle, lNew, nil) <> nil then 
+        if InternalCalls.CompareExchange(var fHandle, lNew, nil) <> nil then
           lNew.Close;
         var lNewMutex := new Monitor;
-        if InternalCalls.CompareExchange(var fLock, lNewMutex, nil) <> nil then 
+        if InternalCalls.CompareExchange(var fLock, lNewMutex, nil) <> nil then
           lNewMutex.Dispose;
       end;
       locking fLock do begin
-        loop begin 
+        loop begin
           var lLength := fHandle.Read(@aDest[aStart], aLength);
           if lLength = 0 then raise new Exception('Internal error: read returned 0 from random device!');
           aLength := aLength - lLength;

@@ -1,8 +1,8 @@
 ﻿namespace RemObjects.Elements.System;
 
-type 
+type
   GCHandle = public record(IDisposable)
-  private 
+  private
     fHandle: NativeInt;
   public
     class method Allocate(aValue: Object): GCHandle;
@@ -11,7 +11,7 @@ type
     end;
 
     method Dispose;
-    begin 
+    begin
       GCHandles.Free(fHandle);
     end;
     constructor(aHandle: NativeInt);
@@ -28,7 +28,7 @@ type
   private
     class var fLock: Monitor := new Monitor;
     class var fSlots: array of Object;
-    class var fFirstEmpty: Integer := 0; 
+    class var fFirstEmpty: Integer := 0;
     class var fFirstFree: Integer := -1;
     (*
 
@@ -40,10 +40,10 @@ type
   public
     [SymbolName('__elements_gchandle_allocate')]
     class method Allocate(aValue: Object): NativeInt;
-    begin 
+    begin
       if aValue = nil then raise new ArgumentException('Invalid object value');
-      locking fLock do begin 
-        if (fFirstFree = -1) and (fFirstEmpty >= length(fSlots)) then begin 
+      locking fLock do begin
+        if (fFirstFree = -1) and (fFirstEmpty >= length(fSlots)) then begin
           var lNewArray := new Object[length(fSlots) + 1024];
           &Array.Copy(fSlots, lNewArray, length(fSlots));
           fSlots := lNewArray;
@@ -53,7 +53,7 @@ type
           inc(fFirstEmpty);
           exit fFirstEmpty; // +1 value since gchandle 0 is reserved.
         end;
-        if fFirstFree <> -1 then begin 
+        if fFirstFree <> -1 then begin
           result := fFirstFree;
           var lFirstFree := NativeInt(InternalCalls.Cast(fSlots[result]));
           assert((lFirstFree and 1) <> 0);
@@ -78,11 +78,11 @@ type
 
     [SymbolName('__elements_gchandle_free')]
     class method Free(aValue: NativeInt);
-    begin 
+    begin
       if aValue = 0 then raise new ArgumentException('Invalid GC Handle'); // not valid
       dec(aValue);
       if aValue >= length(fSlots) then raise new ArgumentException('Invalid GC Handle');
-      locking fLock do begin 
+      locking fLock do begin
         var lValue := fSlots[aValue];
         if (NativeInt(InternalCalls.Cast(lValue)) = 0) or ((NativeInt(InternalCalls.Cast(lValue)) and 1) <> 0) then raise new ArgumentException('Invalid GC Handle');
         fSlots[aValue] := InternalCalls.Cast<Object>(^Void((fFirstFree shl 1) or 1));

@@ -6,9 +6,9 @@ type
   protected
     method AllocString(Value: String): ^Char;
     begin
-      if assigned(Value) then 
+      if assigned(Value) then
         exit rtl.SysAllocStringLen(Value.FirstChar, Value.Length)
-      else 
+      else
         exit nil;
     end;
 
@@ -29,9 +29,9 @@ type
 
     method ToString: String; override;
     begin
-      if bstr = nil then 
+      if bstr = nil then
         exit nil
-      else 
+      else
         exit String.FromPChar(bstr,rtl.SysStringLen(bstr));
     end;
 

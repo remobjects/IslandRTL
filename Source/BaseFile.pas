@@ -2,9 +2,9 @@
 
 type
   BaseFile = abstract public class
-  private    
+  private
     method GetFileTime(aMode: TimeModifier): DateTime;
-    begin      
+    begin
       Validate;
       {$IFDEF WINDOWS}
       var handle := GetHandle;
@@ -58,7 +58,7 @@ type
       Validate;
     end;
 
-    method Delete; abstract;   
+    method Delete; abstract;
     method Exists: Boolean;abstract;
 
     property &Extension: not nullable String read Path.GetExtension(fFullName);
