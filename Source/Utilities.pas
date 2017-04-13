@@ -73,6 +73,12 @@ type
       exit nil;
     end;
 
+    [SymbolName('__newindexoutofrange')]
+    class method CreateIndexOutOfRangeException(aIndex, aMax: NativeUInt): Exception;
+    begin
+      exit new IndexOutOfRangeException('Array index out of range, '+aIndex+' must be less than '+aMax);
+    end;
+
     [SymbolName('__newinvalidcast')]
     class method CreateInvalidCastException: Exception;
     begin

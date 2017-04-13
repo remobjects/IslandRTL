@@ -105,5 +105,7 @@ type
   ArgumentException = public class(Exception)
   end;
 
+  IndexOutOfRangeException = public class(Exception)
+  end;
 
 end.
