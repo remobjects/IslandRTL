@@ -464,7 +464,7 @@ type
       {$IFDEF WINDOWS}
       result := FFI.Call(Pointer, cc, var lParams, lModes, lTypes, &Type);
       {$ELSEIF POSIX}
-      raise NotImplementedException;
+      raise new NotImplementedException();
       {$ELSE}{$ERROR}{$ENDIF}
       for k in Arguments index i do
         if lModes[i+dx] in [ArgumentMode.Var,ArgumentMode.Out] then
