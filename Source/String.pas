@@ -764,7 +764,7 @@ end;
 
 method String.CheckIndex(aIndex: Integer);
 begin
-  if (aIndex < 0) or (aIndex >= fLength) then raise new ArgumentOutOfRangeException('Index was out of range.');
+  if (aIndex < 0) or (aIndex >= fLength) then raise Utilities.CreateIndexOutOfRangeException(aIndex, fLength-1);
 end;
 
 class method String.FromPChar(c: ^Char): String;

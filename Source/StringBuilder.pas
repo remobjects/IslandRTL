@@ -60,7 +60,7 @@ type
 
     method SetLength(value: Integer);
     begin
-      if (value < 0) or (value > MaxCapacity) then RaiseError('Argument Out Of Range');
+      if (value < 0) or (value > MaxCapacity) then raise Utilities.CreateIndexOutOfRangeException(value, MaxCapacity);
       if value > fCapacity then begin
         Grow(CalcCapacity(value));
       end;
@@ -69,20 +69,20 @@ type
 
     method SetChars(&Index: Integer; value: Char);
     begin
-      if (&Index<0) or (&Index> fLength) then RaiseError('Argument Out Of Range');
+      if (&Index<0) or (&Index ≥ fLength) then raise Utilities.CreateIndexOutOfRangeException(&Index, fLength-1);
       fBuf[&Index] := value;
     end;
 
     method GetChars(&Index: Integer): Char;
     begin
-      if (&Index<0) or (&Index> fLength) then RaiseError('Index Out Of Range');
+      if (&Index<0) or (&Index ≥ fLength) then raise Utilities.CreateIndexOutOfRangeException(&Index, fLength-1);
       exit fBuf[&Index];
     end;
 
     method SetCapacity(value: Integer);
     begin
       if value = fCapacity then exit;
-      if (value < fLength) or (value > MaxCapacity) then RaiseError('Argument Out Of Range');
+      if (value < fLength) or (value > MaxCapacity) then raise Utilities.CreateIndexOutOfRangeException(value, MaxCapacity);
       Grow(fCapacity);
     end;
 
@@ -90,6 +90,7 @@ type
     begin
       raise new Exception(aMessage);
     end;
+
   protected
   public
     const MaxCapacity: Integer = Integer.MaxValue;

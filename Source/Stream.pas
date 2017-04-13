@@ -73,8 +73,8 @@ end;
 method Stream.Read(Buffer: array of Byte; Offset: Int32; Count: Int32): Int32;
 begin
   if not CanRead then raise new NotSupportedException;
-  if Buffer.Length < Offset then raise new Exception("offset was out of range.");
-  if Buffer.Length < Offset + Count  then raise new ArgumentOutOfRangeException('Offset plus Count is greater than the length of Buffer.');
+  if Buffer.Length < Offset then raise Utilities.CreateIndexOutOfRangeException(Offset, Buffer.Length-1);
+  if Buffer.Length < Offset + Count then raise new ArgumentOutOfRangeException('Offset plus Count is greater than the length of Buffer.');
   if Count = 0 then exit 0;
   var buf: ^Void := @(Buffer[Offset]);
   exit &Read(buf,Count);
@@ -83,7 +83,7 @@ end;
 method Stream.Write(Buffer: array of Byte; Offset: Int32; Count: Int32): Int32;
 begin
   if not CanWrite then raise new NotSupportedException;
-  if Buffer.Length < Offset then raise new Exception("offset was out of range.");
+  if Buffer.Length < Offset then raise Utilities.CreateIndexOutOfRangeException(Offset, Buffer.Length-1);
   if Buffer.Length < Offset + Count  then raise new ArgumentOutOfRangeException('Offset plus Count is greater than the length of Buffer.');
   if Count = 0 then exit 0;
   var buf: ^Void := @(Buffer[Offset]);
