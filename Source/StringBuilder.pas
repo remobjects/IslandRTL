@@ -144,7 +144,8 @@ type
       var old_Length:=Length;
       Length := Length + Count;
       var c := Value.ToCharArray;
-      intCopy(@c[StartIndex], @fBuf[old_Length], Count);
+      if Count > 0 then
+        intCopy(@c[StartIndex], @fBuf[old_Length], Count);
       exit self;
     end;
 
