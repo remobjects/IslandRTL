@@ -76,7 +76,10 @@ type
     [SymbolName('__newindexoutofrange')]
     class method CreateIndexOutOfRangeException(aIndex, aMax: NativeUInt): Exception;
     begin
-      exit new IndexOutOfRangeException('Array index '+aIndex+' is outside of the valid range (0..'+(aMax-1)+')');
+      if aMax = 0 then
+        exit new IndexOutOfRangeException('Array index '+aIndex+' is outside of the valid range (array is empty)')
+      else
+        exit new IndexOutOfRangeException('Array index '+aIndex+' is outside of the valid range (0..'+(aMax-1)+')');
     end;
 
     [SymbolName('__newinvalidcast')]
