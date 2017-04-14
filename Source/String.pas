@@ -274,72 +274,86 @@ end;
 method String.Trim: String;
 begin
   if String.IsNullOrEmpty(self) then exit self;
-  var lresult := new array of Char(self.Length);
-  var pos:=0;
-  for i: Integer := 0 to self.Length-1 do
-    if self.Item[i] > ' ' then begin
-      lresult[pos] := self.Item[i];
-      inc(pos);
-    end;
-  exit String.FromPChar(@lresult,pos);
+  var lStart := 0;
+  var len := self.Length;
+  var lEnd := len-1;
+
+  while (lStart ≤ lEnd) and Char.IsWhiteSpace(self[lStart]) do inc(lStart);
+  if lStart > lEnd then exit '';
+
+  while (lEnd ≥ lStart) and Char.IsWhiteSpace(self[lEnd]) do dec(lEnd);
+  if lEnd < lStart then exit '';
+
+  result := Substring(lStart, lEnd-lStart+1);
 end;
 
 method String.Trim(aChars: array of Char): String;
 begin
   if String.IsNullOrEmpty(self) then exit self;
-  var lresult := '';
-  for i: Integer := 0 to self.Length-1 do
-    if not TestChar(self.Item[i], aChars) then
-      lresult := lresult + self.Item[i];
-  exit lresult;
+  var lStart := 0;
+  var len := self.Length;
+  var lEnd := len-1;
+
+  while (lStart ≤ lEnd) and not TestChar(self[lStart], aChars) do inc(lStart);
+  if lStart > lEnd then exit '';
+
+  while (lEnd ≥ lStart) and not TestChar(self[lEnd], aChars) do dec(lEnd);
+  if lEnd < lStart then exit '';
+
+  result := Substring(lStart, lEnd-lStart+1);
 end;
 
 method String.TrimStart: String;
 begin
   if String.IsNullOrEmpty(self) then exit self;
-  var i: Integer := 0;
-  while (i < self.Length) and (self.Item[i] <= ' ') do i:=i+1;
-  if i < self.Length then
-    exit self.Substring(i)
-  else
-    exit '';
+  var lStart := 0;
+  var lEnd := self.Length-1;
+
+  while (lStart ≤ lEnd) and Char.IsWhiteSpace(self[lStart]) do inc(lStart);
+  if lStart > lEnd then exit '';
+
+  result := Substring(lStart, lEnd-lStart+1);
 end;
 
 method String.TrimStart(aChars: array of Char): String;
 begin
   if String.IsNullOrEmpty(self) then exit self;
-  var i: Integer := 0;
-  while (i < self.Length) and TestChar(self.Item[i], aChars) do i:=i+1;
-  if i < self.Length then
-    exit self.Substring(i)
-  else
-    exit '';
+  var lStart := 0;
+  var lEnd := self.Length-1;
+
+  while (lStart ≤ lEnd) and not TestChar(self[lStart], aChars) do inc(lStart);
+  if lStart > lEnd then exit '';
+
+  result := Substring(lStart, lEnd-lStart+1);
 end;
 
 method String.TrimEnd: String;
 begin
   if String.IsNullOrEmpty(self) then exit self;
-  var i: Integer := self.Length-1;
-  while (i >= 0) and (self.Item[i] <=' ') do i:=i-1;
-  if i < 0 then
-    exit ''
-  else
-    exit self.Substring(0,i+1);
+  var len := self.Length;
+  var lEnd := len-1;
+
+  while (lEnd ≥ 0) and Char.IsWhiteSpace(self[lEnd]) do dec(lEnd);
+  if lEnd < 0 then exit '';
+
+  result := Substring(0, lEnd+1);
 end;
 
 method String.TrimEnd(aChars: array of Char): String;
 begin
   if String.IsNullOrEmpty(self) then exit self;
-  var i: Integer := self.Length-1;
-  while (i >= 0) and TestChar(self.Item[i], aChars) do i:=i-1;
-  if i < 0 then
-    exit ''
-  else
-    exit self.Substring(0,i+1);
+  var len := self.Length;
+  var lEnd := len-1;
+
+  while (lEnd ≥ 0) and not TestChar(self[lEnd], aChars) do dec(lEnd);
+  if lEnd < 0 then exit '';
+
+  result := Substring(0, lEnd+1);
 end;
 
 method String.Substring(StartIndex: Integer): not nullable String;
 begin
+  if StartIndex = 0 then exit self;
   CheckIndex(StartIndex);
   exit Substring(StartIndex, self.Length - StartIndex)
 end;
@@ -347,7 +361,10 @@ end;
 method String.Substring(StartIndex: Integer; aLength: Integer): not nullable String;
 begin
   CheckIndex(StartIndex);
+  if aLength > 1 then
+    CheckIndex(StartIndex+aLength-1);
   if aLength = 0 then exit '';
+  if (StartIndex = 0) and (aLength = self.Length) then exit self;
   {$HIDE W46}
   exit String.FromPChar(@(@fFirstChar)[StartIndex], aLength);
   {$SHOW W46}

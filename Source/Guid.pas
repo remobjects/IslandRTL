@@ -116,7 +116,7 @@ type
         exit r;
       end;
       {$ELSEIF Posix}
-      var data := new byte[16];
+      var data := new Byte[16];
       Random.CryptoSafeRandom(data, 0, 16);
       data[6] := (data[6] and $0F) or 64; // version 4
       data[8] := data[8] or $80; // variant
