@@ -29,6 +29,8 @@ type
     method &Equals(obj: Object): Boolean; override;
     class method IsWhiteSpace(aChar: Char): Boolean;
     class method IsNumber(aChar: Char): Boolean;
+    method ToLower(aInvariant: Boolean := false): Char;
+    method ToUpper(aInvariant: Boolean := false): Char;
   end;
 
   AnsiChar = public record
@@ -104,6 +106,44 @@ end;
 class method Char.IsNumber(aChar: Char): Boolean;
 begin
   exit aChar in ['0'..'9'];
+end;
+
+method Char.ToLower(aInvariant: Boolean := false): Char;
+begin
+  {$IFDEF WINDOWS}
+  //exit doLCMapString(aInvariant, LCMapStringTransformMode.Lower);
+  {$ELSEIF POSIX}
+  {$HINT Non-Invariant ToLower is not implemented for Linux, yet}
+  var b := TextConvert.StringToUTF32LE(self);
+  var ch := b[0] + (Int32(b[1]) shl 8) + (Int32(b[2]) shl 16) + (Int32(b[3]) shl 24);
+  var u := rtl.towlower(ch);
+  b[0] := u and $ff;
+  b[1] := (u shr 8) and $ff;
+  b[2] := (u shr 16) and $ff;
+  b[3] := (u shr 25) and $ff;
+  result := TextConvert.UTF32LEToString(b)[0];
+  {$ELSE}
+  {$ERROR Not Implemented}
+  {$ENDIF}
+end;
+
+method Char.ToUpper(aInvariant: Boolean := false): Char;
+begin
+  {$IFDEF WINDOWS}
+  //exit doLCMapString(aInvariant, LCMapStringTransformMode.Upper);
+  {$ELSEIF POSIX}
+  {$HINT Non-Invariant ToUpper is not implemented for Linux, yet}
+  var b := TextConvert.StringToUTF32LE(self);
+  var ch := b[0] + (Int32(b[1]) shl 8) + (Int32(b[2]) shl 16) + (Int32(b[3]) shl 24);
+  var u := rtl.towupper(ch);
+  b[0] := u and $ff;
+  b[1] := (u shr 8) and $ff;
+  b[2] := (u shr 16) and $ff;
+  b[3] := (u shr 25) and $ff;
+  result := TextConvert.UTF32LEToString(b)[0];
+  {$ELSE}
+  {$ERROR Not Implemented}
+  {$ENDIF}
 end;
 
 method AnsiChar.ToString: String;

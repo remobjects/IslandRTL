@@ -133,6 +133,7 @@ begin
       Grow(lLength);
       for i: Integer := 0 to lLength-1 do
         fItems[i] := aItems[i];
+      fCount := lLength;
     end
     else begin
       Clear();
@@ -149,9 +150,9 @@ begin
   if lLength > 0 then begin
     fCount := 0;
     Grow(lLength);
-    fCount := lLength;
     for i: Integer := 0 to lLength-1 do
       fItems[i] := aArray[i];
+    fCount := lLength;
   end
   else begin
     Clear();
