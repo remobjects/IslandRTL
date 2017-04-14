@@ -1,0 +1,16 @@
+﻿<?xml version="1.0" encoding="utf-8" standalone="yes"?>
+<Project xmlns="http://schemas.microsoft.com/developer/msbuild/2003" ToolsVersion="12.0" DefaultTargets="Build">
+  <PropertyGroup Label="Globals">
+    <ProjectGuid>{8BC0E3A8-C6B3-4FCC-AC6B-D80EE04F2628}</ProjectGuid>
+    <RootNamespace>RemObjects.Elements.Island.Tests</RootNamespace>
+    <DefaultLanguage>Oxygene</DefaultLanguage>
+  </PropertyGroup>
+  <PropertyGroup>
+    <RootNamespace>Island.Tests.Shared</RootNamespace>
+  </PropertyGroup>
+  <Import Project="Island.Tests.Shared.projitems" Label="Shared" />
+  <Import Project="$(MSBuildExtensionsPath)\RemObjects Software\Elements\RemObjects.Elements.SharedProject.targets" />
+  <PropertyGroup>
+    <PreBuildEvent />
+  </PropertyGroup>
+</Project>

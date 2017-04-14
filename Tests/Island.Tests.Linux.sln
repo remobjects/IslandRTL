@@ -1,0 +1,30 @@
+
+Microsoft Visual Studio Solution File, Format Version 12.00
+# RemObjects Fire
+Project("{656346D9-4656-40DA-A068-22D5425D4639}") = "Island.Shared", "..\Source\Island.Shared.elements", "{8BE19C06-DD7E-41F7-954B-6D269C087E4C}"
+EndProject
+Project("{656346D9-4656-40DA-A068-22D5425D4639}") = "Island.Tests.Linux", "Island.Tests.Linux.elements", "{D082374E-F8D8-4E75-8B91-99133DF67717}"
+EndProject
+Project("{656346D9-4656-40DA-A068-22D5425D4639}") = "Island.Tests.Shared", "Island.Tests.Shared.elements", "{8BC0E3A8-C6B3-4FCC-AC6B-D80EE04F2628}"
+EndProject
+Project("{656346D9-4656-40DA-A068-22D5425D4639}") = "Island.Tests.Windows", "Island.Tests.Windows.elements", "{768B2414-B89A-492C-B5A9-2115A89B557C}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|AnyCPU = Debug|AnyCPU
+		Release|AnyCPU = Release|AnyCPU
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{D082374E-F8D8-4E75-8B91-99133DF67717}.Debug|AnyCPU.ActiveCfg = Debug|AnyCPU
+		{D082374E-F8D8-4E75-8B91-99133DF67717}.Debug|AnyCPU.Build.0 = Debug|AnyCPU
+		{D082374E-F8D8-4E75-8B91-99133DF67717}.Release|AnyCPU.ActiveCfg = Release|AnyCPU
+		{D082374E-F8D8-4E75-8B91-99133DF67717}.Release|AnyCPU.Build.0 = Release|AnyCPU
+		{768B2414-B89A-492C-B5A9-2115A89B557C}.Debug|AnyCPU.ActiveCfg = Debug|AnyCPU
+		{768B2414-B89A-492C-B5A9-2115A89B557C}.Debug|AnyCPU.Build.0 = Debug|AnyCPU
+		{768B2414-B89A-492C-B5A9-2115A89B557C}.Release|AnyCPU.ActiveCfg = Release|AnyCPU
+		{768B2414-B89A-492C-B5A9-2115A89B557C}.Release|AnyCPU.Build.0 = Release|AnyCPU
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+EndGlobal
