@@ -116,10 +116,11 @@ type
         exit r;
       end;
       {$ELSEIF Posix}
-      var data: array[0..15] of Byte;
+      var data := new byte[16];
+      Random.CryptoSafeRandom(data, 0, 16);
       data[6] := (data[6] and $0F) or 64; // version 4
       data[8] := data[8] or $80; // variant
-      rtl.memcpy(@result, @data, 16);
+      rtl.memcpy(@result, @data[0], 16);
       {$ELSE}{$ERROR}{$ENDIF}
     end;
 
