@@ -215,7 +215,7 @@ type
           exit fValue^.Ext^.MemberInfoList[ProtoReadVarInt(var lPtr)];
         end else
         if (lKey = 3) and (lTy = ProtoReadType.varint) then begin
-          if FieldFlags.Static not in FieldFlags(ProtoReadVarInt(var lPtr)) then raise new Exception('Not static!');
+          if FieldFlags.Static not in FieldFlags(ProtoReadVarInt(var lPtr)) then raise new Exception('Field is not static!');
         end else
           ProtoSkipValue(var lPtr, lTy);
       end;
@@ -226,8 +226,11 @@ type
       var lKey: Integer;
       var lTy: ProtoReadType;
       while (lPtr < fEnd) and ProtoReadHeader(var lPtr, out lKey, out lTy) do begin
+        if (lKey = 4) and (lTy = ProtoReadType.varint) then begin
+          exit ProtoReadVarInt(var lPtr);
+        end else
         if (lKey = 3) and (lTy = ProtoReadType.varint) then begin
-          exit  FieldFlags(ProtoReadVarInt(var lPtr))
+          if FieldFlags.Static in FieldFlags(ProtoReadVarInt(var lPtr)) then raise new Exception('field is static!');
         end else
           ProtoSkipValue(var lPtr, lTy);
       end;
