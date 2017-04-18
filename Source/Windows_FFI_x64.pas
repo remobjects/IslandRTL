@@ -264,6 +264,7 @@ type
             TypeCodes.Single:   exit Single(lInst.f_XMM0);
             TypeCodes.Double:   exit Double(lInst.f_XMM0);
             TypeCodes.Byte:     exit Byte(lInst.f_RAX);
+            TypeCodes.Boolean:  exit Boolean(lInst.f_RAX);
             TypeCodes.SByte:    exit SByte(lInst.f_RAX);
             TypeCodes.AnsiChar: exit AnsiChar(lInst.f_RAX);
             TypeCodes.Int16:    exit Int16(lInst.f_RAX);

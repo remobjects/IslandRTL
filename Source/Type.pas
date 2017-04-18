@@ -99,6 +99,7 @@ type
 
 
   public
+    property DeclaringType: &Type read new &Type(fValue);
     property Attributes: sequence of CustomAttribute read get_Attributes;
     property Access: MemberAccess read get_Access;
     property Name: String read get_Name;
@@ -456,7 +457,12 @@ type
       var lTypes := new array of &Type(dx+l_Arguments_Count);
       if dx = 1 then begin
         lParams[0] := aInstance;
-        lModes[0] := ArgumentMode.None;
+        var lDeclaringType := DeclaringType;
+        if Utilities.IsInstance(aInstance, lDeclaringType.fValue) = nil then raise new ArgumentException('Instance must be compatible with method declaring type');
+        if lDeclaringType.IsValueType then 
+          lModes[0] := ArgumentMode.Var
+        else
+          lModes[0] := ArgumentMode.None;
         lTypes[0] := typeOf(aInstance);
       end;
       for k in Arguments index i do begin

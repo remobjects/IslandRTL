@@ -157,6 +157,8 @@ type
           case aResultType.Code of
             TypeCodes.Single: exit Single(lInst.fCallData.FloatReturn);
             TypeCodes.Double: exit Double(lInst.fCallData.FloatReturn);
+            TypeCodes.Char: exit Char(lInst.fCallData.EAX);
+            TypeCodes.Boolean: exit Boolean(lInst.fCallData.EAX);
             TypeCodes.Byte: exit Byte(lInst.fCallData.EAX);
             TypeCodes.SByte: exit SByte(lInst.fCallData.EAX);
             TypeCodes.AnsiChar: exit AnsiChar(lInst.fCallData.EAX);
