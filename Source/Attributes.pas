@@ -240,11 +240,11 @@ type
 
     property &Guid: Guid read fGuid;
   end;
-  // Inline asm *METHOD*
-  [AttributeUsage(AttributeTargets.Method)]
+  // Inline asm method, or global assembly.
+  [AttributeUsage(AttributeTargets.Method or AttributeTargets.Assembly)]
   InlineAsmAttribute = public class(Attribute)
   public
-    constructor(aAsm: String; aConstraints: String; aSideEffects, aAlign: Boolean);
+    constructor(aAsm: String; aConstraints: String := ''; aSideEffects: Boolean := false; aAlign: Boolean := false);
     begin
       Asm := aAsm;
       Constraints := aConstraints;

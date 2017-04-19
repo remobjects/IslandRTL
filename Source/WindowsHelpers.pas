@@ -2,6 +2,8 @@
 
 interface
 
+[assembly: InlineAsm(".globl _tls_array
+_tls_array = 44")]
 
 type
   VersionResourceAttribute = public class(Attribute)
@@ -224,8 +226,6 @@ type
 var
   [Alias, SymbolName('__elements_entry_point'), &Weak]
   UserEntryPoint: UserEntryPointType := @ExternalCalls.DefaultUserEntryPoint;
-  [SymbolName('_tls_array'), Alias]
-  _tls_array: ^Int32 := ^Int32($2c);
   [SymbolName('_tls_index')]
   _tls_index: Cardinal := 0; public;
   [SectionName('.tls'), SymbolName('_tls_start')]
