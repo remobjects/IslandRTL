@@ -730,6 +730,19 @@ type
           ProtoSkipValue(var lPtr, lTy);
       end;
     end;
+    
+    method get_BoxedDataOffset: Integer;
+    begin
+      var lPtr := fValue^.Ext^.MemberInfoData;
+      var lKey: Integer;
+      var lTy: ProtoReadType;
+      while ProtoReadHeader(var lPtr, out lKey, out lTy) do begin
+        if (lKey = 14) and (lTy = ProtoReadType.varint) then
+          exit ProtoReadVarInt(var lPtr)
+        else
+          ProtoSkipValue(var lPtr, lTy);
+      end;
+    end;
     method get_DefFlags: TypeDefFlags;
     begin
       var lPtr := fValue^.Ext^.MemberInfoData;
@@ -802,6 +815,7 @@ type
     property Code: Integer read get_Code;
     property DefFlags: TypeDefFlags read get_DefFlags;
     property SizeOfType: Integer read get_SizeOfType;
+    property BoxedDataOffset: Integer read get_BoxedDataOffset;
     property SubType: &Type read get_SubType;
     property IsValueType: Boolean read (fValue^.Ext^.Flags and (
       IslandTypeFlags.Enum or IslandTypeFlags.EnumFlags or IslandTypeFlags.Struct or IslandTypeFlags.Pointer or IslandTypeFlags.Set)) <> 0;

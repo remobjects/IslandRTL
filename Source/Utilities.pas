@@ -238,7 +238,7 @@ type
     end;
 
     [SymbolName('ElementsObjectToString'), Used]
-    class method GetTypeDescription(aObj: Object): ^WideChar;
+    class method GetObjectToString(aObj: Object): ^WideChar;
     begin
       if aObj = nil then exit nil;
       var s := aObj:ToString():ToCharArray(true);

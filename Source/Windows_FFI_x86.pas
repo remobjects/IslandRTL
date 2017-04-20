@@ -87,8 +87,9 @@ type
 
         if aParamType.IsValueType then begin
           var lAlloc := Utilities.NewInstance(aParamType.RTTI, aParamType.SizeOfType + sizeOf(^Void)); // header
-          ExternalCalls.memcpy(@(^^Void(lAlloc)[1]),@(^^Void(InternalCalls.Cast(aVal))[1]), aParamType.SizeOfType);
-          PushU32(UInt32(@(^^Void(lAlloc)[1])));
+          var lOffset := aParamType.BoxedDataOffset;
+          ExternalCalls.memcpy(@(^Byte(lAlloc)[lOffset]),@(^Byte(InternalCalls.Cast(aVal))[lOffset]), aParamType.SizeOfType);
+          PushU32(UInt32(@(^Byte(lAlloc)[lOffset])));
           fVarData[aParamIndex] := InternalCalls.Cast<Object>(lAlloc);
         end else begin
           fVarData[aParamIndex] := aVal;
