@@ -110,16 +110,16 @@ end;
 
 method Char.ToLower(aInvariant: Boolean := false): Char;
 begin 
-  var str := String.FromChar(Self).ToLower(aInvariant);
+  var Str := String.FromChar(Self).ToLower(aInvariant);
   if length(Str) > 0 then exit Str.Item[0];
-  exit #0;
+  exit #0;  
 end;
 
 method Char.ToUpper(aInvariant: Boolean := false): Char;
 begin
-  var str := String.FromChar(Self).ToUpper(aInvariant);
+  var Str := String.FromChar(Self).ToUpper(aInvariant);
   if length(Str) > 0 then exit Str.Item[0];
-  exit #0;
+  exit #0;  
 end;
 
 method AnsiChar.ToString: String;
