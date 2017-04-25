@@ -169,8 +169,8 @@ type
             TypeCodes.UInt32: exit UInt32(lInst.fCallData.EAX);
             TypeCodes.IntPtr: exit NativeInt(lInst.fCallData.EAX);
             TypeCodes.UIntPtr: exit NativeUInt(lInst.fCallData.EAX);
-            TypeCodes.Int64: exit Int64(UInt64(lInst.fCallData.EAX) shl 32 or UInt64(lInst.fCallData.EDX));
-            TypeCodes.UInt64:exit UInt64(lInst.fCallData.EAX) shl 32 or UInt64(lInst.fCallData.EDX);
+            TypeCodes.Int64: exit Int64(UInt64(lInst.fCallData.EAX) or UInt64(lInst.fCallData.EDX) shl 32);
+            TypeCodes.UInt64:exit UInt64(lInst.fCallData.EAX) or UInt64(lInst.fCallData.EDX) shl 32;
           else
             exit InternalCalls.Cast<Object>(^Void(lInst.fCallData.EAX));
           end;
