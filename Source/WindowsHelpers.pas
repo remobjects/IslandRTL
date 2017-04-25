@@ -83,9 +83,13 @@ type
 
     // WARNING, malloc/free are NOT good functions to use, but libgc needs these to get started
     [SymbolName('malloc')]
-    class method malloc(size: Integer): ^Void;
+    class method malloc(size: NativeInt): ^Void;
+    [SymbolName('realloc')]
+    class method realloc(ptr: ^Void; size: NativeInt): ^Void;
     [SymbolName('free')]
     class method free(v: ^Void);
+    [SymbolName('_msize')]
+    class method _msize(ptr: ^Void): NativeInt;
     //{$IFNDEF _WIN64}
     [SymbolName('_vsnprintf')]
     class method noop__vsnprintf; empty;
@@ -145,8 +149,109 @@ type
 
 
     const ElementsExceptionCode = $E0428819;
+
+
+    [SymbolName('strcmp')]
+    class method strcmp(a, b: ^AnsiChar): Integer;
+    begin 
+      if (a = nil) and (b = nil) then exit 0;
+      if (a = nil) or (b = nil) then exit if a = nil then 1 else -1;
+      loop begin 
+        if a^ > b^ then exit 1;
+        if a^ < b^ then exit -1;
+        if a^ = #0 then exit 0;
+        inc(a);
+        inc(b);
+      end;
+    end;
+    [SymbolName('strncmp')]
+    class method strncmp(a, b: ^AnsiChar; num: NativeInt): Integer;
+    begin 
+      if (a = nil) and (b = nil) then exit 0;
+      if (a = nil) or (b = nil) then exit if a = nil then 1 else -1;
+      if num = 0 then exit 0;
+      loop begin 
+        if a^ > b^ then exit 1;
+        if a^ < b^ then exit -1;
+        if a^ = #0 then exit 0;
+        inc(a);
+        inc(b);
+        dec(num);
+        if num = 0 then exit 0;
+      end;
+    end;
+        
+    [SymbolName('memcmp')]
+    class method memcmp(a, b: ^Byte; num: NativeInt): Integer;
+    begin 
+      if (a = nil) and (b = nil) then exit 0;
+      if (a = nil) or (b = nil) then exit if a = nil then 1 else -1;
+      if num = 0 then exit 0;
+      loop begin 
+        if a^ > b^ then exit 1;
+        if a^ < b^ then exit -1;
+        inc(a);
+        inc(b);
+        dec(num);
+        if num = 0 then exit 0;
+      end;
+    end;
+
+    [SymbolName('_localtime64_s')]
+    class method _localtime64_s(var x: __struct_tm; aTime: Int64);
+    begin 
+      var dt := new DateTime(DateTime.UnixDateOffset + (aTime * DateTime.TicksPerSecond));
+      x.tm_sec := dt.Second;
+      x.tm_min := dt.Minute;
+      x.tm_hour := dt.Hour;
+      x.tm_mday := dt.Day;
+      x.tm_mon := dt.Month - 1;
+      x.tm_year := dt.Year - 1900;
+      x.tm_wday := Integer(dt.DayOfWeek);
+      x.tm_yday := (dt.Ticks - new DateTime(dt.Year, 1, 1).Ticks) / DateTime.TicksPerDay +1;
+    end;
+
+    class var fRandom: Random; volatile;
+    class var fRandomLock: Integer;
+    [SymbolName('rand_s')]
+    class method rand_s(out x: UInt32): Integer;
+    begin 
+      Utilities.SpinLockEnter(var fRandomLock);
+      var lRandom := fRandom;
+      if lRandom = nil then begin 
+        lRandom := new Random;
+        fRandom := lRandom;
+      end;
+      x := lRandom.Random();
+      Utilities.SpinLockExit(var fRandomLock);
+      exit 0;
+    end;
+    [SymbolName('_byteswap_ulong')]
+    class method _byteswap_ulong(i: UInt32): UInt32;
+    begin 
+      exit (i shl 24) or (i shr 24) or ((i shr 8) and $FF00) or ((i shl 8) and $FF0000);
+    end;
+    [SymbolName('_byteswap_ushort')]
+    class method _byteswap_ushort(i: UInt16): UInt16;
+    begin 
+      exit (i shl 8) or (i shr 8);
+    end;
   end;
 {$G+}
+
+  __struct_tm = public record
+    tm_sec,
+    tm_min,   
+    tm_hour,  
+    tm_mday,  
+    tm_mon,   
+    tm_year,  
+    tm_wday,  
+    tm_yday,  
+    tm_isdst: Integer;
+  end;
+
+
   UserEntryPointType =public method (args: array of String): Integer;
   ThreadRec = public class
   public
@@ -430,12 +535,27 @@ begin
   rtl.ExitThread(aval);
 end;
 
-class method ExternalCalls.malloc(size: Integer): ^Void;
+class method ExternalCalls.malloc(size: NativeInt): ^Void;
 begin
   if processheap = nil then processheap := rtl.GetProcessHeap;
 
   exit rtl.HeapAlloc(processheap, 0, size);
 end;
+
+class method ExternalCalls.realloc(ptr: ^Void; size: NativeInt): ^Void;
+begin
+  if processheap = nil then processheap := rtl.GetProcessHeap;
+
+  exit rtl.HeapReAlloc(processheap, 0, ptr, size);
+end;
+
+class method ExternalCalls._msize(ptr: ^Void): NativeInt;
+begin
+  if processheap = nil then processheap := rtl.GetProcessHeap;
+
+  exit rtl.HeapSize(processheap, 0, ptr);
+end;
+
 
 class method ExternalCalls.free(v: ^Void);
 begin
