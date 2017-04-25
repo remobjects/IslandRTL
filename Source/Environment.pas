@@ -47,8 +47,8 @@ type
         {$IFDEF WINDOWS}
         var buf:= new array of Char(32768);
         var len := rtl.GetEnvironmentVariableW(Name.ToLPCWSTR ,rtl.LPWSTR(@buf[0]), 32767);
-        if len = 0 then begin
-          CheckForLastError;
+        if len = 0 then
+          CheckForLastError
         else
           exit String.FromPChar(@buf[0], len);
         {$ELSEIF POSIX}
