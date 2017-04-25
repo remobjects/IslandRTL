@@ -43,17 +43,21 @@ type
 
     method GetEnvironmentVariable(Name: String): String;
     begin
-      {$IFDEF WINDOWS}
-      var buf:= new array of Char(32768);
-      var len := rtl.GetEnvironmentVariableW(Name.ToLPCWSTR,rtl.LPWSTR(@buf[0]),32767);
-      if len = 0 then begin
-        CheckForLastError;
+      if length(Name) > 0 then begin
+        {$IFDEF WINDOWS}
+        var buf:= new array of Char(32768);
+        var len := rtl.GetEnvironmentVariableW(Name.ToLPCWSTR ,rtl.LPWSTR(@buf[0]), 32767);
+        if len = 0 then begin
+          CheckForLastError;
+        else
+          exit String.FromPChar(@buf[0], len);
+        {$ELSEIF POSIX}
+        var lName := Name.ToAnsiChars;
+        exit String.FromPAnsiChars(rtl.getenv(@lName[0]));
+        {$ELSE}
+        {$ERROR Unsupported platform}
+        {$ENDIF}
       end;
-      exit String.FromPChar(@buf[0],len);
-      {$ELSEIF POSIX}
-      var lName := Name.ToAnsiChars;
-      exit String.FromPAnsiChars(rtl.getenv(@lName[0]));
-      {$ELSE}{$ERROR}{$ENDIF}
     end;
 
     method CurrentDirectory: String;
