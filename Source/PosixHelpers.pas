@@ -68,6 +68,24 @@ type
       __init_array_start: Integer; external;
       [SymbolName('__init_array_end')]
       __init_array_end: Integer; external;
+
+{$IFNDEF ANDROID}
+    [SymbolName('stat64')]
+    class method stat64(file: ^AnsiChar; var buf: rtl.__struct_stat64): Integer;
+    begin 
+      exit rtl.__xstat64(0, file, var buf);
+    end;
+    [SymbolName('fstat64')]
+    class method fstat64(fd: Integer; var buf: rtl.__struct_stat64): Integer;
+    begin 
+      exit rtl.__fxstat64(0, fd, var buf);
+    end;
+    [SymbolName('lstat64')]
+    class method lstat64(file: ^AnsiChar; var buf: rtl.__struct_stat64): Integer;
+    begin 
+      exit rtl.__lxstat64(0, file, var buf);
+    end;
+  {$ENDIF}
   end;
 
   DwarfEHEncodingType = public enum (
