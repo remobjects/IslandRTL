@@ -24,7 +24,7 @@ type
       raise new AbstractMethodException;
     end;
 
-    [SymbolName('__isinst')]
+    [SymbolName('__isinst'), SkipDebug]
     class method IsInstance(aInstance: Object; aType: ^Void): Object;
     begin
       if aInstance = nil then exit nil;
@@ -53,7 +53,7 @@ type
       exit (aLeft = aRight) or (assigned(aLeft) and (^IslandTypeInfo(aLeft)^.Hash1 = aRightHash1)and (^IslandTypeInfo(aLeft)^.Hash2 = aRightHash2) and (SameString(^IslandTypeInfo(aLeft)^.Ext^.Name, ^IslandTypeInfo(aRight)^.Ext^.Name)));
     end;
 
-    [SymbolName('__isintfinst')]
+    [SymbolName('__isintfinst'), SkipDebug]
     class method IsInterfaceInstance(aInstance: Object; aType: ^Void; aHashCode: Cardinal): ^Void;
     begin
       if aInstance =nil then exit nil;
@@ -73,7 +73,7 @@ type
       exit nil;
     end;
 
-    [SymbolName('__newindexoutofrange')]
+    [SymbolName('__newindexoutofrange'), SkipDebug]
     class method CreateIndexOutOfRangeException(aIndex, aMax: NativeUInt): Exception;
     begin
       if aMax = 0 then
@@ -82,24 +82,25 @@ type
         exit new IndexOutOfRangeException('Array index '+aIndex+' is outside of the valid range (0..'+(aMax-1)+')');
     end;
 
-    [SymbolName('__newinvalidcast')]
+    [SymbolName('__newinvalidcast'), SkipDebug]
     class method CreateInvalidCastException: Exception;
     begin
       exit new InvalidCastException('Invalid cast');
     end;
 
-    [SymbolName('__newdividebyzero')]
+    [SymbolName('__newdividebyzero'), SkipDebug]
     class method CreateDivideByZeroException: Exception;
     begin
       exit new DivideByZeroException;
     end;
 
-    [SymbolName('__newnullrefexception')]
+    [SymbolName('__newnullrefexception'), SkipDebug]
     class method CreateNullReferenceException: Exception;
     begin
       exit new NullReferenceException;
     end;
     {$IFDEF WINDOWS}var fMapping: rtl.HANDLE;{$ENDIF}
+    [SkipDebug]
     method LoadGC; private;
     begin
       SpinLockEnter(var fLock);
@@ -176,6 +177,7 @@ type
       end;
     end;
     {$IFDEF POSIX}[LinkOnce, DllExport]{$ENDIF}
+    [SkipDebug]
     method LocalGC; private;
     begin
       gc.GC_INIT;
@@ -190,6 +192,7 @@ type
     end;
     const FinalizerIndex = 4 + {$IFDEF I386}4{$ELSE}2{$ENDIF};
     [SymbolName('__newinst')]
+    [SkipDebug]
     class method NewInstance(aTTY: ^Void; aSize: NativeInt): ^Void;
     begin
       if fFinalizer = nil then begin
@@ -206,6 +209,7 @@ type
     end;
 
     [SymbolName('__newarray')]
+    [SkipDebug]
     class method NewArray(aTY: ^Void; aElementSize, aElements: NativeInt): ^Void;
     begin
       result := NewInstance(aTY, sizeOf(^Void) + sizeOf(NativeInt) + aElementSize * aElements);
@@ -213,6 +217,7 @@ type
     end;
 
     [SymbolName('__newdelegate')]
+    [SkipDebug]
     class method NewDelegate(aTY: ^Void; aSelf: Object; aPtr: ^Void): &Delegate;
     begin
       result := InternalCalls.Cast<&Delegate>(NewInstance(aTY, sizeOf(^Void) * 3));
@@ -271,6 +276,7 @@ type
       InternalCalls.VolatileWrite(var x, 0);
     end;
 
+    [SkipDebug]
     class method SpinLockClassEnter(var x: NativeInt): Boolean;
     begin
       var cid := Thread.CurrentThreadID;
@@ -291,6 +297,7 @@ type
       exit false;
     end;
 
+    [SkipDebug]
     class method SpinLockClassExit(var x: NativeInt);
     begin
       InternalCalls.VolatileWrite(var x, NativeInt(Int64(-1)));

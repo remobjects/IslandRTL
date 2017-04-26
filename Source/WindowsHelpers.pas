@@ -238,7 +238,7 @@ type
     end;
   end;
 {$G+}
-{$HIDE H7}
+{$HIDE H7}{$HIDE H6}
   __struct_tm = public record
     tm_sec,
     tm_min,   
@@ -250,7 +250,7 @@ type
     tm_yday,  
     tm_isdst: Integer;
   end;
-{$SHOW H7}
+{$SHOW H7}{$SHOW H6}
 
   UserEntryPointType =public method (args: array of String): Integer;
   ThreadRec = public class
@@ -863,6 +863,7 @@ method CallCatch(aCall: NativeInt; aEBP: NativeInt): NativeInt; external;
 [DisableInlining, DisableOptimizations, LinkOnce]
 method MyRtlUnwind(TargetFrame: rtl.PVOID; TargetIp: rtl.PVOID; ExceptionRecord: rtl.PEXCEPTION_RECORD; ReturnValue: rtl.PVOID); 
 begin 
+  // RtlUnwind in win32 does not properly restore ebx, esi and edi. This means we have to do it ourselves, without this the caller crashes in optimized mode.
   InternalCalls.VoidAsm("pushl %ebx
   pushl %esi
   pushl %edi

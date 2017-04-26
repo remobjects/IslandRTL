@@ -111,6 +111,13 @@ type
   end;
 
   [AttributeUsage(AttributeTargets.Method)]
+  SkipDebugAttribute = public class(Attribute)
+  private
+  public
+    constructor(); empty;
+  end;
+
+  [AttributeUsage(AttributeTargets.Method)]
   DisableInliningAttribute = public class(Attribute)
   private
   public
