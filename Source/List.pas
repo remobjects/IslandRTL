@@ -28,6 +28,7 @@ type
     method Grow(aCapacity: Integer);
     method RaiseError(aMessage: String);
     method CheckIndex(&Index: Integer);
+    method CheckCapacity(&Index: Integer);
     method IsEqual(Item1, Item2: T): Boolean;
     method CalcCapacity(aNewCapacity: Integer): Integer;
     method QuickSort(L,R: Integer;Comparison: Comparison<T>);
@@ -110,7 +111,7 @@ end;
 
 method List<T>.SetItem(&Index: Integer; Value: T);
 begin
-  CheckIndex(&Index);
+  CheckCapacity(&Index);
   fItems[&Index] := Value;
 end;
 
@@ -331,8 +332,8 @@ begin
       self[i+it_len] := self[i];
 
     // insert new range
-    for i:Integer := &Index to it_len-1 do
-      self[i] := Items[i];
+    for i:Integer := 0 to it_len-1 do
+      self[i+&Index] := Items[i];
     inc(fCount, it_len);
 end;
 end;
@@ -398,7 +399,12 @@ end;
 
 method List<T>.CheckIndex(&Index: Integer);
 begin
-  if (&Index < 0) or (Index >= Count) then RaiseError('Index was out of range.');
+  if (&Index < 0) or (&Index >= Count) then RaiseError('Index was out of range.');
+end;
+
+method List<T>.CheckCapacity(&Index: Integer);
+begin
+  if (&Index < 0) or (&Index >= Capacity) then RaiseError('Index was out of range.');
 end;
 
 method List<T>.IsEqual(Item1: T; Item2: T): Boolean;
