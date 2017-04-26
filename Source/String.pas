@@ -294,10 +294,10 @@ begin
   var len := self.Length;
   var lEnd := len-1;
 
-  while (lStart ≤ lEnd) and not TestChar(self[lStart], aChars) do inc(lStart);
+  while (lStart ≤ lEnd) and TestChar(self[lStart], aChars) do inc(lStart);
   if lStart > lEnd then exit '';
 
-  while (lEnd ≥ lStart) and not TestChar(self[lEnd], aChars) do dec(lEnd);
+  while (lEnd ≥ lStart) and TestChar(self[lEnd], aChars) do dec(lEnd);
   if lEnd < lStart then exit '';
 
   result := Substring(lStart, lEnd-lStart+1);
@@ -321,7 +321,7 @@ begin
   var lStart := 0;
   var lEnd := self.Length-1;
 
-  while (lStart ≤ lEnd) and not TestChar(self[lStart], aChars) do inc(lStart);
+  while (lStart ≤ lEnd) and TestChar(self[lStart], aChars) do inc(lStart);
   if lStart > lEnd then exit '';
 
   result := Substring(lStart, lEnd-lStart+1);
@@ -345,7 +345,7 @@ begin
   var len := self.Length;
   var lEnd := len-1;
 
-  while (lEnd ≥ 0) and not TestChar(self[lEnd], aChars) do dec(lEnd);
+  while (lEnd ≥ 0) and TestChar(self[lEnd], aChars) do dec(lEnd);
   if lEnd < 0 then exit '';
 
   result := Substring(0, lEnd+1);
@@ -414,7 +414,7 @@ method String.IndexOf(Value: String; aStartFromIndex: Integer): Integer;
 begin
   var Value_Length := Value.Length;
   if Value_Length > Self.Length then exit -1;
-  if Value_Length = 0 then exit -1;
+  if Value_Length = 0 then exit 0;
 
   for i: Integer := aStartFromIndex to Self.Length-Value_Length do begin
     var lfound:= true;
