@@ -121,12 +121,12 @@ type
     class method setjmp3(var buf: rtl.jmp_buf; var ctx: ^Void);
     {$ENDIF}
 
-    [SymbolName('_elements_exception_handler'), CallingConvention(CallingConvention.Stdcall)] // 32bits windows only!!
+    [SymbolName('_elements_exception_handler'), CallingConvention(CallingConvention.Stdcall), DisableInliningAttribute] // 32bits windows only!!
 
     {$IFDEF _WIN64}
   method ExceptionHandler(arec: ^rtl.EXCEPTION_RECORD; EstablisherFrame: UInt64; context: rtl.PCONTEXT; dispatcher: rtl.PDISPATCHER_CONTEXT ): Integer;
     {$ELSE}
-    method ExceptionHandler([InReg]msvcinfo: ^MSVCExceptionInfo; arec: ^rtl.EXCEPTION_RECORD; aOrgregFrame: ^ElementsRegistrationFrame;
+    method ExceptionHandler([InReg]inmsvcinfo: ^MSVCExceptionInfo; arec: ^rtl.EXCEPTION_RECORD; aOrgregFrame: ^ElementsRegistrationFrame;
       context: rtl.PCONTEXT; dispatcher: ^Void): Integer;
     {$ENDIF}
     [SymbolName('ElementsRaiseException')]
@@ -238,7 +238,7 @@ type
     end;
   end;
 {$G+}
-
+{$HIDE H7}
   __struct_tm = public record
     tm_sec,
     tm_min,   
@@ -250,7 +250,7 @@ type
     tm_yday,  
     tm_isdst: Integer;
   end;
-
+{$SHOW H7}
 
   UserEntryPointType =public method (args: array of String): Integer;
   ThreadRec = public class
@@ -859,6 +859,23 @@ retl
 {$ENDIF}
 method CallCatch(aCall: NativeInt; aEBP: NativeInt): NativeInt; external;
 
+{$IFNDEF _WIN64}
+[DisableInlining, DisableOptimizations, LinkOnce]
+method MyRtlUnwind(TargetFrame: rtl.PVOID; TargetIp: rtl.PVOID; ExceptionRecord: rtl.PEXCEPTION_RECORD; ReturnValue: rtl.PVOID); 
+begin 
+  InternalCalls.VoidAsm("pushl %ebx
+  pushl %esi
+  pushl %edi
+  ", '', false, false);
+  rtl.RtlUnwind(TargetFrame, TargetIp, ExceptionRecord, ReturnValue);
+  InternalCalls.VoidAsm("
+  popl %edi
+  popl %esi
+  popl %ebx
+  ", '', false, false);
+  exit;
+end;{$ENDIF}
+
 {$IFDEF _WIN64}
 [InlineAsm("
     movq %r8, %rbp
@@ -974,8 +991,9 @@ begin
   result := 1;
 end;
 {$ELSE}
- method ExternalCalls.ExceptionHandler(msvcinfo: ^MSVCExceptionInfo; arec: ^rtl.EXCEPTION_RECORD; aOrgregFrame: ^ElementsRegistrationFrame; context: rtl.PCONTEXT; dispatcher: ^Void): Integer;
+ method ExternalCalls.ExceptionHandler(inmsvcinfo: ^MSVCExceptionInfo; arec: ^rtl.EXCEPTION_RECORD; aOrgregFrame: ^ElementsRegistrationFrame; context: rtl.PCONTEXT; dispatcher: ^Void): Integer;
 begin
+  var msvcinfo := inmsvcinfo;
   var regFrame := ^ElementsRegistrationFrame(@^NativeInt(aOrgregFrame)[-1]);
 
   var lBaseAddress := NativeInt(@regFrame^.TryLevel) + 4;
@@ -1013,10 +1031,12 @@ begin
             var cond := tb^.HandlerType^.Type^.Filter;
             if (cond = nil) or (cond(regFrame^.ESP)) then begin
               result := 0;
-              rtl.RtlUnwind(aOrgregFrame, nil, arec, nil);
-              // no unwind locally
+              MyRtlUnwind(aOrgregFrame, nil, arec, nil);
+              // now unwind locally
               while (regFrame^.TryLevel <> $FFFFFFFF) and (regFrame^.TryLevel < tb^.CatchHigh) and (regFrame^.TryLevel >= tb^.TryLow) do begin
-                if msvcinfo^.UnwindMap[regFrame^.TryLevel].Cleanup <> nil then CallCatch(NativeInt(^Void(msvcinfo^.UnwindMap[regFrame^.TryLevel].Cleanup)), lBaseAddress);
+                if msvcinfo^.UnwindMap[regFrame^.TryLevel].Cleanup <> nil then begin 
+                  CallCatch(NativeInt(^Void(msvcinfo^.UnwindMap[regFrame^.TryLevel].Cleanup)), lBaseAddress);
+                end;
                 regFrame^.TryLevel := msvcinfo^.UnwindMap[regFrame^.TryLevel].ToState;
               end;
               var lCont := CallCatch(NativeInt(^Void(tb^.HandlerType^.Handler)), lBaseAddress);
