@@ -32,7 +32,7 @@ type
     class method Copy<T>(aSource: array of T; aDest: Array of T; aCount: Integer);
     begin
       &Copy(aSource, 0, aDest, 0, aCount);
-	  //remove this comment again!
+	  //changed this file..
     end;
 
   end;
