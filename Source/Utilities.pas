@@ -39,6 +39,7 @@ type
       end;
     end;
 
+    [SkipDebug]
     class method SameString(aLeft, aRight: ^AnsiChar): Boolean; private;
     begin
       if (aLeft = nil) or (aRight = nil) then exit false;
