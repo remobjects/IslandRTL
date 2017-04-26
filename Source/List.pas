@@ -317,11 +317,11 @@ begin
     for i:Integer := 0  to &Index-1 do
       temp[i] := self[i];
     // insert new range
-    for i:Integer := &Index to it_len-1 do
-      temp[i] := Items[i];
+    for i:Integer := 0 to it_len-1 do
+      temp[i + &Index] := Items[i];
     // copy old rest
     for i:Integer := &Index to fCount-1 do
-      temp[i+&Index] := self[i];
+      temp[i+&Index+it_len] := self[i];
     fItems := temp;
     fCount := newCapacity;
   end
