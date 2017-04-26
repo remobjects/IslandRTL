@@ -430,7 +430,7 @@ end;
 
 method String.LastIndexOf(Value: String): Integer;
 begin
-  result := LastIndexOf(Value, self.Length);
+  result := LastIndexOf(Value, self.Length - 1);
 end;
 
 method String.LastIndexOf(Value: String; aStartFromIndex: Integer): Integer;
@@ -439,7 +439,7 @@ begin
   if Value_Length > Self.Length then exit -1;
   if Value_Length = 0 then exit -1;
 
-  for i: Integer := aStartFromIndex-Value_Length downto 0 do begin
+  for i: Integer := aStartFromIndex-Value_Length+1 downto 0 do begin
     var lfound:= true;
     for j: Integer := 0 to Value_Length-1 do begin
       lfound := lfound and (self.Item[i+j] = Value.Item[j]);

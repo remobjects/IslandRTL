@@ -54,8 +54,9 @@ end;
 method MemoryStream.SetLength(value: Int64);
 begin
   var curpos := Position;
-  fLength := value;
+  //fLength := value;
   CheckCapacity(value);
+  fLength := value;  
   if curpos > fLength then Seek(0, SeekOrigin.End);
 end;
 
