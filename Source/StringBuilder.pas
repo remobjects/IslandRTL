@@ -290,7 +290,7 @@ type
       if newLength > fCapacity then Grow(CalcCapacity(newLength));
       IntMove(Offset, Offset + Value.Length, Length - Offset);
       var c := Value.ToCharArray;
-      intCopy(c,  @fBuf[Offset], Value.Length);
+      intCopy(@c[0],  @fBuf[Offset], Value.Length);
       Length := newLength;
       exit self;
     end;

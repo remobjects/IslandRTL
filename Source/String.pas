@@ -49,6 +49,7 @@ type
     method &Equals(Value: String): Boolean;
     method &Equals(obj: Object): Boolean; override;
     method EqualsIgnoreCase(Value: String): Boolean;
+    method EqualsIgnoreCaseInvariant(Value: String): Boolean;
     class method &Join(Separator: String; Value: array of String): String;
     class method &Join(Separator: String; Value: IEnumerable<String>): String;
     class method &Join<T>(Separator: String; Value: IEnumerable<T>): String;
@@ -386,6 +387,11 @@ end;
 method String.EqualsIgnoreCase(Value: String): Boolean;
 begin
   exit self:ToLower() = Value:ToLower();
+end;
+
+method String.EqualsIgnoreCaseInvariant(Value: String): Boolean;
+begin
+  exit self:ToLowerInvariant() = Value:ToLowerInvariant();
 end;
 
 class operator String.Equal(Value1, Value2: String): Boolean;

@@ -37,7 +37,7 @@ type
     method Push(aItem: T);
 
     method ToArray: array of T;
-    property Count: Integer read fTop - 1;
+    property Count: Integer read fTop + 1;
   end;
 
 
