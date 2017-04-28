@@ -553,8 +553,8 @@ end;
 method String.StartsWith(Value: String; aInvariant: Boolean := false): Boolean;
 begin
   if Value.Length > self.Length then exit false;
-  var s1 := iif(aInvariant, self.MakeInvariantString(), self);
-  var s2 := iif(aInvariant, Value.MakeInvariantString(), Value);
+  var s1 := iif(aInvariant, self.ToLowerInvariant, self);
+  var s2 := iif(aInvariant, Value.ToLowerInvariant, Value);
 
   exit s1.IndexOf(s2,0) = 0;
 end;
@@ -563,8 +563,8 @@ method String.EndsWith(Value: String; aInvariant: Boolean := false): Boolean;
 begin
   if Value.Length > self.Length then exit false;
 
-  var s1 := iif(aInvariant, self.MakeInvariantString(), self);
-  var s2 := iif(aInvariant, Value.MakeInvariantString(), Value);
+  var s1 := iif(aInvariant, self.ToLowerInvariant, self);
+  var s2 := iif(aInvariant, Value.ToLowerInvariant, Value);
 
   var pos := self.Length-Value.Length;
   exit s1.IndexOf(s2, pos) = pos;
