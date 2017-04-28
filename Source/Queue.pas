@@ -55,6 +55,7 @@ begin
   fItems := new array of T(4);
   fHead := 0;
   fTail := 0;
+  fCount := 0;
 end;
 
 method Queue<T>.Contains(aItem: T): Boolean;
@@ -111,12 +112,19 @@ end;
 method Queue<T>.ToArray: array of T;
 begin
   result := new array of T(fCount);
-  var lTotal := length(fItems) - fTail;
-  for i: Integer := 0 to lTotal - 1 do
-    result[i] := fItems[fTail + i];
 
-  for i: Integer := 0 to fHead - 1 do
-    result[lTotal + i] := fItems[fHead + i];
+  if fHead > fTail then begin
+    for i: Integer := 0 to fCount - 1 do
+      result[i] := fItems[fTail + i];
+  end
+  else begin
+    var lTotal := length(fItems) - fTail;
+    for i: Integer := 0 to lTotal - 1 do
+      result[i] := fItems[fTail + i];
+
+    for i: Integer := 0 to fHead - 1 do
+      result[lTotal + i] := fItems[fHead + i];
+  end;
 end;
 
 method Queue<T>.CalcCapacity(aNewCapacity: Integer): Integer;
