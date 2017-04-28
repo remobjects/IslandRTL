@@ -37,7 +37,7 @@ end;
 
 method Object.Equals(obj: Object): Boolean;
 begin
-  Object.ReferenceEquals(Self,obj);
+  exit Object.ReferenceEquals(Self,obj);
 end;
 
 method Object.GetType: &Type;
