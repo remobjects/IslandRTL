@@ -847,17 +847,17 @@ addq $$32, %rsp
 popq %rbp
 retq
 ", "", false, false), DisableInlining, DisableOptimizations, LinkOnce]
-{$ELSE}
-[InlineAsm("
-pushl %ebp
-movl 8(%esp),%eax
-movl 12(%esp), %ebp
-calll *%eax
-popl %ebp
-retl
-", "", false, false), DisableInlining, DisableOptimizations, LinkOnce]
-{$ENDIF}
 method CallCatch(aCall: NativeInt; aEBP: NativeInt): NativeInt; external;
+{$ELSE}
+[DisableInlining]
+method CallCatch(aCall: NativeInt; aEBP: NativeInt): NativeInt; 
+begin 
+  exit InternalCalls.Asm("
+movl $2, %ebp
+calll *$1
+", "=A,r,r,~{ebp},~{dirflag},~{fpsr},~{flags}", false, false, aCall, aEBP);
+end;
+{$ENDIF}
 
 {$IFNDEF _WIN64}
 [DisableInlining, DisableOptimizations, LinkOnce]
@@ -882,15 +882,26 @@ end;{$ENDIF}
     movq %r8, %rbp
     movq %rdx, %rsp
     jmpq *%rcx
-", "", false, false), DisableInlining, DisableOptimizations] {$ELSE}
-[InlineAsm("
+", "", false, false), DisableInlining, DisableOptimizations] 
+method JumpToContinuation(aAddress, aESP, aEBP: NativeInt); external;
+{$ELSE}
+(*[InlineAsm("
     movl 12(%esp), %ebp
     movl 4(%esp), %eax
     movl 8(%esp), %esp
     jmpl *%eax
-", "", false, false), DisableInlining, DisableOptimizations]
+", "", false, false), DisableInlining, DisableOptimizations]*)
+[DisableInlining]
+method JumpToContinuation(aAddress, aESP, aEBP: NativeInt); 
+begin 
+  InternalCalls.VoidAsm("
+    movl $2, %ebp
+    movl $0, %eax
+    movl $1, %esp
+    jmpl *%eax
+  ", "r,r,r,~{ebp},~{esp},~{esp},~{dirflag},~{fpsr},~{flags}", false, false, aAddress, aESP, aEBP);
+end;
 {$ENDIF}
-method JumpToContinuation(aAddress, aESP, aEBP: NativeInt); external;
 {$IFDEF _WIN64}
 
 
