@@ -113,8 +113,8 @@ begin
   {$HINT Non-Invariant ToLower is not implemented, yet}
   {$IFDEF WINDOWS}
   var ch: Char := self;
-  var temp: IntPtr := ord(ch);
-  temp := IntPtr(rtl.CharLower(rtl.LPWSTR(temp)));
+  var temp: NativeInt := ord(ch);
+  temp := NativeInt(rtl.CharLower(rtl.LPWSTR(temp)));
   result := chr(temp);
   {$ELSEIF POSIX OR WINDOWS}
   var b := TextConvert.StringToUTF32LE(self);
@@ -137,8 +137,8 @@ begin
   {$HINT Non-Invariant ToUpper is not implemented, yet}
   {$IFDEF WINDOWS}
   var ch: Char := self;
-  var temp: IntPtr := ord(ch);
-  temp := IntPtr(rtl.CharUpper(rtl.LPWSTR(temp)));
+  var temp: NativeInt := ord(ch);
+  temp := NativeInt(rtl.CharUpper(rtl.LPWSTR(temp)));
   result := chr(temp);
   {$ELSEIF POSIX OR WINDOWS}
   var b := TextConvert.StringToUTF32LE(self);
