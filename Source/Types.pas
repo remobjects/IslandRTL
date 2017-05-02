@@ -109,17 +109,51 @@ begin
 end;
 
 method Char.ToLower(aInvariant: Boolean := false): Char;
-begin 
-  var Str := String.FromChar(Self).ToLower(aInvariant);
-  if length(Str) > 0 then exit Str.Item[0];
-  exit #0;  
+begin
+  {$HINT Non-Invariant ToLower is not implemented, yet}
+  {$IFDEF WINDOWS}
+  var ch: Char := self;
+  var temp: IntPtr := ord(ch);
+  temp := IntPtr(rtl.CharLower(rtl.LPWSTR(temp)));
+  result := chr(temp);
+  {$ELSEIF POSIX OR WINDOWS}
+  var b := TextConvert.StringToUTF32LE(self);
+  var ch := b[0] + (Int32(b[1]) shl 8) + (Int32(b[2]) shl 16) + (Int32(b[3]) shl 24);
+  var u := rtl.towlower(ch);
+  b[0] := u and $ff;
+  b[1] := (u shr 8) and $ff;
+  b[2] := (u shr 16) and $ff;
+  b[3] := (u shr 25) and $ff;
+  result := TextConvert.UTF32LEToString(b)[0];
+  {$ELSE}
+  var str := String.FromChar(Self).ToLower(aInvariant);
+  if length(str) > 0 then exit str.Item[0];
+  exit #0;
+  {$ENDIF}
 end;
 
 method Char.ToUpper(aInvariant: Boolean := false): Char;
 begin
-  var Str := String.FromChar(Self).ToUpper(aInvariant);
+  {$HINT Non-Invariant ToUpper is not implemented, yet}
+  {$IFDEF WINDOWS}
+  var ch: Char := self;
+  var temp: IntPtr := ord(ch);
+  temp := IntPtr(rtl.CharUpper(rtl.LPWSTR(temp)));
+  result := chr(temp);
+  {$ELSEIF POSIX OR WINDOWS}
+  var b := TextConvert.StringToUTF32LE(self);
+  var ch := b[0] + (Int32(b[1]) shl 8) + (Int32(b[2]) shl 16) + (Int32(b[3]) shl 24);
+  var u := rtl.towupper(ch);
+  b[0] := u and $ff;
+  b[1] := (u shr 8) and $ff;
+  b[2] := (u shr 16) and $ff;
+  b[3] := (u shr 25) and $ff;
+  result := TextConvert.UTF32LEToString(b)[0];
+  {$ELSE}
+  var str := String.FromChar(Self).ToUpper(aInvariant);
   if length(Str) > 0 then exit Str.Item[0];
-  exit #0;  
+  exit #0;
+  {$ENDIF}
 end;
 
 method AnsiChar.ToString: String;
