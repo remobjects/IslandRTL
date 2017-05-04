@@ -203,7 +203,7 @@ type
       if fLoaded = 0 then LoadGC;
       result := fSharedMemory.malloc(aSize);
       ^^Void(result)^ := aTTY;
-      {$IFDEF WINDOWS}ExternalCalls.{$ELSE}rtl.{$ENDIF}memset(^Byte(result) + sizeOf(^Void), 0, aSize - sizeOf(^Void));
+      memset(^Byte(result) + sizeOf(^Void), 0, aSize - sizeOf(^Void));
       if ^^Void(aTTY)[FinalizerIndex] <> fFinalizer then begin
         fSharedMemory.setfinalizer(result, @GC_finalizer);
       end;
@@ -385,6 +385,34 @@ begin
   {$HIDE W25}
   InternalCalls.Cast<Object>(obj).Finalize;
   {$SHOW W25}
+end;
+
+method memcpy(destination: ^Void; source: ^Void; num: IntPtr): ^Void; public;inline;
+begin 
+  {$IFDEF WINDOWS}
+  exit ExternalCalls.memcpy(destination, source, num);
+  {$ELSE}
+  exit rtl.memcpy(destination, source, num);
+  {$ENDIF}
+end;
+
+
+method memmove(destination: ^Void; source: ^Void; num: IntPtr): ^Void; public;inline;
+begin 
+  {$IFDEF WINDOWS}
+  exit ExternalCalls.memmove(destination, source, num);
+  {$ELSE}
+  exit rtl.memmove(destination, source, num);
+  {$ENDIF}
+end;
+
+method memset (ptr: ^Void; value: Integer; num: IntPtr): ^Void; public; inline;
+begin 
+  {$IFDEF WINDOWS}
+  exit ExternalCalls.memset(ptr, value, num);
+  {$ELSE}
+  exit rtl.memset(ptr, value, num);
+  {$ENDIF}
 end;
 
 end.

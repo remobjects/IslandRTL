@@ -153,7 +153,7 @@ type
         end;
       var new_fEntriesTable := new array of HashEntry<T>(aNewCapacity);
       if fMaxUsedIndex > DEFAULT_MAX_INDEX then begin
-        {$IFDEF WINDOWS}ExternalCalls.{$ELSEIF POSIX}rtl.{$ELSE}{$ERROR}{$ENDIF}memmove(@new_fEntriesTable[0], @fEntriesTable[0], fMaxUsedIndex * sizeOf(HashEntry<T>));
+        memmove(@new_fEntriesTable[0], @fEntriesTable[0], fMaxUsedIndex * sizeOf(HashEntry<T>));
       end;
       fbucketTable := new_fbucketTable;
       fEntriesTable := new_fEntriesTable;

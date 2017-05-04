@@ -122,7 +122,7 @@ type
         inc(pos);
       end;
       var r := new array of Byte(pos1);
-      {$IFDEF WINDOWS}ExternalCalls.{$ELSEIF POSIX}rtl.{$ELSE}{$ERROR}{$ENDIF}memcpy(@r[0], @arr[0], pos1);
+      memcpy(@r[0], @arr[0], pos1);
       exit r;
     end;
 
@@ -210,7 +210,7 @@ type
         inc(pos);
       end;
       var r := new array of Byte(pos1);
-      {$IFDEF WINDOWS}ExternalCalls.{$ELSEIF POSIX}rtl.{$ELSE}{$ERROR}{$ENDIF}memcpy(@r[0], @arr[0], pos1);
+      memcpy(@r[0], @arr[0], pos1);
       exit r;
     end;
 
@@ -246,7 +246,7 @@ type
         inc(pos);
       end;
       var r := new array of Byte(pos1);
-      {$IFDEF WINDOWS}ExternalCalls.{$ELSEIF POSIX}rtl.{$ELSE}{$ERROR}{$ENDIF}memcpy(@r[0], @arr[0], pos1);
+      memcpy(@r[0], @arr[0], pos1);
       exit r;
     end;
 

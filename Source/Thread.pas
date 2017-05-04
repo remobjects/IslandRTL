@@ -128,7 +128,7 @@ type
   {$ENDIF}
   {$IFDEF WINDOWS}
 
-method ThreadProc(aParam: ^Void): rtl.DWORD;
+method WindowsThreadProc(aParam: ^Void): rtl.DWORD;
 {$ENDIF}
 
 implementation
@@ -147,7 +147,7 @@ begin
   var pol: Int32;
   var sched: rtl.__struct_sched_param;
   rtl. pthread_getschedparam(fthread, @pol, @sched);
-  var pri := sched.{$IFDEF EMSCRIPTEN}sched_priority{$ELSE}__sched_priority{$ENDIF};
+  var pri := {$IFDEF EMSCRIPTEN}sched.sched_priority{$ELSE}sched.__sched_priority{$ENDIF};
   if pri < -1 then exit ThreadPriority.Lowest
   else if pri = -1 then exit ThreadPriority.BelowNormal
   else if pri =  0 then exit ThreadPriority.Normal
@@ -175,7 +175,7 @@ begin
 end;
 
 {$IFDEF WINDOWS}
-method ThreadProc(aParam: ^Void): rtl.DWORD;
+method WindowsThreadProc(aParam: ^Void): rtl.DWORD;
 begin
   var aThread:= InternalCalls.Cast<Thread>(aParam);
   try
@@ -232,7 +232,7 @@ begin
   if InternalCalls.Exchange(var fStarted, 1) = 0 then begin
     fCallbackObject := parameter;
     {$IFDEF WINDOWS}
-    var lStart: rtl.PTHREAD_START_ROUTINE := @ThreadProc;
+    var lStart: rtl.PTHREAD_START_ROUTINE := @WindowsThreadProc;
 
     self.fThread := rtl.CreateThread(nil,0, lStart, InternalCalls.Cast(self), 0, @fThreadID);
     if self.fThread = nil then RaiseError("Problem with creating thread");

@@ -84,9 +84,9 @@ type
     constructor(aIn: Action);
     constructor(aIn: Action<Object>; aState: Object);
     method ContinueWith(aAction: Action<Task>): Task;
-    method ContinueWith(aAction: Action<Task,Object>; aState: Object): Task;
+    method ContinueWith(aAction: Action<Task,Object>; aState: Object := nil): Task;
     method ContinueWith<T>(aAction: Func<Task, T>): Task1<T>;
-    method ContinueWith<T>(aAction: Func<Task, Object, T>; aState: Object): Task1<T>;
+    method ContinueWith<T>(aAction: Func<Task, Object, T>; aState: Object := nil): Task1<T>;
     class method Run(aIn: Action): Task;
     class method Run(aIn: Action<Task>): Task;
     class method Run<T>(aIn: Func<T>): Task1<T>;
@@ -141,7 +141,7 @@ type
     method Init2(aTaskObject : TaskObject_Func<T>);
   public
     constructor(aIn: Func<T>);
-    constructor(aIn: Func<Object, T>; aState: Object);
+    constructor(aIn: Func<Object, T>; aState: Object := nil);
     property &Result: T read fTaskObject.Result;
   end;
 
@@ -402,76 +402,63 @@ begin
 end;
 
 
-{$IFDEF WINDOWS}
+class method ThreadPool.RaiseError(Value: String);
+begin
+  CheckForLastError(Value);
+end;
 
 class method ThreadPool.QueueUserWorkItem(Callback: WaitCallback; State: Object);
 begin
+{$IFDEF WINDOWS}
   var lCallback:= new ThreadPoolCallback(Callback, State);
   var work := rtl.CreateThreadpoolWork(@ThreadCallBack, @lCallback, @pcbe);
   if work = nil then RaiseError('error at calling CreateThreadpoolWork');
   rtl.SubmitThreadpoolWork(work);
+{$ELSE}
+  fThreadPool.Queue(new ThreadPoolCallback(Callback, State));
+{$ENDIF}  
 end;
 
-constructor ThreadPool;
-begin
-  fThreadPool := rtl.CreateThreadpool(nil);
-  if fThreadPool = nil then RaiseError('error at calling CreateThreadpool');
-  fMinThreads := -1;
-  MinThreads := 1;    // can be changed later manually by user
-  fMaxThreads := -1;
-  MaxThreads := 100;  // can be changed later manually by user
-  rtl.InitializeThreadpoolEnvironment(@pcbe);
-  rtl.SetThreadpoolCallbackPool(@pcbe, fThreadPool);
-end;
 
 class method ThreadPool.SetMinThreads(Value: UInt32);
 begin
+{$IFDEF WINDOWS}
   if fMinThreads <> Value then begin
     if not rtl.SetThreadpoolThreadMinimum(fThreadPool, Value) then
       RaiseError('error at calling SetThreadpoolThreadMinimum');
     fMinThreads := Value;
   end;
+{$ELSE}
+  fThreadPool.MinThreads := Value;
+{$ENDIF}  
 end;
 
 class method ThreadPool.SetMaxThreads(Value: UInt32);
 begin
+  {$IFDEF WINDOWS}
   if fMaxThreads <> Value then begin
     rtl.SetThreadpoolThreadMaximum(fThreadPool, Value);
     fMaxThreads := Value;
   end;
-end;
-
-class method ThreadPool.RaiseError(Value: String);
-begin
-  CheckForLastError(Value);
-end;
-
-{$ELSE}
-class method ThreadPool.QueueUserWorkItem(Callback: WaitCallback; State: Object);
-begin
-  fThreadPool.Queue(new ThreadPoolCallback(Callback, State));
+  {$ELSE}
+  fThreadPool.MaxThreads := Value;
+{$ENDIF}  
 end;
 
 constructor ThreadPool;
 begin
+{$IFDEF WINDOWS}
+  fThreadPool := rtl.CreateThreadpool(nil);
+  if fThreadPool = nil then RaiseError('error at calling CreateThreadpool');
+  fMinThreads := 0;
+  MinThreads := 1;    // can be changed later manually by user
+  fMaxThreads := 0;
+  MaxThreads := 100;  // can be changed later manually by user
+  rtl.InitializeThreadpoolEnvironment(@pcbe);
+  rtl.SetThreadpoolCallbackPool(@pcbe, fThreadPool);
+{$ELSE}
   fThreadPool := new ManagedThreadPool;
+{$ENDIF}  
 end;
-
-class method ThreadPool.SetMinThreads(Value: UInt32);
-begin
-  fThreadPool.MinThreads := Value;
-end;
-
-class method ThreadPool.SetMaxThreads(Value: UInt32);
-begin
-  fThreadPool.MaxThreads := Value;
-end;
-
-class method ThreadPool.RaiseError(Value: String);
-begin
-  CheckForLastError(Value);
-end;
-
-{$ENDIF}
 
 end.

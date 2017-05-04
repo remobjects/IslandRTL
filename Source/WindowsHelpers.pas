@@ -355,7 +355,7 @@ var
       SizeOfZeroFill := 0
     ); readonly;public;
 
-[SymbolName('__elements_tls_callback_method'), Used{$IFNDEF _WIN64}, CallingConvention(CallingConvention.Stdcall){$ENDIF}]
+[SymbolName('__elements_tls_callback_method'), Used, CallingConvention(CallingConvention.Stdcall)]
 method elements_tls_callback(aHandle: ^Void; aReason: rtl.DWORD; aReserved: ^Void);public;
 
 
@@ -521,7 +521,7 @@ begin
 end;
 
 
-method ExternalCalls._beginthreadex(security: ^Void; stack_size: Integer; proc: rtl.PTHREAD_START_ROUTINE; arglist: ^Void; initflag: Cardinal; thrdaddr: rtl.LPDWORD): rtl.HANDLE;
+method ExternalCalls._beginthreadex(security: ^Void; stack_size: Int32; proc: rtl.PTHREAD_START_ROUTINE; arglist: ^Void; initflag: Cardinal; thrdaddr: rtl.LPDWORD): rtl.HANDLE;
 begin
   var lRec := new ThreadRec;
   lRec.Call := proc;
@@ -760,9 +760,9 @@ begin
 end;
 {$ENDIF}
 
-{$IFNDEF _WIN64}
 class method ExternalCalls._chkstk;
 begin
+{$IFNDEF _WIN64}
   InternalCalls.voidasm(
   "
     push %ecx  // save EcX as the caller doesn't expect ANY changes to registers, except EAX which holds the nr of bytes
@@ -784,11 +784,8 @@ begin
     movl %eax, %esp
     ret
 ", "", false, false);
-end;
 {$ELSE}
 // This version is dual licensed under the MIT and the University of Illinois Open Source Licenses. See LICENSE.TXT for details; from the llvm compiler-RT project.
-class method ExternalCalls._chkstk;
-begin
   InternalCalls.voidasm(
   "
         push   %rcx
@@ -809,8 +806,8 @@ done:
         pop    %rcx
         ret
 ", "", false, false);
-end;
 {$ENDIF}
+end;
 
 class method ExternalCalls._wassert;
 begin

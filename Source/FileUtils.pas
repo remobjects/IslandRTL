@@ -8,24 +8,30 @@ type
   private
   protected
   public
-    class method IsFolder(Attr: {$IFDEF WINDOWS}rtl.DWORD{$ELSEIF POSIX}rtl.__mode_t{$ELSE}{$ERROR}{$ENDIF}): Boolean; inline;
+  {$IFDEF WINDOWS}
+    class method IsFolder(Attr: rtl.DWORD): Boolean; inline;
     begin
-      {$IFDEF WINDOWS}
       if Attr = rtl.INVALID_FILE_ATTRIBUTES then exit false;
       exit (Attr and rtl.FILE_ATTRIBUTE_DIRECTORY) = rtl.FILE_ATTRIBUTE_DIRECTORY;
-      {$ELSEIF POSIX}
-      exit (Attr and rtl.S_IFMT) = rtl.S_IFDIR;
-      {$ELSE}{$ERROR}{$ENDIF}
     end;
-    class method IsFile(Attr: {$IFDEF WINDOWS}rtl.DWORD{$ELSEIF POSIX}rtl.__mode_t{$ELSE}{$ERROR}{$ENDIF}): Boolean; inline;
+    class method IsFile(Attr: rtl.DWORD): Boolean; inline;
     begin
-      {$IFDEF WINDOWS}
       if Attr = rtl.INVALID_FILE_ATTRIBUTES then exit false;
       exit (Attr and rtl.FILE_ATTRIBUTE_DIRECTORY) <> rtl.FILE_ATTRIBUTE_DIRECTORY;
-      {$ELSEIF POSIX}
-      exit (Attr and rtl.S_IFMT) = rtl.S_IFREG;
-      {$ELSE}{$ERROR}{$ENDIF}
+    end;  
+  {$ELSEIF POSIX}
+    class method IsFolder(Attr: rtl.__mode_t): Boolean; inline;
+    begin
+      exit (Attr and rtl.S_IFMT) = rtl.S_IFDIR;
     end;
+    class method IsFile(Attr: rtl.__mode_t): Boolean; inline;
+    begin
+      exit (Attr and rtl.S_IFMT) = rtl.S_IFREG;
+    end;  
+  {$ELSE}
+  {$ERROR Unsupported platform}
+  {$ENDIF}
+    
 
     class method FolderExists(aFullName: not nullable String): Boolean;
     begin

@@ -29,13 +29,13 @@ type
     method intCopy(Source: ^Char; Dest: ^Char; CharCount: Int32);
     begin
       if CharCount = 0 then exit;
-      {$IFDEF WINDOWS}ExternalCalls.{$ELSEIF POSIX}rtl.{$ELSE}{$ERROR}{$ENDIF}memcpy(Dest, Source, CharCount*sizeOfChar);
+      memcpy(Dest, Source, CharCount*sizeOfChar);
     end;
 
     method IntMove(SourceIndex, DestIndex: Int32;  CharCount: Integer);
     begin
       if CharCount = 0 then exit;
-      {$IFDEF WINDOWS}ExternalCalls.{$ELSEIF POSIX}rtl.{$ELSE}{$ERROR}{$ENDIF}memmove(@fBuf[DestIndex], @fBuf[SourceIndex], CharCount*sizeOfChar);
+      memmove(@fBuf[DestIndex], @fBuf[SourceIndex], CharCount*sizeOfChar);
     end;
 
     method CalcCapacity(aNewCapacity: Integer): Integer;

@@ -46,7 +46,7 @@ begin
   if value < fLength then raise new Exception('Capacity cannot be less than the current length of the stream.');
   var temp := new array of Byte(value);
   if fLength >0 then
-    {$IFDEF WINDOWS}ExternalCalls.{$ELSE}rtl.{$ENDIF}memcpy(@temp[0], @fbuf[0], fLength);
+    memcpy(@temp[0], @fbuf[0], fLength);
   fbuf := temp;
   fCapacity := value;
 end;
@@ -78,7 +78,7 @@ begin
   var lres := fLength - fPosition;
   if lres <= 0 then exit 0;
   if lres > Count then lres := Count;
-  {$IFDEF WINDOWS}ExternalCalls.{$ELSE}rtl.{$ENDIF}memcpy(buf, @fbuf[fPosition], lres);
+  memcpy(buf, @fbuf[fPosition], lres);
   fPosition := fPosition + lres;
   exit lres;
 end;
@@ -89,7 +89,7 @@ begin
   if buf = nil then raise new Exception("argument is null");
   if Count = 0 then exit 0;
   CheckCapacity(fPosition+Count);
-  {$IFDEF WINDOWS}ExternalCalls.{$ELSE}rtl.{$ENDIF}memcpy(@fbuf[fPosition], buf, Count);
+  memcpy(@fbuf[fPosition], buf, Count);
   fPosition := fPosition+Count;
   if fPosition > fLength then fLength := fPosition;
   exit Count;
@@ -98,7 +98,7 @@ end;
 method MemoryStream.ToArray: array of Byte;
 begin
   result := new array of Byte(fLength);
-  {$IFDEF WINDOWS}ExternalCalls.{$ELSE}rtl.{$ENDIF}memcpy(@result[0], @fbuf[0], fLength);
+  memcpy(@result[0], @fbuf[0], fLength);
 end;
 
 method MemoryStream.CheckCapacity(value: Int32);

@@ -198,7 +198,7 @@ type
       end;
       var new_fEntriesTable := new array of Entry<T,U>(aNewCapacity);
       if fMaxUsedIndex > DEFAULT_MAX_INDEX then begin
-        {$IFDEF WINDOWS}ExternalCalls.{$ELSEIF POSIX}rtl.{$ELSE}{$ERROR}{$ENDIF}memmove(@new_fEntriesTable[0], @fEntriesTable[0], fMaxUsedIndex * sizeOf(Entry<T,U>));
+        memmove(@new_fEntriesTable[0], @fEntriesTable[0], fMaxUsedIndex * sizeOf(Entry<T,U>));
       end;
       fbucketTable := new_fbucketTable;
       fEntriesTable := new_fEntriesTable;

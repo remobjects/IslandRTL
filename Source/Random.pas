@@ -30,7 +30,7 @@ type
 
     constructor(aSeedData: array[0..15] of UInt32);
     begin
-      {$IFDEF WINDOWS}ExternalCalls.{$ELSE}rtl.{$ENDIF}memcpy(@state, @aSeedData[0], 16 * 4);
+      memcpy(@state, @aSeedData[0], 16 * 4);
     end;
 
 

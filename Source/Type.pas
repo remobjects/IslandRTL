@@ -995,7 +995,7 @@ method ProtoReadBytes(var aSelf: ^Byte): array of Byte;assembly;
 begin
   var lLen := ProtoReadVarInt(var aSelf);
   result := new Byte[lLen];
-  {$IFDEF POSIX}rtl.{$ELSE}ExternalCalls.{$ENDIF}memcpy(@result[0], aSelf, lLen);
+  memcpy(@result[0], aSelf, lLen);
   aSelf := aSelf + lLen;
 end;
 

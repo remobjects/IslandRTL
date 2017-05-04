@@ -132,7 +132,7 @@ end;
 class method String.FromPChar(c: ^Char; aCharCount: Integer): String;
 begin
   result := AllocString(aCharCount);
-  {$IFDEF WINDOWS}ExternalCalls.{$ELSEIF POSIX}rtl.{$ELSE}{$ERROR}{$ENDIF}memcpy(@result.fFirstChar, c, aCharCount * 2);
+  memcpy(@result.fFirstChar, c, aCharCount * 2);
 end;
 
 {$IFDEF POSIX AND NOT ANDROID}
@@ -195,7 +195,7 @@ begin
   {$ELSEIF ANDROID}
   var b := TextConvert.StringToUtf8(self, false);
   result := new AnsiChar[b.Length + if aNullTerminate then 1 else 0];
-  {$IFDEF WINDOWS}ExternalCalls.{$ELSE}rtl.{$ENDIF}memcpy(@result[0], @b[0], b.Length);
+  memcpy(@result[0], @b[0], b.Length);
   {$ELSE}
   var lNewData: ^AnsiChar := nil;
   var lNewLen: rtl.size_t := iconv_helper(TextConvert.fUTF16ToCurrent, ^AnsiChar(@fFirstChar), Length * 2, Length + 5, out lNewData);
@@ -219,15 +219,15 @@ begin
   if (Object(aLeft) = nil) or (aLeft.Length = 0) then exit aRight;
   if (Object(aRight) = nil) or (aRight.Length = 0) then exit aLeft;
   result := AllocString(aLeft.Length + aRight.Length);
-  {$IFDEF WINDOWS}ExternalCalls.{$ELSEIF POSIX}rtl.{$ELSE}{$ERROR}{$ENDIF}memcpy(@result.fFirstChar, @aLeft.fFirstChar, aLeft.Length * 2);
-  {$IFDEF WINDOWS}ExternalCalls.{$ELSEIF POSIX}rtl.{$ELSE}{$ERROR}{$ENDIF}memcpy((@result.fFirstChar) + aLeft.Length, @aRight.fFirstChar, aRight.Length * 2);
+  memcpy(@result.fFirstChar, @aLeft.fFirstChar, aLeft.Length * 2);
+  memcpy((@result.fFirstChar) + aLeft.Length, @aRight.fFirstChar, aRight.Length * 2);
 end;
 
 class operator String.Add(aLeft: String; aChar: Char): String;
 begin
   if (Object(aLeft) = nil) or (aLeft.Length = 0) then exit aChar;
   result := AllocString(aLeft.Length + 1);
-  {$IFDEF WINDOWS}ExternalCalls.{$ELSEIF POSIX}rtl.{$ELSE}{$ERROR}{$ENDIF}memcpy(@result.fFirstChar, @aLeft.fFirstChar, aLeft.Length * 2);
+  memcpy(@result.fFirstChar, @aLeft.fFirstChar, aLeft.Length * 2);
   (@result.fFirstChar)[aLeft.Length] := aChar;
 end;
 
@@ -235,7 +235,7 @@ class operator String.Add(aLeft: Char; aRight: String): String;
 begin
   if (Object(aRight) = nil) or (aRight.Length = 0) then exit aLeft;
   result := AllocString(aRight.Length + 1);
-  {$IFDEF WINDOWS}ExternalCalls.{$ELSEIF POSIX}rtl.{$ELSE}{$ERROR}{$ENDIF}memcpy((@result.fFirstChar) + 1, @aRight.fFirstChar, aRight.Length * 2);
+  memcpy((@result.fFirstChar) + 1, @aRight.fFirstChar, aRight.Length * 2);
   (@result.fFirstChar)[0] := aLeft;
 end;
 
@@ -572,7 +572,7 @@ end;
 
 method String.CopyTo(SourceIndex: Integer; destination: array of Char; DestinationIndex: Integer; Count: Integer);
 begin
-  {$IFDEF WINDOWS}ExternalCalls.{$ELSEIF POSIX}rtl.{$ELSE}{$ERROR}{$ENDIF}memcpy(@destination[DestinationIndex], (@fFirstChar) + SourceIndex, Count * 2);
+  memcpy(@destination[DestinationIndex], (@fFirstChar) + SourceIndex, Count * 2);
 end;
 
 method String.Insert(aIndex: Integer; aNewValue: String): not nullable String;
@@ -580,9 +580,9 @@ begin
   {$HIDE W46}
   result := AllocString(self.Length + aNewValue.Length);
   {$SHOW W46}
-  {$IFDEF WINDOWS}ExternalCalls.{$ELSEIF POSIX}rtl.{$ELSE}{$ERROR}{$ENDIF}memcpy(@result.fFirstChar, @fFirstChar, aIndex * 2);
-  {$IFDEF WINDOWS}ExternalCalls.{$ELSEIF POSIX}rtl.{$ELSE}{$ERROR}{$ENDIF}memcpy((@result.fFirstChar) + aIndex, @aNewValue.fFirstChar, aNewValue.Length * 2);
-  {$IFDEF WINDOWS}ExternalCalls.{$ELSEIF POSIX}rtl.{$ELSE}{$ERROR}{$ENDIF}memcpy((@result.fFirstChar) + aIndex + aNewValue.Length, (@fFirstChar) + aIndex, (self.Length - aIndex) * 2);
+  memcpy(@result.fFirstChar, @fFirstChar, aIndex * 2);
+  memcpy((@result.fFirstChar) + aIndex, @aNewValue.fFirstChar, aNewValue.Length * 2);
+  memcpy((@result.fFirstChar) + aIndex + aNewValue.Length, (@fFirstChar) + aIndex, (self.Length - aIndex) * 2);
 end;
 
 method String.&Remove(StartIndex: Integer): String;
@@ -593,8 +593,8 @@ end;
 method String.&Remove(StartIndex: Integer; Count: Integer): String;
 begin
   result := AllocString(self.Length - Count);
-  {$IFDEF WINDOWS}ExternalCalls.{$ELSEIF POSIX}rtl.{$ELSE}{$ERROR}{$ENDIF}memcpy(@result.fFirstChar, @fFirstChar, StartIndex * 2);
-  {$IFDEF WINDOWS}ExternalCalls.{$ELSEIF POSIX}rtl.{$ELSE}{$ERROR}{$ENDIF}memcpy((@result.fFirstChar) + StartIndex, (@fFirstChar) + StartIndex + Count, (self.Length - (StartIndex + Count)) * 2);
+  memcpy(@result.fFirstChar, @fFirstChar, StartIndex * 2);
+  memcpy((@result.fFirstChar) + StartIndex, (@fFirstChar) + StartIndex + Count, (self.Length - (StartIndex + Count)) * 2);
 end;
 
 method String.CompareTo(Value: String): Integer;
@@ -775,7 +775,7 @@ end;
 method String.ToCharArray(StartIndex: Integer; aLength: Integer; aNullTerminate: Boolean := false): array of Char;
 begin
   var r := new array of Char(aLength + if aNullTerminate then 1 else 0);
-  {$IFDEF WINDOWS}ExternalCalls.{$ELSEIF POSIX}rtl.{$ELSE}{$ERROR Not Implemented}{$ENDIF}memcpy(@r[0], (@fFirstChar) + StartIndex, aLength * 2);
+  memcpy(@r[0], (@fFirstChar) + StartIndex, aLength * 2);
   if aNullTerminate then r[aLength] := #0;
   exit r;
 end;
@@ -792,7 +792,7 @@ end;
 
 class method String.FromPChar(c: ^Char): String;
 begin
-  exit FromPChar(c, {$IFDEF WINDOWS}ExternalCalls.{$ELSEIF POSIX}rtl.{$ELSE}{$ERROR Not Implemented}{$ENDIF}wcslen(c));
+  exit FromPChar(c, {$IFDEF WINDOWS}ExternalCalls.wcslen(c){$ELSEIF POSIX}rtl.wcslen(c){$ELSE}{$ERROR Not Implemented}{$ENDIF});
 end;
 
 class method String.FromChar(c: Char): String;
@@ -811,7 +811,7 @@ end;
 class method String.FromPAnsiChars(c: ^AnsiChar): nullable String;
 begin
   if not assigned(c) then exit nil;
-  exit FromPAnsiChars(c, {$IFDEF WINDOWS}ExternalCalls.{$ELSEIF POSIX}rtl.{$ELSE}{$ERROR Not Implemented}{$ENDIF}strlen(c));
+  exit FromPAnsiChars(c, {$IFDEF WINDOWS}ExternalCalls.strlen(c){$ELSEIF POSIX}rtl.strlen(c){$ELSE}{$ERROR Not Implemented}{$ENDIF});
 end;
 
 class method String.Format(aFormat: String; params aArguments: array of Object): String;
