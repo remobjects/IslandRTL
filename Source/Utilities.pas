@@ -387,7 +387,7 @@ begin
   {$SHOW W25}
 end;
 
-method memcpy(destination: ^Void; source: ^Void; num: IntPtr): ^Void; public;inline;
+method memcpy(destination: ^Void; source: ^Void; num: NativeInt): ^Void; public;inline;
 begin 
   {$IFDEF WINDOWS}
   exit ExternalCalls.memcpy(destination, source, num);
@@ -397,7 +397,7 @@ begin
 end;
 
 
-method memmove(destination: ^Void; source: ^Void; num: IntPtr): ^Void; public;inline;
+method memmove(destination: ^Void; source: ^Void; num: NativeInt): ^Void; public;inline;
 begin 
   {$IFDEF WINDOWS}
   exit ExternalCalls.memmove(destination, source, num);
@@ -406,7 +406,7 @@ begin
   {$ENDIF}
 end;
 
-method memset (ptr: ^Void; value: Integer; num: IntPtr): ^Void; public; inline;
+method memset (ptr: ^Void; value: Integer; num: NativeInt): ^Void; public; inline;
 begin 
   {$IFDEF WINDOWS}
   exit ExternalCalls.memset(ptr, value, num);
