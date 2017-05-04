@@ -79,7 +79,7 @@ type
   end;
 
 {$IFDEF WINDOWS}
-extension method String.ToLPCWSTR: rtl.LPCWSTR;
+extension method String.ToLPCWSTR: rtl.LPCWSTR; assembly;
 begin
   if String.IsNullOrEmpty(self) then exit nil;
   var arr := ToCharArray(true);
