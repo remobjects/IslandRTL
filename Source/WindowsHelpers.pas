@@ -844,10 +844,10 @@ addq $$32, %rsp
 popq %rbp
 retq
 ", "", false, false), DisableInlining, DisableOptimizations, LinkOnce]
-method CallCatch(aCall: NativeInt; aEBP: NativeInt): NativeInt; external;
+method CallCatch64(aCall: NativeInt; aEBP: NativeInt): NativeInt; external;
 {$ELSE}
 [DisableInlining]
-method CallCatch(aCall: NativeInt; aEBP: NativeInt): NativeInt; 
+method CallCatch32(aCall: NativeInt; aEBP: NativeInt): NativeInt; 
 begin 
   exit InternalCalls.Asm("
 movl $2, %ebp
@@ -880,7 +880,7 @@ end;{$ENDIF}
     movq %rdx, %rsp
     jmpq *%rcx
 ", "", false, false), DisableInlining, DisableOptimizations] 
-method JumpToContinuation(aAddress, aESP, aEBP: NativeInt); external;
+method JumpToContinuation64(aAddress, aESP, aEBP: NativeInt); external;
 {$ELSE}
 (*[InlineAsm("
     movl 12(%esp), %ebp
@@ -889,7 +889,7 @@ method JumpToContinuation(aAddress, aESP, aEBP: NativeInt); external;
     jmpl *%eax
 ", "", false, false), DisableInlining, DisableOptimizations]*)
 [DisableInlining]
-method JumpToContinuation(aAddress, aESP, aEBP: NativeInt); 
+method JumpToContinuation32(aAddress, aESP, aEBP: NativeInt); 
 begin 
   InternalCalls.VoidAsm("
     movl $2, %ebp
@@ -954,14 +954,14 @@ begin
       var lTargetState := arec^.ExceptionInformation[3];
       // special exception, we're unwinding to a specific stat
       while (index < msvcinfo^.NumUnwindMap) and (&index <> lTargetState) do begin
-      if lMap[index].Cleanup <> 0 then CallCatch(dispatcher^.ImageBase + lMap[index].Cleanup, dispatcher^.EstablisherFrame);
+      if lMap[index].Cleanup <> 0 then CallCatch64(dispatcher^.ImageBase + lMap[index].Cleanup, dispatcher^.EstablisherFrame);
         index:= lMap[index].ToState;
       end;
       exit;
     end;
     // unwinding, call finally, this is generally when unwinding completely.
     while (index < msvcinfo^.NumUnwindMap)  do begin
-      if lMap[index].Cleanup <> 0 then CallCatch(dispatcher^.ImageBase + lMap[index].Cleanup, dispatcher^.EstablisherFrame);
+      if lMap[index].Cleanup <> 0 then CallCatch64(dispatcher^.ImageBase + lMap[index].Cleanup, dispatcher^.EstablisherFrame);
       index:= lMap[index].ToState;
     end;
   end else begin
@@ -990,7 +990,7 @@ begin
             var cond := htt^.Filter;
             if (cond = nil) or (cond(^Void(context^.Rsp))) then begin
               result := 0;
-              CallCatch(tb, ht, arec, EstablisherFrame, context, dispatcher);
+              CallCatch64(tb, ht, arec, EstablisherFrame, context, dispatcher);
             end;
           end;
         end;
@@ -1013,7 +1013,7 @@ begin
   if 0 <> (arec^.ExceptionFlags and ( rtl.EXCEPTION_UNWINDING or rtl.EXCEPTION_EXIT_UNWIND)) then begin
     // unwinding, call finally
     while (regFrame^.TryLevel <> $FFFFFFFF) and (regFrame^.TryLevel < msvcinfo^.NumUnwindMap)  do begin
-      if msvcinfo^.UnwindMap[regFrame^.TryLevel].Cleanup <> nil then CallCatch(NativeInt(^Void(msvcinfo^.UnwindMap[regFrame^.TryLevel].Cleanup)), lBaseAddress);
+      if msvcinfo^.UnwindMap[regFrame^.TryLevel].Cleanup <> nil then CallCatch32(NativeInt(^Void(msvcinfo^.UnwindMap[regFrame^.TryLevel].Cleanup)), lBaseAddress);
       regFrame^.TryLevel := msvcinfo^.UnwindMap[regFrame^.TryLevel].ToState;
     end;
   end else begin
@@ -1044,12 +1044,12 @@ begin
               // now unwind locally
               while (regFrame^.TryLevel <> $FFFFFFFF) and (regFrame^.TryLevel < tb^.CatchHigh) and (regFrame^.TryLevel >= tb^.TryLow) do begin
                 if msvcinfo^.UnwindMap[regFrame^.TryLevel].Cleanup <> nil then begin 
-                  CallCatch(NativeInt(^Void(msvcinfo^.UnwindMap[regFrame^.TryLevel].Cleanup)), lBaseAddress);
+                  CallCatch32(NativeInt(^Void(msvcinfo^.UnwindMap[regFrame^.TryLevel].Cleanup)), lBaseAddress);
                 end;
                 regFrame^.TryLevel := msvcinfo^.UnwindMap[regFrame^.TryLevel].ToState;
               end;
-              var lCont := CallCatch(NativeInt(^Void(tb^.HandlerType^.Handler)), lBaseAddress);
-              JumpToContinuation(lCont, lESP, lBaseAddress);
+              var lCont := CallCatch32(NativeInt(^Void(tb^.HandlerType^.Handler)), lBaseAddress);
+              JumpToContinuation32(lCont, lESP, lBaseAddress);
             end;
           end;
         end;
