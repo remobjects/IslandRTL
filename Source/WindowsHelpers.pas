@@ -921,7 +921,7 @@ end;
 type CatchHelper = method (pExcept: ^rtl.EXCEPTION_RECORD): NativeInt;
 method IntCallCatch(pExcept: ^rtl.EXCEPTION_RECORD): NativeInt;
 begin
-  exit CallCatch(pExcept^.ExceptionInformation[2], pExcept^.ExceptionInformation[1]);
+  exit CallCatch64(pExcept^.ExceptionInformation[2], pExcept^.ExceptionInformation[1]);
 end;
 
 method CallCatch(aCatch: ^MSVCTryMap; aHandler: ^MSVCHandlerType; arec: ^rtl.EXCEPTION_RECORD; EstFrame: UInt64; context: rtl.PCONTEXT; dispatcher: rtl.PDISPATCHER_CONTEXT);
@@ -990,7 +990,7 @@ begin
             var cond := htt^.Filter;
             if (cond = nil) or (cond(^Void(context^.Rsp))) then begin
               result := 0;
-              CallCatch64(tb, ht, arec, EstablisherFrame, context, dispatcher);
+              CallCatch(tb, ht, arec, EstablisherFrame, context, dispatcher);
             end;
           end;
         end;
