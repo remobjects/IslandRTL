@@ -191,18 +191,21 @@ begin
   {$IFDEF WINDOWS}
   var len := rtl.WideCharToMultiByte(rtl.CP_ACP, 0, @self.fFirstChar, Length, nil, 0, nil, nil);
   result := new AnsiChar[len+ if aNullTerminate then 1 else 0];
-  rtl.WideCharToMultiByte(rtl.CP_ACP, 0, @self.fFirstChar, Length, rtl.LPSTR(@result[0]), len, nil, nil);
+  if len <> 0 then 
+    rtl.WideCharToMultiByte(rtl.CP_ACP, 0, @self.fFirstChar, Length, rtl.LPSTR(@result[0]), len, nil, nil);
   {$ELSEIF ANDROID}
   var b := TextConvert.StringToUtf8(self, false);
   result := new AnsiChar[b.Length + if aNullTerminate then 1 else 0];
-  memcpy(@result[0], @b[0], b.Length);
+  if b.Length <> 0 then 
+    memcpy(@result[0], @b[0], b.Length);
   {$ELSE}
   var lNewData: ^AnsiChar := nil;
   var lNewLen: rtl.size_t := iconv_helper(TextConvert.fUTF16ToCurrent, ^AnsiChar(@fFirstChar), Length * 2, Length + 5, out lNewData);
 
   if lNewLen <> -1  then begin
     result := new AnsiChar[lNewLen+ if aNullTerminate then 1 else 0];
-    rtl.memcpy(@result[0], lNewData, lNewLen);
+    if length(lNewLen) <> 0 then 
+      rtl.memcpy(@result[0], lNewData, lNewLen);
     rtl.free(lNewData);
   end;
   {$ENDIF}
@@ -775,7 +778,8 @@ end;
 method String.ToCharArray(StartIndex: Integer; aLength: Integer; aNullTerminate: Boolean := false): array of Char;
 begin
   var r := new array of Char(aLength + if aNullTerminate then 1 else 0);
-  memcpy(@r[0], (@fFirstChar) + StartIndex, aLength * 2);
+  if r.Length <> 0 then 
+    memcpy(@r[0], (@fFirstChar) + StartIndex, aLength * 2);
   if aNullTerminate then r[aLength] := #0;
   exit r;
 end;
@@ -949,7 +953,9 @@ class method String.FromCharArray(aArray: array of Char): String;
 begin
   if aArray = nil then
     exit FromPChar(nil,0)
-  else
+  else if aArray.Length = 0 then 
+    exit FromPChar(nil,0)
+  else 
     exit FromPChar(@aArray[0], aArray.Length);
 end;
 
