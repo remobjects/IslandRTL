@@ -204,7 +204,7 @@ begin
 
   if lNewLen <> -1  then begin
     result := new AnsiChar[lNewLen+ if aNullTerminate then 1 else 0];
-    if length(lNewLen) <> 0 then 
+    if lNewLen <> 0 then 
       rtl.memcpy(@result[0], lNewData, lNewLen);
     rtl.free(lNewData);
   end;
