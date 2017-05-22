@@ -167,7 +167,7 @@ type
   private
   public
     constructor(); empty;
-    property Recursive: Boolean;
+    property Inherit: Boolean;
   end;
 
   [AttributeUsage(AttributeTargets.Method or AttributeTargets.Field)]
