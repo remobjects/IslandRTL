@@ -246,11 +246,14 @@ end;
 
 
 {$IFDEF WINDOWS}
+[CallingConvention(CallingConvention.Stdcall)]
 method ThreadCallBack(Instance: rtl.PTP_CALLBACK_INSTANCE; &Param: rtl.PVOID; Work: rtl.PTP_WORK);
 begin
   Instance := nil;
   Work := nil;
-  var obj :ThreadPoolCallback := PThreadPoolCallback(&Param)^;
+  var lHandle := new GCHandle(NativeInt(&Param));
+  var obj := ThreadPoolCallback(lHandle.Target);
+  GCHandles.Free(NativeInt(&Param));
   obj.fCallback(obj.fState);
   obj := nil;
 end;
@@ -411,7 +414,7 @@ class method ThreadPool.QueueUserWorkItem(Callback: WaitCallback; State: Object)
 begin
 {$IFDEF WINDOWS}
   var lCallback:= new ThreadPoolCallback(Callback, State);
-  var work := rtl.CreateThreadpoolWork(@ThreadCallBack, @lCallback, @pcbe);
+  var work := rtl.CreateThreadpoolWork(@ThreadCallBack, ^Void(GCHandle.Allocate(lCallback).Handle), @pcbe);
   if work = nil then RaiseError('error at calling CreateThreadpoolWork');
   rtl.SubmitThreadpoolWork(work);
 {$ELSE}
