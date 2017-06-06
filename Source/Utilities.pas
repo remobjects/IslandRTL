@@ -3,12 +3,15 @@
 type
   MAllocFunc nested in SharedMemory = function(size: {$IFDEF WINDOWS}{$IFDEF i386}UInt32{$ELSE}UInt64{$ENDIF}{$ELSE}rtl.size_t{$ENDIF}): ^Void;
   CollectFunc nested in SharedMemory = procedure;
+  UnregisterFunc nested in SharedMemory = function: Integer;
   SetFinalizerFunc nested in SharedMemory = procedure(val: ^Void; aFunc: gc.GC_finalization_proc);
   SharedMemory = record
   public
     malloc: MAllocFunc;
     setfinalizer: SetFinalizerFunc;
     collect: CollectFunc;
+    register: UnregisterFunc;
+    unregister: UnregisterFunc;
   end;
   Utilities = public static class
   private
@@ -129,7 +132,7 @@ type
         FN[15] := 'a';
         FN[16] := 'n';
         FN[17] := 'd';
-        FN[18] := '0'; // Version, increase when adding stuff or making the class layout incompatible
+        FN[18] := '1'; // Version, increase when adding stuff or making the class layout incompatible
         var lID := rtl.GetCurrentProcessId;
         FN[19] := Char(Integer('a')+Integer((lID shr 0) and $f));
         FN[20] := Char(Integer('a')+Integer((lID shr 4) and $f));
@@ -177,14 +180,36 @@ type
         SpinLockExit(var fLock);
       end;
     end;
+
+    method GC_my_register_my_thread: Integer;
+    begin 
+      var sb: gc.__struct_GC_stack_base;
+      gc.GC_get_stack_base(@sb);
+      exit gc.GC_register_my_thread(@sb);
+    end;
+
     {$IFDEF POSIX}[LinkOnce, DllExport]{$ENDIF}
     [SkipDebug]
     method LocalGC; private;
     begin
       gc.GC_INIT;
+      gc.GC_allow_register_threads();
       fSharedMemory.collect := @gc.GC_gcollect;
+      fSharedMemory.register := @GC_my_register_my_thread;
+      fSharedMemory.unregister := @gc.GC_unregister_my_thread;
       fSharedMemory.malloc := @gc.GC_malloc;
       fSharedMemory.setfinalizer := @SetFinalizer;
+    end;
+    [SymbolName('registerthread')]
+    method RegisterThread: Boolean;
+    begin 
+      exit fSharedMemory.register() = gc.GC_SUCCESS;
+    end;
+
+    [SymbolName('unregisterthread')]
+    method UnregisterThread; 
+    begin 
+      fSharedMemory.unregister;
     end;
 
     method SetFinalizer(aVal: ^Void; aProc: gc.GC_finalization_proc);
@@ -193,7 +218,7 @@ type
     end;
     const FinalizerIndex = 4 + {$IFDEF I386}4{$ELSE}2{$ENDIF};
     [SymbolName('__newinst')]
-    [SkipDebug]
+    //[SkipDebug]
     class method NewInstance(aTTY: ^Void; aSize: NativeInt): ^Void;
     begin
       if fFinalizer = nil then begin
@@ -210,7 +235,7 @@ type
     end;
 
     [SymbolName('__newarray')]
-    [SkipDebug]
+    //[SkipDebug]
     class method NewArray(aTY: ^Void; aElementSize, aElements: NativeInt): ^Void;
     begin
       result := NewInstance(aTY, sizeOf(^Void) + sizeOf(NativeInt) + aElementSize * aElements);
@@ -218,7 +243,7 @@ type
     end;
 
     [SymbolName('__newdelegate')]
-    [SkipDebug]
+    //[SkipDebug]
     class method NewDelegate(aTY: ^Void; aSelf: Object; aPtr: ^Void): &Delegate;
     begin
       result := InternalCalls.Cast<&Delegate>(NewInstance(aTY, sizeOf(^Void) * 3));

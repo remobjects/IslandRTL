@@ -177,15 +177,20 @@ end;
 {$IFDEF WINDOWS}
 method WindowsThreadProc(aParam: ^Void): rtl.DWORD;
 begin
-  var aThread:= InternalCalls.Cast<Thread>(aParam);
+  var lHandle := new GCHandle(NativeInt(aParam));
+  var aThread:= lHandle.Target as Thread;
+  lHandle.Dispose;
   try
     if not aThread.fTerminated then begin
       try
+        Utilities.RegisterThread;
         aThread.Execute;
       except
         on E: Exception do
           aThread.fCallStack := E.Message;
       end;
+      Utilities.UnregisterThread;
+
     end;
   finally
     aThread.fDone := True;
@@ -196,15 +201,19 @@ end;
 {$ELSE}
 method ThreadProc(aParam: ^Void): ^Void;
 begin
-  var aThread:= InternalCalls.Cast<Thread>(aParam);
+  var lHandle := new GCHandle(NativeInt(aParam));
+  var aThread:= lHandle.Target as Thread;
+  lHandle.Dispose;
   try
     if not aThread.fTerminated then begin
       try
+        Utilities.RegisterThread;
         aThread.Execute;
       except
         on E: Exception do
           aThread.fCallStack := E.Message;
       end;
+      Utilities.UnregisterThread;
     end;
   finally
     aThread.fDone := True;
@@ -234,10 +243,10 @@ begin
     {$IFDEF WINDOWS}
     var lStart: rtl.PTHREAD_START_ROUTINE := @WindowsThreadProc;
 
-    self.fThread := rtl.CreateThread(nil,0, lStart, InternalCalls.Cast(self), 0, @fThreadID);
+    self.fThread := rtl.CreateThread(nil,0, lStart, ^Void(GCHandle.Allocate(self).Handle), 0, @fThreadID);
     if self.fThread = nil then RaiseError("Problem with creating thread");
     {$ELSE}
-    rtl.pthread_create(@fthread, nil, @ThreadProc, InternalCalls.Cast(self));
+    rtl.pthread_create(@fthread, nil, @ThreadProc, ^Void(GCHandle.Allocate(self).Handle));
     {$ENDIF}
   end;
 end;

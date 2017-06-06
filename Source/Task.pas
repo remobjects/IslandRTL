@@ -249,6 +249,7 @@ end;
 [CallingConvention(CallingConvention.Stdcall)]
 method ThreadCallBack(Instance: rtl.PTP_CALLBACK_INSTANCE; &Param: rtl.PVOID; Work: rtl.PTP_WORK);
 begin
+  var lShouldUnregister := Utilities.RegisterThread;
   Instance := nil;
   Work := nil;
   var lHandle := new GCHandle(NativeInt(&Param));
@@ -256,6 +257,8 @@ begin
   GCHandles.Free(NativeInt(&Param));
   obj.fCallback(obj.fState);
   obj := nil;
+  if lShouldUnregister then 
+    Utilities.UnregisterThread;
 end;
 {$ENDIF}
 
