@@ -725,7 +725,7 @@ begin
     b[i] := u and $ff;
     b[i+1] := (u shr 8) and $ff;
     b[i+2] := (u shr 16) and $ff;
-    b[i+3] := (u shr 25) and $ff;
+    b[i+3] := (u shr 24) and $ff;
   end;
   result := TextConvert.UTF32LEToString(b);
   {$ELSE}
@@ -746,7 +746,7 @@ begin
     b[i] := u and $ff;
     b[i+1] := (u shr 8) and $ff;
     b[i+2] := (u shr 16) and $ff;
-    b[i+3] := (u shr 25) and $ff;
+    b[i+3] := (u shr 24) and $ff;
   end;
   result := TextConvert.UTF32LEToString(b);
   {$ELSE}

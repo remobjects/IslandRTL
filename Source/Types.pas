@@ -123,7 +123,7 @@ begin
   b[0] := u and $ff;
   b[1] := (u shr 8) and $ff;
   b[2] := (u shr 16) and $ff;
-  b[3] := (u shr 25) and $ff;
+  b[3] := (u shr 24) and $ff;
   result := TextConvert.UTF32LEToString(b)[0];
   {$ELSE}
   var str := String.FromChar(Self).ToLower(aInvariant);
@@ -147,7 +147,7 @@ begin
   b[0] := u and $ff;
   b[1] := (u shr 8) and $ff;
   b[2] := (u shr 16) and $ff;
-  b[3] := (u shr 25) and $ff;
+  b[3] := (u shr 24) and $ff;
   result := TextConvert.UTF32LEToString(b)[0];
   {$ELSE}
   var str := String.FromChar(Self).ToUpper(aInvariant);
