@@ -10,5 +10,6 @@
   </PropertyGroup>
   <ItemGroup>
     <Compile Include="$(MSBuildThisFileDirectory)String_Trim.pas" />
+    <Compile Include="$(MSBuildThisFileDirectory)Math_Power.pas" />    
   </ItemGroup>
 </Project>
