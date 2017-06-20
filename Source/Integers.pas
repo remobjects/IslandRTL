@@ -242,7 +242,7 @@ type
 
   Int64 = public record
   private
-    class method DoTryParse(s: String; out Value: Int64; aRaiseOverflowException: Boolean):Boolean;
+    class method DoTryParse(s: String; out Value: Int64; aRaiseOverflowException: Boolean):Boolean; inline;
     begin
       exit Convert.TryParseInt64(s,out Value, aRaiseOverflowException);
     end;
@@ -275,7 +275,7 @@ type
 
   UInt64 = public record
   private
-    class method DoTryParse(s: String; out Value: UInt64; aRaiseOverflowException: Boolean):Boolean;
+    class method DoTryParse(s: String; out Value: UInt64; aRaiseOverflowException: Boolean):Boolean;inline;
     begin
       exit Convert.TryParseUInt64(s,out Value, aRaiseOverflowException);
     end;

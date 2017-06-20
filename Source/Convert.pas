@@ -3,6 +3,7 @@
 type
   Convert = public static class
   private
+    class const DecimalChar: Char = '.';
     method ParseString(s:String; out aSign: Boolean; out arr: array of Byte): Boolean;
     begin
       if String.IsNullOrEmpty(s) then exit False;
@@ -154,6 +155,113 @@ type
         arr[i] := '0';
       exit String.FromPChar(@arr[0],aDigits);
     end;
+
+    method TryParseDouble(s: String; out Value: Double; aRaiseOverflowException: Boolean):Boolean;
+    begin
+      //[ws][sign]integral-digits[.[fractional-digits]][e[sign]exponential-digits][ws] 
+
+      if String.IsNullOrEmpty(s) then exit false; //empty string
+      s := s.Trim;
+      if String.IsNullOrEmpty(s) then exit false; //empty string
+
+      var sdot := s.IndexOf(DecimalChar);
+      var se := s.IndexOf('e');
+      if se = -1 then se := s.IndexOf('E');
+      if (se <> -1) and (sdot <> -1) and (sdot>se) then exit false;
+      var lSign: Boolean;
+      var arr: array of Byte;
+      var s1 := '';
+      if sdot <> -1 then begin
+        s1 := s.Substring(0,sdot);
+      end
+      else if se <> -1 then begin
+        s1 := s.Substring(0,se);
+      end
+      else begin
+        s1 := s;
+      end;
+      if String.IsNullOrEmpty(s1) then exit false;
+      if not ParseString(s1, out lSign, out arr) then exit false;
+      var sValue:Double := arr[0];
+      for i:Integer := 1 to arr.Length-1 do begin
+        if (sValue> Double.MaxValue) or (sValue*10 > (Double.MaxValue- arr[i])) then begin
+          if aRaiseOverflowException then
+            RaiseOverflowException
+          else
+            exit False;
+        end;
+        sValue := sValue*10+arr[i];
+      end;
+      
+      var arr1: array of Byte;
+      if (sdot <> -1) then begin
+        if (se <> -1) then begin                 
+          s1 := s.Substring(sdot+1,(se-sdot)-1);
+        end
+        else begin
+          s1 := s.Substring(sdot+1);        
+        end;
+        // xxx.xxx
+        // xxx.
+        if not String.IsNullOrEmpty(s1) then begin
+          var lsign1: Boolean;
+          if not ParseString(s1, out lsign1, out arr1) then exit false;        
+          if lsign1 then exit false;
+          var sfract: Double:=arr1[arr1.Length-1];
+          for i:Integer := arr1.Length-2 downto 0 do begin
+            sfract := sfract*0.1+arr1[i];
+          end;
+          sValue := sValue+sfract*0.1;
+        end;
+      end;
+      if se <> -1 then begin
+        s1 := s.Substring(se+1);
+        var exp: Int64;
+        if not TryParseInt64(s1,out exp,aRaiseOverflowException) then exit false;
+        //xxxx.xxx
+        var lexp := exp+arr.Count-1;
+        // 0.xxxxx
+        if (arr.Count = 1) and (arr[0] = 0) and (sdot<>-1) then begin
+          for i:Integer:=0 to arr1.Count-1 do
+            if arr1[i] = 0 then 
+              dec(lexp)
+            else 
+              break;
+        end;
+        if (lexp > 308)or (lexp<-308) then 
+          if aRaiseOverflowException then 
+            RaiseOverflowException
+          else 
+            exit false;
+        if lexp = 308 then begin
+          sValue := sValue *  Math.Pow(10, exp-1);
+          if sValue > Double.MaxValue /10 then begin
+            if aRaiseOverflowException then 
+              RaiseOverflowException
+            else 
+              exit false;
+          end;
+          sValue := sValue*10;
+        end
+        else if lexp = -308 then begin
+          sValue := sValue *  Math.Pow(10, exp+1);
+          if -sValue < Double.MinValue *10 then begin
+            if aRaiseOverflowException then 
+              RaiseOverflowException
+            else 
+              exit false;
+          end;
+          sValue := sValue*0.1;
+        end
+        else begin
+          sValue := sValue *  Math.Pow(10, exp);
+        end;
+      end;
+      if lSign then sValue := -sValue;  
+      Value := sValue;
+      exit True;
+    end;
+
   end;
 
 end.

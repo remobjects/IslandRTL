@@ -9,7 +9,8 @@
     <Import_RootNamespace>Island.Tests.Shared</Import_RootNamespace>
   </PropertyGroup>
   <ItemGroup>
+    <Compile Include="$(MSBuildThisFileDirectory)Double_Parse.pas" />
     <Compile Include="$(MSBuildThisFileDirectory)String_Trim.pas" />
-    <Compile Include="$(MSBuildThisFileDirectory)Math_Power.pas" />    
+    <Compile Include="$(MSBuildThisFileDirectory)Math_Power.pas" />
   </ItemGroup>
 </Project>

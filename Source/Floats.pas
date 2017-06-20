@@ -5,6 +5,7 @@ interface
 type
   Single = public record
   private
+    class method DoTryParse(s: String; out Value: Single; aRaiseOverflowException: Boolean):Boolean;
     const SignificantBitmask: UInt32      = $80000000;
     const ExponentBitmask: UInt32         = $7F800000;
     const FractionBitmask: UInt32         = $007FFFFF;
@@ -18,6 +19,8 @@ type
     method ToString: String; override;
     method GetHashCode: Integer; override;
     method &Equals(obj: Object): Boolean; override;
+    class method Parse(s: String): Single;
+    class method TryParse(s: String; out Value: Single): Boolean;
 
     class method MinValue: Single;
     class method MaxValue: Single;
@@ -32,6 +35,8 @@ type
   end;
 
   Double = public record
+  private
+    class method DoTryParse(s: String; out Value: Double; aRaiseOverflowException: Boolean):Boolean; inline;
   assembly
     const SignificantBitmask: UInt64      = $8000000000000000;
     const ExponentBitmask: UInt64         = $7FF0000000000000;
@@ -52,6 +57,8 @@ type
   public
     method ToString: String; override;
     method ToString(aNumberOfDecimalDigits: UInt32): String;
+    class method Parse(s: String): Double;
+    class method TryParse(s: String; out Value: Double): Boolean;
     method GetHashCode: Integer; override;
     method &Equals(obj: Object): Boolean; override;
 
@@ -158,6 +165,21 @@ begin
   exit FloatToString.ConvertToDecimal(self, aNumberOfDecimalDigits);
 end;
 
+class method Double.Parse(s: String): Double;
+begin
+  if not DoTryParse(s, out result, true) then Convert.RaiseFormatException;
+end;
+
+class method Double.TryParse(s: String; out Value: Double): Boolean;
+begin
+  exit DoTryParse(s, out Value, false);
+end;
+
+class method Double.DoTryParse(s: String; out Value: Double; aRaiseOverflowException: Boolean): Boolean;
+begin
+  exit Convert.TryParseDouble(s, out Value, aRaiseOverflowException);
+end;
+
 method Single.ToString: String;
 begin
   exit FloatToString.Convert(self,8);
@@ -232,11 +254,40 @@ begin
     exit False;
 end;
 
+class method Single.Parse(s: String): Single;
+begin
+  if not DoTryParse(s, out result, true) then Convert.RaiseFormatException;
+end;
+
+class method Single.TryParse(s: String; out Value: Single): Boolean;
+begin
+  exit DoTryParse(s, out Value, false);
+end;
+
+class method Single.DoTryParse(s: String; out Value: Single; aRaiseOverflowException: Boolean): Boolean;
+begin
+  var sValue : Double;
+  if not Convert.TryParseDouble(s,out sValue, aRaiseOverflowException) then exit False;
+  if sValue >= 0 then begin
+    if sValue > MaxValue then
+      if aRaiseOverflowException then Convert.RaiseOverflowException else exit False;
+  end
+  else begin
+    if sValue < MinValue then
+      if aRaiseOverflowException then Convert.RaiseOverflowException else exit False;
+  end;
+  Value := sValue;
+  exit True;
+end;
+
 class method FloatToString.Convert(aValue: Double; aPrecision: Integer): String;
 const
   digits: not nullable String = '0123456789';
 begin
   if aValue = 0 then exit '0';
+  if Double.IsNaN(aValue) then exit 'NaN';
+  if Double.IsNegativeInfinity(aValue) then exit '-Infinity';
+  if Double.IsPositiveInfinity(aValue) then exit 'Infinity';
 
   var data: array[0..maxpos] of Byte;
   var pos := 0;
