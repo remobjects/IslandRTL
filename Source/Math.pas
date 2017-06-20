@@ -390,15 +390,23 @@ end;
 
 class method Math.Pow(x: Double; y: Integer): Double;
 begin
-  result := x;
-  for i: Integer := 1 to y-1 do
-    result := result*x;
+  if y = 0 then exit 1;
+  if y > 0 then begin
+    result := x;
+    for i: Integer := 1 to y-1 do
+      result := result*x;
+  end
+  else begin
+    result := 1;
+    for i: Integer := 0 downto y+1 do
+      result := result / x; 
+  end;
   exit result;
 end;
 
 class method Math.Pow(x, y: Double): Double;
 begin
-  if (y>0) and (y.IsInt) then
+  if  (y.IsInt) then
     exit Pow(x, Integer(y))
   else
     exit Exp(y * Log(x));
