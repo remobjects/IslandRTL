@@ -32,7 +32,9 @@ type
 
     const ElementsExceptionCode: UInt64 = $E042881952454d4f;
 
+    {$IFNDEF ANDROID}
     [SymbolName('atexit')]
+    {$ENDIF}
     class method atexit(func: atexitfunc);
     [SymbolName('ElementsBeginCatch')]
     method ElementsBeginCatch(obj: ^Void): ^Void;
