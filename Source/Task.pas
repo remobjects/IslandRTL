@@ -3,103 +3,476 @@
 interface
 
 type
-  TaskObject = abstract class
+  TaskState = public enum(&New, AwaitingStart, Started, Completed, Failed);
+  TaskAction =  abstract class
   public
-    constructor; empty;
-    constructor(aState: Object);
-    method Execute; abstract;
-    property State: Object;
+    method Run(aTask: Task); abstract;
   end;
 
-  TaskObject_Action = class(TaskObject)
-  private
-    fIn: Action;
+  TaskAction_Action = class(TaskAction)
   public
-    constructor (aIn: Action);
-    method Execute; override;
+    property Action: Action; readonly;
+     constructor(aAct: Action);
+     begin
+       Action := aAct;
+     end;
+     method Run(aTask: Task); override;
+     begin
+       Action();
+    end;
   end;
 
-  TaskObject_Action1 = class(TaskObject)
-  private
-    fIn: Action<Object>;
+  TaskAction_ActionObject = class(TaskAction)
   public
-    constructor (aIn: Action<Object>; aState: Object);
-    method Execute; override;
+    property Action: Action<Object>; readonly;
+    property Object: Object; readonly;
+    constructor(aAct: Action<Object>; aObj: Object);
+    begin
+      Action := aAct;
+      Object := aObj;
+    end;
+    method Run(aTask: Task); override;
+    begin
+      Action(Object);
+    end;
   end;
 
-  TaskObject_Action2 = class(TaskObject)
-  private
-    fIn: Action<Task,Object>;
-    fTask: Task;
+  TaskAction_ActionTaskObject = class(TaskAction)
   public
-    constructor (aIn: Action<Task,Object>; aTask: Task; aState: Object);
-    method Execute; override;
+    property Action: Action<Task, Object>; readonly;
+    property Object: Object; readonly;
+    property Prev: Task; readonly;
+    constructor(aPrev: Task; aAct: Action<Task, Object>; aObj: Object);
+    begin
+      Prev := aPrev;
+      Action := aAct;
+      Object := aObj;
+    end;
+    method Run(aTask: Task); override;
+    begin
+      Action(Prev, Object);
+    end;
   end;
 
-  TaskObject_Func<T> = abstract class(TaskObject)
+  TaskAction_ActionTask = class(TaskAction)
   public
-    method Execute; override;
-    method Execute2: T; abstract;
-    property &Result: T;
+    property Action: Action<Task>; readonly;
+    property Prev: Task; readonly;
+    constructor(aPrev: Task; aAct: Action<Task>);
+    begin
+      Prev := aPrev;
+      Action := aAct;
+    end;
+    method Run(aTask: Task); override;
+    begin
+      Action(Prev);
+    end;
   end;
 
-  TaskObject_Func1<T> = class(TaskObject_Func<T>)
-  private
-    fIn: Func<T>;
+  TaskAction_ActionTaskObject<T> = class(TaskAction)
   public
-    constructor(aIn: Func<T>);
-    method Execute2: T; override;
+    property Action: Func<Task, Object, T>; readonly;
+    property Object: Object; readonly;
+    property Prev: Task; readonly;
+    constructor(aPrev: Task; aAct: Func<Task, Object, T>; aObj: Object);
+    begin
+      Prev := aPrev;
+      Action := aAct;
+      Object := aObj;
+    end;
+    method Run(aTask: Task); override;
+    begin
+      Task<T>(aTask).fResult := Action(Prev, Object);
+    end;
   end;
 
-  TaskObject_Func2<T> = class(TaskObject_Func<T>)
-  private
-    fIn: Func<Object, T>;
+  TaskAction_ActionTask<T> = class(TaskAction)
   public
-    constructor(aIn: Func<Object,T>; aState: Object);
-    method Execute2: T; override;
+    property Action: Func<Task, T>; readonly;
+    property Prev: Task; readonly;
+    constructor(aPrev: Task; aAct: Func<Task, T>);
+    begin
+      Prev := aPrev;
+      Action := aAct;
+    end;
+    method Run(aTask: Task); override;
+    begin
+      Task<T>(aTask).fResult := Action(Prev);
+    end;
   end;
 
-  TaskObject_Func3<T> = class(TaskObject_Func<T>)
-  private
-    fIn: Func<Task, Object, T>;
-    fTask: Task;
+  TaskCompletion = abstract class
   public
-    constructor(aIn: Func<Task, Object, T>; aTask: Task; aState: Object);
-    method Execute2: T; override;
+    method Complete(aOwner: Task); abstract;
+    Next: TaskCompletion;
   end;
 
+  TaskCompletionTask = class(TaskCompletion)
+  public
+     Action: Task;
+     method Complete(aOwner: Task); override;
+     begin
+       Action.DoEnqueue;
+     end;
+  end;
+
+  TaskCompletionWaiter = class(TaskCompletion)
+  public
+     Monitor: EventWaitHandle;
+     method Complete(aOwner: Task); override;
+     begin
+       Monitor:&Set;
+     end;
+  end;
+
+   // TODO: some form of list of completions, anything waiting can create a lock, add itself to the list
   Task = public class
-  private
-    fException: Exception := nil;
-    fIsFaulted: Boolean := False;
-    fIsCompleted: Boolean := False;
-    fTaskObject: TaskObject := nil;
-    fStarted: Boolean := False;
-    fContinueList: List<Task> := new List<Task>;
-    class method Execute(aState: Object);
-  unit
+  assembly
+    fState: TaskState;
+    fLock: Integer;
+    fCompletionList: TaskCompletion;
+    fAction: TaskAction;
+    fException: Exception;
+
+    method get_Exception:  Exception;
+    begin
+      Wait;
+      exit fException;
+    end;
+
+    method cb(aObj:  Object);
+    begin
+      DoRun;
+    end;
+
+    method DoEnqueue;
+    begin
+      ThreadPool.QueueUserWorkItem(@cb, nil);
+    end;
+
+    method DoRun; virtual;
+    begin
+      try
+        fAction.Run(self);
+      except
+        on e: Exception do begin
+          fException := e;
+          Utilities.SpinLockEnter(var fLock);
+          fState := TaskState.Failed;
+          var lCompl := fCompletionList;
+          fCompletionList := nil;
+          Utilities.SpinLockExit(var fLock);
+          while lCompl <> nil do begin
+            lCompl.Complete(self);
+            lCompl := lCompl.Next;
+          end;
+          exit;
+        end;
+      end;
+      Utilities.SpinLockEnter(var fLock);
+      fState := TaskState.Completed;
+      var lCompl := fCompletionList;
+      fCompletionList := nil;
+      Utilities.SpinLockExit(var fLock);
+      while lCompl <> nil do begin
+        lCompl.Complete(self);
+        lCompl := lCompl.Next;
+      end;
+    end;
     constructor();empty;
-    method Init(aTaskObject : TaskObject);
   public
     constructor(aIn: Action);
+    begin
+      fState := TaskState.New;
+      fAction := new TaskAction_Action(aIn);
+    end;
+
     constructor(aIn: Action<Object>; aState: Object);
+    begin
+      fState := TaskState.New;
+      fAction := new TaskAction_ActionObject(aIn, aState);
+    end;
+
     method ContinueWith(aAction: Action<Task>): Task;
-    method ContinueWith(aAction: Action<Task,Object>; aState: Object := nil): Task;
-    method ContinueWith<T>(aAction: Func<Task, T>): Task1<T>;
-    method ContinueWith<T>(aAction: Func<Task, Object, T>; aState: Object := nil): Task1<T>;
+    begin
+      result := new Task(fState := TaskState.AwaitingStart, fAction := new TaskAction_ActionTask(self, aAction));
+      if fState in [TaskState.Failed, TaskState.Completed] then begin
+        result.DoEnqueue;
+        exit;
+      end;
+
+      var lCompl := new TaskCompletionTask(Action := Result);
+      Utilities.SpinLockEnter(var fLock);
+      if fState in [TaskState.Failed, TaskState.Completed] then begin
+        Utilities.SpinLockExit(var fLock);
+        result.DoEnqueue;
+        exit;
+      end;
+      lCompl.Next := fCompletionList;
+      fCompletionList := lCompl;
+      Utilities.SpinLockExit(var fLock);
+    end;
+
+    method ContinueWith(aAction: Action<Task,Object>; aState: Object): Task;
+    begin
+      result := new Task(fState := TaskState.AwaitingStart, fAction := new TaskAction_ActionTaskObject(self, aAction, aState));
+      if fState in [TaskState.Failed, TaskState.Completed] then begin
+        result.DoEnqueue;
+        exit;
+      end;
+
+      var lCompl := new TaskCompletionTask(Action := Result);
+      Utilities.SpinLockEnter(var fLock);
+      if fState in [TaskState.Failed, TaskState.Completed] then begin
+        Utilities.SpinLockExit(var fLock);
+        result.DoEnqueue;
+        exit;
+      end;
+      lCompl.Next := fCompletionList;
+      fCompletionList := lCompl;
+      Utilities.SpinLockExit(var fLock);
+    end;
+
+
+    method ContinueWith<T>(aAction: Func<Task, T>): Task<T>;
+    begin
+      result := new Task<T>(fState := TaskState.AwaitingStart, fAction := new TaskAction_ActionTask<T>(self, aAction));
+      if fState in [TaskState.Failed, TaskState.Completed] then begin
+        result.DoEnqueue;
+        exit;
+      end;
+
+      var lCompl := new TaskCompletionTask(Action := Result);
+      Utilities.SpinLockEnter(var fLock);
+      if fState in [TaskState.Failed, TaskState.Completed] then begin
+        Utilities.SpinLockExit(var fLock);
+        result.DoEnqueue;
+        exit;
+      end;
+      lCompl.Next := fCompletionList;
+      fCompletionList := lCompl;
+      Utilities.SpinLockExit(var fLock);
+    end;
+
+    method ContinueWith<T>(aAction: Func<Task, Object, T>; aState: Object): Task<T>;
+    begin
+      result := new Task<T>(fState := TaskState.AwaitingStart, fAction := new TaskAction_ActionTaskObject<T>(self, aAction, aState));
+      if fState in [TaskState.Failed, TaskState.Completed] then begin
+        result.DoEnqueue;
+        exit;
+      end;
+
+      var lCompl := new TaskCompletionTask(Action := Result);
+      Utilities.SpinLockEnter(var fLock);
+      if fState in [TaskState.Failed, TaskState.Completed] then begin
+        Utilities.SpinLockExit(var fLock);
+        result.DoEnqueue;
+        exit;
+      end;
+      lCompl.Next := fCompletionList;
+      fCompletionList := lCompl;
+      Utilities.SpinLockExit(var fLock);
+    end;
+
     class method Run(aIn: Action): Task;
-    class method Run(aIn: Action<Task>): Task;
-    class method Run<T>(aIn: Func<T>): Task1<T>;
-    class method Run<T>(aIn: Func<Task1<T>,T>): Task1<T>;
-    property Exception: Exception read fException;
-    property AsyncState: Object read fTaskObject.State;
-    property IsFaulted: Boolean read fIsFaulted;
-    property IsCompleted: Boolean read fIsCompleted;
+    begin
+      result := new Task(aIn);
+      result.Start;
+    end;
+
+    class method Run(aIn: Action<Object>; aValue: Object): Task;
+    begin
+      result := new Task(aIn, aValue);
+      result.Start;
+    end;
+
+    class method Run<T>(aIn: Func<Object, T>; aValue: Object): Task<T>;
+    begin
+      result := new Task<T>(aIn, aValue);
+    end;
+
+
+    property Exception: Exception read get_Exception;
+    property IsFaulted: Boolean read fState = TaskState.Failed;
+    property IsCompleted: Boolean read fState = TaskState.Completed;
+    property IsStarted: Boolean read fState = TaskState.Started;
+    property State: TaskState read fState;
     //method &Await(aCompletion: IAwaitCompletion): Boolean; external;
 
     method Wait;
+    begin
+      if fState in [TaskState.Failed, TaskState.Completed] then exit;
+
+      var lCompl := new TaskCompletionWaiter(Monitor := new EventWaitHandle(true, false));
+      Utilities.SpinLockEnter(var fLock);
+      if fState in [TaskState.Failed, TaskState.Completed] then begin
+        Utilities.SpinLockExit(var fLock);
+        exit;
+      end;
+      lCompl.Next := fCompletionList;
+      fCompletionList := lCompl;
+      Utilities.SpinLockExit(var fLock);
+
+      lCompl.Monitor.Wait;
+      var lMonitor := lCompl.Monitor;
+      lCompl.Monitor := nil;
+
+      lMonitor.Dispose;
+    end;
+
     method Wait(aTimeoutMSec: Integer): Boolean;
+    begin
+      if fState in [TaskState.Failed, TaskState.Completed] then exit;
+
+      var lCompl := new TaskCompletionWaiter(Monitor := new EventWaitHandle(true, false));
+      Utilities.SpinLockEnter(var fLock);
+      if fState in [TaskState.Failed, TaskState.Completed] then begin
+        Utilities.SpinLockExit(var fLock);
+        exit;
+      end;
+      lCompl.Next := fCompletionList;
+      fCompletionList := lCompl;
+      Utilities.SpinLockExit(var fLock);
+
+      lCompl.Monitor.Wait(aTimeoutMSec);
+      var lMonitor := lCompl.Monitor;
+      lCompl.Monitor := nil;
+      result := fState in [TaskState.Failed, TaskState.Completed];
+      if not result then Thread.Yield;
+      lMonitor.Dispose;
+    end;
+
     method Start();
+    begin
+      Utilities.SpinLockEnter(var fLock);
+      var lState := fState;
+      if lState = TaskState.New then fState := TaskState.Started;
+      Utilities.SpinLockExit(var fLock);
+      if lState <> TaskState.New then
+        raise new InvalidStateException('Can only start tasks in "New" state');
+
+      DoEnqueue;
+    end;
+  end;
+
+  TaskAction_Action<T> = class(TaskAction)
+  public
+    property Action: Func<T>; readonly;
+    constructor(aAct: Func<T>);
+    begin
+      Action := aAct;
+    end;
+    method Run(aTask: Task); override;
+    begin
+      Task<T>(aTask).fResult := Action();
+    end;
+  end;
+
+  TaskAction_ActionObject<T> = class(TaskAction)
+  public
+    property Action: Func<Object, T>; readonly;
+    property Object: Object; readonly;
+    constructor(aAct: Func<Object, T>; aObj: Object);
+    begin
+      Action := aAct;
+      Object := aObj;
+    end;
+    method Run(aTask: Task); override;
+    begin
+      Task<T>(aTask).fResult :=Action(Object);
+    end;
+  end;
+
+  Task<T> = public class(Task)
+  assembly
+    fResult: T;
+
+    method get_Result:  T;
+    begin
+      Wait;
+      if State = TaskState.Failed then raise Exception;
+      exit fResult;
+    end;
+
+    constructor;
+    begin
+    end;
+
+  public
+
+    constructor(aIn: Func<T>);
+    begin
+      fState := TaskState.New;
+      fAction := new TaskAction_Action<T>(aIn);
+    end;
+
+    constructor(aIn: Func<Object, T>; aState: Object := nil);
+    begin
+      fState := TaskState.New;
+      fAction := new TaskAction_ActionObject<T>(aIn, aState);
+    end;
+
+    property &Result: T read get_Result;
+  end;
+
+
+  TaskCompletionSourceTask<T> = class(Task<T>)
+  assembly
+    method DoRun; override; empty;
+  end;
+
+  IAwaitCompletion = public interface
+    method moveNext(aState: Object);
+  end;
+
+  TaskCompletionSource<T> = public class
+  private
+    fTask: Task<T>;
+  public
+
+    constructor(aState: Object := nil);
+    begin
+      fTask := new TaskCompletionSourceTask<T>();
+      fTask.fState := TaskState.AwaitingStart;
+    end;
+
+    method SetException(ex: Exception);
+    begin
+      Utilities.SpinLockEnter(var fTask.fLock);
+      if fTask.fState <> TaskState.AwaitingStart then begin
+        Utilities.SpinLockExit(var fTask.fLock);
+        raise new InvalidStateException('Cannot set result for already set task completion');
+      end;
+      fTask.fException := ex;
+      fTask.fState := TaskState.Failed;
+      var lCompl := fTask.fCompletionList;
+      fTask.fCompletionList := nil;
+      Utilities.SpinLockExit(var fTask.fLock);
+      while lCompl <> nil do begin
+        lCompl.Complete(fTask);
+        lCompl := lCompl.Next;
+      end;
+    end;
+
+    method SetResult(val: T);
+    begin
+      Utilities.SpinLockEnter(var fTask.fLock);
+      if fTask.fState <> TaskState.AwaitingStart then begin
+        Utilities.SpinLockExit(var fTask.fLock);
+        raise new InvalidStateException('Cannot set result for already set task completion');
+      end;
+      fTask.fResult := val;
+      fTask.fState := TaskState.Completed;
+      var lCompl := fTask.fCompletionList;
+      fTask.fCompletionList := nil;
+      Utilities.SpinLockExit(var fTask.fLock);
+      while lCompl <> nil do begin
+        lCompl.Complete(fTask);
+        lCompl := lCompl.Next;
+      end;
+    end;
+
+    property Task: Task<T> read fTask;
   end;
 
   WaitCallback = Action<Object>;
@@ -133,116 +506,9 @@ type
     class property MaxThreads: UInt32 read {$IFDEF WINDOWS}fMaxThreads{$ELSE}fThreadPool.MaxThreads{$ENDIF} write SetMaxThreads;
   end;
 
-  Task1<T> = public class(Task)
-  private
-    fTaskObject: TaskObject_Func<T>;
-  unit
-    constructor();
-    method Init2(aTaskObject : TaskObject_Func<T>);
-  public
-    constructor(aIn: Func<T>);
-    constructor(aIn: Func<Object, T>; aState: Object := nil);
-    property &Result: T read fTaskObject.Result;
-  end;
 
-{
-  IAwaitCompletion = public interface
-    method moveNext(aState: Object);
-  end;
-
-
-  TaskCompletionSource<T> = public class
-  private
-    method get_Task: Task1<T>;external;
-  public
-    constructor(aState: Object := nil);external;
-
-    method SetException(ex: Exception);external;
-    method SetResult(val: T);external;
-
-    property Task: Task1<T> read get_Task;
-  end;
-}
 
 implementation
-
-constructor TaskObject(aState: Object);
-begin
-  State := aState;
-end;
-
-constructor TaskObject_Action(aIn: Action);
-begin
-  inherited constructor(nil);
-  fIn := aIn;
-end;
-
-method TaskObject_Action.Execute;
-begin
-  fIn();
-end;
-
-constructor TaskObject_Action1(aIn: Action<Object>; aState: Object);
-begin
-  inherited constructor(aState);
-  fIn := aIn;
-end;
-
-method TaskObject_Action1.Execute;
-begin
-  fIn(State);
-end;
-
-constructor TaskObject_Action2(aIn: Action<Task,Object>; aTask: Task; aState: Object);
-begin
-  inherited constructor(aState);
-  fIn := aIn;
-  fTask := aTask;
-end;
-
-method TaskObject_Action2.Execute;
-begin
-  fIn(fTask, State);
-end;
-
-method TaskObject_Func<T>.Execute;
-begin
-  &Result := Execute2();
-end;
-
-constructor TaskObject_Func1<T>(aIn: Func<T>);
-begin
-  inherited constructor;
-  fIn := aIn;
-end;
-
-method TaskObject_Func1<T>.Execute2: T;
-begin
-  exit fIn();
-end;
-
-constructor TaskObject_Func2<T>(aIn: Func<Object,T>; aState: Object);
-begin
-  inherited constructor(aState);
-  fIn := aIn;
-end;
-
-method TaskObject_Func2<T>.Execute2: T;
-begin
-  exit fIn(State);
-end;
-
-constructor TaskObject_Func3<T>(aIn: Func<Task,Object,T>; aTask: Task; aState: Object);
-begin
-  inherited constructor(aState);
-  fIn := aIn;
-  fTask := aTask;
-end;
-
-method TaskObject_Func3<T>.Execute2: T;
-begin
-  exit fIn(fTask, State);
-end;
 
 
 {$IFDEF WINDOWS}
@@ -257,149 +523,11 @@ begin
   GCHandles.Free(NativeInt(&Param));
   obj.fCallback(obj.fState);
   obj := nil;
-  if lShouldUnregister then 
+  if lShouldUnregister then
     Utilities.UnregisterThread;
 end;
 {$ENDIF}
 
-constructor Task(aIn: Action<Object>; aState: Object);
-begin
-  Init(new TaskObject_Action1(aIn, aState));
-end;
-
-method Task.Start;
-begin
-  ThreadPool.QueueUserWorkItem(@Execute,Self);
-end;
-
-class method Task.Execute(aState: Object);
-begin
-  var lTask := aState as Task;
-  if not lTask.fStarted then begin
-    lTask.fStarted:= True;
-//    fIsFaulted := False;
-//    fException := nil;
-//    fIsCompleted := False;
-    try
-      try
-        lTask.fTaskObject.Execute();
-      except
-        on E: Exception do begin
-          lTask.fIsFaulted := True;
-          lTask.fException := E;
-        end;
-      end;
-    finally
-      lTask.fIsCompleted := True;
-      for i: Integer := 0 to lTask.fContinueList.Count-1 do
-        lTask.fContinueList[i].Start;
-    end;
-  end;
-end;
-
-class method Task.Run(aIn: Action): Task;
-begin
-  result := new Task(aIn);
-  result.Start;
-end;
-
-constructor Task(aIn: Action);
-begin
-  Init(new TaskObject_Action(aIn));
-end;
-
-class method Task.Run<T>(aIn: Func<T>): Task1<T>;
-begin
-  result := new Task1<T>(aIn);
-  result.Start;
-end;
-
-method Task.Wait;
-begin
-  if not fStarted then
-    Start()
-  else
-    while not fIsCompleted do
-      rtl.Sleep(100);
-end;
-
-method Task.Wait(aTimeoutMSec: Integer): Boolean;
-begin
-  var dx := aTimeoutMSec;
-  while dx > 0 do begin
-    if fIsCompleted then break;
-    rtl.Sleep(100);
-    dec(dx, 100);
-  end;
-  exit fIsCompleted;
-end;
-
-method Task.ContinueWith(aAction: Action<Task,Object>; aState: Object := nil): Task;
-begin
-  Result := new Task();
-  result.Init(new TaskObject_Action2(aAction, Self, aState));
-  fContinueList.Add(Result);
-end;
-
-method Task.ContinueWith<T>(aAction: Func<Task,T>): Task1<T>;
-begin
-  Result := new Task1<T>(aAction, Self);
-  fContinueList.Add(Result);
-end;
-
-method Task.Init(aTaskObject: TaskObject);
-begin
-  fTaskObject := aTaskObject;
-end;
-
-method Task.ContinueWith(aAction: Action<Task>): Task;
-begin
-  Result := new Task();
-  result.Init(new TaskObject_Action1(aAction, Self));
-  fContinueList.Add(Result);
-end;
-
-method Task.ContinueWith<T>(aAction: Func<Task,Object,T>; aState: Object): Task1<T>;
-begin
-  Result := new Task1<T>();
-  result.Init2(new TaskObject_Func3<T>(aAction, Self, aState));
-  fContinueList.Add(Result);
-end;
-
-class method Task.Run(aIn: Action<Task>): Task;
-begin
-  result := new Task();
-  result.Init(new TaskObject_Action1(aIn, result));
-  result.Start;
-end;
-
-class method Task.Run<T>(aIn: Func<Task1<T>,T>): Task1<T>;
-begin
-  result := new Task1<T>;
-  result.Init2(new TaskObject_Func2<T>(aIn, result));
-  result.Start;
-end;
-
-method Task1<T>.Init2(aTaskObject: TaskObject_Func<T>);
-begin
-  Init(aTaskObject);
-  fTaskObject := aTaskObject;
-end;
-
-constructor Task1<T>(aIn: Func<T>);
-begin
-  Init2(new TaskObject_Func1<T>(aIn));
-end;
-
-constructor Task1<T>(aIn: Func<Object, T>; aState: Object := nil);
-begin
-  Init2(new TaskObject_Func2<T>(aIn, aState));
-end;
-
-constructor Task1<T>;
-begin
-  inherited constructor();
-end;
 
 constructor ThreadPoolCallback(aCallback: WaitCallback; State: Object);
 begin
@@ -422,7 +550,7 @@ begin
   rtl.SubmitThreadpoolWork(work);
 {$ELSE}
   fThreadPool.Queue(new ThreadPoolCallback(Callback, State));
-{$ENDIF}  
+{$ENDIF}
 end;
 
 
@@ -436,7 +564,7 @@ begin
   end;
 {$ELSE}
   fThreadPool.MinThreads := Value;
-{$ENDIF}  
+{$ENDIF}
 end;
 
 class method ThreadPool.SetMaxThreads(Value: UInt32);
@@ -448,7 +576,7 @@ begin
   end;
   {$ELSE}
   fThreadPool.MaxThreads := Value;
-{$ENDIF}  
+{$ENDIF}
 end;
 
 constructor ThreadPool;
@@ -464,7 +592,7 @@ begin
   rtl.SetThreadpoolCallbackPool(@pcbe, fThreadPool);
 {$ELSE}
   fThreadPool := new ManagedThreadPool;
-{$ENDIF}  
+{$ENDIF}
 end;
 
 end.

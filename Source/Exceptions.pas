@@ -108,4 +108,7 @@ type
   IndexOutOfRangeException = public class(Exception)
   end;
 
+  InvalidStateException = public class(Exception)
+  end;
+
 end.
