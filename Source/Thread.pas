@@ -67,7 +67,7 @@ type
   WaitHandle = public abstract class(IDisposable)
   protected
     fHandle: rtl.HANDLE;
-  protected
+  public
     constructor(aHandle: rtl.HANDLE);
 
     method Wait(aTimeMS: Integer): Boolean;
