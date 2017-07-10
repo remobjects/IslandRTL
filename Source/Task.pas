@@ -289,6 +289,7 @@ type
     class method Run<T>(aIn: Func<Object, T>; aValue: Object): Task<T>;
     begin
       result := new Task<T>(aIn, aValue);
+      result.Start;
     end;
 
 
