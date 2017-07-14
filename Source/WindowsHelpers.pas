@@ -65,7 +65,7 @@ type
     class method &exit(ex: Integer);
     [SymbolName('memcpy')]
     class method memcpy(destination, source: ^Void; aNum: NativeInt): ^Void;
-    [SymbolName('memmove')]
+    [SymbolName('memmove'), Used]
     class method memmove(destination, source: ^Void; aNum: NativeInt): ^Void;
     [SymbolName('memset')]
     class method memset(ptr: ^Void; value: Integer; aNum: NativeInt): ^Void;

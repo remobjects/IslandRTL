@@ -73,7 +73,7 @@ type
     class method Min(a,b: Double): Double;
     class method Min(a,b: Integer): Integer;
     class method Min(a,b: Int64): Int64;
-    [SymbolName('fmod')]
+    [SymbolName('fmod'), Used]
     class method fmod(x, y: Double): Double;
     class method IEEERemainder(x, y: Double): Double;
     [SymbolName('acos')]
@@ -93,7 +93,7 @@ type
     [SymbolName('exp')]
     class method Exp(d: Double): Double;
     class method Exp2(d: Double):Double;
-    [SymbolName('floor')]
+    [SymbolName('floor'), Used]
     class method Floor(d: Double): Double;
     [SymbolName('log')]
     class method Log(a: Double): Double;
@@ -116,7 +116,7 @@ type
     class method Tan(d: Double): Double;
     [SymbolName('tanh')]
     class method Tanh(d:   Double): Double;
-    [SymbolName('trunc')]
+    [SymbolName('trunc'), Used]
     class method Truncate(d: Double): Double;
 
     const PI: Double = 3.1415926535897932384626433832795028841971693993751058209749445923078164062862089986280348253421170679;
