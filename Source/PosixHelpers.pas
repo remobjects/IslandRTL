@@ -94,7 +94,50 @@ type
     begin 
       exit rtl.__lxstat64(0, file, var buf);
     end;
+
 {$ELSE}
+
+
+
+    [SymbolName("__atomic_store_4")]
+    class method __atomic_store_4(var mem: Int32; val: Int32);
+    begin
+      InternalCalls.VolatileWrite(var mem, val);
+    end;
+
+   [SymbolName("__atomic_fetch_add_4")]
+   class method __atomic_fetch_add_4(var mem: Int32; val: Int32): Int32;
+   begin
+     exit InternalCalls.Add(var mem, val);
+   end;
+
+ 
+   [SymbolName("__atomic_compare_exchange_4")]
+   class method __atomic_compare_exchange_4(var mem: Int32; exp: Int32; val: Int32): Int32;
+   begin
+     exit InternalCalls.CompareExchange(var mem, val, exp);
+   end;
+
+    
+    [SymbolName("__atomic_store_8")]
+    class method __atomic_store_8(var mem: Int64; val: Int64);
+    begin
+      InternalCalls.VolatileWrite(var mem, val);
+    end;
+
+   [SymbolName("__atomic_fetch_add_8")]
+   class method __atomic_fetch_add_8(var mem: Int64; val: Int64): Int64;
+   begin
+     exit InternalCalls.Add(var mem, val);
+   end;
+
+ 
+   [SymbolName("__atomic_compare_exchange_8")]
+   class method __atomic_compare_exchange_8(var mem: Int64; exp: Int64; val: Int64): Int64;
+   begin
+    exit InternalCalls.CompareExchange(var mem, val, exp);
+   end;
+
     [SymbolName('__stack_chk_fail')]
     method __stack_chk_fail(); external;
     [SymbolName('__stack_chk_fail_local')]
