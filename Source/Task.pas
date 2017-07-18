@@ -314,31 +314,27 @@ type
     class method RunSynchronous(aIn: Action): Task;
     begin
       result := new SynchronousTask(aIn);
-      result.Start;
+      result.fState := TaskState.AwaitingStart;
     end;
 
     class method RunSynchronous(aIn: Action<Object>; aValue: Object): Task;
     begin
       result := new SynchronousTask(aIn, aValue);
-      result.Start;
+      result.fState := TaskState.AwaitingStart;
     end;
 
     class method RunSynchronous<T>(aIn: Func<Object, T>; aValue: Object): Task<T>;
     begin
       result := new SynchronousTask<T>(aIn, aValue);
-      result.Start;
+      result.fState := TaskState.AwaitingStart;
     end;
 
 
     class method RunSynchronous<T>(aIn: Func<T>): Task<T>;
     begin
       result := new SynchronousTask<T>(aIn);
-      result.Start;
+      result.fState := TaskState.AwaitingStart;
     end;
-
-
-
-
 
     property Exception: Exception read get_Exception;
     property IsFaulted: Boolean read fState = TaskState.Failed;
@@ -470,7 +466,7 @@ type
         Utilities.SpinLockExit(var fLock);
         exit;
       end;
-      if fState = TaskState.New then begin 
+      if fState = TaskState.AwaitingStart then begin 
         fState := TaskState.Started;
         Utilities.SpinLockExit(var fLock);
         DoRun;
