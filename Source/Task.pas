@@ -125,6 +125,16 @@ type
      end;
   end;
 
+
+  TaskCompletionAwait = class(TaskCompletion)
+  public 
+    &Await: IAwaitCompletion;
+    method Complete(aOwner: Task); override;
+    begin 
+      &Await.moveNext(nil);
+    end;
+  end;
+
    // TODO: some form of list of completions, anything waiting can create a lock, add itself to the list
   Task = public class
   assembly
@@ -145,7 +155,7 @@ type
       DoRun;
     end;
 
-    method DoEnqueue;
+    method DoEnqueue; virtual;
     begin
       ThreadPool.QueueUserWorkItem(@cb, nil);
     end;
@@ -293,14 +303,68 @@ type
     end;
 
 
+    class method Run<T>(aIn: Func<T>): Task<T>;
+    begin
+      result := new Task<T>(aIn);
+      result.Start;
+    end;
+
+
+
+    class method RunSynchronous(aIn: Action): Task;
+    begin
+      result := new SynchronousTask(aIn);
+      result.Start;
+    end;
+
+    class method RunSynchronous(aIn: Action<Object>; aValue: Object): Task;
+    begin
+      result := new SynchronousTask(aIn, aValue);
+      result.Start;
+    end;
+
+    class method RunSynchronous<T>(aIn: Func<Object, T>; aValue: Object): Task<T>;
+    begin
+      result := new SynchronousTask<T>(aIn, aValue);
+      result.Start;
+    end;
+
+
+    class method RunSynchronous<T>(aIn: Func<T>): Task<T>;
+    begin
+      result := new SynchronousTask<T>(aIn);
+      result.Start;
+    end;
+
+
+
+
+
     property Exception: Exception read get_Exception;
     property IsFaulted: Boolean read fState = TaskState.Failed;
     property IsCompleted: Boolean read fState = TaskState.Completed;
     property IsStarted: Boolean read fState = TaskState.Started;
     property State: TaskState read fState;
-    //method &Await(aCompletion: IAwaitCompletion): Boolean; external;
 
-    method Wait;
+    method &Await(aCompletion: IAwaitCompletion): Boolean; 
+    begin 
+      if fState in [TaskState.Failed, TaskState.Completed] then exit false; 
+      
+      var lCompl := new TaskCompletionAwait(&Await := aCompletion);
+      Utilities.SpinLockEnter(var fLock);
+      if fState in [TaskState.Failed, TaskState.Completed] then begin
+        Utilities.SpinLockExit(var fLock);
+        exit false;
+      end;
+      
+      lCompl.Next := fCompletionList;
+      fCompletionList := lCompl;
+      Utilities.SpinLockEnter(var fLock);
+
+      exit true;
+    end;
+
+    method Wait; virtual;
     begin
       if fState in [TaskState.Failed, TaskState.Completed] then exit;
 
@@ -321,7 +385,7 @@ type
       lMonitor.Dispose;
     end;
 
-    method Wait(aTimeoutMSec: Integer): Boolean;
+    method Wait(aTimeoutMSec: Integer): Boolean; virtual;
     begin
       if fState in [TaskState.Failed, TaskState.Completed] then exit;
 
@@ -381,6 +445,74 @@ type
     method Run(aTask: Task); override;
     begin
       Task<T>(aTask).fResult :=Action(Object);
+    end;
+  end;
+
+  SynchronousTask = class(Task)
+  public
+    method DoEnqueue; override;
+    begin 
+      // do nothing
+    end;
+
+    method Wait(aTimeoutMSec: Integer): Boolean; override;
+    begin 
+      Wait;
+      exit true;
+    end;
+
+    method Wait; override;
+    begin 
+      if fState in [TaskState.Failed, TaskState.Completed] then exit;
+
+      Utilities.SpinLockEnter(var fLock);
+      if fState in [TaskState.Failed, TaskState.Completed] then begin
+        Utilities.SpinLockExit(var fLock);
+        exit;
+      end;
+      if fState = TaskState.New then begin 
+        fState := TaskState.Started;
+        Utilities.SpinLockExit(var fLock);
+        DoRun;
+        exit;
+      end;
+      Utilities.SpinLockExit(var fLock);
+      inherited Wait;
+    end;
+  end;
+
+  
+
+  SynchronousTask<T> = class(Task<T>)
+  public
+    method DoEnqueue; override;
+    begin 
+      // do nothing
+    end;
+
+    method Wait(aTimeoutMSec: Integer): Boolean; override;
+    begin 
+      Wait;
+      exit true;
+    end;
+
+    method Wait; override;
+    begin 
+      if fState in [TaskState.Failed, TaskState.Completed] then exit;
+
+      Utilities.SpinLockEnter(var fLock);
+      if fState in [TaskState.Failed, TaskState.Completed] then begin
+        Utilities.SpinLockExit(var fLock);
+        exit;
+      end;
+      if fState = TaskState.New then begin 
+        fState := TaskState.Started;
+        Utilities.SpinLockExit(var fLock);
+        DoRun;
+        exit;
+      end;
+      Utilities.SpinLockExit(var fLock);
+      inherited Wait;
     end;
   end;
 
