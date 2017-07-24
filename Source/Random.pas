@@ -41,16 +41,16 @@ type
       var c: Cardinal;
       var d: Cardinal;
       a := state[&index];
-      c := state[&index + 13 and 15];
-      b := a xor c xor a shl 16 xor c shl 15;
-      c := state[&index + 9 and 15];
-      c := c xor c shr 11;
+      c := state[(&index + 13) and 15];
+      b := a xor c xor (a shl 16) xor (c shl 15);
+      c := state[(&index + 9) and 15];
+      c := c xor (c shr 11);
       a := b xor c;
       state[&index] := a;
-      d := a xor a shl 5 and 3661901092;
-      &index := &index + 15 and 15;
+      d := a xor ((a shl 5) and 3661901092);
+      &index := (&index + 15) and 15;
       a := state[&index];
-      state[&index] := a xor b xor d xor a shl 2 xor b shl 18 xor c shl 28;
+      state[&index] := a xor b xor d xor (a shl 2) xor (b shl 18) xor (c shl 28);
       exit state[&index];
     end;
 
