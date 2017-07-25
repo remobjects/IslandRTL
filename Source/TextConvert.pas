@@ -261,18 +261,19 @@ type
       if len = 0 then exit '';
       var str:= new StringBuilder(len);
       var pos := aOffset;
+      var last := len + aOffset;
       // skip BOM
       if len>2 then begin
         if (aValue[0] = $EF) and
            (aValue[1] = $BB) and
            (aValue[2] = $BF) then pos := 3;
       end;
-      while pos < len do begin
+      while pos < last do begin
         var ch := aValue[pos];
         {$REGION 4 bytes Char}
         if ch and $F0 = $F0 then begin
           //   11110xxx 10xxxxxx 10xxxxxx 10xxxxxx
-          if pos+4 > len then BadUTF8Error;
+          if pos+4 > last then BadUTF8Error;
           var code := (((((
                         UInt32(ch and $7) shl 6 +
                         (UInt32(aValue[pos+1]) and $3F)) shl 6)+
@@ -291,7 +292,7 @@ type
         {$REGION 3 bytes Char}
         else if (ch and $E0) = $E0 then begin
           //1110xxxx 10xxxxxx 10xxxxxx
-          if pos+3 > len then BadUTF8Error;
+          if pos+3 > last then BadUTF8Error;
           var code := ((
                         UInt32(ch and $F) shl 6 +
                         (UInt32(aValue[pos+1]) and $3F)) shl 6)+
@@ -307,7 +308,7 @@ type
         {$REGION 2 bytes Char}
         else if (ch and $C0) = $C0 then begin
           // 110xxxxx 10xxxxxx
-          if pos+2 > len then BadUTF8Error;
+          if pos+2 > last then BadUTF8Error;
           var code :=
                       UInt32(ch and $1F) shl 6 +
                       (UInt32(aValue[pos+1]) and $3F);
