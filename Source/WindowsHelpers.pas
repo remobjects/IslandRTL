@@ -339,11 +339,11 @@ var
   _tls_end: NativeInt := 0; public;
 
   [SectionName(".CRT$XLA"), SymbolName('__xl_a')]
-  __xl_a: rtl.PIMAGE_TLS_CALLBACK := 0;public;
+  __xl_a: rtl.PIMAGE_TLS_CALLBACK := nil;public;
   [SectionName(".CRT$XLEL"), SymbolName('__elements_tls_callback'), Used()]
   __elements_tls_callback: rtl.PIMAGE_TLS_CALLBACK := @elements_tls_callback;public;
   [SectionName(".CRT$XLZ"), SymbolName('__xl_z')]
-  __xl_z: rtl.PIMAGE_TLS_CALLBACK := 0;public;
+  __xl_z: rtl.PIMAGE_TLS_CALLBACK := nil;public;
 
   [SectionName('.rdata$T'), SymbolName('_tls_used'), Used]
   _tls_used: {$IFDEF _WIN64}rtl.IMAGE_TLS_DIRECTORY64{$ELSE}rtl.IMAGE_TLS_DIRECTORY {$ENDIF}:=
