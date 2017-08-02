@@ -129,9 +129,13 @@ type
   TaskCompletionAwait = class(TaskCompletion)
   public 
     &Await: IAwaitCompletion;
+    SyncContext: SynchronizationContext;
     method Complete(aOwner: Task); override;
     begin 
-      &Await.moveNext(nil);
+      if SyncContext <> nil then 
+        SyncContext.Invoke( -> &Await.moveNext(aOwner))
+      else 
+        &Await.moveNext(aOwner);
     end;
   end;
 
@@ -342,20 +346,34 @@ type
     property IsStarted: Boolean read fState = TaskState.Started;
     property State: TaskState read fState;
 
+
+    method ConfigureAwait(aCaptureContext: Boolean): ConfiguredAwaitTask;
+    begin
+      exit new ConfiguredAwaitTask(self, aCaptureContext);
+    end;
+
     method &Await(aCompletion: IAwaitCompletion): Boolean; 
+    begin 
+      exit IntAwait(aCompletion, true);
+    end;
+
+    method IntAwait(aCompletion: IAwaitCompletion; aCaptureSync: Boolean := true): Boolean; assembly;
     begin 
       if fState in [TaskState.Failed, TaskState.Completed] then exit false; 
       
       var lCompl := new TaskCompletionAwait(&Await := aCompletion);
+      if aCaptureSync then 
+        lCompl.SyncContext := SynchronizationContext.Current;
       Utilities.SpinLockEnter(var fLock);
       if fState in [TaskState.Failed, TaskState.Completed] then begin
         Utilities.SpinLockExit(var fLock);
         exit false;
       end;
       
+      
       lCompl.Next := fCompletionList;
       fCompletionList := lCompl;
-      Utilities.SpinLockEnter(var fLock);
+      Utilities.SpinLockExit(var fLock);
 
       exit true;
     end;
@@ -541,6 +559,11 @@ type
       fAction := new TaskAction_ActionObject<T>(aIn, aState);
     end;
 
+    method ConfigureAwait(aCaptureContext: Boolean): ConfiguredAwaitTask<T>; reintroduce;
+    begin
+      exit new ConfiguredAwaitTask<T>(self, aCaptureContext);
+    end;
+
     property &Result: T read get_Result;
   end;
 
@@ -604,6 +627,42 @@ type
     property Task: Task<T> read fTask;
   end;
 
+  ConfiguredAwaitTask = public class
+  private
+    fTask: Task;
+    fCaptureContext: Boolean;
+  public 
+    constructor(aTask: Task; aCaptureContext: Boolean);
+    begin 
+      fTask := aTask;
+      fCaptureContext := aCaptureContext;
+    end;
+
+    method &Await(aCompletion: IAwaitCompletion): Boolean; 
+    begin 
+      exit fTask.IntAwait(aCompletion, fCaptureContext);
+    end;
+  end;
+
+  ConfiguredAwaitTask<T> = public class
+  private
+    fTask: Task<T>;
+    fCaptureContext: Boolean;
+  public 
+    constructor(aTask: Task<T>; aCaptureContext: Boolean);
+    begin 
+      fTask := aTask;
+      fCaptureContext := aCaptureContext;
+    end;
+
+    method &Await(aCompletion: IAwaitCompletion): Boolean; 
+    begin 
+      exit fTask.IntAwait(aCompletion, fCaptureContext);
+    end;
+
+    property &Result: T read fTask.Result;
+  end;
+
   WaitCallback = Action<Object>;
 
   PThreadPoolCallback = ^ThreadPoolCallback;
@@ -635,6 +694,16 @@ type
     class property MaxThreads: UInt32 read {$IFDEF WINDOWS}fMaxThreads{$ELSE}fThreadPool.MaxThreads{$ENDIF} write SetMaxThreads;
   end;
 
+  SynchronizationContext = public abstract class
+  private
+    //[ThreadLocal]
+    class var fCurrent: SynchronizationContext;
+  public
+    method Invoke(a: Action); abstract;
+    method InvokeAsync(a: Action); abstract;
+
+    class property Current: SynchronizationContext read fCurrent write fCurrent;
+  end;
 
 
 implementation
