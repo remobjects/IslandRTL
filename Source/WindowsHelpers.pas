@@ -3,7 +3,9 @@
 interface
 
 [assembly: InlineAsm(".globl _tls_array
-_tls_array = 44")]
+_tls_array = 44
+.globl __tls_array
+__tls_array = 44")]
 
 type
   VersionResourceAttribute = public class(Attribute)
@@ -121,11 +123,11 @@ type
     class method setjmp3(var buf: rtl.jmp_buf; var ctx: ^Void);
     {$ENDIF}
 
-    [SymbolName('_elements_exception_handler'), CallingConvention(CallingConvention.Stdcall), DisableInliningAttribute] // 32bits windows only!!
-
     {$IFDEF _WIN64}
+    [SymbolName('_elements_exception_handler'), DisableInliningAttribute] // 32bits windows only!!
   method ExceptionHandler(arec: ^rtl.EXCEPTION_RECORD; EstablisherFrame: UInt64; context: rtl.PCONTEXT; dispatcher: rtl.PDISPATCHER_CONTEXT ): Integer;
     {$ELSE}
+    [SymbolName('_elements_exception_handler'), CallingConvention(CallingConvention.Stdcall), DisableInliningAttribute] // 32bits windows only!!
     method ExceptionHandler([InReg]inmsvcinfo: ^MSVCExceptionInfo; arec: ^rtl.EXCEPTION_RECORD; aOrgregFrame: ^ElementsRegistrationFrame;
       context: rtl.PCONTEXT; dispatcher: ^Void): Integer;
     {$ENDIF}
@@ -332,7 +334,7 @@ var
   [Alias, SymbolName('__elements_entry_point'), &Weak]
   UserEntryPoint: UserEntryPointType := @ExternalCalls.DefaultUserEntryPoint;
   [SymbolName('_tls_index')]
-  _tls_index: Cardinal := 0; public;
+  _tls_index: Cardinal; public;
   [SectionName('.tls'), SymbolName('_tls_start')]
   _tls_start: NativeInt := 0;public;
   [SectionName('.tls$ZZZ'), SymbolName('_tls_end')]
@@ -344,7 +346,7 @@ var
   __elements_tls_callback: rtl.PIMAGE_TLS_CALLBACK := @elements_tls_callback;public;
   [SectionName(".CRT$XLZ"), SymbolName('__xl_z')]
   __xl_z: rtl.PIMAGE_TLS_CALLBACK := nil;public;
-
+  
   [SectionName('.rdata$T'), SymbolName('_tls_used'), Used]
   _tls_used: {$IFDEF _WIN64}rtl.IMAGE_TLS_DIRECTORY64{$ELSE}rtl.IMAGE_TLS_DIRECTORY {$ENDIF}:=
     new {$IFDEF _WIN64}rtl.IMAGE_TLS_DIRECTORY64{$ELSE}rtl.IMAGE_TLS_DIRECTORY {$ENDIF}(

@@ -140,11 +140,13 @@ type
 
     [SymbolName('__stack_chk_fail')]
     method __stack_chk_fail(); external;
+    {$IFNDEF i386}
     [SymbolName('__stack_chk_fail_local')]
     method __stack_chk_fail_local(); 
     begin 
       __stack_chk_fail();
     end;
+    {$ENDIF}
   {$ENDIF}
   end;
 
