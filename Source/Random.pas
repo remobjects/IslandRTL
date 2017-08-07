@@ -33,7 +33,6 @@ type
       memcpy(@state, @aSeedData[0], 16 * 4);
     end;
 
-
     method Random: Cardinal;
     begin
       var a: Cardinal;
