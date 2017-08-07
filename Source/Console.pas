@@ -18,6 +18,9 @@ type
     class method &Write(); empty;
     class method ReadChar(): AnsiChar;
     class method ReadLine(): String;
+    {$IFDEF ANDROID}
+    class var AndroidLoggingTag: String := 'Island';
+    {$ENDIF}
   end;
 
 implementation
@@ -38,8 +41,12 @@ begin
     lOff := lOff + lOut;
   end;
 {$ELSE}
+  {$IFDEF ANDROID}
+  WriteLine(s); // android doesn't have a separate write vs writeln.
+  {$ELSE}
   var c := s.ToAnsiChars(true);
   rtl.printf("%s", @c[0]);
+  {$ENDIF}
  {$ENDIF}
 end;
 
@@ -50,7 +57,12 @@ begin
   Write(s + Environment.NewLine);
   {$ELSE}
   var c := s.ToAnsiChars(true);
+  {$IFDEF ANDROID}
+  var tag := AndroidLoggingTag.ToAnsiChars(true);
+  rtl.__android_log_write(rtl.android_LogPriority.ANDROID_LOG_INFO, @tag[0], @c[0]);
+  {$ELSE}
   rtl.puts(@c[0]);
+  {$ENDIF}
  {$ENDIF}
 end;
 
