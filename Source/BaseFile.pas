@@ -55,7 +55,6 @@ type
     constructor(aFullName: not nullable String);
     begin
       fFullName := aFullName;
-      Validate;
     end;
 
     method Delete; abstract;
