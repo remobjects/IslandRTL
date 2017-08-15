@@ -273,4 +273,18 @@ type
   PackedAttribute = public class(Attribute)
   end;
 
+  
+  [AttributeUsage(AttributeTargets.Method)]
+  GlobalConstructorAttribute = public class(Attribute)
+  public 
+    constructor(aPriority: Integer); empty;
+  end;
+
+  [AttributeUsage(AttributeTargets.Method)]
+  GlobalDestructorAttribute = public class(Attribute)
+  public 
+    constructor(aPriority: Integer); empty;
+  end;
+
+
 end.
