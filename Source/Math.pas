@@ -406,10 +406,7 @@ end;
 
 class method Math.Pow(x, y: Double): Double;
 begin
-  if  (y.IsInt) then
-    exit Pow(x, Integer(y))
-  else
-    exit Exp(y * Log(x));
+  exit Exp(y * Log(x));
 end;
 
 class method Math.Round(a: Double): Int64;
