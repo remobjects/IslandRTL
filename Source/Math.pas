@@ -406,11 +406,9 @@ end;
 
 class method Math.Pow(x, y: Double): Double;
 begin
-{$IF NOT ISLAND}
   if  (y.IsInt) then
     exit Pow(x, Integer(y))
   else
-{$ENDIF}
     exit Exp(y * Log(x));
 end;
 
