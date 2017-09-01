@@ -10,6 +10,7 @@
   </PropertyGroup>
   <ItemGroup>
     <Compile Include="$(MSBuildThisFileDirectory)Double_Parse.pas" />
+    <Compile Include="$(MSBuildThisFileDirectory)Math_Pow.pas" />
     <Compile Include="$(MSBuildThisFileDirectory)String_Trim.pas" />
     <Compile Include="$(MSBuildThisFileDirectory)Math_Power.pas" />
   </ItemGroup>
