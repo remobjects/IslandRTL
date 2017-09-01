@@ -406,9 +406,9 @@ end;
 
 class method Math.Pow(x, y: Double): Double;
 begin
-  if  (y.IsInt) then
-    exit Pow(x, Integer(y))
-  else
+//  if  (y.IsInt) then
+//    exit Pow(x, Integer(y))
+//  else
     exit Exp(y * Log(x));
 end;
 
