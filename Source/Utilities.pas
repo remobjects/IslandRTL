@@ -362,7 +362,7 @@ type
     class method VolatileRead(var address: Single; aAtomic: Boolean := true): Single; external;
     class method VolatileRead(var address: UInt16; aAtomic: Boolean := true): UInt16; external;
     class method VolatileRead(var address: UInt32; aAtomic: Boolean := true): UInt32; external;
-    class method VolatileRead(var address: UInt6; aAtomic: Boolean := true4): UInt64; external;
+    class method VolatileRead(var address: UInt64; aAtomic: Boolean := true): UInt64; external;
     class method VolatileRead(var address: NativeUInt; aAtomic: Boolean := true): NativeUInt; external;
     class method VolatileWrite(var address: Byte; value: Byte; aAtomic: Boolean := true); external;
     class method VolatileWrite(var address: Double; value: Double; aAtomic: Boolean := true); external;
