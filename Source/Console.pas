@@ -92,7 +92,7 @@ begin
   while true do begin
     var ch := ReadChar();
     if ch = #0 then break; // problem with Read
-    if ch = #13 then break; //CR was detected
+    if ch in [#10, #13] then break; //CR was detected
     buf[offset] := ch;
     inc(offset);
     if offset > bufsize then begin
@@ -120,9 +120,10 @@ begin
     exit #0;
   end;
   {$ELSE}
-  rtl.scanf("%c", @ch[0]);
+  var c := rtl.getchar();
+  if c < 0 then exit #0;
+  exit AnsiChar(c);
  {$ENDIF}
-  exit ch[0];
 end;
 
 end.
