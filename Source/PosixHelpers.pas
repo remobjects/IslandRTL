@@ -13,11 +13,55 @@ type
     func: atexitfunc;
     next: ^atexitrec;
   end;
+  dliteratecb = function (info :^__struct_dl_phdr_info; size: size_t; data: ^Void): Integer;
   {$IFDEF ARM}rtl.__struct__Unwind_Exception = rtl.__struct__Unwind_Control_Block;{$ENDIF}
   ExternalCalls = public static class
   private
     class var atexitlist: ^atexitrec;
+    {$IFDEF ANDROID}
+//[SymbolName('__executable_start')]
+//var __executable_start: ^Void; external;
+    [SymbolName("dl_iterate_phdr"), &Weak]
+    method dl_iterate_phdr(info: dliteratecb; data: ^Void): Integer;  
+    begin 
+      exit; (*
+      var ehdr := @__executable_start;
+      if ^Byte(ehdr)[0] <> $7f then exit;
+      if ^Byte(ehdr)[1] <> 'E' then exit;
+      if ^Byte(ehdr)[2] <> 'L' then exit;
+      if ^Byte(ehdr)[3] <> 'F' then exit;
+
+      var exe_info: __struct_dl_phdr_info;
+      exe_info.dlpi_addr := 0;
+      exe_info.dlpi_name := nil;
+      ^IntPtr(@exe_info.dlpi_phdr)^ := (IntPtr(ehdr) + {$IFDEF CPU64}^Elf64_Ehdr(ehdr)^.e_phoff{$ELSE} ^Elf32_Ehdr(ehdr)^.e_phoff{$ENDIF});
+      exe_info.dlpi_phnum := {$IFDEF CPU64}^Elf64_Ehdr(ehdr)^.e_phnum{$ELSE} ^Elf32_Ehdr(ehdr)^.e_phnum{$ENDIF};
+      result := info(@exe_info, sizeof(exe_info), data);
+      if result <> 0 then 
+        exit;
+      {$IFNDEF ARM}
+      var ehdr_vdso := getauxval(AT_SYSINFO_EHDR);
+      if ehdr_vdso = 0 then begin 
+        exit;
+      end;
+      var vdso_info: __struct_dl_phdr_info;
+      vdso_info.dlpi_addr := 0;
+      vdso_info.dlpi_name := nil;
+      ^IntPtr(@vdso_info.dlpi_phdr)^ := (IntPtr(ehdr_vdso) +  {$IFDEF CPU64}^Elf64_Ehdr(ehdr_vdso)^.e_phoff{$ELSE} ^Elf32_Ehdr(ehdr_vdso)^.e_phoff{$ENDIF});
+      vdso_info.dlpi_phnum := {$IFDEF CPU64}^Elf64_Ehdr(ehdr_vdso)^.e_phnum{$ELSE} ^Elf32_Ehdr(ehdr_vdso)^.e_phnum{$ENDIF};
+      __android_log_write(rtl.android_LogPriority.ANDROID_LOG_INFO, 'tag', 'in dl_iterate_phdr 5');
+      for i: Integer := 0 to vdso_info.dlpi_phnum -1 do begin
+        if vdso_info.dlpi_phdr[i].p_type = PT_LOAD then begin
+          vdso_info.dlpi_addr := ehdr_vdso - vdso_info.dlpi_phdr[i].p_vaddr;
+          break;
+        end;
+      end;
+      result := info(@vdso_info, sizeof(vdso_info), data);
+      {$ENDIF}*)
+    end;
+    {$ENDIF}
   public
+
     
     {$IFDEF ARM}
     [SymbolName('_elements_posix_exception_handler'), CallingConvention(CallingConvention.Stdcall)] // 32bits windows only!!
