@@ -13,6 +13,10 @@ type
     register: UnregisterFunc;
     unregister: UnregisterFunc;
   end;
+
+  DebugExceptionCallback = public procedure (data: ^Void; ex: IntPtr);
+  DebugInvokeCallback = public procedure (data: ^Void);
+
   Utilities = public static class
   private
     class var fFinalizer: ^Void;
@@ -21,6 +25,17 @@ type
     {$IFDEF POSIX}[LinkOnce]{$ENDIF}
     class var fSharedMemory: SharedMemory;
   public
+    [SymbolName('__island_debug_invoke'), Used, DllExport]
+    method DebugInvoke(data: ^Void; invk: DebugInvokeCallback; ex: DebugExceptionCallback);
+    begin 
+      try
+        invk(data)
+      except 
+        on e: Exception do 
+          ex(data, IntPtr(InternalCalls.Cast(e)));
+      end;
+    end;
+
     [SymbolName('__abstract')]
     class method AbstractCall;
     begin
