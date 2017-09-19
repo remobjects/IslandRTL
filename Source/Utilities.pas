@@ -359,13 +359,32 @@ type
   // Intrinsics
   InternalCalls = public static class
   public
+{$IFDEF WINDOWS}
+    // Read the FS register at offset N
+    class method ReadFS8(off: NativeInt): Byte; external;
+    class method ReadFS16(off: NativeInt): Word; external;
+    class method ReadFS32(off: NativeInt): UInt32; external;
+    class method ReadFS64(off: NativeInt): UInt64; external;
+    // read the GS register at offset N
+    class method ReadGS8(off: NativeInt): Byte; external;
+    class method ReadGS16(off: NativeInt): Word; external;
+    class method ReadGS32(off: NativeInt): UInt32; external;
+    class method ReadGS64(off: NativeInt): UInt64; external;
+{$ENDIF}
+    // Returns the raw typeinfo for T
     class method GetTypeInfo<T>(): ^Void; external;
+    // Casts an object to ^Void and back. Doesn't do any error checking!
     class method Cast(o: Object): ^Void; external;
     class method Cast<T>(o: ^Void): T; external;
+
+    // Optimizer tool: Returns an undefined value of type T
     class method Undefined<T>: T; external;
+
+    // Inline asm
     class method VoidAsm(aAsm: String; aConstraints: String; aSideEffects, aAlign: Boolean; params aArgs: array of Object); external;
     class method Asm(aAsm: String; aConstraints: String; aSideEffects, aAlign: Boolean; params aArgs: array of Object): NativeInt; external;
 
+    // Volatile read; if atomic it inserts an atomic (lock on x86) instruction.
     class method VolatileRead(var address: Byte; aAtomic: Boolean := true): Byte; external;
     class method VolatileRead(var address: Double; aAtomic: Boolean := true): Double; external;
     class method VolatileRead(var address: Int16; aAtomic: Boolean := true): Int16; external;
@@ -379,6 +398,7 @@ type
     class method VolatileRead(var address: UInt32; aAtomic: Boolean := true): UInt32; external;
     class method VolatileRead(var address: UInt64; aAtomic: Boolean := true): UInt64; external;
     class method VolatileRead(var address: NativeUInt; aAtomic: Boolean := true): NativeUInt; external;
+    // Volatile write; if atomic it inserts an atomic (lock on x86) instruction.
     class method VolatileWrite(var address: Byte; value: Byte; aAtomic: Boolean := true); external;
     class method VolatileWrite(var address: Double; value: Double; aAtomic: Boolean := true); external;
     class method VolatileWrite(var address: Int16; value: Int16; aAtomic: Boolean := true); external;
@@ -393,6 +413,7 @@ type
     class method VolatileWrite(var address: UInt64; value: UInt64; aAtomic: Boolean := true); external;
     class method VolatileWrite(var address: NativeUInt; value: NativeUInt; aAtomic: Boolean := true); external;
 
+    // Exchanges the value at address with value if it's compare, returns the old value.
     class method CompareExchange(var address: Int64; value, compare: Int64): Int64; external;
     class method CompareExchange(var address: Int32; value, compare: Int32): Int32; external;
     class method CompareExchange(var address: NativeInt; value, compare: NativeInt): NativeInt; external;
@@ -401,6 +422,8 @@ type
     class method CompareExchange(var address: NativeUInt; value, compare: NativeUInt): NativeUInt; external;
     class method CompareExchange<T>(var address: T; value, compare: T): T; external;
 
+
+    // Exchanges the value at address with value, returns the old value.
     class method Exchange(var address: Int64; value: Int64): Int64; external;
     class method Exchange(var address: Int32; value: Int32): Int32; external;
     class method Exchange(var address: NativeInt; value: NativeInt): NativeInt; external;
@@ -409,12 +432,15 @@ type
     class method Exchange(var address: NativeUInt; value: NativeUInt): NativeUInt; external;
     class method Exchange<T>(var address: T; value: T): T; external;
 
+    // Adds 1 to the value at address, returns the old one.
     class method Increment(var address: Int64): Int64; external;
     class method Increment(var address: Int32): Int32; external;
 
+    // Subtracts 1 to the value at address, returns the old one.
     class method Decrement(var address: Int64): Int64; external;
     class method Decrement(var address: Int32): Int32; external;
 
+    // Adds value to the value at address, returns the old one.
     class method &Add(var address: Int32; value: Int32): Int32; external;
     class method &Add(var address: Int64; value: Int64): Int64; external;
   end;
