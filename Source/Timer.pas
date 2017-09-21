@@ -40,12 +40,14 @@ type
 implementation
 
 {$IFDEF WINDOWS}
+[CallingConvention(CallingConvention.Stdcall)]
 procedure TimerCallback(lpParam: rtl.PVOID; TimerOrWaitFired: Byte);
 begin
   var lTimer := InternalCalls.Cast<Timer>(lpParam);
   lTimer.Elapsed(lTimer.Data);
 end;
 {$ELSEIF LINUX OR ANDROID}
+[CallingConvention(CallingConvention.Cdecl)]
 procedure TimerCallback(aSigVal: rtl.sigval_t);
 begin
   var lTimer := InternalCalls.Cast<Timer>(aSigVal.sival_ptr);
@@ -104,7 +106,7 @@ begin
   {$IFDEF WINDOWS}
   var lRepeat := fInterval;
   if not fRepeat then lRepeat := 0;
-  if not rtl.CreateTimerQueueTimer(@fTimer, fTimerQueue, (aData, aTimerOrWaitFired) -> TimerCallback(aData, aTimerOrWaitFired), @self, fInterval, lRepeat, 0) then
+    if not rtl.CreateTimerQueueTimer(@fTimer, fTimerQueue, @TimerCallback, InternalCalls.Cast(self), fInterval, lRepeat, 0) then
     raise new Exception('Can not create new timer');
   {$ELSEIF LINUX OR ANDROID}
   var lRepeat := fInterval;
@@ -112,7 +114,7 @@ begin
 
   var lSigEv: rtl.sigevent_t;
   lSigEv.sigev_notify := rtl.SIGEV_THREAD;
-  lSigEv.sigev_value.sival_ptr := @self;
+  lSigEv.sigev_value.sival_ptr := InternalCalls.Cast(self);
 
   lSigEv._sigev_un._sigev_thread._function := @TimerCallback;
   lSigEv._sigev_un._sigev_thread._attribute := nil;
