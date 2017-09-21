@@ -696,7 +696,7 @@ type
 
   SynchronizationContext = public abstract class
   private
-    //[ThreadLocal]
+    [ThreadLocal]
     class var fCurrent: SynchronizationContext;
   public
     method Invoke(a: Action); abstract;
