@@ -25,6 +25,7 @@
     <Compile Include="$(MSBuildThisFileDirectory)Stack.pas" />
     <Compile Include="$(MSBuildThisFileDirectory)Task.pas" />
     <Compile Include="$(MSBuildThisFileDirectory)TextConvert.pas" />
+    <Compile Include="$(MSBuildThisFileDirectory)Timer.pas" />
     <Compile Include="$(MSBuildThisFileDirectory)Utilities.pas" />
     <Compile Include="Environment.pas" />
     <Compile Include="StringBuilder.pas" />

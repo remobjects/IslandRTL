@@ -17,7 +17,7 @@ type
     fElapsed: TimerElapsedBlock;
     fEnabled: Boolean;
     fInterval: Integer;
-    fRepeat: Boolean;
+    fRepeat: Boolean := true;
     method SetRepeat(value: Boolean);
     method SetInterval(value: Integer);
     method SetEnabled(value: Boolean);
@@ -109,13 +109,10 @@ begin
     if not rtl.CreateTimerQueueTimer(@fTimer, fTimerQueue, @TimerCallback, InternalCalls.Cast(self), fInterval, lRepeat, 0) then
     raise new Exception('Can not create new timer');
   {$ELSEIF LINUX OR ANDROID}
-  var lRepeat := fInterval;
-  if not fRepeat then lRepeat := 0;
-
   var lSigEv: rtl.sigevent_t;
   lSigEv.sigev_notify := rtl.SIGEV_THREAD;
   lSigEv.sigev_value.sival_ptr := InternalCalls.Cast(self);
-
+  
   lSigEv._sigev_un._sigev_thread._function := @TimerCallback;
   lSigEv._sigev_un._sigev_thread._attribute := nil;
   rtl.timer_create(rtl.CLOCK_REALTIME, @lSigEv, @fTimer);
@@ -124,9 +121,10 @@ begin
   lInterval.it_value.tv_sec := fInterval div 1000;
   lInterval.it_value.tv_nsec := (fInterval mod 1000) * 1000000;
   
-  lInterval.it_interval.tv_sec := lRepeat div 1000;
-  lInterval.it_interval.tv_nsec := (lRepeat mod 1000) * 1000000;
-                                                                                                                             
+  if fRepeat then begin
+    lInterval.it_interval.tv_sec := fInterval div 1000;
+    lInterval.it_interval.tv_nsec := (fInterval mod 1000) * 1000000;
+  end;                                                                                                                             
   rtl.timer_settime(fTimer, 0, @lInterval, nil);
   {$ENDIF}
   fEnabled := true;
