@@ -52,7 +52,10 @@ type
       var pIEEE_754_raw := ^UInt64(@self)^;
       var tmp := pIEEE_754_raw and not Double.SignificantBitmask;
       var exponent: Int32 := (tmp shr 52)-1023;
-      exit (tmp and (FractionBitmask shr exponent)) = 0;
+      if exponent >= 0 then
+        exit (tmp and (FractionBitmask shr exponent)) = 0
+      else
+        exit false;
     end;
   public
     method ToString: String; override;
@@ -182,6 +185,10 @@ end;
 
 method Single.ToString: String;
 begin
+  if Self = 0 then exit '0';
+  if IsNaN(Self) then exit 'NaN';
+  if IsNegativeInfinity(Self) then exit '-Infinity';
+  if IsPositiveInfinity(Self) then exit 'Infinity';
   exit FloatToString.Convert(self,8);
 end;
 
@@ -290,13 +297,13 @@ begin
   if Double.IsPositiveInfinity(aValue) then exit 'Infinity';
 
   var data: array[0..maxpos] of Byte;
-  var pos := 0;
-  var exp := 0;
-  var positive_value:=True;
+  var cur_position := 0;
+  var exponent := 0;
+  var is_positive_value:=True;
   var lValue := aValue;
 
   if lValue < 0 then begin
-    positive_value:=False;
+    is_positive_value:=False;
     lValue := Math.Abs(lValue);
   end;
 
@@ -320,49 +327,61 @@ begin
       if (t_work = 0) then break;
       t_calc := t_calc + t1*t_pos1;
       t_pos1:= t_pos1*10;
-      inc(exp);
+      inc(exponent);
     end;
     for i:Integer := 0 to pos1-1 do
-      data[pos+i]:= buf[pos1-i-1];
-    inc(pos, pos1);
+      data[cur_position+i]:= buf[pos1-i-1];
+    inc(cur_position, pos1);
   end
   else begin
-    dec(exp);
+    dec(exponent);
   end;
   {$ENDREGION}
 
   {$REGION process .#### }
-  var fl:= true;
-  var fract:=false;
+  var is_fraction_present:=false;
   var t_orig:= lValue mod 1;
-  if (t_orig <> 0) and (pos < maxpos) then begin
-    fract:=true;
+  if (t_orig <> 0) and (cur_position < maxpos) then begin
+    is_fraction_present:=true;
+    var fl:= true;
     while t_orig <> 0 do begin
       t_orig:= t_orig*10;
+      if Double.IsInfinity(t_orig) then break;
       var t1 := Int32(t_orig mod 10);
-      if (t1 = 0) and fl and (exp<0) then begin
-        dec(exp);
+      if (t1 = 0) and fl and (exponent<0) then begin
+        dec(exponent);
       end
       else begin
         fl := false;
-        data[pos]:= t1;
-        inc(pos);
+        data[cur_position]:= t1;
+        inc(cur_position);
       end;
-      if pos >= maxpos then break;
+      if cur_position >= maxpos then break;
     end;
   end;
   {$ENDREGION}
-
-  var nexp := Math.Abs(exp);
+(*
+  CalcLastDigit(var data, 0, aPrecision);
+  if data[0] = 10 then begin
+    var ldata : array[0..maxpos] of Byte;
+    ldata[0] := 1;
+    ldata[1] := 0;
+    memcpy(@ldata[2], @data[1], maxpos-1);    
+    data := ldata;
+    inc(exponent);
+    is_fraction_present := False;
+  end;
+*)
+  var nexp := Math.Abs(exponent);
 
   var buf: array [0..22] of Char;
   var bufpos:= 0;
-  if not positive_value then begin
+  if not is_positive_value then begin
     buf[bufpos] := '-';
     inc(bufpos);
   end;
 
-  if (nexp > aPrecision) or (exp < -4) then begin// => #.#####E+## | #.#####E-##
+  if (nexp > aPrecision) or (exponent < -4) then begin// => #.#####E+## | #.#####E-##
     buf[bufpos] := digits[data[0]];
     inc(bufpos);
     buf[bufpos] := DecimalChar;
@@ -379,7 +398,7 @@ begin
     {$REGION make E+###}
     buf[bufpos] := 'E';
     inc(bufpos);
-    buf[bufpos] := iif(exp>0,'+','-');
+    buf[bufpos] := iif(exponent>0,'+','-');
     inc(bufpos);
     if nexp > 100 then begin
       var t := Integer(nexp / 100);
@@ -395,25 +414,38 @@ begin
     inc(bufpos);
     {$ENDREGION}
   end
-  else if (exp >= 0) and fract then begin// => #####.#####
-    for i:Integer:=0 to exp do begin
+  else if (exponent >= 0) and is_fraction_present then begin// => #####.#####
+    var st_cnt := iif(cur_position>aPrecision-1, aPrecision-1, cur_position);
+    CalcLastDigit(var data, nexp+1, st_cnt);
+    if data[0] = 10 then begin
+      var ldata : array[0..maxpos] of Byte;
+      ldata[0] := 1;
+      ldata[1] := 0;
+      memcpy(@ldata[2], @data[1], maxpos-1);    
+      data := ldata;
+      inc(exponent);
+      is_fraction_present := False;
+    end;
+    for i:Integer:=0 to exponent do begin
       buf[bufpos] := digits[data[i]];
       inc(bufpos);
     end;
-    buf[bufpos] := DecimalChar;
-    inc(bufpos);
-    var st_cnt := iif(pos>aPrecision-1, aPrecision-1, pos);
-    CalcLastDigit(var data, nexp+1, st_cnt);
-    for i: Integer:= st_cnt-1 downto nexp+2 do
-      if data[i] = 0 then dec(st_cnt) else break;
-    for i:Integer:=nexp+1 to st_cnt-1 do begin
-      buf[bufpos] := digits[data[i]];
+    if is_fraction_present then begin
+      var t_buf := bufpos;
+      buf[bufpos] := DecimalChar;
       inc(bufpos);
+      for i: Integer:= st_cnt-1 downto nexp+2 do
+        if data[i] = 0 then dec(st_cnt) else break;
+      for i:Integer:=nexp+1 to st_cnt-1 do begin
+        buf[bufpos] := digits[data[i]];
+        inc(bufpos);
+      end;
+      if (st_cnt-1 = t_buf) and (data[t_buf] = 0) then bufpos:= t_buf;
     end;
   end
-  else if (exp >= 0) and not fract then begin// => #####
-    CalcLastDigit(var data, 0, exp+1);
-    for i:Integer:=0 to exp do begin
+  else if (exponent >= 0) and not is_fraction_present then begin// => #####
+    CalcLastDigit(var data, 0, exponent+1);
+    for i:Integer:=0 to exponent do begin
       buf[bufpos] := digits[data[i]];
       inc(bufpos);
     end;
@@ -427,7 +459,7 @@ begin
       buf[bufpos] := '0';
       inc(bufpos);
     end;
-    var st_cnt := iif(pos>aPrecision-1, aPrecision-1, pos);
+    var st_cnt := iif(cur_position>aPrecision-1, aPrecision-1, cur_position);
     CalcLastDigit(var data, 0, st_cnt);
     for i: Integer:= st_cnt-1 downto 1 do
       if data[i] = 0 then dec(st_cnt) else break;
@@ -442,18 +474,22 @@ end;
 class method FloatToString.CalcLastDigit(var data: array[0..maxpos] of Byte; aStart: Integer; aCount: Integer);
 begin
   if (aCount < length(data)-1) then begin
-    if data[aCount] > 5 then data[aCount-1] := data[aCount-1]+1
+    if data[aCount] > 5 then begin
+      data[aCount-1] := data[aCount-1]+1;
+      data[aCount] := 0;
+    end
     else if data[aCount] = 5 then begin
       for i:Integer :=aCount to length(data)-1 do begin
         if data[i] = 0 then continue;
-        data[aCount-1] :=  data[aCount-1]+1;
+        data[aCount-1] := data[aCount-1]+1;
+        data[aCount] := 0;
         break;
       end;
     end
     else begin
       // none
     end;
-    for i:Integer := aCount-1 downto aStart do begin
+    for i:Integer := aCount-1 downto 1 do begin
       if data[i] = 10 then begin
         data[i] := 0;
         data[i-1] := data[i-1]+1;
@@ -471,13 +507,13 @@ begin
   if (aValue = 0) and (aNumberOfDecimalDigits = 0) then exit '0';
 
   var data: array[0..maxpos + 1 {extra digits for rounding}] of Byte;
-  var pos := 0;
-  var exp := 0;
-  var positive_value:=True;
+  var cur_position := 0;
+  var exponent := 0;
+  var is_positive_value:=True;
   var lValue := aValue;
 
   if lValue < 0 then begin
-    positive_value:=False;
+    is_positive_value:=False;
     lValue := Math.Abs(lValue);
   end;
 
@@ -501,58 +537,69 @@ begin
       if (t_work = 0) then break;
       t_calc := t_calc + t1*t_pos1;
       t_pos1:= t_pos1*10;
-      inc(exp);
+      inc(exponent);
     end;
     for i:Integer := 0 to pos1-1 do
-      data[pos+i]:= buf[pos1-i-1];
-    inc(pos, pos1);
+      data[cur_position+i]:= buf[pos1-i-1];
+    inc(cur_position, pos1);
   end
   else begin
-    dec(exp);
-    inc(pos);// extra 0 at beginning
+    dec(exponent);
+    inc(cur_position);// extra 0 at beginning
   end;
   {$ENDREGION}
 
-  {$REGION process .#### }
-  var fl:= true;
+  {$REGION process .#### } 
   var t_orig:= lValue mod 1;
-  if (t_orig <> 0) and (pos < maxpos) then begin
+  if (t_orig <> 0) and (cur_position < maxpos) then begin
+    var fl:= true;
     while t_orig <> 0 do begin
       t_orig:= t_orig*10;
+      if Double.IsInfinity(t_orig) then break;
       var t1 := Int32(t_orig mod 10);
-      if (t1 = 0) and fl and (exp<0) then begin
-        dec(exp);
+      if (t1 = 0) and fl and (exponent<0) then begin
+        dec(exponent);
       end
       else begin
         fl := false;
-        data[pos]:= t1;
-        inc(pos);
+        data[cur_position]:= t1;
+        inc(cur_position);
       end;
-      if pos >= maxpos then break;
+      if cur_position >= maxpos then break;
     end;
   end;
   {$ENDREGION}
 
-  var nexp := Math.Abs(exp);
-
+  var nexp := Math.Abs(exponent);
+(*
+  CalcLastDigit(var data, 0, aNumberOfDecimalDigits+nexp+2);
+  if data[0] = 10 then begin
+    var ldata : array[0..maxpos+1] of Byte;
+    ldata[0] := 1;
+    ldata[1] := 0;
+    memcpy(@ldata[2], @data[1], maxpos-1);    
+    data := ldata;
+    inc(exp);    
+    inc(nexp);
+  end;
+*)  
   var buf:= new array of Char(nexp + aNumberOfDecimalDigits + 2) ;
   var bufpos:= 0;
-  if not positive_value then begin
+  if not is_positive_value then begin
     buf[bufpos] := '-';
     inc(bufpos);
   end;
 
-
-  if exp>=0 then begin  //####.#####
+  if exponent>=0 then begin  //####.#####
     CalcLastDigit(var data, 0, aNumberOfDecimalDigits+nexp+1);
-    for i:Integer:=0 to exp do begin
+    for i:Integer:=0 to exponent do begin
       buf[bufpos] := digits[data[i]];
       inc(bufpos);
     end;
     if aNumberOfDecimalDigits > 0 then begin
       buf[bufpos] := DecimalChar;
       inc(bufpos);
-      var st_cnt := aNumberOfDecimalDigits + exp + 1;
+      var st_cnt := aNumberOfDecimalDigits + exponent + 1;
       for i:Integer:=nexp+1 to st_cnt-1 do begin
         buf[bufpos] := digits[data[i]];
         inc(bufpos);
@@ -583,5 +630,6 @@ begin
   end;
   exit  String.FromPChar(@buf[0],bufpos);
 end;
+
 
 end.

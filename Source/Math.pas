@@ -6,7 +6,7 @@ type
   Math = public class
   private
     const SIN_ACCURACY_ITERATION = 21+1;
-    const ln2 = 0.6931471805599453094;
+    const ln2 = 0.693147180559945309417232121458176568075500134360255254120680009493393621969694715605863326996418687542001481020570685733685520235758130557;
     {$REGION EXP2 lookup table}
     const EXP2_MAX_ITERATIONS=50;
     const EXP2_LOOK_UP_TABLE: array [0..EXP2_MAX_ITERATIONS] of Double =
@@ -62,6 +62,7 @@ type
           1.00000000000000133,
           1.00000000000000067];
     {$ENDREGION}
+    class method IntPow(x:Double; y: Integer): Double;
   public
     [SymbolName('fabs')]
     class method Abs(i: Double): Double;
@@ -119,8 +120,8 @@ type
     [SymbolName('trunc'), Used]
     class method Truncate(d: Double): Double;
 
-    const PI: Double = 3.1415926535897932384626433832795028841971693993751058209749445923078164062862089986280348253421170679;
-    const E: Double =  2.7182818284590452353602874713526624977572470936999595749669676277240766303535475945713821785251664274;
+    const PI: Double = 3.141592653589793238462643383279502884197169399375105820974944592307816406286208998628034825342117067982148086513282306647093844609550582232;
+    const E:  Double = 2.718281828459045235360287471352662497757247093699959574966967627724076630353547594571382178525166427427466391932;
   end;
 
 implementation
@@ -275,7 +276,7 @@ begin
   var lIndex: Integer;
   var temp: Double;
   if exponent < 0 then begin
-    var offset: Integer := Math.Abs(exponent);
+    var offset: Integer := Abs(exponent);
     iterations := iterations + exponent;
     lIndex := offset;
     temp := EXP2_LOOK_UP_TABLE[lIndex]
@@ -389,31 +390,26 @@ end;
 
 
 class method Math.Pow(x: Double; y: Integer): Double;
-begin
-  if y = 0 then exit 1;
-  if y > 0 then begin
-    result := x;
-    for i: Integer := 1 to y-1 do
-      result := result*x;
-  end
-  else begin
-    result := 1;
-    for i: Integer := 0 downto y+1 do
-      result := result / x; 
-  end;
-  exit result;
+begin  
+  if y >= 0 then 
+    exit IntPow(x, y)
+  else
+    exit 1.0 / IntPow(x, -y); 
 end;
 
 class method Math.Pow(x, y: Double): Double;
 begin
-  exit Exp(y * Log(x));
+  if (y.IsInt) then
+    exit Pow(x, Integer(y))
+  else
+    exit Exp(y * Log(x));
 end;
 
 class method Math.Round(a: Double): Int64;
 begin
   var p := a mod 1;
   if p = 0 then exit Int64(a);
-  var p1 := Math.Abs(p);
+  var p1 := Abs(p);
   if p1 < 0.5 then exit Int64(a - p);
   if p1 > 0.5 then exit Int64(a - p) + if a<0 then -1 else 1;
   //special case, p1 = 0.5
@@ -450,7 +446,7 @@ end;
 
 class method Math.Sqrt(d: Double): Double;
 begin
-  exit Pow(d,0.5);
+  exit Exp2((0.5 * Log(d))/ln2); // Pow(d, 0.5) = Exp(0.5 * Log(d)) = Exp2((0.5 * Log(d))/ln2);  
 end;
 
 class method Math.Tan(d: Double): Double;
@@ -458,10 +454,10 @@ begin
   exit Sin(d) / Cos(d);
 end;
 
-class method Math.Tanh(d:   Double): Double;
+class method Math.Tanh(d: Double): Double;
 begin
   // http://http.developer.nvidia.com/Cg/tanh.html
-  var exp2x: Double := Math.Exp(2*d);
+  var exp2x: Double := Exp(2*d);
   exit (exp2x - 1) / (exp2x + 1);
 end;
 
@@ -477,6 +473,22 @@ begin
   //           (Math.Floor(Math.Abs(dividend) / Math.Abs(divisor))))) *
   //           Math.Sign(dividend)
   exit (Abs(x) - (Abs(y) *  (Floor(Abs(x) / Abs(y))))) * Sign(x);
+end;
+
+class method Math.IntPow(x: Double; y: Integer): Double;
+begin
+  if y = 0 then exit 1.0;
+  if y = 1 then exit x;
+  var fl := y mod 2 = 1;
+  if fl then dec(y);
+  var res: Double := x;
+  while (y mod 2) = 0 do begin
+    res := res*res;
+    y := y shr 1;
+  end;
+  res := IntPow(res, y); 
+  if fl then res := res * x;
+  exit res;
 end;
 
 end.
