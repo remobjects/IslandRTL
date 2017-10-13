@@ -68,7 +68,7 @@ type
     end;
     {$ENDIF}
 
-    class method StringToUTF8(aValue: String; aGenerateBOM: Boolean := False): array of Byte;
+    class method StringToUTF8(aValue: String; aGenerateBOM: Boolean := False): not nullable array of Byte;
     begin
       if aValue = nil then new ArgumentNullException('aValue is nil');
       if aValue = '' then exit new array of Byte(0);
@@ -126,12 +126,12 @@ type
       exit r;
     end;
 
-    class method StringToUTF16(aValue: String; aGenerateBOM: Boolean := False): array of Byte;
+    class method StringToUTF16(aValue: String; aGenerateBOM: Boolean := False): not nullable array of Byte;
     begin
       exit StringToUTF16LE(aValue, aGenerateBOM);
     end;
 
-    class method StringToUTF16BE(aValue: String; aGenerateBOM: Boolean := False): array of Byte;
+    class method StringToUTF16BE(aValue: String; aGenerateBOM: Boolean := False): not nullable array of Byte;
     begin
       if aValue = nil then new ArgumentNullException('aValue is nil');
       if aValue = '' then exit new array of Byte(0);
@@ -152,7 +152,7 @@ type
       exit arr;
     end;
 
-    class method StringToUTF16LE(aValue: String; aGenerateBOM: Boolean := False): array of Byte;
+    class method StringToUTF16LE(aValue: String; aGenerateBOM: Boolean := False): not nullable array of Byte;
     begin
       if aValue = nil then new ArgumentNullException('aValue is nil');
       if aValue = '' then exit new array of Byte(0);
@@ -160,8 +160,8 @@ type
       var arr := new array of Byte(len*2 + iif(aGenerateBOM, 2, 0));
       var pos: Integer := 0;
       if aGenerateBOM then begin
-        arr[0] := $FE;
-        arr[1] := $FF;
+        arr[0] := $FF;
+        arr[1] := $FE;
         inc(pos,2);
       end;
       for i: Integer := 0 to len-1 do begin
@@ -173,12 +173,12 @@ type
       exit arr;
     end;
 
-    class method StringToUTF32(aValue: String; aGenerateBOM: Boolean := False): array of Byte;
+    class method StringToUTF32(aValue: String; aGenerateBOM: Boolean := False): not nullable array of Byte;
     begin
       exit StringToUTF32LE(aValue,aGenerateBOM);
     end;
 
-    class method StringToUTF32BE(aValue: String; aGenerateBOM: Boolean := False): array of Byte;
+    class method StringToUTF32BE(aValue: String; aGenerateBOM: Boolean := False): not nullable array of Byte;
     begin
       if aValue = nil then new ArgumentNullException('aValue is nil');
       if aValue = '' then exit new array of Byte(0);
@@ -214,7 +214,7 @@ type
       exit r;
     end;
 
-    class method StringToUTF32LE(aValue: String; aGenerateBOM: Boolean := False): array of Byte;
+    class method StringToUTF32LE(aValue: String; aGenerateBOM: Boolean := False): not nullable array of Byte;
     begin
       if aValue = nil then new ArgumentNullException('aValue is nil');
       if aValue = '' then exit new array of Byte(0);
@@ -250,12 +250,12 @@ type
       exit r;
     end;
 
-    class method UTF8ToString(aValue: array of Byte): String; inline;
+    class method UTF8ToString(aValue: array of Byte): not nullable String; inline;
     begin
       result := UTF8ToString(aValue, 0, length(aValue));
     end;
 
-    class method UTF8ToString(aValue: array of Byte; aOffset: Integer; len: Integer): String;
+    class method UTF8ToString(aValue: array of Byte; aOffset: Integer; len: Integer): not nullable String;
     begin
       if aValue = nil then new ArgumentNullException('aValue is nil');
       if len = 0 then exit '';
@@ -340,23 +340,22 @@ type
       exit str.ToString;
     end;
 
-    class method UTF16ToString(aValue: array of Byte): String; inline;
+    class method UTF16ToString(aValue: array of Byte): not nullable String; inline;
     begin
       result := UTF16ToString(aValue, 0, length(aValue));
     end;
 
-    class method UTF16ToString(aValue: array of Byte; aOffset: Integer; len: Integer): String; inline;
+    class method UTF16ToString(aValue: array of Byte; aOffset: Integer; len: Integer): not nullable String; inline;
     begin
-      {$WARNING need to check for endianess}
-      exit UTF16LEToString(aValue);
+      exit UTF16LEToString(aValue, aOffset, len);
     end;
 
-    class method UTF16BEToString(aValue: array of Byte): String; inline;
+    class method UTF16BEToString(aValue: array of Byte): not nullable String; inline;
     begin
       result := UTF16BEToString(aValue, 0, length(aValue));
     end;
 
-    class method UTF16BEToString(aValue: array of Byte; aOffset: Integer; len: Integer): String;
+    class method UTF16BEToString(aValue: array of Byte; aOffset: Integer; len: Integer): not nullable String;
     begin
       if aValue = nil then new ArgumentNullException('aValue is nil');
       if len = 0 then exit '';
@@ -366,19 +365,19 @@ type
       var start := aOffset;
       if len>1 then begin
         if (aValue[0] = $FE) and (aValue[1] = $FF) then
-          inc(start,2);
+          inc(start,1);
       end;
       for i: Integer :=start to len2 - 1 do
         str.Append(Char(aValue[i*2] shl 8 + aValue[i*2+1]));
       exit str.ToString;
     end;
 
-    class method UTF16LEToString(aValue: array of Byte): String; inline;
+    class method UTF16LEToString(aValue: array of Byte): not nullable String; inline;
     begin
       result := UTF16LEToString(aValue, 0, length(aValue));
     end;
 
-    class method UTF16LEToString(aValue: array of Byte; aOffset: Integer; len: Integer): String;
+    class method UTF16LEToString(aValue: array of Byte; aOffset: Integer; len: Integer): not nullable String;
     begin
       if aValue = nil then new ArgumentNullException('aValue is nil');
       if len = 0 then exit '';
@@ -388,32 +387,32 @@ type
       var start := aOffset;
       if len>1 then begin
         if (aValue[0] = $FF) and (aValue[1] = $FE) then
-          inc(start,2);
+          inc(start,1);
       end;
       for i: Integer := start to len2 - 1 do
         str.Append(Char(aValue[i*2] + aValue[i*2+1] shl 8));
       exit str.ToString;
     end;
 
-    class method UTF32ToString(aValue: array of Byte): String; inline;
+    class method UTF32ToString(aValue: array of Byte): not nullable String; inline;
     begin
       result := UTF32ToString(aValue, 0, length(aValue));
     end;
 
-    class method UTF32ToString(aValue: array of Byte; aOffset: Integer; len: Integer): String; inline;
-    begin
-      {$WARNING need to check for endianess}
-      exit UTF32LEToString(aValue);
+    class method UTF32ToString(aValue: array of Byte; aOffset: Integer; len: Integer): not nullable String; inline;
+    begin      
+      exit UTF32LEToString(aValue, aOffset, len);
     end;
 
-    class method UTF32BEToString(aValue: array of Byte): String; inline;
+    class method UTF32BEToString(aValue: array of Byte): not nullable String; inline;
     begin
       result := UTF32BEToString(aValue, 0, length(aValue));
     end;
 
-    class method UTF32BEToString(aValue: array of Byte; aOffset: Integer; len: Integer): String;
+    class method UTF32BEToString(aValue: array of Byte; aOffset: Integer; len: Integer): not nullable String;
     begin
       if aValue = nil then new ArgumentNullException('aValue is nil');
+      if len = 0 then exit '';
       if len - (len /4)*4 > 0 then BadArray;
       var str:= new StringBuilder;
       var idx := aOffset;
@@ -447,14 +446,15 @@ type
       exit str.ToString;
     end;
 
-    class method UTF32LEToString(aValue: array of Byte): String; inline;
+    class method UTF32LEToString(aValue: array of Byte): not nullable String; inline;
     begin
       result := UTF32LEToString(aValue, 0, length(aValue));
     end;
 
-    class method UTF32LEToString(aValue: array of Byte; aOffset: Integer; len: Integer): String;
+    class method UTF32LEToString(aValue: array of Byte; aOffset: Integer; len: Integer): not nullable String;
     begin
       if aValue = nil then new ArgumentNullException('aValue is nil');
+      if len = 0 then exit '';
       if len - (len/4)*4 > 0 then BadArray;
       var str:= new StringBuilder(len/2);
       var idx := aOffset;
