@@ -77,9 +77,9 @@ type
     class method wcslen(c: ^Char): Integer;
 
     {$IFDEF _WIN64}
-    [SymbolName('__chkstk'), Naked, DisableOptimizations, DisableInliningAttribute]
+    [SymbolName('__chkstk'), Naked, DisableOptimizations, DisableInliningAttribute, Used]
     {$ELSE}
-    [SymbolName('_chkstk'), Naked, DisableOptimizations, DisableInliningAttribute]
+    [SymbolName('_chkstk'), Naked, DisableOptimizations, DisableInliningAttribute, Used]
     {$ENDIF}
     class method _chkstk;
 
