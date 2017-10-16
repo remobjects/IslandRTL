@@ -10,7 +10,7 @@ type
   private
     {$IFDEF WINDOWS}
     fCS: rtl.CRITICAL_SECTION;
-    {$ELSE}
+    {$ELSEIF POSIX}
     fcs: rtl.pthread_mutex_t;
     {$ENDIF}
   public
@@ -66,7 +66,7 @@ constructor Monitor;
 begin
   {$IFDEF WINDOWS}
   rtl.InitializeCriticalSection(@fCS);
-  {$ELSE}
+  {$ELSEIF POSIX}
   var attr: rtl.pthread_mutexattr_t;
   rtl.pthread_mutexattr_init(@attr);
   rtl.pthread_mutexattr_settype(@attr, rtl.PTHREAD_MUTEX_RECURSIVE);
@@ -78,7 +78,7 @@ method Monitor.Wait;
 begin
   {$IFDEF WINDOWS}
   rtl.EnterCriticalSection(@fCS);
-  {$ELSE}
+  {$ELSEIF POSIX}
   rtl.pthread_mutex_lock(@fcs);
   {$ENDIF}
 end;
@@ -87,7 +87,7 @@ method Monitor.Release;
 begin
   {$IFDEF WINDOWS}
   rtl.LeaveCriticalSection(@fCS);
-  {$ELSE}
+  {$ELSEIF POSIX}
   rtl.pthread_mutex_unlock(@fcs);
   {$ENDIF}
 end;
@@ -96,7 +96,7 @@ method Monitor.Dispose;
 begin
   {$IFDEF WINDOWS}
   rtl.DeleteCriticalSection(@fCS);
-  {$ELSE}
+  {$ELSEIF POSIX}
   rtl.pthread_mutex_destroy(@fcs);
   {$ENDIF}
 end;

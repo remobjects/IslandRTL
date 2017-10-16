@@ -171,7 +171,7 @@ begin
   var len := rtl.MultiByteToWideChar(rtl.CP_ACP, 0, c, aCharCount, nil, 0);
   result := AllocString(len);
   rtl.MultiByteToWideChar(rtl.CP_ACP, 0, c, aCharCount, @result.fFirstChar, len);
-  {$ELSEIF ANDROID}
+  {$ELSEIF ANDROID or WEBASSEMBLY}
   var b := new Byte[aCharCount];
   Array.Copy(^Byte(c), b, 0, aCharCount);
   exit TextConvert.UTF8ToString(b);
@@ -193,7 +193,7 @@ begin
   result := new AnsiChar[len+ if aNullTerminate then 1 else 0];
   if len <> 0 then 
     rtl.WideCharToMultiByte(rtl.CP_ACP, 0, @self.fFirstChar, Length, rtl.LPSTR(@result[0]), len, nil, nil);
-  {$ELSEIF ANDROID}
+  {$ELSEIF ANDROID or WEBASSEMBLY}
   var b := TextConvert.StringToUtf8(self, false);
   result := new AnsiChar[b.Length + if aNullTerminate then 1 else 0];
   if b.Length <> 0 then 
@@ -718,6 +718,8 @@ method String.ToLower(aInvariant: Boolean := false): String;
 begin
   {$IFDEF WINDOWS}
   exit doLCMapString(aInvariant, LCMapStringTransformMode.Lower);
+  {$ELSEIF WEBASSEMBLY}
+  exit ExternalCalls.GetAndFreeString(WebAssemblyCalls.ToLower(@fFirstChar, Length, aInvariant));
   {$ELSEIF POSIX}
   {$HINT Non-Invariant ToLower is not implemented for Linux, yet}
   var b := TextConvert.StringToUTF32LE(self);
@@ -739,7 +741,9 @@ method String.ToUpper(aInvariant: Boolean := false): String;
 begin
   {$IFDEF WINDOWS}
   exit doLCMapString(aInvariant, LCMapStringTransformMode.Upper);
-  {$ELSEIF POSIX}
+  {$ELSEIF WEBASSEMBLY}
+  exit ExternalCalls.GetAndFreeString(WebAssemblyCalls.Toupper(@fFirstChar, Length, aInvariant));
+  {$ELSEIF POSIX or WEBASSEMBLY}
   {$HINT Non-Invariant ToUpper is not implemented for Linux, yet}
   var b := TextConvert.StringToUTF32LE(self);
   for i: Int32 := 0 to RemObjects.Elements.System.length(b)-1 step 4 do begin
@@ -760,7 +764,7 @@ method String.MakeInvariantString: String;
 begin
   {$IFDEF WINDOWS}
   exit doLCMapString(true, LCMapStringTransformMode.None);
-  {$ELSEIF POSIX}
+  {$ELSEIF POSIX or WEBASSEMBLY}
   exit self; {$WARNING POSIX: implement MakeInvariantString}
   {$ELSE}
   {$ERROR Not Implemented}
@@ -798,7 +802,7 @@ end;
 
 class method String.FromPChar(c: ^Char): String;
 begin
-  exit FromPChar(c, {$IFDEF WINDOWS}ExternalCalls.wcslen(c){$ELSEIF POSIX}rtl.wcslen(c){$ELSE}{$ERROR Not Implemented}{$ENDIF});
+  exit FromPChar(c, {$IFDEF WINDOWS OR WEBASSEMBLY}ExternalCalls.wcslen(c){$ELSEIF POSIX}rtl.wcslen(c){$ELSE}{$ERROR Not Implemented}{$ENDIF});
 end;
 
 class method String.FromChar(c: Char): String;
@@ -817,7 +821,7 @@ end;
 class method String.FromPAnsiChars(c: ^AnsiChar): nullable String;
 begin
   if not assigned(c) then exit nil;
-  exit FromPAnsiChars(c, {$IFDEF WINDOWS}ExternalCalls.strlen(c){$ELSEIF POSIX}rtl.strlen(c){$ELSE}{$ERROR Not Implemented}{$ENDIF});
+  exit FromPAnsiChars(c, {$IFDEF WINDOWS OR WEBASSEMBLY}ExternalCalls.strlen(c){$ELSEIF POSIX}rtl.strlen(c){$ELSE}{$ERROR Not Implemented}{$ENDIF});
 end;
 
 class method String.Format(aFormat: String; params aArguments: array of Object): String;

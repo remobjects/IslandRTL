@@ -151,7 +151,7 @@ begin
   result := TextConvert.UTF32LEToString(b)[0];
   {$ELSE}
   var str := String.FromChar(Self).ToUpper(aInvariant);
-  if length(Str) > 0 then exit Str.Item[0];
+  if length(str) > 0 then exit str.Item[0];
   exit #0;
   {$ENDIF}
 end;

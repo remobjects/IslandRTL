@@ -84,6 +84,8 @@ type
           if aLength <= 0 then break;
         end;
       end;
+      {$ELSEIF WEBASSEMBLY}
+      WebAssemblyCalls.CryptoSafeRandom(@aDest[aStart], aLength);
       {$ELSE}
       {$ERROR Not implemented}
       {$ENDIF}

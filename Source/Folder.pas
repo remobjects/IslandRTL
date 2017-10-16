@@ -1,5 +1,5 @@
 ﻿namespace RemObjects.Elements.System;
-
+{$IFNDEF NOFILES}
 type
   Folder = public class(BaseFile)
   private
@@ -165,5 +165,5 @@ type
     end;
 
   end;
-
+{$ENDIF}
 end.

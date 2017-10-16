@@ -506,7 +506,7 @@ end;
 
 method ExternalCalls.atexit(func: atexitfunc);
 begin
-  var rec := ^atexitrec(gc.GC_malloc(sizeOf(atexitrec)));
+  var rec := ^atexitrec(malloc(sizeOf(atexitrec)));
   // TODO: make atomic
   rec^.func := func;
   rec^.next := atexitlist;

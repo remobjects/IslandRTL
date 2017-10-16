@@ -106,6 +106,8 @@ type
       var ts: rtl.__struct_timespec;
       rtl.timespec_get(@ts, rtl.TIME_UTC);
       exit new DateTime(UnixDateOffset + (ts.tv_sec * TicksPerMillisecond) + (ts.tv_nsec / 100000));
+      {$ELSEIF WEBASSEMBLY}
+      exit new DateTime(Int64(WebAssemblyCalls.GetUTCTime * TicksPerSecond));
       {$ELSE}{$ERROR}
       {$ENDIF}
     end;
@@ -126,6 +128,8 @@ type
       var ts: rtl.__struct_timespec;
       rtl.timespec_get(@ts, rtl.TIME_UTC);
       exit FromUnixTimeUTC(ts);
+      {$ELSEIF WEBASSEMBLY}
+      exit new DateTime(Int64(WebAssemblyCalls.GetLocalTime * TicksPerSecond));
       {$ELSE}{$ERROR}
       {$ENDIF}
     end;
@@ -340,7 +344,7 @@ type
       var buf1:= new array of Char(k+1);
       k1 := rtl.GetTimeFormatEx(l1,0,@sysdate,nil,rtl.LPWSTR(@buf1[0]),k+1);
       exit r.TrimEnd+' ' + String.FromPChar(@buf1[0],k1).TrimEnd;
-      {$ELSEIF POSIX}
+      {$ELSEIF POSIX or WEBASSEMBLY}
       exit String.Format('{0}-{1}-{2} {3}:{4}:{5}',[Year.ToString,TwoCharStr(Month),TwoCharStr(Day),TwoCharStr(Hour),TwoCharStr(Minute), TwoCharStr(Second)]);
       {$ELSE}{$ERROR}
       {$ENDIF}

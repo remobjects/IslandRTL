@@ -1,7 +1,7 @@
 ﻿namespace RemObjects.Elements.System;
 
 interface
-
+{$IFNDEF NOFILES}
 type
   File = public class(BaseFile)
   private
@@ -22,9 +22,9 @@ type
     property Length: Int64 read GetLength;
     method ReadBytes: array of Byte;
   end;
-
+{$ENDIF}
 implementation
-
+{$IFNDEF NOFILES}
 method File.Copy(NewFile: not nullable File);
 begin
   if NewFile = nil then raise new Exception('NewFile is nil');
@@ -139,5 +139,5 @@ method File.Validate;
 begin
   if not Exists then raise new Exception('File not exists:'+fFullName);
 end;
-
+{$ENDIF}
 end.

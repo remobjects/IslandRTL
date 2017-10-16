@@ -1,7 +1,7 @@
 ﻿namespace RemObjects.Elements.System;
 
 interface
-
+{$IFNDEF NOFILES}
 type
   Path = public static class
   public
@@ -16,9 +16,9 @@ type
 
     property DirectorySeparatorChar: Char read Folder.Separator;
   end;
-
+{$ENDIF}
 implementation
-
+{$IFNDEF NOFILES}
 method Path.ChangeExtension(FileName: not nullable String; NewExtension: nullable String): not nullable String;
 begin
   if length(NewExtension) = 0 then
@@ -160,5 +160,5 @@ begin
   {$ELSE}{$ERROR}
   {$ENDIF}
 end;
-
+{$ENDIF}
 end.

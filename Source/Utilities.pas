@@ -4,14 +4,19 @@ type
   MAllocFunc nested in SharedMemory = function(size: {$IFDEF WINDOWS}{$IFDEF i386}UInt32{$ELSE}UInt64{$ENDIF}{$ELSE}rtl.size_t{$ENDIF}): ^Void;
   CollectFunc nested in SharedMemory = procedure;
   UnregisterFunc nested in SharedMemory = function: Integer;
-  SetFinalizerFunc nested in SharedMemory = procedure(val: ^Void; aFunc: gc.GC_finalization_proc);
+  SetFinalizerFunc nested in SharedMemory = procedure(val: ^Void);
+  AddRefProc nested in SharedMemory = procedure(o: ^Object);
+
+
   SharedMemory = record
   public
     malloc: MAllocFunc;
     setfinalizer: SetFinalizerFunc;
+    unsetfinalizer: SetFinalizerFunc;
     collect: CollectFunc;
     register: UnregisterFunc;
     unregister: UnregisterFunc;
+    addref, release: AddRefProc;
   end;
 
   DebugExceptionCallback = public procedure (data: ^Void; ex: IntPtr);
@@ -20,10 +25,9 @@ type
   Utilities = public static class
   private
     class var fFinalizer: ^Void;
-    class var fLoaded: Integer;
-    class var fLock: Integer;
+    class var fLoaded: Integer; assembly;
     {$IFDEF POSIX}[LinkOnce]{$ENDIF}
-    class var fSharedMemory: SharedMemory;
+    class var fSharedMemory: SharedMemory; assembly;
   public
     [SymbolName('__island_debug_invoke'), Used, DllExport]
     method DebugInvoke(data: ^Void; invk: DebugInvokeCallback; ex: DebugExceptionCallback);
@@ -118,119 +122,7 @@ type
     begin
       exit new NullReferenceException;
     end;
-    {$IFDEF WINDOWS}var fMapping: rtl.HANDLE;{$ENDIF}
-    [SkipDebug]
-    method LoadGC; private;
-    begin
-      SpinLockEnter(var fLock);
-      try
-        if InternalCalls.CompareExchange(var fLoaded, 1, 0 ) = 1 then begin
-          exit;
-        end;
-        {$IFDEF WINDOWS}
-        var FN: array[0..28] of Char;
-        FN[0] := '_';
-        FN[1] := '_';
-        FN[2] := 'R';
-        FN[3] := 'e';
-        FN[4] := 'm';
-        FN[5] := 'O';
-        FN[6] := 'b';
-        FN[7] := 'j';
-        FN[8] := 'e';
-        FN[9] := 'c';
-        FN[10] := 't';
-        FN[11] := 's';
-        FN[12] := 'I';
-        FN[13] := 's';
-        FN[14] := 'l';
-        FN[15] := 'a';
-        FN[16] := 'n';
-        FN[17] := 'd';
-        FN[18] := '1'; // Version, increase when adding stuff or making the class layout incompatible
-        var lID := rtl.GetCurrentProcessId;
-        FN[19] := Char(Integer('a')+Integer((lID shr 0) and $f));
-        FN[20] := Char(Integer('a')+Integer((lID shr 4) and $f));
-        FN[21] := Char(Integer('a')+Integer((lID shr 8) and $f));
-        FN[22] := Char(Integer('a')+Integer((lID shr 12) and $f));
-        FN[23] := Char(Integer('a')+Integer((lID shr 16) and $f));
-        FN[24] := Char(Integer('a')+Integer((lID shr 20) and $f));
-        FN[25] := Char(Integer('a')+Integer((lID shr 24) and $f));
-        FN[26] := Char(Integer('a')+Integer((lID shr 28) and $f));
-        FN[27] := #0;
-
-        fMapping := rtl.CreateFileMappingW( rtl.INVALID_HANDLE_VALUE, nil, rtl.PAGE_READWRITE, 0, 8, @FN[0]);
-
-        if fMapping = nil then begin
-          LocalGC;
-          raise new Exception('Cannot create file mapping for memory sharing, this should not happen!');
-        end;
-        var lNew := rtl.GetLastError <> rtl.ERROR_ALREADY_EXISTS;
-        var p: ^NativeInt := ^NativeInt(rtl.MapViewOfFile(fMapping, rtl.FILE_MAP_WRITE, 0, 0, 8));
-        if p = nil then begin
-          LocalGC;
-          raise new Exception('Cannot create file mapping for memory sharing, this should not happen!');
-        end;
-        if lNew then begin
-          LocalGC;
-          InternalCalls.VolatileWrite(var p^, NativeInt(@fSharedMemory));
-        end else begin
-          loop begin
-            var lData: ^SharedMemory := ^SharedMemory(InternalCalls.VolatileRead(var p^));
-            if lData = nil then Thread.Sleep(1) else begin
-              fSharedMemory := lData^;
-              break;
-            end;
-          end;
-        end;
-        rtl.UnmapViewOfFile(p);
-        if not lNew then begin
-          rtl.CloseHandle(fMapping);
-          fMapping := rtl.INVALID_HANDLE_VALUE;
-        end;
-        {$ELSE}
-        LocalGC;
-        {$ENDIF}
-      finally
-        SpinLockExit(var fLock);
-      end;
-    end;
-
-    method GC_my_register_my_thread: Integer;
-    begin 
-      var sb: gc.__struct_GC_stack_base;
-      gc.GC_get_stack_base(@sb);
-      exit gc.GC_register_my_thread(@sb);
-    end;
-
-    {$IFDEF POSIX}[LinkOnce, DllExport]{$ENDIF}
-    [SkipDebug]
-    method LocalGC; private;
-    begin
-      gc.GC_INIT;
-      gc.GC_allow_register_threads();
-      fSharedMemory.collect := @gc.GC_gcollect;
-      fSharedMemory.register := @GC_my_register_my_thread;
-      fSharedMemory.unregister := @gc.GC_unregister_my_thread;
-      fSharedMemory.malloc := @gc.GC_malloc;
-      fSharedMemory.setfinalizer := @SetFinalizer;
-    end;
-    [SymbolName('registerthread')]
-    method RegisterThread: Boolean;
-    begin 
-      exit fSharedMemory.register() = gc.GC_SUCCESS;
-    end;
-
-    [SymbolName('unregisterthread')]
-    method UnregisterThread; 
-    begin 
-      fSharedMemory.unregister;
-    end;
-
-    method SetFinalizer(aVal: ^Void; aProc: gc.GC_finalization_proc);
-    begin
-      gc.GC_register_finalizer_no_order(aVal, aProc, nil, nil, nil);
-    end;
+    
     const FinalizerIndex = 4 + {$IFDEF I386}4{$ELSE}2{$ENDIF};
     [SymbolName('__newinst')]
     //[SkipDebug]
@@ -240,12 +132,12 @@ type
         fFinalizer := ^^Void(InternalCalls.GetTypeInfo<Object>())[FinalizerIndex]; // keep in sync with compiler!
       end;
       result := ^Void(-1);
-      if fLoaded = 0 then LoadGC;
+      if fLoaded = 0 then GC.LoadGC;
       result := fSharedMemory.malloc(aSize);
       ^^Void(result)^ := aTTY;
       memset(^Byte(result) + sizeOf(^Void), 0, aSize - sizeOf(^Void));
       if ^^Void(aTTY)[FinalizerIndex] <> fFinalizer then begin
-        fSharedMemory.setfinalizer(result, @GC_finalizer);
+        fSharedMemory.setfinalizer(result);
       end;
     end;
 
@@ -294,22 +186,20 @@ type
     class method SuppressFinalize(o: Object);
     begin
       if o <> nil then
-        fSharedMemory.setfinalizer(InternalCalls.Cast(o), nil);
-    end;
-
-    class method Collect(c: Integer);
-    begin
-      for i: Integer := 0 to c -1 do
-        fSharedMemory.collect;
+        fSharedMemory.unsetfinalizer(InternalCalls.Cast(o));
     end;
 
     class method SpinLockEnter(var x: Integer);
     begin
+    {$IFDEF WEBASSEMBLY}
+    InternalCalls.Exchange(var x, 1);
+    {$ELSE}
      loop begin
        if InternalCalls.Exchange(var x, 1) = 0 then exit;
        if not Thread.Yield() then
          Thread.Sleep(1);
      end;
+    {$ENDIF}
     end;
 
     class method SpinLockExit(var x: Integer);
@@ -320,6 +210,9 @@ type
     [SkipDebug]
     class method SpinLockClassEnter(var x: NativeInt): Boolean;
     begin
+      {$IFDEF WEBASSEMBLY}
+      exit InternalCalls.Exchange(var x, 1) = 0;
+      {$ELSE}
       var cid := Thread.CurrentThreadID;
 
       var lValue := InternalCalls.CompareExchange(var x, cid, NativeInt(0)); // returns old
@@ -336,6 +229,7 @@ type
         lValue := InternalCalls.VolatileRead(var x); // returns old
       until lValue = NativeInt(Int64(-1));
       exit false;
+      {$ENDIF}
     end;
 
     [SkipDebug]
@@ -449,13 +343,15 @@ type
 method GC_finalizer(obj, d: ^Void); assembly;
 begin
   {$HIDE W25}
+  {$HIDE W58}
   InternalCalls.Cast<Object>(obj).Finalize;
   {$SHOW W25}
+  {$SHOW W58}
 end;
 
 method memcpy(destination: ^Void; source: ^Void; num: NativeInt): ^Void; public;inline;
 begin 
-  {$IFDEF WINDOWS}
+  {$IFDEF WINDOWS OR WEBASSEMBLY}
   exit ExternalCalls.memcpy(destination, source, num);
   {$ELSE}
   exit rtl.memcpy(destination, source, num);
@@ -465,7 +361,7 @@ end;
 
 method memmove(destination: ^Void; source: ^Void; num: NativeInt): ^Void; public;inline;
 begin 
-  {$IFDEF WINDOWS}
+  {$IFDEF WINDOWS OR WEBASSEMBLY}
   exit ExternalCalls.memmove(destination, source, num);
   {$ELSE}
   exit rtl.memmove(destination, source, num);
@@ -474,7 +370,7 @@ end;
 
 method memset (ptr: ^Void; value: Integer; num: NativeInt): ^Void; public; inline;
 begin 
-  {$IFDEF WINDOWS}
+  {$IFDEF WINDOWS OR WEBASSEMBLY}
   exit ExternalCalls.memset(ptr, value, num);
   {$ELSE}
   exit rtl.memset(ptr, value, num);

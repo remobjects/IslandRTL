@@ -84,6 +84,7 @@
     <GenerateDebugInfo>True</GenerateDebugInfo>
   </PropertyGroup>
   <ItemGroup>
+    <Compile Include="BoehmGC.pas" />
     <Compile Include="ManagedThreadPool.pas" />
     <Compile Include="PosixHelpers.pas" />
   </ItemGroup>

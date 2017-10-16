@@ -1,7 +1,7 @@
 ﻿namespace RemObjects.Elements.System;
 
 interface
-
+{$IFNDEF NOTHREADS}
 type
   TaskState = public enum(&New, AwaitingStart, Started, Completed, Failed);
   TaskAction =  abstract class
@@ -704,16 +704,16 @@ type
 
     class property Current: SynchronizationContext read fCurrent write fCurrent;
   end;
-
+{$ENDIF}
 
 implementation
-
+{$IFNDEF NOTHREADS}
 
 {$IFDEF WINDOWS}
 [CallingConvention(CallingConvention.Stdcall)]
 method ThreadCallBack(Instance: rtl.PTP_CALLBACK_INSTANCE; &Param: rtl.PVOID; Work: rtl.PTP_WORK);
 begin
-  var lShouldUnregister := Utilities.RegisterThread;
+  var lShouldUnregister := GC.RegisterThread;
   Instance := nil;
   Work := nil;
   var lHandle := new GCHandle(NativeInt(&Param));
@@ -722,7 +722,7 @@ begin
   obj.fCallback(obj.fState);
   obj := nil;
   if lShouldUnregister then
-    Utilities.UnregisterThread;
+    GC.UnregisterThread;
 end;
 {$ENDIF}
 
@@ -792,5 +792,5 @@ begin
   fThreadPool := new ManagedThreadPool;
 {$ENDIF}
 end;
-
+{$ENDIF}
 end.

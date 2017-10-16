@@ -84,6 +84,7 @@
     <GenerateDebugInfo>True</GenerateDebugInfo>
   </PropertyGroup>
   <ItemGroup>
+    <Compile Include="BoehmGC.pas" />
     <Compile Include="IDispatch.pas" />
     <Compile Include="OleString.pas" />
     <Compile Include="Interfaces.pas" />

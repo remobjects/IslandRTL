@@ -246,7 +246,7 @@ end;
 
 method ExternalCalls.RaiseException(aRaiseAddress: ^Void; aRaiseFrame: ^Void; aRaiseObject: Object);
 begin
-  var lRecord := ^ElementsException(gc.GC_malloc(sizeOf(ElementsException))); // we use gc memory for this
+  var lRecord := ^ElementsException(malloc(sizeOf(ElementsException))); // we use gc memory for this
   rtl.memset(lRecord, 0, sizeOf(ElementsException));
   var lExp := Exception(aRaiseObject);
   if lExp <> nil then begin
@@ -348,6 +348,7 @@ begin
     {$ELSE}
     rtl._Unwind_SetIP(aCtx, lRecord^.landingPad);
     {$ENDIF}
+    free(lRecord);
     exit rtl._Unwind_Reason_Code._URC_INSTALL_CONTEXT;
   end;
   exit {$IFNDEF ARM}rtl._Unwind_Reason_Code._URC_FATAL_PHASE1_ERROR{$ELSE}rtl._Unwind_Reason_Code._URC_FAILURE{$ENDIF};
@@ -641,7 +642,7 @@ end;
 
 method ExternalCalls.atexit(func: atexitfunc);
 begin
-  var rec := ^atexitrec(gc.GC_malloc(sizeOf(atexitrec)));
+  var rec := ^atexitrec(malloc(sizeOf(atexitrec)));
   // TODO: make atomic
   rec^.func := func;
   rec^.next := atexitlist;

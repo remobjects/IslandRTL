@@ -474,6 +474,8 @@ type
       result := FFI.Call(Pointer, cc, var lParams, lModes, lTypes, &Type);
       {$ELSEIF POSIX}
       raise new NotImplementedException();
+      {$ELSEIF WEBASSEMBLY}
+      raise new NotImplementedException();
       {$ELSE}{$ERROR}{$ENDIF}
       for k in Arguments index i do
         if lModes[i+dx] in [ArgumentMode.Var,ArgumentMode.Out] then

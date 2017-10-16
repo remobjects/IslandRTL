@@ -26,8 +26,10 @@ type
     method &Write(const buf: ^Void; Count: Int32): Int32; override;
     method ToArray: array of Byte;
     method WriteTo(Destination: Stream);
+    {$IFNDEF NOFILES}
     method LoadFromFile(FileName: String);
     method SaveToFile(FileName: String);
+    {$ENDIF}
 
     property Capacity: Int32 read fCapacity write SetCapacity;
     property Length: Int64 read fLength; override;
@@ -128,6 +130,7 @@ begin
   Destination.Write(@fbuf[0],fLength);
 end;
 
+{$IFNDEF NOFILES}
 method MemoryStream.LoadFromFile(FileName: String);
 begin
   var fs := new FileStream(FileName, FileMode.Open,FileAccess.Read, FileShare.Read);
@@ -146,5 +149,5 @@ begin
   fs.Write(@fbuf[0],fLength);
   fs.Close;
 end;
-
+{$ENDIF}
 end.

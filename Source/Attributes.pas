@@ -286,5 +286,15 @@ type
     constructor(aPriority: Integer); empty;
   end;
 
+  // When applied, when this fx is loaded the compiler defines that for the project that uses it
+  [AttributeUsage(AttributeTargets.Assembly, AllowMultiple := true)]
+  AssemblyDefineAttribute = public class(Attribute)
+  public
+    constructor(aDefine: String);
+    begin
+      Define := aDefine;
+    end;
+    property Define: String;readonly;
+  end;
 
 end.

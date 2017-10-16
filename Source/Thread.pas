@@ -1,7 +1,7 @@
 ﻿namespace RemObjects.Elements.System;
 
 interface
-
+{$IFNDEF NOTHREADS}
 type
   ParameterizedThreadStart = public delegate (obj: Object);
 
@@ -130,9 +130,9 @@ type
 
 method WindowsThreadProc(aParam: ^Void): rtl.DWORD;
 {$ENDIF}
-
+{$ENDIF}
 implementation
-
+{$IFNDEF NOTHREADS}
 method Thread.GetPriority: ThreadPriority;
 begin
   {$IFDEF WINDOWS}
@@ -183,13 +183,13 @@ begin
   try
     if not aThread.fTerminated then begin
       try
-        Utilities.RegisterThread;
+        GC.RegisterThread;
         aThread.Execute;
       except
         on E: Exception do
           aThread.fCallStack := E.Message;
       end;
-      Utilities.UnregisterThread;
+      GC.UnregisterThread;
 
     end;
   finally
@@ -207,13 +207,13 @@ begin
   try
     if not aThread.fTerminated then begin
       try
-        Utilities.RegisterThread;
+        GC.RegisterThread;
         aThread.Execute;
       except
         on E: Exception do
           aThread.fCallStack := E.Message;
       end;
-      Utilities.UnregisterThread;
+      GC.UnregisterThread;
     end;
   finally
     aThread.fDone := True;
@@ -492,5 +492,5 @@ begin
   rtl.pthread_mutex_destroy(@fMutex);
 end;
 {$ENDIF}
-
+{$ENDIF}
 end.

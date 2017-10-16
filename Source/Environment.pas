@@ -16,6 +16,8 @@ type
       var str : rtl.__struct_utsname;
       if rtl.uname(@str) = 0 then exit String.FromPAnsiChars(str.sysname);
       CheckForLastError;
+      {$ELSEIF WEBASSEMBLY}
+      exit 'WebAssembly';
       {$ELSE}{$ERROR}{$ENDIF}
     end;
 
@@ -32,10 +34,13 @@ type
       var str : rtl.__struct_utsname;
       if rtl.uname(@str) = 0 then exit String.FromPAnsiChars(str.version);
       CheckForLastError;
+      {$ELSEIF WEBASSEMBLY}
+      var lHandle := WebAssemblyCalls.GetOSName;
+      exit ExternalCalls.GetAndFreeString(lHandle);
       {$ELSE}{$ERROR}{$ENDIF}
     end;
   public
-    property NewLine: String read {$IFDEF WINDOWS}#13#10{$ELSEIF POSIX}#10{$ELSE}{$ERROR}{$ENDIF};
+    property NewLine: String read {$IFDEF WINDOWS OR WEBASSEMBLY}#13#10{$ELSEIF POSIX}#10{$ELSE}{$ERROR}{$ENDIF};
     property UserName: String read GetUserName;
     property OSName: String read GetOSName;
     property OSVersion: String read GetOSVersion;
@@ -49,6 +54,8 @@ type
         var len := rtl.GetEnvironmentVariableW(Name.ToLPCWSTR ,rtl.LPWSTR(@buf[0]), 32767);
         if len > 0 then
           result := String.FromPChar(@buf[0], len);
+        {$ELSEIF WEBASSEMBLY} 
+        exit nil;
         {$ELSEIF POSIX}
         var lName := Name.ToAnsiChars;
         result := String.FromPAnsiChars(rtl.getenv(@lName[0]));
@@ -75,6 +82,8 @@ type
         end;
       end;
       CheckForLastError;
+      {$ELSEIF WEBASSEMBLY} 
+      exit nil;
       {$ELSEIF ANDROID}
       var len := 1024;
       loop begin
@@ -94,7 +103,7 @@ type
       rtl.free(lCwd);
       {$ELSE}{$ERROR}{$ENDIF}
     end;
-
+    {$IFNDEF NOFILES}
     method UserHomeFolder: Folder;
     begin
       var fn: String;
@@ -106,6 +115,7 @@ type
       {$ELSE}{$ERROR}{$ENDIF}
       exit new Folder(fn);
     end;
+    {$endif}
   end;
 
 end.

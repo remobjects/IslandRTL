@@ -1,5 +1,5 @@
 ﻿namespace RemObjects.Elements.System;
-
+{$IFNDEF NOFILES}
 type
   TimeModifier = (Created, Updated, Accessed);
 
@@ -99,5 +99,5 @@ begin
   exit @self.ToAnsiChars(True)[0];
 end;
 {$ENDIF}
-
+{$ENDIF}
 end.

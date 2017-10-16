@@ -1,5 +1,6 @@
 ﻿namespace RemObjects.Elements.System;
 
+{$IFNDEF NOFILES}
 type
   BaseFile = abstract public class
   private
@@ -67,5 +68,5 @@ type
     property DateModified: DateTime read GetFileTime(TimeModifier.Updated);
     property DateAccessed: DateTime read GetFileTime(TimeModifier.Accessed);
   end;
-
+  {$ENDIF}
 end.

@@ -8,18 +8,18 @@
     <AllowGlobals>True</AllowGlobals>
     <AllowLegacyOutParams>False</AllowLegacyOutParams>
     <AllowLegacyCreate>False</AllowLegacyCreate>
-    <Configuration Condition="'$(Configuration)' == ''">Debug-x86_64</Configuration>
+    <Configuration Condition="'$(Configuration)' == ''">Debug</Configuration>
     <TargetFrameworkVersion>v4.0</TargetFrameworkVersion>
-    <Name>Island (Android NDK)</Name>
-    <ProjectGuid>{961edd39-0901-480d-97a6-c775095d5ebc}</ProjectGuid>
+    <Name>Island (WebAssembly)</Name>
+    <ProjectGuid>{8C88F0A8-D5E6-4957-B16F-4FB38738FD75}</ProjectGuid>
     <Mode>Island</Mode>
     <WarnOnCaseMismatch>True</WarnOnCaseMismatch>
     <Platform Condition="'$(Platform)' == ''">AnyCPU</Platform>
     <GenerateDebugInfo>True</GenerateDebugInfo>
+    <DefineConstants>WebAssembly;CPU32;NOTHREADS;NOFILES</DefineConstants>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)' == 'Debug'">
     <OutputPath>Bin\Debug</OutputPath>
-    <DefineConstants>Android</DefineConstants>
     <EnableAsserts>True</EnableAsserts>
     <Optimize>False</Optimize>
     <GeneratePDB>True</GeneratePDB>
@@ -31,11 +31,11 @@
     <XmlDoc>False</XmlDoc>
     <XmlDocWarningLevel>WarningOnPublicMembers</XmlDocWarningLevel>
     <EnableUnmanagedDebugging>False</EnableUnmanagedDebugging>
+    <Architecture>wasm32-unknown-unknown-wasm</Architecture>
     <GenerateDebugInfo>True</GenerateDebugInfo>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)' == 'Release'">
     <OutputPath>Bin\Release</OutputPath>
-    <DefineConstants>Android</DefineConstants>
     <EnableAsserts>False</EnableAsserts>
     <GeneratePDB>False</GeneratePDB>
     <GenerateMDB>False</GenerateMDB>
@@ -46,19 +46,16 @@
     <XmlDoc>False</XmlDoc>
     <XmlDocWarningLevel>WarningOnPublicMembers</XmlDocWarningLevel>
     <EnableUnmanagedDebugging>False</EnableUnmanagedDebugging>
+    <Architecture>wasm32-unknown-unknown-wasm</Architecture>
     <GenerateDebugInfo>True</GenerateDebugInfo>
   </PropertyGroup>
   <ItemGroup>
-    <Compile Include="BoehmGC.pas" />
-    <Compile Include="ManagedThreadPool.pas" />
-    <Compile Include="PosixHelpers.pas" />
-  </ItemGroup>
-  <ItemGroup>
-    <Reference Include="gc" />
-    <Reference Include="rtl" />
+    <Compile Include="rpmalloc.pas" />
+    <Compile Include="SimpleGC.pas" />
+    <Compile Include="WebAssembly.pas" />
   </ItemGroup>
   <PropertyGroup />
-  <Import Project="$(MSBuildExtensionsPath)\RemObjects Software\Elements\RemObjects.Elements.Island.Android.targets" />
+  <Import Project="$(MSBuildExtensionsPath)\RemObjects Software\Elements\RemObjects.Elements.Island.WebAssembly.targets" />
   <Import Project="Island.Shared.projitems" Label="Shared" />
   <PropertyGroup>
     <PreBuildEvent />

@@ -40,20 +40,22 @@ begin
     l := l - lOut;
     lOff := lOff + lOut;
   end;
-{$ELSE}
-  {$IFDEF ANDROID}
-  WriteLine(s); // android doesn't have a separate write vs writeln.
+  {$ELSEIF WebAssembly}
+  WebAssemblyCalls.ConsoleLog(@s.fFirstChar, s.Length);
+  {$ELSEIF ANDROID}
+    WriteLine(s); // android doesn't have a separate write vs writeln.
   {$ELSE}
   var c := s.ToAnsiChars(true);
   rtl.printf("%s", @c[0]);
-  {$ENDIF}
  {$ENDIF}
 end;
 
 class method Console.WriteLine(s: String);
 begin
   if s = nil then s := '';
-  {$IFDEF WINDOWS}
+  {$IFDEF WEBASSEMBLY}
+  WebAssemblyCalls.ConsoleLog(@s.fFirstChar, s.Length);
+  {$ELSEIF WINDOWS}
   Write(s + Environment.NewLine);
   {$ELSE}
   var c := s.ToAnsiChars(true);
@@ -85,6 +87,7 @@ end;
 
 class method Console.ReadLine: String;
 begin
+  {$IFNDEF WEBASSEMBLY}
   var r: String := '';
   var bufsize := 255;
   var offset := 0;
@@ -103,10 +106,12 @@ begin
   if offset > 0 then
     r := r + String.FromPAnsiChars(@buf[0], offset);
   exit r;
+  {$ENDIF}
 end;
 
 class method Console.ReadChar: AnsiChar;
 begin
+  {$IFNDEF WEBASSEMBLY}
   var ch : array[0..0] of AnsiChar;
   ch[0] := #0;
   {$IFDEF WINDOWS}
@@ -124,6 +129,7 @@ begin
   if c < 0 then exit #0;
   exit AnsiChar(c);
  {$ENDIF}
+  {$ENDIF}
 end;
 
 end.

@@ -1,7 +1,7 @@
 ﻿namespace RemObjects.Elements.System;
 
 interface
-
+{$IFNDEF NOFILES}
 type
   IOException = public class(Exception)
   end;
@@ -38,9 +38,9 @@ type
     method SetLength(value: Int64); override;
     property Name: String; readonly;
   end;
-
+{$ENDIF}
 implementation
-
+{$IFNDEF NOFILES}
 constructor FileStream(FileName: String; Mode: FileMode; Access: FileAccess; Share: FileShare := FileShare.Read);
 begin
   Name := FileName;
@@ -225,5 +225,5 @@ begin
     {$ERROR}
   {$ENDIF}
 end;
-
+{$ENDIF}
 end.

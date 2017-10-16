@@ -498,6 +498,10 @@ type
       var b := StringToUTF8(aValue, false);
       result := new Byte[b.Length];
       rtl.memcpy(@result[0], @b[0], b.Length);
+      {$ELSEIF WebAssembly}
+      var b := StringToUTF8(aValue, false);
+      result := new Byte[b.Length];
+      memcpy(@result[0], @b[0], b.Length);
       {$ELSE}
       var lNewData: ^AnsiChar := nil;
       var lNewLen: rtl.size_t := iconv_helper(TextConvert.fUTF16ToCurrent, ^AnsiChar(aValue.FirstChar), aValue.Length * 2, aValue.Length + 5, out lNewData);
@@ -523,7 +527,7 @@ type
       var len := rtl.MultiByteToWideChar(rtl.CP_ACP, 0, rtl.LPCCH(@aValue[aOffset]), aCount, nil, 0);
       result := String.AllocString(len);
       rtl.MultiByteToWideChar(rtl.CP_ACP, 0, rtl.LPCCH(@aValue[aOffset]), aCount, @result.fFirstChar, len);
-      {$ELSEIF ANDROID}
+      {$ELSEIF ANDROID or WebAssembly}
       exit TextConvert.UTF8ToString(aValue, aOffset, aCount);
       {$ELSE}
       var lNewData: ^AnsiChar := nil;
