@@ -389,6 +389,7 @@ begin
     rtl.DLL_PROCESS_ATTACH: ;
     rtl.DLL_THREAD_ATTACH:;
     rtl.DLL_THREAD_DETACH:;
+
   end;
 end;
 
@@ -860,19 +861,21 @@ end;
 
 {$IFNDEF _WIN64}
 [DisableInlining, DisableOptimizations, LinkOnce]
-method MyRtlUnwind(TargetFrame: rtl.PVOID; TargetIp: rtl.PVOID; ExceptionRecord: rtl.PEXCEPTION_RECORD; ReturnValue: rtl.PVOID); 
+method MyRtlUnwind(TargetFrame: IntPtr; TargetIp: IntPtr; ExceptionRecord: IntPtr; ReturnValue: IntPtr); 
 begin 
-  // RtlUnwind in win32 does not properly restore ebx, esi and edi. This means we have to do it ourselves, without this the caller crashes in optimized mode.
-  InternalCalls.VoidAsm("pushl %ebx
-  pushl %esi
-  pushl %edi
-  ", '', false, false);
-  rtl.RtlUnwind(TargetFrame, TargetIp, ExceptionRecord, ReturnValue);
   InternalCalls.VoidAsm("
-  popl %edi
-  popl %esi
-  popl %ebx
-  ", '', false, false);
+	movl $3, %eax
+  pushl %eax
+	movl $2, %eax
+  pushl %eax
+	movl $1, %eax
+  pushl %eax
+	movl $0, %eax
+  pushl %eax
+	calll	_RtlUnwind@16
+  ", "m,m,m,m,~{ebp},~{esp},~{ebx},~{esi},~{edi},~{dirflag},~{fpsr},~{flags}", true, true, [TargetFrame, TargetIp, ExceptionRecord, ReturnValue]);
+  if TargetFrame = 0 then // KEEP! This forces it to be linked in, without this call it disapears!
+    rtl.RtlUnwind(^Void(TargetFrame), ^Void(TargetIp), rtl.PEXCEPTION_RECORD(ExceptionRecord), ^Void(ReturnValue));
   exit;
 end;{$ENDIF}
 
@@ -890,7 +893,7 @@ method JumpToContinuation64(aAddress, aESP, aEBP: NativeInt); external;
     movl 8(%esp), %esp
     jmpl *%eax
 ", "", false, false), DisableInlining, DisableOptimizations]*)
-[DisableInlining]
+[DisableInlining, DisableOptimizations]
 method JumpToContinuation32(aAddress, aESP, aEBP: NativeInt); 
 begin 
   InternalCalls.VoidAsm("
@@ -1042,7 +1045,7 @@ begin
             var cond := tb^.HandlerType^.Type^.Filter;
             if (cond = nil) or (cond(regFrame^.ESP)) then begin
               result := 0;
-              MyRtlUnwind(aOrgregFrame, nil, arec, nil);
+              MyRtlUnwind(IntPtr(aOrgregFrame), nil, IntPtr(arec), nil);
               // now unwind locally
               while (regFrame^.TryLevel <> $FFFFFFFF) and (regFrame^.TryLevel < tb^.CatchHigh) and (regFrame^.TryLevel >= tb^.TryLow) do begin
                 if msvcinfo^.UnwindMap[regFrame^.TryLevel].Cleanup <> nil then begin 
