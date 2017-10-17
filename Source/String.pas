@@ -469,6 +469,7 @@ method String.Replace(OldValue, NewValue: String): not nullable String;
 begin
   result := self;
   var oldValue_Length := OldValue.Length;
+  var newValue_Length := NewValue.Length;
   var lstart:=0;
   repeat
     lstart := result.IndexOf(OldValue, lstart);
@@ -476,6 +477,7 @@ begin
       var lrest : not nullable String := '';
       if lstart+oldValue_Length < result.Length then lrest := result.Substring(lstart+oldValue_Length);
       result := result.Substring(0, lstart)+NewValue+lrest;
+      inc(lstart, newValue_Length);
   end;
   until lstart = -1;
 end;
