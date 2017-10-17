@@ -855,7 +855,7 @@ begin
   exit InternalCalls.Asm("
 movl $2, %ebp
 calll *$1
-", "=A,r,r,~{ebp},~{dirflag},~{fpsr},~{flags}", false, false, aCall, aEBP);
+", "=A,r,r,~{esi},~{ebx},~{edi}~{ebp},~{dirflag},~{fpsr},~{flags}", false, false, aCall, aEBP);
 end;
 {$ENDIF}
 
