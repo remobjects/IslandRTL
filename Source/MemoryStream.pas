@@ -72,7 +72,7 @@ begin
   exit fPosition;
 end;
 
-method MemoryStream.Read(buf: ^Void; Count: Int32): Int32;
+method MemoryStream.Read(const buf: ^Void; Count: Int32): Int32;
 begin
   if not CanRead then raise new NotSupportedException;
   if buf = nil then raise new Exception("argument is null");
@@ -85,7 +85,7 @@ begin
   exit lres;
 end;
 
-method MemoryStream.Write(buf: ^Void; Count: Int32): Int32;
+method MemoryStream.Write(const buf: ^Void; Count: Int32): Int32;
 begin
   if not CanWrite then raise new NotSupportedException;
   if buf = nil then raise new Exception("argument is null");
