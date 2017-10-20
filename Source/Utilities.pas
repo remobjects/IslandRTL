@@ -141,6 +141,18 @@ type
       end;
     end;
 
+    [SymbolName('__addref')]
+    class procedure AddReference(o: ^Object);
+    begin 
+      fSharedMemory.addref(o);
+    end;
+
+    [SymbolName('__release')]
+    class procedure Release(o: ^Object);
+    begin 
+      fSharedMemory.release(o);
+    end;
+
     [SymbolName('__newarray')]
     //[SkipDebug]
     class method NewArray(aTY: ^Void; aElementSize, aElements: NativeInt): ^Void;
