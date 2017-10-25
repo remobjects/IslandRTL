@@ -459,7 +459,7 @@ type
         lParams[0] := aInstance;
         var lDeclaringType := DeclaringType;
         if Utilities.IsInstance(aInstance, lDeclaringType.fValue) = nil then raise new ArgumentException('Instance must be compatible with method declaring type');
-        if lDeclaringType.IsValueType then 
+        if lDeclaringType.IsValueType then
           lModes[0] := ArgumentMode.Var
         else
           lModes[0] := ArgumentMode.None;
@@ -473,6 +473,14 @@ type
       {$IFDEF WINDOWS}
       result := FFI.Call(Pointer, cc, var lParams, lModes, lTypes, &Type);
       {$ELSEIF POSIX}
+        {$IFDEF cpu64}
+        // only x64 is supported
+        result := FFI.Call(Pointer, cc, var lParams, lModes, lTypes, &Type);
+        {$ELSE}
+        // ARMv6 wasn't supported yet
+        raise new NotImplementedException();
+        {$ENDIF}
+      {$ELSEIF ANDROID}
       raise new NotImplementedException();
       {$ELSEIF WEBASSEMBLY}
       raise new NotImplementedException();
@@ -732,7 +740,7 @@ type
           ProtoSkipValue(var lPtr, lTy);
       end;
     end;
-    
+
     method get_BoxedDataOffset: Integer;
     begin
       var lPtr := fValue^.Ext^.MemberInfoData;

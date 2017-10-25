@@ -247,7 +247,7 @@ type
         if (length(lInst.fStack) mod 16) <> 0 then
           lInst.PushBefore(nil, 16 - (length(lInst.fStack) mod 16));
         var pp: ^Byte;
-        if lInst.fStack = nil then pp := nil else pp := @lInst.fStack[length(lInst.fStack)-8];
+        if Length(lInst.fStack) = 0 then pp := nil else pp := @lInst.fStack[length(lInst.fStack)-8];
         lInst.fCallData.Stack := pp;
         lInst.fCallData.Items := length(lInst.fStack) div 8;
         DoCall(aAddress,out  lInst.f_RAX,var lInst.f_XMM0,var lInst.fCallData);
