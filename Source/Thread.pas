@@ -100,7 +100,8 @@ type
   end;
   Mutex = public class(WaitHandle)
   private
-     fMutex: rtl.pthread_mutex_t;
+    fMutex: rtl.pthread_mutex_t;
+    fDisposed: Boolean;
   public
     constructor(aInitialValue: Boolean);
     method Release;
@@ -114,8 +115,7 @@ type
   private
     fMutex: rtl.pthread_mutex_t;
     fCV: rtl.pthread_cond_t;
-    fValue: Boolean;
-    fAutoReset: Boolean;
+    fDisposed, fAutoReset, fValue: Boolean;
   public
     constructor(aAutoReset: Boolean; aInitialValue: Boolean);
     method &Set;
@@ -183,13 +183,13 @@ begin
   try
     if not aThread.fTerminated then begin
       try
-        GC.RegisterThread;
+        Utilities.RegisterThread;
         aThread.Execute;
       except
         on E: Exception do
           aThread.fCallStack := E.Message;
       end;
-      GC.UnregisterThread;
+      Utilities.UnregisterThread;
 
     end;
   finally
@@ -207,13 +207,13 @@ begin
   try
     if not aThread.fTerminated then begin
       try
-        GC.RegisterThread;
+        Utilities.RegisterThread;
         aThread.Execute;
       except
         on E: Exception do
           aThread.fCallStack := E.Message;
       end;
-      GC.UnregisterThread;
+      Utilities.UnregisterThread;
     end;
   finally
     aThread.fDone := True;
@@ -352,7 +352,6 @@ end;
 method WaitHandle.Dispose;
 begin
   if fHandle <> nil then begin
-    Utilities.SuppressFinalize(self);
     rtl.CloseHandle(fHandle);
     fHandle := nil;
   end;
@@ -410,13 +409,15 @@ end;
 
 finalizer Mutex;
 begin
-  rtl.pthread_mutex_destroy(@fMutex);
+  Dispose;
 end;
 
 method Mutex.Dispose;
 begin
-  Utilities.SuppressFinalize(self);
-  rtl.pthread_mutex_destroy(@fMutex);
+  if not fDisposed then begin
+    rtl.pthread_mutex_destroy(@fMutex);
+    fDisposed := true;
+  end;
 end;
 
 constructor EventWaitHandle(aAutoReset: Boolean; aInitialValue: Boolean);
@@ -481,15 +482,16 @@ end;
 
 method EventWaitHandle.Dispose;
 begin
-  Utilities.SuppressFinalize(self);
-  rtl.pthread_cond_destroy(@fCV);
-  rtl.pthread_mutex_destroy(@fMutex);
+  if not fDisposed then begin
+    fDisposed := true;
+    rtl.pthread_cond_destroy(@fCV);
+    rtl.pthread_mutex_destroy(@fMutex);
+  end;
 end;
 
 finalizer EventWaitHandle;
 begin
-  rtl.pthread_cond_destroy(@fCV);
-  rtl.pthread_mutex_destroy(@fMutex);
+  Dispose;
 end;
 {$ENDIF}
 {$ENDIF}

@@ -21,7 +21,7 @@ type
     method GetNonGenericEnumerator: IEnumerator; implements IEnumerable.GetEnumerator;
     method GetEnumerator: IEnumerator<Char>;iterator;
   assembly
-    class method AllocString(aLen: Integer): String;
+    class method AllocString(aLen: Integer): String; where T is ILifetimeStrategy<T>;
   public
     //constructor(aArray: array of Char);
     //constructor(c: ^Char; aCharCount: Integer): String;
@@ -261,7 +261,7 @@ end;
 
 class method String.AllocString(aLen: Integer): String;
 begin
-  result := InternalCalls.Cast<String>(Utilities.NewInstance(InternalCalls.GetTypeInfo<String>(), (sizeOf(Object) + sizeOf(Integer)) + 2 * aLen));
+  result := InternalCalls.Cast<String>(DefaultGC.New(InternalCalls.GetTypeInfo<String>(), (sizeOf(Object) + sizeOf(Integer)) + 2 * aLen));
   result.fLength := aLen;
 end;
 

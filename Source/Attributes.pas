@@ -297,4 +297,10 @@ type
     property Define: String;readonly;
   end;
 
+  [AttributeUsage(AttributeTargets.Assembly)]
+  RemObjects.Elements.System.DefaultObjectLifetimeStrategyAttribute = public class(Attribute)
+  public
+    constructor(aType: &Type); empty;
+  end;
+  
 end.

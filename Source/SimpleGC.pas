@@ -2,6 +2,10 @@
 [assembly:AssemblyDefine('SIMPLEGC')]
 [assembly:AssemblyDefine('TRACINGGC')]
 [assembly:AssemblyDefine('REFCOUNTINGGC')]
+{$IFDEF WEBASSEMBLY}
+[assembly:DefaultObjectLifetimeStrategy(typeOf(SimpleGC))]
+{$ENDIF}
+
 type
   {$IFNDEF WEBASSEMBLY}
   CheckListData = record 
@@ -17,26 +21,33 @@ type
   end;
   {$ENDIF}
   MyIntPtr = {$IFNDEF CPU64}Int32{$ELSE CPU64}Int64{$ENDIF};
-  SimpleGC = static class
+  {$IFDEF WEBASSEMBLY}
+  DefaultGC = SimpleGC;
+  {$ENDIF}
+  SimpleGC<T> = public __lifetimestrategy(SimpleGC) T;
+  SimpleGC = public record (ILifetimeStrategy<SimpleGC>)
   private 
-    constructor; empty;
+    var fInst: IntPtr;
+    class var fLoaded: Integer; assembly;
+    {$IFDEF POSIX}[LinkOnce]{$ENDIF}
+    class var fSharedMemory: SharedMemory; assembly;
+    
 {$IFNDEF WEBASSEMBLY}
     [ThreadLocal]
     class var fCheckList: ^CheckListData;
 {$ENDIF}
 
-    class var 
 {$IFNDEF WEBASSEMBLY}
-      fGCWait: EventWaitHandle;
-      FGCWake: EventWaitHandle;
-      fThreads: GCList;
+      class var fGCWait: EventWaitHandle;
+      class var FGCWake: EventWaitHandle;
+      class var fThreads: GCList;
 {$ENDIF}
-      FGCLoaded: Boolean;
-      fRemoveList: GCList;
-      fGlobalFreeList: GCHashSet;
-      fLock: Integer;
-      fRunNumber: Integer;
-      fLastTopBitSet: Boolean;
+      class var FGCLoaded: Boolean;
+      class var fRemoveList: GCList;
+      class var fGlobalFreeList: GCHashSet;
+      class var fLock: Integer;
+      class var fRunNumber: Integer;
+      class var fLastTopBitSet: Boolean;
 
 
     
@@ -341,7 +352,7 @@ type
     class method FinalizeObject(aObj: IntPtr); 
     begin 
       try {$HIDE W58}
-        InternalCalls.Cast<SimpleGC>(^Void(aObj)).Finalize;
+        InternalCalls.Cast<Object>(^Void(aObj)).Finalize;
         {$SHOW W58}
         free(^Void(aObj - sizeOf(IntPtr)));
       except 
@@ -394,7 +405,7 @@ type
       {$ENDIF}
     end;
 
-    class method Alloc(aTTY: ^Void; aSize: IntPtr): IntPtr;
+    class method &New(aTTY: ^Void; aSize: IntPtr): ^Void;
     begin 
       {$IFDEF WEBASSEMBLY}
       if not FGCLoaded then InitGC;
@@ -402,17 +413,17 @@ type
       if fCheckList = nil then RegisterThread;
       {$ENDIF}
 
-      result := IntPtr(malloc(aSize + sizeOf(^Void)));
-      if result = 0 then begin 
+      result := ^Void(malloc(aSize + sizeOf(^Void)));
+      if result = nil then begin 
         GC(true);
-        result := IntPtr(malloc(aSize + sizeOf(^Void)));
-        if result = 0 then exit nil;
+        result := ^Void(malloc(aSize + sizeOf(^Void)));
+        if result = nil then exit nil;
       end;
       ^UIntPtr(result)^ := 0;
       result := result + sizeOf(^Void);
       ^^Void(result)^ := aTTY;
       memset(^Byte(result) + sizeOf(^Void), 0, aSize - sizeOf(^Void));
-      AddToFreeList(result); // ensure the value gets scanned.
+      AddToFreeList(IntPtr(result)); // ensure the value gets scanned.
     end;
 
     class method RegisterThread: Integer;
@@ -431,7 +442,7 @@ type
     {$ENDIF}
     end;
 
-    class method AddRef(o: ^Object);
+    class method AddRef(o: ^IntPtr);
     begin 
       if o = nil then exit;
       {$IFNDEF WEBASSEMBLY}
@@ -451,7 +462,7 @@ type
       InternalCalls.Increment(var ^MyIntPtr(ptr)^);
     end;
 
-    class method Release(o: ^Object);
+    class method Release(o: ^IntPtr);
     begin 
       if o = nil then exit;
       {$IFNDEF WEBASSEMBLY}
@@ -485,50 +496,53 @@ type
       var lItem := @(^UIntPtr(aPtr)[-1]);
       lItem^ := lItem^ and not FinalizeBit;
     end;
+    
+    class method Init(var Dest: SimpleGC);
+    begin
+      Dest.fInst := 0;
+    end;
+    
+    constructor Copy(var aValue: SimpleGC);
+    begin
+      fInst := aValue.fInst;
+      AddRef(@fInst);
+    end;
+    
+    class method Copy(var aDest: SimpleGC; var aSource: SimpleGC);
+    begin
+      aDest.fInst := aSource.fInst;
+      AddRef(@aDest.fInst);
+    end;
+    
+    class operator Assign(var aDest: SimpleGC; var aSource: SimpleGC);
+    begin
+      if (@aDest) = (@aSource) then exit;
+      Release(@aDest.fInst);
+      aDest.fInst := aSource.fInst;
+      AddRef(@aDest.fInst);
+    end;
+    
+    class method Assign(var aDest: SimpleGC; var aSource: SimpleGC);
+    begin
+      if (@aDest) = (@aSource) then exit;
+      Release(@aDest.fInst);
+      aDest.fInst := aSource.fInst;
+      AddRef(@aDest.fInst);
+    end;
+    
+    class method Release(var aDest: SimpleGC);
+    begin 
+      Release(@aDest.fInst);
+      aDest.fInst := 0;
+    end;
+    
+    finalizer;
+    begin
+      Release(@fInst);
+      fInst := 0;
+    end;
   end;
 
-  GC = public static class
-  assembly
-    class var fLoaded: Integer;
-
-    class method Collect;
-    begin 
-      SimpleGC.GC(false);
-    end;
-
-    class method LoadGC;
-    begin
-      if InternalCalls.CompareExchange(var Utilities.fLoaded, 1, 0 ) = 1 then begin
-        exit;
-      end;
-      Utilities.fSharedMemory.addref := @SimpleGC.AddRef;
-      Utilities.fSharedMemory.release := @SimpleGC.Release;
-      Utilities.fSharedMemory.collect := @Collect;
-      Utilities.fSharedMemory.register := @SimpleGC.RegisterThread;
-      Utilities.fSharedMemory.unregister := @SimpleGC.UnregisterThread;
-      Utilities.fSharedMemory.setfinalizer := @SimpleGC.SetFinalizer;
-      Utilities.fSharedMemory.unsetfinalizer := @SimpleGC.UnsetFinalizer;
-    end;
-
-  public 
-    class method Collect(c: Integer);
-    begin
-      for i: Integer := 0 to c -1 do
-        Utilities.fSharedMemory.collect;
-    end;
-
-    [SymbolName('registerthread')]
-    method RegisterThread: Boolean;
-    begin 
-      exit Utilities.fSharedMemory.register() = 0;
-    end;
-
-    [SymbolName('unregisterthread')]
-    method UnregisterThread; 
-    begin 
-      Utilities.fSharedMemory.unregister;
-    end;
-  end;
   GCHashEntry = private record
   public
     HashCode: Integer;
@@ -769,7 +783,14 @@ type
         fItems[i-1] := fItems[i];
       dec(fCount);
     end;
-
+  end;
+  
+  SimpleGCExt = public extension class(Utilities)
+  public 
+    class method Collect(c: Integer);
+    begin
+      SimpleGC.fSharedMemory.Collect();
+    end;
   end;
 
 end.

@@ -1,5 +1,5 @@
 ﻿namespace RemObjects.Elements.System;
-
+{$HIDE W46}
 {.$DEFINE DEBUG_UTF8}
 type
 

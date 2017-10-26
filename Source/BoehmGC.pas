@@ -1,36 +1,45 @@
 ﻿namespace RemObjects.Elements.System;
 uses gc;
-[assembly:AssemblyDefine('BOEHMGC')]
-[assembly:AssemblyDefine('TRACINGGC')]
+
+[assembly:DefaultObjectLifetimeStrategy(typeOf(BoehmGC))]
+
 type
-  GC = public static class 
+  GC<T> = public __lifetimestrategy (BoehmGC) T;
+  DefaultGC = public BoehmGC;
+  BoehmGC = public record(ILifetimeStrategy<BoehmGC>)
   assembly
+    var fInst: IntPtr;
+    class var fFinalizer: ^Void;
+    class var fLoaded: Integer; assembly;
     class var fLock: Integer;
+    {$IFDEF POSIX}[LinkOnce]{$ENDIF}
+    class var fSharedMemory: SharedMemory; assembly;
 
 {$IFDEF POSIX}[LinkOnce, DllExport]{$ENDIF}
     [SkipDebug]
-    method LocalGC; private;
+    class method LocalGC; private;
     begin
       GC_init;
       GC_allow_register_threads();
-      Utilities.fSharedMemory.collect := @GC_gcollect;
-      Utilities.fSharedMemory.register := @GC_my_register_my_thread;
-      Utilities.fSharedMemory.unregister := @GC_unregister_my_thread;
-      Utilities.fSharedMemory.malloc := @GC_malloc;
-      Utilities.fSharedMemory.setfinalizer := @SetFinalizer;
-      Utilities.fSharedMemory.unsetfinalizer := @UnsetFinalizer;
+      fSharedMemory.collect := @GC_gcollect;
+      fSharedMemory.register := @GC_my_register_my_thread;
+      fSharedMemory.unregister := @GC_unregister_my_thread;
+      fSharedMemory.malloc := @GC_malloc;
+      fSharedMemory.setfinalizer := @SetFinalizer;
+      fSharedMemory.unsetfinalizer := @UnsetFinalizer;
     end;
-    {$IFDEF WINDOWS}var fMapping: rtl.HANDLE;{$ENDIF}
+    {$IFDEF WINDOWS}class var fMapping: rtl.HANDLE;{$ENDIF}
     [SkipDebug]
-    method LoadGC; assembly;
+    class method LoadGC; assembly;
     begin
       Utilities.SpinLockEnter(var fLock);
       try
-        if InternalCalls.CompareExchange(var Utilities.fLoaded, 1, 0 ) = 1 then begin
+        if InternalCalls.CompareExchange(var fLoaded, 1, 0 ) = 1 then begin
           exit;
         end;
+        Utilities.RegisterThreadHandlers(@RegisterThread, @UnregisterThread);
         {$IFDEF WINDOWS}
-        var FN: array[0..28] of Char;
+        var FN: array[0..29] of Char;
         FN[0] := '_';
         FN[1] := '_';
         FN[2] := 'R';
@@ -59,7 +68,8 @@ type
         FN[24] := Char(Integer('a')+Integer((lID shr 20) and $f));
         FN[25] := Char(Integer('a')+Integer((lID shr 24) and $f));
         FN[26] := Char(Integer('a')+Integer((lID shr 28) and $f));
-        FN[27] := #0;
+        FN[27] := 'A'; // boehm
+        FN[28] := #0;
 
         fMapping := rtl.CreateFileMappingW( rtl.INVALID_HANDLE_VALUE, nil, rtl.PAGE_READWRITE, 0, 8, @FN[0]);
 
@@ -75,12 +85,12 @@ type
         end;
         if lNew then begin
           LocalGC;
-          InternalCalls.VolatileWrite(var p^, NativeInt(@Utilities.fSharedMemory));
+          InternalCalls.VolatileWrite(var p^, NativeInt(@fSharedMemory));
         end else begin
           loop begin
             var lData: ^SharedMemory := ^SharedMemory(InternalCalls.VolatileRead(var p^));
             if lData = nil then Thread.Sleep(1) else begin
-              Utilities.fSharedMemory := lData^;
+              fSharedMemory := lData^;
               break;
             end;
           end;
@@ -98,17 +108,17 @@ type
       end;
     end;
 
-    method SetFinalizer(aVal: ^Void);
+    class method SetFinalizer(aVal: ^Void);
     begin
       GC_register_finalizer_no_order(aVal, @GC_finalizer, nil, nil, nil);
     end;
 
-    method UnsetFinalizer(aVal: ^Void);
+    class method UnsetFinalizer(aVal: ^Void);
     begin
       GC_register_finalizer_no_order(aVal, nil, nil, nil, nil);
     end;
 
-    method GC_my_register_my_thread: Integer;
+    class method GC_my_register_my_thread: Integer;
     begin 
       var sb: __struct_GC_stack_base;
       GC_get_stack_base(@sb);
@@ -119,19 +129,54 @@ type
     class method Collect(c: Integer);
     begin
       for i: Integer := 0 to c -1 do
-        Utilities.fSharedMemory.collect;
+        fSharedMemory.collect;
     end;
 
-    [SymbolName('registerthread')]
-    method RegisterThread: Boolean;
+    [SymbolName('boehmregisterthread')]
+    class method RegisterThread;
     begin 
-      exit Utilities.fSharedMemory.register() = GC_SUCCESS;
+      fSharedMemory.register();
     end;
 
-    [SymbolName('unregisterthread')]
-    method UnregisterThread; 
+    [SymbolName('boehmunregisterthread')]
+    class method UnregisterThread; 
     begin 
-      Utilities.fSharedMemory.unregister;
+      fSharedMemory.unregister;
+    end;
+    
+    class method &New(aTTY: ^Void; aSize: NativeInt): ^Void;
+    begin
+      if fFinalizer = nil then begin
+        fFinalizer := ^^Void(InternalCalls.GetTypeInfo<Object>())[Utilities.FinalizerIndex]; // keep in sync with compiler!
+      end;
+      result := ^Void(-1);
+      if fLoaded = 0 then LoadGC;
+      result := fSharedMemory.malloc(aSize);
+      ^^Void(result)^ := aTTY;
+      memset(^Byte(result) + sizeOf(^Void), 0, aSize - sizeOf(^Void));
+      if ^^Void(aTTY)[Utilities.FinalizerIndex] <> fFinalizer then begin
+        fSharedMemory.setfinalizer(result);
+      end;
+    end;
+
+    class method Assign(var aDest, aSource: BoehmGC); 
+    begin 
+      aDest := aSource;
+    end;
+    
+    class method Copy(var aDest, aSource: BoehmGC); 
+    begin
+      aDest := aSource;
+    end;
+    class method Init(var Dest: BoehmGC); empty;
+    class method Release(var Dest: BoehmGC); empty;
+  end;
+
+  BoehmGCExt = public extension class(Utilities)
+  public 
+    class method Collect(c: Integer);
+    begin
+      BoehmGC.Collect(c);
     end;
   end;
 

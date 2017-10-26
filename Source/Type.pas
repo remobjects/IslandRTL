@@ -840,14 +840,20 @@ type
     property Properties: sequence of PropertyInfo read get_Properties;
     property Events: sequence of EventInfo read get_Events;
 
-    method Instantiate: Object; // Creates a new instance of this type and calls the default constructor, fails if none is present!
+    method Instantiate<T>: Object; where T is ILifetimeStrategy<T>; // Creates a new instance of this type and calls the default constructor, fails if none is present!
     begin
       var lCtor: MethodInfo := Methods.FirstOrDefault(a -> (MethodFlags.Constructor in a.Flags) and not a.Arguments.Any);
       if lCtor = nil then raise new Exception('No default constructor could be found!');
       var lRealCtor := CtorHelper(lCtor.Pointer);
       if lRealCtor = nil then raise new Exception('No default constructor could be found!');
-      result := InternalCalls.Cast<Object>(Utilities.NewInstance(fValue, SizeOfType));
+      result := InternalCalls.Cast<Object>(T.New(fValue, SizeOfType));
       lRealCtor(result);
+    end;
+
+
+    method Instantiate: Object; // Creates a new instance of this type and calls the default constructor, fails if none is present!
+    begin
+      exit Instantiate<DefaultGC>();
     end;
   end;
 

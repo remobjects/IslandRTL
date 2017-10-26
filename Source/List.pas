@@ -85,6 +85,16 @@ type
     property Item[i: Integer]: T read GetItem write SetItem; default;
   end;
 
+  LinkedListNode<T> = public class
+  public 
+    constructor(aValue: T; aPrev: LinkedListNode<T>);
+    begin 
+      Previous := aPrev;
+      Value := aValue;
+    end;
+    property Value: T; readonly;
+    property Previous: LinkedListNode<T>; readonly;
+  end;
 
 implementation
 

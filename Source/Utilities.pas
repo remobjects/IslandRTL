@@ -7,6 +7,13 @@ type
   SetFinalizerFunc nested in SharedMemory = procedure(val: ^Void);
   AddRefProc nested in SharedMemory = procedure(o: ^Object);
 
+  ILifetimeStrategy<T> = public interface
+    class method &New(aTTY: ^Void; aSize: NativeInt): ^Void;
+    class method Assign(var aDest, aSource: T); 
+    class method Copy(var aDest, aSource: T); 
+    class method Init(var Dest: T);
+    class method Release(var Dest: T);
+  end;
 
   SharedMemory = record
   public
@@ -24,10 +31,6 @@ type
 
   Utilities = public static class
   private
-    class var fFinalizer: ^Void;
-    class var fLoaded: Integer; assembly;
-    {$IFDEF POSIX}[LinkOnce]{$ENDIF}
-    class var fSharedMemory: SharedMemory; assembly;
   public
     [SymbolName('__island_debug_invoke'), Used, DllExport]
     method DebugInvoke(data: ^Void; invk: DebugInvokeCallback; ex: DebugExceptionCallback);
@@ -124,51 +127,26 @@ type
     end;
     
     const FinalizerIndex = 4 + {$IFDEF I386}4{$ELSE}2{$ENDIF};
-    [SymbolName('__newinst')]
+
+
+    [SymbolName('__newdelegate')]
     //[SkipDebug]
-    class method NewInstance(aTTY: ^Void; aSize: NativeInt): ^Void;
+    class method NewDelegate(aTY: ^Void; aSelf: Object; aPtr: ^Void): &Delegate; 
     begin
-      if fFinalizer = nil then begin
-        fFinalizer := ^^Void(InternalCalls.GetTypeInfo<Object>())[FinalizerIndex]; // keep in sync with compiler!
-      end;
-      result := ^Void(-1);
-      if fLoaded = 0 then GC.LoadGC;
-      result := fSharedMemory.malloc(aSize);
-      ^^Void(result)^ := aTTY;
-      memset(^Byte(result) + sizeOf(^Void), 0, aSize - sizeOf(^Void));
-      if ^^Void(aTTY)[FinalizerIndex] <> fFinalizer then begin
-        fSharedMemory.setfinalizer(result);
-      end;
+      result := InternalCalls.Cast<&Delegate>(DefaultGC.New(aTY, sizeOf(^Void) * 3));
+      result.fSelf := aSelf;
+      result.fPtr := aPtr;
     end;
 
-    [SymbolName('__addref')]
-    class procedure AddReference(o: ^Object);
-    begin 
-      fSharedMemory.addref(o);
-    end;
-
-    [SymbolName('__release')]
-    class procedure Release(o: ^Object);
-    begin 
-      fSharedMemory.release(o);
-    end;
-
+ 
     [SymbolName('__newarray')]
     //[SkipDebug]
     class method NewArray(aTY: ^Void; aElementSize, aElements: NativeInt): ^Void;
     begin
-      result := NewInstance(aTY, sizeOf(^Void) + sizeOf(NativeInt) + aElementSize * aElements);
+      result := DefaultGC.New(aTY, sizeOf(^Void) + sizeOf(NativeInt) + aElementSize * aElements);
       (@InternalCalls.Cast<&Array>(result).fLength)^ := aElements;
     end;
-
-    [SymbolName('__newdelegate')]
-    //[SkipDebug]
-    class method NewDelegate(aTY: ^Void; aSelf: Object; aPtr: ^Void): &Delegate;
-    begin
-      result := InternalCalls.Cast<&Delegate>(NewInstance(aTY, sizeOf(^Void) * 3));
-      result.fSelf := aSelf;
-      result.fPtr := aPtr;
-    end;
+ 
 
     [SymbolName('__init')]
     class method Initialize;
@@ -195,15 +173,9 @@ type
       exit @s[0];
     end;
 
-    class method SuppressFinalize(o: Object);
-    begin
-      if o <> nil then
-        fSharedMemory.unsetfinalizer(InternalCalls.Cast(o));
-    end;
-
     class method SpinLockEnter(var x: Integer);
     begin
-    {$IFDEF WEBASSEMBLY}
+    {$IFDEF NOTHREADS}
     InternalCalls.Exchange(var x, 1);
     {$ELSE}
      loop begin
@@ -222,7 +194,7 @@ type
     [SkipDebug]
     class method SpinLockClassEnter(var x: NativeInt): Boolean;
     begin
-      {$IFDEF WEBASSEMBLY}
+      {$IFDEF NOTHREADS}
       exit InternalCalls.Exchange(var x, 1) = 0;
       {$ELSE}
       var cid := Thread.CurrentThreadID;
@@ -260,6 +232,42 @@ type
       end;
       exit ^Integer(@r)^;
     end;
+
+    class var __fRegisterThread: LinkedListNode<Action>;
+    class var __fUnregisterThread: LinkedListNode<Action>; 
+
+    method RegisterThreadHandlers(aRegister, aUnregister: Action);
+    begin 
+      loop begin
+        var lNew := new LinkedListNode<Action>(aRegister, __fRegisterThread);
+        if InternalCalls.CompareExchange(var __fRegisterThread, lNew, lNew.Previous) = lNew.Previous then break;
+      end;
+      loop begin
+        var lNew := new LinkedListNode<Action>(aUnregister, __fUnregisterThread);
+        if InternalCalls.CompareExchange(var __fUnregisterThread, lNew, lNew.Previous) = lNew.Previous then break;
+      end;
+    end;
+
+    [SymbolName('registerthread')]
+    method RegisterThread;
+    begin
+      var lT := __fRegisterThread;
+      while lT <> nil do begin 
+        lT.Value();
+        lT := lT.Previous;
+      end;
+    end;
+
+    [SymbolName('unregisterthread')]
+    method UnregisterThread; 
+    begin 
+      var lT := __fUnregisterThread;
+      while lT <> nil do begin 
+        lT.Value();
+        lT := lT.Previous;
+      end;
+    end;
+
   end;
 
   // Intrinsics
