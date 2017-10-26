@@ -64,11 +64,11 @@ type
 
     
     {$IFDEF ARM}
-    [SymbolName('_elements_posix_exception_handler'), CallingConvention(CallingConvention.Stdcall)] // 32bits windows only!!
+    [SymbolName('_elements_posix_exception_handler')] // 32bits windows only!!
     {$ENDIF}
     method ExceptionHandler(aVersion: Integer; aState: rtl._Unwind_Action; aClass: UInt64; aEx: ^rtl.__struct__Unwind_Exception; aCtx: ^Void): rtl._Unwind_Reason_Code;
     {$IFNDEF ARM}
-    [SymbolName('_elements_posix_exception_handler'), CallingConvention(CallingConvention.Stdcall)] // 32bits windows only!!
+    [SymbolName('_elements_posix_exception_handler')] // 32bits windows only!!
     {$ENDIF}
     method ExceptionHandler(aState: rtl._Unwind_Action; aClass: UInt64; aEx: ^rtl.__struct__Unwind_Exception; aCtx: ^Void): rtl._Unwind_Reason_Code;
     [SymbolName('ElementsRaiseException')]
