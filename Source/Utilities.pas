@@ -349,10 +349,12 @@ type
     // Adds 1 to the value at address, returns the old one.
     class method Increment(var address: Int64): Int64; external;
     class method Increment(var address: Int32): Int32; external;
+    class method Increment(var address: IntPtr): IntPtr; external;
 
     // Subtracts 1 to the value at address, returns the old one.
     class method Decrement(var address: Int64): Int64; external;
     class method Decrement(var address: Int32): Int32; external;
+    class method Decrement(var address: IntPtr): IntPtr; external;
 
     // Adds value to the value at address, returns the old one.
     class method &Add(var address: Int32; value: Int32): Int32; external;

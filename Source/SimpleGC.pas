@@ -527,9 +527,27 @@ type
     class method Assign(var aDest: SimpleGC; var aSource: SimpleGC);
     begin
       if (@aDest) = (@aSource) then exit;
-      Release(@aDest.fInst);
-      aDest.fInst := aSource.fInst;
-      AddRef(@aDest.fInst);
+      {$IFNDEF WEBASSEMBLY}
+      var lList := fCheckList;
+      if lList= nil then begin 
+        RegisterThread;
+        lList := fCheckList;
+      end;
+      {$ELSE}
+      var lList: Integer;
+      if not FGCLoaded then InitGC;   
+      {$ENDIF}  
+      // value is on the stack, should be relatively rare
+      if (^Void(@aDest.fInst) < {$IFDEF WEBASSEMBLY}^Void(StackStop){$ELSE}lList^.StackTop{$ENDIF}) and (^Void(@aDest.fInst) >= ^Void(@lList)) then exit; 
+      
+      var lOld := InternalCalls.Exchange(var aDest.fInst, aSource.fInst);
+      if aSource.fInst <> 0 then begin 
+        InternalCalls.Increment(var ^IntPtr(aSource.fInst)[-1]);
+      end;
+      if lOld <> 0  then begin 
+        InternalCalls.Decrement(var ^IntPtr(aSource.fInst)[-1]);
+        AddToFreeList(IntPtr(InternalCalls.Cast(lOld)));
+      end;
     end;
     
     class method Release(var aDest: SimpleGC);

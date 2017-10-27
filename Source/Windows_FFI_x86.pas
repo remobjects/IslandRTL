@@ -86,7 +86,7 @@ type
       if aMode in [ArgumentMode.Out, ArgumentMode.Var] then begin
 
         if aParamType.IsValueType then begin
-          var lAlloc := Utilities.NewInstance(aParamType.RTTI, aParamType.SizeOfType + sizeOf(^Void)); // header
+          var lAlloc := DefaultGC.New(aParamType.RTTI, aParamType.SizeOfType + sizeOf(^Void)); // header
           var lOffset := aParamType.BoxedDataOffset;
           ExternalCalls.memcpy(@(^Byte(lAlloc)[lOffset]),@(^Byte(InternalCalls.Cast(aVal))[lOffset]), aParamType.SizeOfType);
           PushU32(UInt32(@(^Byte(lAlloc)[lOffset])));
