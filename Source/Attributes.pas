@@ -304,7 +304,7 @@ type
   end;
 
 
-  [AttributeUsage(AttributeTargets.Method)]
+  [AttributeUsage(AttributeTargets.Method or AttributeTargets.Constructor)]
   RemObjects.Elements.System.GCSkipIfOnStackAttribute = public class(Attribute)
   public
     constructor; empty;
