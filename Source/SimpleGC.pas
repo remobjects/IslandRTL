@@ -24,7 +24,7 @@ type
   {$IFDEF WEBASSEMBLY}
   DefaultGC = SimpleGC;
   {$ENDIF}
-  SimpleGC<T> = public __lifetimestrategy(SimpleGC) T;
+  SimpleGC<T> = public lifetimestrategy(SimpleGC) T;
   SimpleGC = public record (ILifetimeStrategy<SimpleGC>)
   private 
     var fInst: IntPtr;
@@ -502,6 +502,7 @@ type
       Dest.fInst := 0;
     end;
     
+    [GCSkipIfOnStack]
     constructor Copy(var aValue: SimpleGC);
     begin
       fInst := aValue.fInst;
@@ -514,6 +515,7 @@ type
       AddRef(@aDest.fInst);
     end;
     
+    [GCSkipIfOnStack]
     class operator Assign(var aDest: SimpleGC; var aSource: SimpleGC);
     begin
       if (@aDest) = (@aSource) then exit;
@@ -536,6 +538,7 @@ type
       aDest.fInst := 0;
     end;
     
+    [GCSkipIfOnStack]
     finalizer;
     begin
       Release(@fInst);

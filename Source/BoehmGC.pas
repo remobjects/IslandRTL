@@ -4,7 +4,7 @@ uses gc;
 [assembly:DefaultObjectLifetimeStrategy(typeOf(BoehmGC))]
 
 type
-  GC<T> = public __lifetimestrategy (BoehmGC) T;
+  GC<T> = public lifetimestrategy (BoehmGC) T;
   DefaultGC = public BoehmGC;
   BoehmGC = public record(ILifetimeStrategy<BoehmGC>)
   assembly

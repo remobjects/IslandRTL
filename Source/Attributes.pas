@@ -302,5 +302,11 @@ type
   public
     constructor(aType: &Type); empty;
   end;
-  
+
+
+  [AttributeUsage(AttributeTargets.Method)]
+  RemObjects.Elements.System.GCSkipIfOnStackAttribute = public class(Attribute)
+  public
+    constructor; empty;
+  end;
 end.
