@@ -227,6 +227,22 @@ type
 
 method CheckForLastError(aMessage: String := '');
 method CheckForIOError(value: Integer);
+
+method malloc(size: NativeInt): ^Void; inline;
+begin 
+  exit rtl.malloc(size);
+end;
+ 
+method realloc(ptr: ^Void; size: NativeInt): ^Void;inline;
+begin 
+  exit rtl.realloc(ptr, size);
+end;
+
+method free(v: ^Void);inline;
+begin 
+   rtl.Free(v);
+end;
+
 implementation
 
 method CheckForIOError(value: Integer);
