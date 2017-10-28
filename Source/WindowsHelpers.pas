@@ -366,6 +366,24 @@ method ElementsThreadHelper(aParam: ^Void): rtl.DWORD;
 
 method CheckForIOError(value: Boolean);
 method CheckForLastError(aMessage: String := '');
+
+
+method malloc(size: NativeInt): ^Void; inline;
+begin 
+  exit ExternalCalls.malloc(size);
+end;
+ 
+method realloc(ptr: ^Void; size: NativeInt): ^Void;inline;
+begin 
+  exit ExternalCalls.realloc(ptr, size);
+end;
+
+method free(v: ^Void);inline;
+begin 
+   ExternalCalls.Free(v);
+end;
+
+
 implementation
 
 method CheckForIOError(value: Boolean);
