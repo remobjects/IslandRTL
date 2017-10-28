@@ -472,6 +472,8 @@ type
       end;
       {$IFDEF WINDOWS}
       result := FFI.Call(Pointer, cc, var lParams, lModes, lTypes, &Type);
+      {$ELSEIF ANDROID}
+      raise new NotImplementedException();
       {$ELSEIF POSIX}
         {$IFDEF cpu64}
         // only x64 is supported
@@ -480,8 +482,6 @@ type
         // ARMv6 wasn't supported yet
         raise new NotImplementedException();
         {$ENDIF}
-      {$ELSEIF ANDROID}
-      raise new NotImplementedException();
       {$ELSEIF WEBASSEMBLY}
       raise new NotImplementedException();
       {$ELSE}{$ERROR}{$ENDIF}
