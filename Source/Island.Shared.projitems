@@ -40,6 +40,7 @@
     <Compile Include="Dictionary.pas" />
     <Compile Include="KeyValuePair.pas" />
     <Compile Include="List.pas" />
+    <Compile Include="LifetimeStrategy.pas" />
     <Compile Include="Delegates.pas" />
     <Compile Include="Floats.pas" />
     <Compile Include="Integers.pas" />
