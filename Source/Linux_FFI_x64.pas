@@ -239,7 +239,7 @@ type
       if aParamMode in [ArgumentMode.Out, ArgumentMode.Var] then begin
         //StoreReg(NativeUInt(@aParam));
         if aParamType.IsValueType then begin
-          var lAlloc := Utilities.NewInstance(aParamType.RTTI, aParamType.SizeOfType + sizeOf(^Void)); // header
+          var lAlloc := DefaultGC.New(aParamType.RTTI, aParamType.SizeOfType + sizeOf(^Void)); // header
           memcpy(@(^^Void(lAlloc)[1]),@(^^Void(InternalCalls.Cast(aParam))[1]), aParamType.SizeOfType);
           StoreReg(UInt64(@(^^Void(lAlloc)[1])));
           fVarData[aParamIndex] := InternalCalls.Cast<Object>(lAlloc);
