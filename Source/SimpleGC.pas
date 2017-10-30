@@ -166,11 +166,11 @@ type
     [SymbolName('__stack_pointer')]
     class var StackPointer: ^IntPtr; external;
     [SymbolName('__stack_start')]
-    class var StackStop: ^IntPtr; external;
+    class var StackTop: IntPtr; external;
     class method CheckThread;
     begin 
       var lCurrentStackTop := StackPointer;
-      var lEnd := StackStop;
+      var lEnd := @StackTop;
       while lCurrentStackTop < lEnd do begin 
         var lCurrent := lCurrentStackTop^;
         if fGlobalFreeList.Contains(lCurrent) then 
@@ -457,7 +457,7 @@ type
         
       var ptr := InternalCalls.Cast(o^);
       Debug('AddRef: ' + IntPtr(ptr));
-      if (^Void(o) < {$IFDEF WEBASSEMBLY}^Void(StackStop){$ELSE}lList^.StackTop{$ENDIF}) and (^Void(o) >= ^Void(@o)) then exit; // on the stack, should be relatively rare
+      if (^Void(o) < {$IFDEF WEBASSEMBLY}^Void(@StackTop){$ELSE}lList^.StackTop{$ENDIF}) and (^Void(o) >= ^Void(@o)) then exit; // on the stack, should be relatively rare
       dec(ptr, sizeOf(IntPtr));
       InternalCalls.Increment(var ^MyIntPtr(ptr)^);
     end;
@@ -477,7 +477,7 @@ type
       
       var ptr := InternalCalls.Cast(o^);
       Debug('Release: '+IntPtr(ptr));
-      if (^Void(o) < {$IFDEF WEBASSEMBLY}^Void(StackStop){$ELSE}lList^.StackTop{$ENDIF}) and (^Void(o) >= ^Void(@o)) then exit; // on the stack, should be relatively rare
+      if (^Void(o) < {$IFDEF WEBASSEMBLY}^Void(@StackTop){$ELSE}lList^.StackTop{$ENDIF}) and (^Void(o) >= ^Void(@o)) then exit; // on the stack, should be relatively rare
       dec(ptr, sizeOf(IntPtr));
       InternalCalls.Decrement(var ^MyIntPtr(ptr)^);
       AddToFreeList(IntPtr(InternalCalls.Cast(o^)));
@@ -538,7 +538,7 @@ type
       if not FGCLoaded then InitGC;   
       {$ENDIF}  
       // value is on the stack, should be relatively rare
-      if (^Void(@aDest.fInst) < {$IFDEF WEBASSEMBLY}^Void(StackStop){$ELSE}lList^.StackTop{$ENDIF}) and (^Void(@aDest.fInst) >= ^Void(@lList)) then exit; 
+      if (^Void(@aDest.fInst) < {$IFDEF WEBASSEMBLY}^Void(@StackTop){$ELSE}lList^.StackTop{$ENDIF}) and (^Void(@aDest.fInst) >= ^Void(@lList)) then exit; 
       
       var lOld := InternalCalls.Exchange(var aDest.fInst, aSource.fInst);
       if aSource.fInst <> 0 then begin 
