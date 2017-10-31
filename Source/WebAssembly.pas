@@ -62,6 +62,7 @@ type
     [SymbolName('ElementsRethrow')]
     method ElementsRethrow; empty;
 
+    [SymbolName('wcslen')]
     class method wcslen(c: ^Char): Integer;
     begin
       if c = nil then exit 0;
@@ -88,7 +89,8 @@ type
       WebAssemblyCalls.GetStringData(handle, @result.fFirstChar);
     end;
 
-    
+
+    [SymbolName('memcpy')]    
     method memcpy(destination: ^Void; source: ^Void; aNum: NativeInt): ^Void;
     begin
       result := destination;
@@ -149,6 +151,7 @@ type
       end;
     end;
 
+    [SymbolName('memmove')]
     method memmove(destination: ^Void; source: ^Void; aNum: NativeInt): ^Void;
     begin
       result := destination;
