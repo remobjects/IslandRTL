@@ -38,13 +38,13 @@ type
 {$ENDIF}
 
 {$IFNDEF WEBASSEMBLY}
-      class var fGCWait: EventWaitHandle;
-      class var FGCWake: EventWaitHandle;
-      class var fThreads: GCList;
+      class var fGCWait: Manual<EventWaitHandle>;
+      class var FGCWake: Manual<EventWaitHandle>;
+      class var fThreads: Manual<GCList>;
 {$ENDIF}
       class var FGCLoaded: Boolean;
-      class var fRemoveList: GCList;
-      class var fGlobalFreeList: GCHashSet;
+      class var fRemoveList: Manual<GCList>;
+      class var fGlobalFreeList: Manual<GCHashSet>;
       class var fLock: Integer;
       class var fRunNumber: Integer;
       class var fLastTopBitSet: Boolean;
@@ -336,14 +336,14 @@ type
       FGCLoaded := true;
       {$IFNDEF WEBASSEMBLY}
       Utilities.SpinLockEnter(var fLock);
-      fGCWait := new EventWaitHandle(false, false);
-      FGCWake := new EventWaitHandle(true, false);
-      fThreads := new GCList;
+      fGCWait := new Manual<EventWaitHandle>(false, false);
+      FGCWake := new Manual<EventWaitHandle>(true, false);
+      fThreads := new Manual<GCList>;
       {$ENDIF}
-      fGlobalFreeList := new GCHashSet;
-      fRemoveList := new GCList;
+      fGlobalFreeList := new Manual<GCHashSet>;
+      fRemoveList := new Manual<GCList>;
       {$IFNDEF WEBASSEMBLY}
-      new Thread(@GCLoop).Start(nil);
+      new Manual<Thread>(@GCLoop).Start(nil);
       Utilities.SpinLockExit(var fLock);
       {$ENDIF}
     end;
@@ -581,10 +581,10 @@ type
   private
     fCount: Integer := 0;
     fMaxUsedIndex: Integer := DEFAULT_MAX_INDEX;
-    fbucketTable: array of Integer; 
+    fbucketTable: Manual<array of Integer>; 
 
     fFirstHole: Integer := EMPTY_BUCKET;
-    fEntriesTable: array of GCHashEntry;
+    fEntriesTable: Manual<array of GCHashEntry>;
     
 
     method DoAdd(hash: Integer; Item: IntPtr);
@@ -667,7 +667,7 @@ type
     method DoResize(aNewCapacity: Integer);
     begin
       if (aNewCapacity <= length(fEntriesTable)) and (fCount>0) then exit;
-      var new_fbucketTable := new array of Integer(aNewCapacity);
+      var new_fbucketTable := new Manual<array of Integer>(aNewCapacity);
       
       for i:Integer := 0 to length(fEntriesTable)-1 do begin
         fEntriesTable[i].Next := EMPTY_BUCKET;
@@ -688,10 +688,12 @@ type
             fEntriesTable[idx].Next := i;
           end;
         end;
-      var new_fEntriesTable := new array of GCHashEntry(aNewCapacity);
+      var new_fEntriesTable := new Manual<array of GCHashEntry>(aNewCapacity);
       if fMaxUsedIndex > DEFAULT_MAX_INDEX then begin
         memmove(@new_fEntriesTable[0], @fEntriesTable[0], fMaxUsedIndex * sizeOf(GCHashEntry));
       end;
+      Manual.FreeObject(^IntPtr(@fbucketTable)^);
+      Manual.FreeObject(^IntPtr(@fEntriesTable)^);
       fbucketTable := new_fbucketTable;
       fEntriesTable := new_fEntriesTable;
     end;
@@ -737,7 +739,7 @@ type
       exit idx <> -1;
     end;
 
-    method AddAllItemsToList(aList: GCList);
+    method AddAllItemsToList(aList: Manual<GCList>);
     begin 
       var k: Integer := 0;
       for i:Integer := 0 to fMaxUsedIndex-1 do begin
@@ -754,7 +756,7 @@ type
 
   GCList = class
   private
-    fItems: array of IntPtr;
+    fItems: Manual<array of IntPtr>;
     fCount: Integer := 0;
     class method CalcCapacity(aNewCapacity: Integer): Integer;
     begin
@@ -785,9 +787,10 @@ type
     method Grow(aCapacity: Integer);
     begin
       aCapacity := CalcCapacity(aCapacity);
-      var newarray := new array of IntPtr(aCapacity);
+      var newarray := new Manual<array of IntPtr>(aCapacity);
       for i: Integer := 0 to fCount-1 do
         newarray[i] := fItems[i];
+      Manual.FreeObject(^IntPtr(@fItems)^);
       fItems := newarray;
     end;
 
