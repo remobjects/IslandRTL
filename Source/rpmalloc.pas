@@ -181,7 +181,7 @@ type
     class const PAGE_SIZE: Integer = {$IFDEF WEBASSEMBLY}65536{$ELSE}4096{$ENDIF};
     // ! Maximum size of a span of memory pages
     // 
-    class const SPAN_ADDRESS_GRANULARITY: Integer = 65536;
+    class const SPAN_ADDRESS_GRANULARITY: Integer = {$IFDEF WEBASSEMBLY}1048576{$ELSE}4096{$ENDIF};
     // ! Mask for getting the start of a span of memory pages
     // 
     class const SPAN_MAX_SIZE: Integer = SPAN_ADDRESS_GRANULARITY;
@@ -1416,7 +1416,7 @@ type
       atomic_add32(@_mapped_total, int32_t(page_count));
       {$endif}
       {$IFDEF WebAssembly}
-      pages_ptr := WebAssemblyCalls.GrowMemory(page_count);
+      pages_ptr := ^Void(WebAssemblyCalls.GrowMemory(page_count) * PAGE_SIZE);
       if IntPtr(pages_ptr) = -1 then pages_ptr := nil;
       {$elseif PLATFORM_WINDOWS}
       pages_ptr := VirtualAlloc(0, total_size, MEM_RESERVE or MEM_COMMIT, PAGE_READWRITE);

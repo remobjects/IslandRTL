@@ -7,6 +7,9 @@
 type
   WebAssemblyCalls = public static class
   public
+    [DllImport(''), SymbolName('__island_consolelogint')]
+    class method ConsoleLog(val: Integer); external;
+
     [DllImport(''), SymbolName('__island_consolelog')]
     class method ConsoleLog(s: ^Char; len: Integer); external;
 
@@ -38,7 +41,7 @@ type
     class method Toupper(val: ^Char; data: Integer; aInvariant: Boolean): Integer; external;
 
     [DllImport(''), SymbolName('llvm.wasm.grow.memory')]
-    class method GrowMemory(aSize: Integer): ^Void; external;
+    class method GrowMemory(aSize: Integer): Integer; external;
   end;
   ExternalCalls = public static class 
   private
