@@ -53,6 +53,7 @@ type
     
     class method FreeObject(aObj: IntPtr); 
     begin 
+      if aObj = 0 then exit;
       try {$HIDE W58}
         InternalCalls.Cast<Object>(^Void(aObj)).Finalize;
         {$SHOW W58}

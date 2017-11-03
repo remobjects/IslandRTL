@@ -6,6 +6,7 @@
 [assembly:DefaultObjectLifetimeStrategy(typeOf(SimpleGC))]
 {$ENDIF}
 
+
 type
   {$IFNDEF WEBASSEMBLY}
   CheckListData = record 
@@ -28,6 +29,7 @@ type
   SimpleGC = public record (ILifetimeStrategy<SimpleGC>)
   private 
     var fInst: IntPtr;
+    class var fFinalizer: ^Void;
     class var fLoaded: Integer; assembly;
     {$IFDEF POSIX}[LinkOnce]{$ENDIF}
     class var fSharedMemory: SharedMemory; assembly;
@@ -74,7 +76,19 @@ type
     [Conditional('DEBUGGC')]
     class method Debug(s: String);
     begin
-      writeLn('Debug: '+s);
+      writeLn(s);
+    end;
+    [Conditional('DEBUGGC')]
+    class method Debug(s: ^Void);
+    begin
+      writeln('ptr');
+      WebAssemblyCalls.ConsoleLog(Integer(s));
+    end;
+    [Conditional('DEBUGGC')]
+    class method Debug(s: Integer);
+    begin
+      writeln('Int');
+      WebAssemblyCalls.ConsoleLog(s);
     end;
 
     {$IFDEF WINDOWS}
@@ -99,10 +113,14 @@ type
         DUPLICATE_SAME_ACCESS);
       fCheckList^.ThreadId := IntPtr(GetCurrentThreadId);
       fCheckList^.ThreadHandle := IntPtr(lTar);
-      Debug('In SetupThread. Stack top: '+IntPtr(fCheckList^.StackTop));
-      Debug('In SetupThread. Stack curr: '+IntPtr(@aData));
-      Debug('In SetupThread. tid: '+fCheckList^.ThreadID);
-      Debug('In SetupThread. th: '+fCheckList^.ThreadHandle);
+      Debug('In SetupThread. Stack top: ');
+      DEbug(IntPtr(fCheckList^.StackTop));
+      Debug('In SetupThread. Stack curr: ');
+      debug(IntPtr(@aData));
+      Debug('In SetupThread. tid: ');
+      Debug(fCheckList^.ThreadID);
+      Debug('In SetupThread. th: ');
+      Debug(fCheckList^.ThreadHandle);
       FlsAlloc(@FiberCallback);
     end;
 
@@ -207,7 +225,6 @@ type
     
     class method SetBit(aPtr: IntPtr); {$IFNDEF DEBUG}inline;{$ENDIF}
     begin 
-      writeLn('Setting bit on '+aPtr);
       var lItem := @(^UIntPtr(aPtr)[-1]);
       if fLastTopBitSet then  
         lItem^ := lItem^ or Bit
@@ -247,9 +264,11 @@ type
         var lThread := ^CheckListData(fThreads[j]);
         lThread^.DoneCount := lThread^.Count;
         for i: Integer := 0 to lThread^.DoneCount -1 do begin 
-          Debug('Adding to global free list: '+lThread^.Data[i]);
+          Debug('Adding to global free list: ');
+          Debug(lThread^.Data[i]);
           fGlobalFreeList.Add(lThread^.Data[i]);
-          Debug('Checking ADD to global free list: '+fGlobalFreeList.Contains(lThread^.Data[i]));
+          Debug('Checking ADD to global free list: ');
+          DEbug(Integer(fGlobalFreeList.Contains(lThread^.Data[i])));
           SetBit(lThread^.Data[i]);
         end;
       end;
@@ -293,37 +312,50 @@ type
         if lRealGC = 0 then begin 
           //for "On Stack" we keep them in the list so they are checked in the next cycle, these are objects on the stack only, 
           var lSet := IsSet(lRC);
-          Debug('realgc = 0 for '+el+' and lset is '+lSet);
+          Debug('realgc = 0 for ');
+          Debug(el);
+          Debug(' and lset is ');
+          DEbug(if lSet then 1 else 0);
           if lSet then begin 
-            Debug('Removing from remove-list, count: '+fRemoveList.Count);
+            Debug('Removing from remove-list, count: ');
+            DEbug(fRemoveList.Count);
             fRemoveList.RemoveAt(i);
-            Debug('Removing from remove-list, NEW count: '+fRemoveList.Count);
+            Debug('Removing from remove-list, NEW count: ');
+            DEbug(fRemoveList.Count);
           end else begin 
             //else we finalize this object (refcount = 0) and remove them from the list
-            Debug('Removing from global free list, count: '+fGlobalFreeList.Count);
+            Debug('Removing from global free list, count: ');
+            DEbug(fGlobalFreeList.Count);
             fGlobalFreeList.Remove(el);
             if (lRC and FinalizeBit) = 0 then 
               fRemoveList.RemoveAt(i);
-            Debug('Removing from global free list, NEW count: '+fGlobalFreeList.Count);
+            Debug('Removing from global free list, NEW count: ');
+            DEbug(fGlobalFreeList.Count);
           end;
         end else begin 
           // these can be removed as they have a positive RC, meaning they're referenced somewhere globally; the reason we don't remove them right away is 
           // that when we have to deal with cycles we have to walk them.
-          Debug('Removing from remove-list, count: '+fRemoveList.Count);
-          Debug('Removing from global free list, count: '+fGlobalFreeList.Count);
+          Debug('Removing from remove-list, count: ');
+          DEbug(fRemoveList.Count);
+          Debug('Removing from global free list, count: ');
+          DEbug(fGlobalFreeList.Count);
           fGlobalFreeList.Remove(el);
           fRemoveList.RemoveAt(i);
-          Debug('Removing from remove-list, NEW count: '+fRemoveList.Count);
-          Debug('Removing from global free list, NEW count: '+fGlobalFreeList.Count);
+          Debug('Removing from remove-list, NEW count: ');
+          DEbug(fRemoveList.Count);
+          Debug('Removing from global free list, NEW count: ');
+          DEbug(fGlobalFreeList.Count);
         end;
       end;
-      Debug('Elements kept in global list: '+fGlobalFreeList.Count);
+      Debug('Elements kept in global list: ');
+      debug(fGlobalFreeList.Count);
       {$IFNDEF WEBASSEMBLY}
       Utilities.SpinLockExit(var fLock);
       fGCWait.Set;
       {$ENDIF}
       for i: Integer := fRemoveList.Count -1 downto 0 do begin 
-        Debug('Finalizing object '+fRemoveList[i]);
+        Debug('Finalizing object ');
+        DEbug(fRemoveList[i]);
         FinalizeObject(fRemoveList[i]);
       end;
       Debug('Done!');
@@ -340,8 +372,8 @@ type
       FGCWake := new Manual<EventWaitHandle>(true, false);
       fThreads := new Manual<GCList>;
       {$ENDIF}
-      fGlobalFreeList := new Manual<GCHashSet>;
-      fRemoveList := new Manual<GCList>;
+      fGlobalFreeList := new Manual<GCHashSet>();
+      fRemoveList := new Manual<GCList>();
       {$IFNDEF WEBASSEMBLY}
       new Manual<Thread>(@GCLoop).Start(nil);
       Utilities.SpinLockExit(var fLock);
@@ -363,7 +395,8 @@ type
     class method AddToFreeList(aList: IntPtr);
     begin 
       var lRun := InternalCalls.VolatileRead(var fRunNumber, false);
-      Debug('Add to free list '+aList);
+      Debug('Add to free list ');
+      DEbug(aList);
       var lList := fCheckList;
       if lList = nil then begin 
         RegisterThread;
@@ -407,6 +440,10 @@ type
 
     class method &New(aTTY: ^Void; aSize: IntPtr): ^Void;
     begin 
+      if fFinalizer = nil then begin
+        fFinalizer := ^^Void(InternalCalls.GetTypeInfo<Object>())[Utilities.FinalizerIndex]; // keep in sync with compiler!
+      end;
+     
       {$IFDEF WEBASSEMBLY}
       if not FGCLoaded then InitGC;
       {$ELSE}
@@ -424,6 +461,10 @@ type
       ^^Void(result)^ := aTTY;
       memset(^Byte(result) + sizeOf(^Void), 0, aSize - sizeOf(^Void));
       AddToFreeList(IntPtr(result)); // ensure the value gets scanned.
+      
+      if ^^Void(aTTY)[Utilities.FinalizerIndex] <> fFinalizer then begin
+        SetFinalizer(result);
+      end;
     end;
 
     class method RegisterThread: Integer;
@@ -456,7 +497,8 @@ type
       {$ENDIF}
         
       var ptr := InternalCalls.Cast(o^);
-      Debug('AddRef: ' + IntPtr(ptr));
+      Debug('AddRef: ');
+      DEbug(IntPtr(ptr));
       if (^Void(o) < {$IFDEF WEBASSEMBLY}^Void(@StackTop){$ELSE}lList^.StackTop{$ENDIF}) and (^Void(o) >= ^Void(@o)) then exit; // on the stack, should be relatively rare
       dec(ptr, sizeOf(IntPtr));
       InternalCalls.Increment(var ^MyIntPtr(ptr)^);
@@ -476,7 +518,8 @@ type
       {$ENDIF}
       
       var ptr := InternalCalls.Cast(o^);
-      Debug('Release: '+IntPtr(ptr));
+      Debug('Release: ');
+      Debug(IntPtr(ptr));
       if (^Void(o) < {$IFDEF WEBASSEMBLY}^Void(@StackTop){$ELSE}lList^.StackTop{$ENDIF}) and (^Void(o) >= ^Void(@o)) then exit; // on the stack, should be relatively rare
       dec(ptr, sizeOf(IntPtr));
       InternalCalls.Decrement(var ^MyIntPtr(ptr)^);
@@ -813,7 +856,7 @@ type
   public 
     class method Collect(c: Integer);
     begin
-      SimpleGC.fSharedMemory.Collect();
+      SimpleGC.GC(c <> 0);
     end;
   end;
 
