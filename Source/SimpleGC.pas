@@ -81,13 +81,13 @@ type
     [Conditional('DEBUGGC')]
     class method Debug(s: ^Void);
     begin
-      writeln('ptr');
+      writeLn('ptr');
       WebAssemblyCalls.ConsoleLog(Integer(s));
     end;
     [Conditional('DEBUGGC')]
     class method Debug(s: Integer);
     begin
-      writeln('Int');
+      writeLn('Int');
       WebAssemblyCalls.ConsoleLog(s);
     end;
 
@@ -315,47 +315,47 @@ type
           Debug('realgc = 0 for ');
           Debug(el);
           Debug(' and lset is ');
-          DEbug(if lSet then 1 else 0);
+          Debug(if lSet then 1 else 0);
           if lSet then begin 
             Debug('Removing from remove-list, count: ');
-            DEbug(fRemoveList.Count);
+            Debug(fRemoveList.Count);
             fRemoveList.RemoveAt(i);
             Debug('Removing from remove-list, NEW count: ');
-            DEbug(fRemoveList.Count);
+            Debug(fRemoveList.Count);
           end else begin 
             //else we finalize this object (refcount = 0) and remove them from the list
             Debug('Removing from global free list, count: ');
-            DEbug(fGlobalFreeList.Count);
+            Debug(fGlobalFreeList.Count);
             fGlobalFreeList.Remove(el);
             if (lRC and FinalizeBit) = 0 then 
               fRemoveList.RemoveAt(i);
             Debug('Removing from global free list, NEW count: ');
-            DEbug(fGlobalFreeList.Count);
+            Debug(fGlobalFreeList.Count);
           end;
         end else begin 
           // these can be removed as they have a positive RC, meaning they're referenced somewhere globally; the reason we don't remove them right away is 
           // that when we have to deal with cycles we have to walk them.
           Debug('Removing from remove-list, count: ');
-          DEbug(fRemoveList.Count);
+          Debug(fRemoveList.Count);
           Debug('Removing from global free list, count: ');
-          DEbug(fGlobalFreeList.Count);
+          Debug(fGlobalFreeList.Count);
           fGlobalFreeList.Remove(el);
           fRemoveList.RemoveAt(i);
           Debug('Removing from remove-list, NEW count: ');
-          DEbug(fRemoveList.Count);
+          Debug(fRemoveList.Count);
           Debug('Removing from global free list, NEW count: ');
-          DEbug(fGlobalFreeList.Count);
+          Debug(fGlobalFreeList.Count);
         end;
       end;
       Debug('Elements kept in global list: ');
-      debug(fGlobalFreeList.Count);
+      Debug(fGlobalFreeList.Count);
       {$IFNDEF WEBASSEMBLY}
       Utilities.SpinLockExit(var fLock);
       fGCWait.Set;
       {$ENDIF}
       for i: Integer := fRemoveList.Count -1 downto 0 do begin 
         Debug('Finalizing object ');
-        DEbug(fRemoveList[i]);
+        Debug(fRemoveList[i]);
         FinalizeObject(fRemoveList[i]);
       end;
       Debug('Done!');
@@ -379,6 +379,7 @@ type
       Utilities.SpinLockExit(var fLock);
       {$ENDIF}
     end;
+    
     const FinalizerIndex = 4 + {$IFDEF I386}4{$ELSE}2{$ENDIF};
 
     class method FinalizeObject(aObj: IntPtr); 
@@ -498,7 +499,7 @@ type
         
       var ptr := InternalCalls.Cast(o^);
       Debug('AddRef: ');
-      DEbug(IntPtr(ptr));
+      Debug(IntPtr(ptr));
       if (^Void(o) < {$IFDEF WEBASSEMBLY}^Void(@StackTop){$ELSE}lList^.StackTop{$ENDIF}) and (^Void(o) >= ^Void(@o)) then exit; // on the stack, should be relatively rare
       dec(ptr, sizeOf(IntPtr));
       InternalCalls.Increment(var ^MyIntPtr(ptr)^);
@@ -561,10 +562,7 @@ type
     [GCSkipIfOnStack]
     class operator Assign(var aDest: SimpleGC; var aSource: SimpleGC);
     begin
-      if (@aDest) = (@aSource) then exit;
-      Release(@aDest.fInst);
-      aDest.fInst := aSource.fInst;
-      AddRef(@aDest.fInst);
+      Assign(var aDest, var aSource);
     end;
     
     class method Assign(var aDest: SimpleGC; var aSource: SimpleGC);
@@ -583,12 +581,14 @@ type
       // value is on the stack, should be relatively rare
       if (^Void(@aDest.fInst) < {$IFDEF WEBASSEMBLY}^Void(@StackTop){$ELSE}lList^.StackTop{$ENDIF}) and (^Void(@aDest.fInst) >= ^Void(@lList)) then exit; 
       
-      var lOld := InternalCalls.Exchange(var aDest.fInst, aSource.fInst);
-      if aSource.fInst <> 0 then begin 
-        InternalCalls.Increment(var ^IntPtr(aSource.fInst)[-1]);
+      var lInst := aSource.fInst;
+      var lOld := InternalCalls.Exchange(var aDest.fInst, lInst);
+      if lOld = lInst then exit;
+      if lInst <> 0 then begin 
+        InternalCalls.Increment(var ^IntPtr(lInst)[-1]);
       end;
       if lOld <> 0  then begin 
-        InternalCalls.Decrement(var ^IntPtr(aSource.fInst)[-1]);
+        InternalCalls.Decrement(var ^IntPtr(lOld)[-1]);
         AddToFreeList(IntPtr(InternalCalls.Cast(lOld)));
       end;
     end;
