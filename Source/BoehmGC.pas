@@ -37,7 +37,7 @@ type
         if InternalCalls.CompareExchange(var fLoaded, 1, 0 ) = 1 then begin
           exit;
         end;
-        Utilities.RegisterThreadHandlers(@RegisterThread, @UnregisterThread);
+        //Utilities.RegisterThreadHandlers(@RegisterThread, @UnregisterThread);
         {$IFDEF WINDOWS}
         var FN: array[0..29] of Char;
         FN[0] := '_';
@@ -103,6 +103,7 @@ type
         {$ELSE}
         LocalGC;
         {$ENDIF}
+        Utilities.RegisterThreadHandlers(@RegisterThread, @UnregisterThread);
       finally
         Utilities.SpinLockExit(var fLock);
       end;
