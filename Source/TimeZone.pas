@@ -73,16 +73,17 @@ begin
   var lMaxLength: rtl.DWORD;
 
   var lList: not nullable List<String> := new List<String>;
-  if rtl.RegOpenKeyEx(rtl.HKEY_LOCAL_MACHINE, @lKey[0], 0, rtl.KEY_READ or rtl.KEY_WOW64_RES, @lNewKey) <> rtl.ERROR_SUCCESS then 
+  if rtl.RegOpenKeyEx(rtl.HKEY_LOCAL_MACHINE, @lKey[0], 0, rtl.KEY_QUERY_VALUE or rtl.KEY_ENUMERATE_SUB_KEYS or rtl.KEY_READ, @lNewKey) <> rtl.ERROR_SUCCESS then 
     raise new Exception('Can not open TimeZone registry key');
 
   if rtl.RegQueryInfoKey(lNewKey, nil, nil, nil, @lSubKeys, @lMaxLength, nil, nil, nil, nil, nil, nil) <> rtl.ERROR_SUCCESS then
     raise new Exception('Can not get information from TimeZone registry key');
-  var lSubName := new Char[lMaxLength];
+  var lSubName := new Char[(lMaxLength + 1) * 2];
   var lWritten: rtl.DWORD;
   for i: Integer := 0 to lSubKeys - 1 do begin
+    lWritten := lMaxLength + 1;
     rtl.RegEnumKeyEx(lNewKey, i, @lSubName[0], @lWritten, nil, nil, nil, nil);
-    lList.Add(new String(lSubName, lWritten));
+    lList.Add(new String(@lSubName[0], lWritten));
   end;
   result := lList;
   {$ELSEIF POSIX OR ANDROID}
@@ -128,7 +129,7 @@ begin
   var lKey := ('SOFTWARE\Microsoft\Windows NT\CurrentVersion\Time Zones\' + aName).ToCharArray(true);
   var lNewKey: rtl.HKEY;
 
-  if rtl.RegOpenKeyEx(rtl.HKEY_LOCAL_MACHINE, @lKey[0], 0, rtl.KEY_READ or rtl.KEY_WOW64_RES, @lNewKey) <> rtl.ERROR_SUCCESS then 
+  if rtl.RegOpenKeyEx(rtl.HKEY_LOCAL_MACHINE, @lKey[0], 0, rtl.KEY_READ, @lNewKey) <> rtl.ERROR_SUCCESS then 
     raise new Exception('Can not open TimeZone registry key');
 
   var lType: rtl.DWORD;
