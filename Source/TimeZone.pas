@@ -35,16 +35,16 @@ implementation
 class method TimeZone.get_LocalTimeZone: not nullable TimeZone;
 begin
   {$IFDEF WINDOWS}
-  var lZoneInfo: rtl.LPTIME_ZONE_INFORMATION;
-  var lDayLight := rtl.GetTimeZoneInformation(lZoneInfo) = rtl.TIME_ZONE_ID_DAYLIGHT;
-  var lOffset := if lDayLight then (lZoneInfo^.DaylightBias +  lZoneInfo^.Bias) * 60 else lZoneInfo^.Bias * 60;
-  var lID := String.FromPChar(lZoneInfo^.StandardName);
+  var lZoneInfo: rtl.DYNAMIC_TIME_ZONE_INFORMATION;
+  var lDayLight := (rtl.GetDynamicTimeZoneInformation(@lZoneInfo) = rtl.TIME_ZONE_ID_DAYLIGHT);
+  var lOffset := if lDayLight then (lZoneInfo.DaylightBias +  lZoneInfo.Bias) else lZoneInfo.Bias;
+  var lID := String.FromPChar(lZoneInfo.StandardName);
   result := new TimeZone(lID, lOffset);
   {$ELSEIF POSIX OR ANDROID}
   var lTime: rtl.time_t := rtl.time(nil);
   var lTimeZone: ^rtl.__struct_tm;
   lTimeZone := rtl.localtime(@lTime);  
-  result := new TimeZone(String.FromPAnsiChars(lTimeZone^.tm_zone), lTimeZone^.tm_gmtoff div 3600);
+  result := new TimeZone(String.FromPAnsiChars(lTimeZone^.tm_zone), lTimeZone^.tm_gmtoff div 60);
   {$ENDIF}
 end;
 
@@ -139,7 +139,7 @@ begin
   if rtl.RegGetValue(lNewKey, nil, @lKeyChars[0], rtl.RRF_RT_ANY, @lType, @lBuffer, @lBufSize) <> rtl.ERROR_SUCCESS then
     raise new Exception('Can not retrieve timezone info for ' + aName);
   var lDayLight := lBuffer.DaylightDate.wMonth <> 0;
-  var lOffset := if lDayLight then (lBuffer.DaylightBias +  lBuffer.Bias) * 60 else lBuffer.Bias * 60;
+  var lOffset := if lDayLight then (lBuffer.DaylightBias +  lBuffer.Bias) else lBuffer.Bias;
   result := new TimeZone(aName, lOffset);
   {$ELSEIF LINUX}
   var lNameBytes := DefaultVarName.ToAnsiChars(true);
@@ -150,7 +150,7 @@ begin
     var lTime: rtl.time_t := rtl.time(nil);
     var lTimeZone: ^rtl.__struct_tm;
     lTimeZone := rtl.localtime(@lTime);  
-    result := new TimeZone(aName, lTimeZone^.tm_gmtoff div 3600);
+    result := new TimeZone(aName, lTimeZone^.tm_gmtoff div 60);
   finally
     if lOldValue = nil then begin
       var lBytesNoValue := ''.ToAnsiChars(true);
