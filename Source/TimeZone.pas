@@ -12,7 +12,7 @@ type
     class method get_UtcTimeZone: not nullable TimeZone;
     class method get_TimeZoneWithName(aName: String): nullable TimeZone;
     class method get_TimeZoneNames: not nullable sequence of String;
-    {$IFDEF LINUX}
+    {$IFDEF LINUX OR ANDROID}
     class method GetZoneNames(aZonesDir: String; aList: List<String>; aZone: String);
     const DefaultZonesDir = '/usr/share/zoneinfo';
     const DefaultVarName = 'TZ';
@@ -25,7 +25,6 @@ type
     class property TimeZoneByName[aName: String]: nullable TimeZone read get_TimeZoneWithName;
     class property TimeZoneNames: not nullable sequence of String read get_TimeZoneNames;
 
-    //property Name: String read nil; {$WARNING Not Implemented}
     property Identifier: String read fID;
     property OffsetToUTC: Int64 read fOffsetToUTC;
   end;
@@ -40,7 +39,7 @@ begin
   var lOffset := if lDayLight then (lZoneInfo.DaylightBias +  lZoneInfo.Bias) else lZoneInfo.Bias;
   var lID := String.FromPChar(lZoneInfo.StandardName);
   result := new TimeZone(lID, lOffset);
-  {$ELSEIF POSIX OR ANDROID}
+  {$ELSEIF LINUX OR ANDROID}
   var lTime: rtl.time_t := rtl.time(nil);
   var lTimeZone: ^rtl.__struct_tm;
   lTimeZone := rtl.localtime(@lTime);  
@@ -86,14 +85,14 @@ begin
     lList.Add(new String(@lSubName[0], lWritten));
   end;
   result := lList;
-  {$ELSEIF POSIX OR ANDROID}
+  {$ELSEIF LINUX OR ANDROID}
   var lList: not nullable List<String> := new List<String>();
   GetZoneNames(DefaultZonesDir, lList, '');
   result := lList;
   {$ENDIF}
 end;
 
-{$IFDEF LINUX}
+{$IFDEF LINUX OR ANDROID}
 class method TimeZone.GetZoneNames(aZonesDir: String; aList: List<String>; aZone: String);
 begin
   var lBytes := aZonesDir.ToAnsiChars(true);
@@ -141,7 +140,7 @@ begin
   var lDayLight := lBuffer.DaylightDate.wMonth <> 0;
   var lOffset := if lDayLight then (lBuffer.DaylightBias +  lBuffer.Bias) else lBuffer.Bias;
   result := new TimeZone(aName, lOffset);
-  {$ELSEIF LINUX}
+  {$ELSEIF LINUX OR ANDROID}
   var lNameBytes := DefaultVarName.ToAnsiChars(true);
   var lValueBytes := aName.ToAnsiChars(true);
   var lOldValue := rtl.getenv(@lNameBytes[0]);
