@@ -275,7 +275,11 @@ end;
 
 class method Thread.Sleep(aTimeout: Integer);
 begin
+  {$IFDEF POSIX}
+  rtl.usleep(aTimeout * 1000);
+  {$ELSE}
   rtl.Sleep(aTimeout);
+  {$ENDIF}
 end;
 
 method Thread.Abort;
