@@ -31,6 +31,7 @@ type
 
 implementation
 
+{$IFDEF WEBASSEMBLY}[Warning("Not Implemented for WebAssembly")]{$ENDIF}
 class method TimeZone.get_LocalTimeZone: not nullable TimeZone;
 begin
   {$IFDEF WINDOWS}
@@ -44,6 +45,8 @@ begin
   var lTimeZone: ^rtl.__struct_tm;
   lTimeZone := rtl.localtime(@lTime);  
   result := new TimeZone(String.FromPAnsiChars(lTimeZone^.tm_zone), lTimeZone^.tm_gmtoff div 60);
+  {$ELSE}  
+  result := new TimeZone('', 0);
   {$ENDIF}
 end;
 
@@ -63,6 +66,7 @@ begin
   result := EnumTimeZones;
 end;
 
+{$IFDEF WEBASSEMBLY}[Warning("Not Implemented for WebAssembly")]{$ENDIF}
 class method TimeZone.EnumTimeZones: not nullable sequence of String;
 begin
   {$IFDEF WINDOWS}
@@ -89,6 +93,8 @@ begin
   var lList: not nullable List<String> := new List<String>();
   GetZoneNames(DefaultZonesDir, lList, '');
   result := lList;
+  {$ELSE}
+  result := new String[1];
   {$ENDIF}
 end;
 
@@ -122,6 +128,7 @@ begin
 end;
 {$ENDIF}
 
+{$IFDEF WEBASSEMBLY}[Warning("Not Implemented for WebAssembly")]{$ENDIF}
 class method TimeZone.get_TimeZoneWithName(aName: String): nullable TimeZone;
 begin
   {$IFDEF WINDOWS}
@@ -158,6 +165,8 @@ begin
     else
       rtl.setenv(@lNameBytes[0], lOldValue, 1);
   end;
+  {$ELSE}
+  result := new TimeZone(' ' , 0);
   {$ENDIF}
 end;
 
