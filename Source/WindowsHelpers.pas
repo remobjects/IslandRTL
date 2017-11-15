@@ -1096,7 +1096,12 @@ end;
 method ExternalCalls.main: Integer;
 begin
   Utilities.Initialize;
-  exit UserEntryPoint([]);
+  var cnt: Int32;
+  var args := rtl.CommandLineToArgvW(rtl.GetCommandLineW(), @cnt);
+  var args_s := new String[cnt];
+  for i: Integer := 0 to cnt-1 do
+    args_s[i] := String.FromPChar(args[i]);
+  exit UserEntryPoint(args_s);
 end;
 
 method ExternalCalls.mainCRTStartup: Integer;
