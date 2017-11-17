@@ -160,6 +160,13 @@ type
       exit Append(String.FromPChar(@arr[0],RepeatCount));
     end;
 
+    method Append(Value: Char): StringBuilder;
+    begin
+      Length := Length + 1;
+      fBuf[fLength - 1] := Value;
+      exit self;
+    end;
+
     method AppendLine: StringBuilder;
     begin
       exit Append(Environment.NewLine);
