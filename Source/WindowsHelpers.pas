@@ -49,7 +49,7 @@ type
     class method _strtoui64(a: ^AnsiChar; endptr: ^^AnsiChar; abase: Integer): UInt64; empty; // used by GC but since getenv never returns a value, this will never hit
     [SymbolName('_errno')]
     class var _errno: Integer;
-    [SymbolName('_fltused')]
+    [SymbolName('_fltused'), Used]
     class var _fltused: Integer;
     [SymbolName('_beginthreadex')]
     class method _beginthreadex(
@@ -149,8 +149,6 @@ type
 
     class property ModuleHandle: rtl.HMODULE read fModuleHandle;
 
-    [SymbolName('__fltused'), Used]
-    class var __fltused: Integer := 0; readonly;
 
     const ElementsExceptionCode = $E0428819;
 
