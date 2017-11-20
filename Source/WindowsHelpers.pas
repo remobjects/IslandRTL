@@ -149,6 +149,8 @@ type
 
     class property ModuleHandle: rtl.HMODULE read fModuleHandle;
 
+    [SymbolName('__fltused'), Used]
+    class var __fltused: Integer := 0; readonly;
 
     const ElementsExceptionCode = $E0428819;
 
