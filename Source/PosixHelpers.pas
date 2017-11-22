@@ -404,9 +404,15 @@ begin
     pop     {r1}    // argc
     mov     r2, sp
     mov     r11, r0
+    ldr     r4, .l4
+.l4a: // we use GOT/PCREL to accomodate dylib compiling.
+    add     r4, pc, r4
     ldr     r0, .l1
+    ldr     r0, [r0, r4]
     ldr     r3, .l2
+    ldr     r3, [r3, r4]
     ldr     r12, .l3
+    ldr     r12, [r12, r4]
 
     push    {r2}
     push    {r11}
@@ -420,11 +426,14 @@ begin
     bl     __libc_start_main
     bl abort
 .l1:
-    .long __elements_entry_point_helper
+    .long __elements_entry_point_helper(GOT)
 .l2:
-    .long __elements_init
+    .long __elements_init(GOT)
 .l3:
-    .long __elements_fini
+    .long __elements_fini(GOT)
+.l4:
+    .long   _GLOBAL_OFFSET_TABLE_-(.l4a+8)
+    
   ", "", false, false);
 {$ELSE}
   InternalCalls.VoidAsm(
