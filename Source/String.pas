@@ -21,7 +21,7 @@ type
     method GetNonGenericEnumerator: IEnumerator; implements IEnumerable.GetEnumerator;
     method GetEnumerator: IEnumerator<Char>;iterator;
   assembly
-    class method AllocString(aLen: Integer): String; where T is ILifetimeStrategy<T>;
+    class method AllocString(aLen: Integer): String;
   public
     //constructor(aArray: array of Char);
     //constructor(c: ^Char; aCharCount: Integer): String;
