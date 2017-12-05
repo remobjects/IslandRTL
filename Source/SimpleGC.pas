@@ -49,6 +49,7 @@ type
       class var FGCLoaded: Boolean;
       class var fRemoveList: Manual<GCList>;
       class var fWalkList: Manual<GCList>;
+      class var fBlackList: Manual<GCList>;
       class var fGlobalFreeList: Manual<GCHashSet>;
       {$IFNDEF WEBASSEMBLY}
       class var fLock: Integer;
@@ -268,7 +269,8 @@ type
     end;
 {$ENDIF}
 
-    class method Walk1;
+    // Walk all nodes, if they're not gray, make them gray and decrease the reference.
+    class method MarkGray;
     begin 
       loop begin 
         var c := fWalkList.Count;
@@ -276,14 +278,18 @@ type
         for i: Integer := c -1 downto 0 do begin 
           var el := fWalkList[i];
           var lRC := ^UIntPtr(el)[-1];
-          Debug('Walk1');
+          Debug('MarkGray');
           Debug(el);
           Debug(lRC and not Mask);
+          if (lRC and not Mask) = 0 then begin 
+            Debug('MarkGray: rc 0');
+            continue;
+          end;
           if IsGray(lRC) then begin 
-            Debug('Walk1: isgray');
+            Debug('MarkGray: isgray');
             continue; // been here, done that.
           end;
-          Debug('Walk1: is not gray, setting gray and decref');
+          Debug('MarkGray: is not gray, setting gray and decref');
           Debug(lRC);
           InternalCalls.Add(var ^UIntPtr(el)[-1], - 1); // decrease and set gray
           InternalCalls.Or(var ^UIntPtr(el)[-1], Gray);
@@ -293,7 +299,8 @@ type
       end;
     end;
 
-    class method Walk2;
+    // Loops all roots, for all gray nodes, if the rc > 1, scan them as black, else mark white (ie leave as rc 0)
+    class method ScanRoots;
     begin 
       loop begin 
         var c := fWalkList.Count;
@@ -301,22 +308,51 @@ type
         for i: Integer := c -1 downto 0 do begin 
           var el := fWalkList[i];
           var lRC := ^UIntPtr(el)[-1];
-          Debug('Walk2');
+          Debug('ScanRoots');
           Debug(el);
           Debug(lRC and not Mask);
           if IsGray(lRC) then begin 
-            Debug('Walk2: isgray');
-            if ((lRC and not Mask) > 0) or IsSet(lRC) then begin  // if we're left with > 0 rc, or if it's on the stack, undo
-              Debug('Walk2: rc > 0 or on stack');
-              InternalCalls.Add(var ^UIntPtr(el)[-1], 1); // increase and unseto gray
-              InternalCalls.And(var ^UIntPtr(el)[-1], not Gray);
-            end else 
-              Debug('Walk2: rc is 0 and not on stack, should free');
-          end else 
-            Debug('Walk2: is not gray');
+            Debug('ScanRoots: isgray');
+            if ((lRC and not Mask) > 0) or IsSet(lRC) then begin  // mark & scan as black
+              Debug('ScanRoots: rc > 0 or on stack; making black again');
+              fBlackList.Add(el);
+              ScanBlack;
+              continue; // do not do children
+            end else begin
+              fGlobalFreeList.Add(el); // mark white; white as rc = 0
+              Debug('ScanRoots: rc is 0 and not on stack, should free');
+            end;
+          end else begin
+            Debug('ScanRoots: is not gray');
+            // Not gray, don't do anything.
+            continue;
+          end;
           AddChildren(el);
         end;
         fWalkList.RemoveRange(0, c);
+      end;
+    end;
+
+    // Walk all nodes, if they're not gray, make them gray and decrease the reference.
+    class method ScanBlack;
+    begin 
+      loop begin 
+        var c := fBlackList.Count;
+        if c = 0 then break;
+        for i: Integer := c -1 downto 0 do begin 
+          var el := fWalkList[i];
+          var lRC := ^UIntPtr(el)[-1];
+          Debug('ScanBlack');
+          Debug(el);
+          if not IsGray(lRC) then begin 
+            Debug('ScanBlack: is not gray');
+            continue;
+          end;
+          InternalCalls.Add(var ^UIntPtr(el)[-1], + 1); // decrease and set gray
+          InternalCalls.And(var ^UIntPtr(el)[-1], not Gray);
+          AddChildrenBlack(el);
+        end;
+        fBlackList.RemoveRange(0, c);
       end;
     end;
 
@@ -335,6 +371,26 @@ type
             Debug('Value is set, adding to walk list');
             Debug(p);
             fWalkList.Add(p);
+          end;
+        end;
+      end;
+    end;
+
+    class method AddChildrenBlack(el: IntPtr);
+    begin
+      Debug('Walking children for blacklist');
+      var lExt := ^^IslandTypeInfo(el)^^.Ext;
+      var lGI := ^Byte(lExt^.GCInfo);
+      if lGI = nil then exit; // can't be right.
+      for i: Integer := (lExt^.TypeSize / sizeOf(IntPtr)) -1 downto 0 do begin 
+        Debug('Checking at ');
+        Debug(i * sizeOf(IntPtr));
+        if (lGI[i / 8] and (1 shl (i mod 8))) <> 0 then begin
+          var p := ^IntPtr(el)[i * sizeOf(IntPtr)];
+          if p <> 0 then begin
+            Debug('Value is set, adding to black walk list');
+            Debug(p);
+            fBlackList.Add(p);
           end;
         end;
       end;
@@ -390,13 +446,13 @@ type
       for i: Integer := fRemoveList.Count -1 downto 0 do begin 
         var el := fRemoveList[i];
         fWalkList.Add(el);
-        Walk1;
+        MarkGray;
       end;
 
       for i: Integer := fRemoveList.Count -1 downto 0 do begin 
         var el := fRemoveList[i];
         fWalkList.Add(el);
-        Walk2;
+        ScanRoots;
       end;
 
       for i: Integer := fRemoveList.Count -1 downto 0 do begin
@@ -468,6 +524,7 @@ type
       fGlobalFreeList := new Manual<GCHashSet>();
       fRemoveList := new Manual<GCList>();
       fWalkList := new Manual<GCList>();
+      fBlackList := new Manual<GCList>();
       {$IFNDEF WEBASSEMBLY}
       new Manual<Thread>(@GCLoop).Start(nil);
       Utilities.SpinLockExit(var fLock);
