@@ -885,6 +885,8 @@ type
     SubType: ^IslandTypeInfo; // If Generic, this will be the "non generic" type, array it will be the sub type, etc
     MemberInfoData: ^Byte;
     MemberInfoList: ^^Void;
+    GCInfo: ^Void; // this has 1 bit per sizeof(pointer) denoting if the value at this point IS a gc-able pointer.
+    TypeSize: Integer;  
   end;
 
   IslandTypeInfo = public record

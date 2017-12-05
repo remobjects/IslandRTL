@@ -335,6 +335,23 @@ type
     // Adds value to the value at address, returns the old one.
     class method &Add(var address: Int32; value: Int32): Int32; external;
     class method &Add(var address: Int64; value: Int64): Int64; external;
+    class method &Add(var address: NativeInt; value: NativeInt): NativeInt; external;
+    class method &Add(var address: NativeUInt; value: NativeUInt): NativeUInt; external;
+
+    class method &Or(var address: Int32; value: Int32): Int32; external;
+    class method &Or(var address: Int64; value: Int64): Int64; external;
+    class method &Or(var address: NativeInt; value: NativeInt): NativeInt; external;
+    class method &Or(var address: NativeUInt; value: NativeUInt): NativeUInt; external;
+
+    class method &And(var address: Int32; value: Int32): Int32; external;
+    class method &And(var address: Int64; value: Int64): Int64; external;
+    class method &And(var address: NativeInt; value: NativeInt): NativeInt; external;
+    class method &And(var address: NativeUInt; value: NativeUInt): NativeUInt; external;
+
+    class method &Xor(var address: Int32; value: Int32): Int32; external;
+    class method &Xor(var address: Int64; value: Int64): Int64; external;
+    class method &Xor(var address: NativeInt; value: NativeInt): NativeInt; external;
+    class method &Xor(var address: NativeUInt; value: NativeUInt): NativeUInt; external;
   end;
 
 {$G+}

@@ -30,9 +30,11 @@ type
   private 
     var fInst: IntPtr;
     class var fFinalizer: ^Void;
+    {$IFNDEF WEBASSEMBLY}
     class var fLoaded: Integer; assembly;
     {$IFDEF POSIX}[LinkOnce]{$ENDIF}
     class var fSharedMemory: SharedMemory; assembly;
+    {$ENDIF}
     
 {$IFNDEF WEBASSEMBLY}
     [ThreadLocal]
@@ -46,8 +48,11 @@ type
 {$ENDIF}
       class var FGCLoaded: Boolean;
       class var fRemoveList: Manual<GCList>;
+      class var fWalkList: Manual<GCList>;
       class var fGlobalFreeList: Manual<GCHashSet>;
+      {$IFNDEF WEBASSEMBLY}
       class var fLock: Integer;
+      {$ENDIF}
       class var fRunNumber: Integer;
       class var fLastTopBitSet: Boolean;
 
@@ -69,7 +74,8 @@ type
     const
       Bit: UInt64 = {$IFDEF CPU64}1 shl 63{$ELSE}1 shl 31{$ENDIF};
       FinalizeBit: UInt64 = {$IFDEF CPU64}1 shl 62{$ELSE}1 shl 30{$ENDIF};
-      Mask: UInt64 = Bit or FinalizeBit;
+      Gray: UInt64 = {$IFDEF CPU64}1 shl 61{$ELSE}1 shl 29{$ENDIF};
+      Mask: UInt64 = Bit or FinalizeBit or Gray;
     
 
 
@@ -239,6 +245,11 @@ type
       exit (aRefCount and Bit) = 0;
     end;
 
+    class method IsGray(aRefCount: UIntPtr): Boolean; inline;
+    begin 
+      exit (aRefCount and Gray) <> 0;
+    end;
+
 {$IFNDEF WEBASSEMBLY}
     class method GCLoop(dummy: Object);
     begin 
@@ -256,6 +267,79 @@ type
 
     end;
 {$ENDIF}
+
+    class method Walk1;
+    begin 
+      loop begin 
+        var c := fWalkList.Count;
+        if c = 0 then break;
+        for i: Integer := c -1 downto 0 do begin 
+          var el := fWalkList[i];
+          var lRC := ^UIntPtr(el)[-1];
+          Debug('Walk1');
+          Debug(el);
+          Debug(lRC and not Mask);
+          if IsGray(lRC) then begin 
+            Debug('Walk1: isgray');
+            continue; // been here, done that.
+          end;
+          Debug('Walk1: is not gray, setting gray and decref');
+          Debug(lRC);
+          InternalCalls.Add(var ^UIntPtr(el)[-1], - 1); // decrease and set gray
+          InternalCalls.Or(var ^UIntPtr(el)[-1], Gray);
+          AddChildren(el);
+        end;
+        fWalkList.RemoveRange(0, c);
+      end;
+    end;
+
+    class method Walk2;
+    begin 
+      loop begin 
+        var c := fWalkList.Count;
+        if c = 0 then break;
+        for i: Integer := c -1 downto 0 do begin 
+          var el := fWalkList[i];
+          var lRC := ^UIntPtr(el)[-1];
+          Debug('Walk2');
+          Debug(el);
+          Debug(lRC and not Mask);
+          if IsGray(lRC) then begin 
+            Debug('Walk2: isgray');
+            if ((lRC and not Mask) > 0) or IsSet(lRC) then begin  // if we're left with > 0 rc, or if it's on the stack, undo
+              Debug('Walk2: rc > 0 or on stack');
+              InternalCalls.Add(var ^UIntPtr(el)[-1], 1); // increase and unseto gray
+              InternalCalls.And(var ^UIntPtr(el)[-1], not Gray);
+            end else 
+              Debug('Walk2: rc is 0 and not on stack, should free');
+          end else 
+            Debug('Walk2: is not gray');
+          AddChildren(el);
+        end;
+        fWalkList.RemoveRange(0, c);
+      end;
+    end;
+
+    class method AddChildren(el: IntPtr);
+    begin
+      Debug('Walking children');
+      var lExt := ^^IslandTypeInfo(el)^^.Ext;
+      var lGI := ^Byte(lExt^.GCInfo);
+      if lGI = nil then exit; // can't be right.
+      for i: Integer := (lExt^.TypeSize / sizeOf(IntPtr)) -1 downto 0 do begin 
+        Debug('Checking at ');
+        Debug(i * sizeOf(IntPtr));
+        if (lGI[i / 8] and (1 shl (i mod 8))) <> 0 then begin
+          var p := ^IntPtr(el)[i * sizeOf(IntPtr)];
+          if p <> 0 then begin
+            Debug('Value is set, adding to walk list');
+            Debug(p);
+            fWalkList.Add(p);
+          end;
+        end;
+      end;
+    end;
+
     class method DoGC;
     begin 
       {$IFNDEF WEBASSEMBLY}
@@ -303,9 +387,19 @@ type
       {$ENDIF}
 
       fGlobalFreeList.AddAllItemsToList(fRemoveList);
+      for i: Integer := fRemoveList.Count -1 downto 0 do begin 
+        var el := fRemoveList[i];
+        fWalkList.Add(el);
+        Walk1;
+      end;
+
+      for i: Integer := fRemoveList.Count -1 downto 0 do begin 
+        var el := fRemoveList[i];
+        fWalkList.Add(el);
+        Walk2;
+      end;
 
       for i: Integer := fRemoveList.Count -1 downto 0 do begin
-        // TODO: cycles
         var el := fRemoveList[i];
         var lRC := ^UIntPtr(el)[-1];
         var lRealGC := lRC and not Mask;
@@ -333,8 +427,7 @@ type
             Debug(fGlobalFreeList.Count);
           end;
         end else begin 
-          // these can be removed as they have a positive RC, meaning they're referenced somewhere globally; the reason we don't remove them right away is 
-          // that when we have to deal with cycles we have to walk them.
+          // these can be removed as they have a positive RC.
           Debug('Removing from remove-list, count: ');
           Debug(fRemoveList.Count);
           Debug('Removing from global free list, count: ');
@@ -374,6 +467,7 @@ type
       {$ENDIF}
       fGlobalFreeList := new Manual<GCHashSet>();
       fRemoveList := new Manual<GCList>();
+      fWalkList := new Manual<GCList>();
       {$IFNDEF WEBASSEMBLY}
       new Manual<Thread>(@GCLoop).Start(nil);
       Utilities.SpinLockExit(var fLock);
@@ -850,6 +944,17 @@ type
         fItems[i-1] := fItems[i];
       dec(fCount);
     end;
+
+    method RemoveRange(&Index: Integer; aCount: Integer);
+    begin
+      if aCount = 0 then exit;
+
+      var newlength := fCount-aCount;
+      memmove(@fItems[&Index], @fItems[&Index + aCount], (newlength - &Index) * sizeOf(IntPtr));
+      memset(@fItems[newlength], 0, (fCount - newlength) * sizeOf(IntPtr));
+      fCount := newlength;
+    end;
+
   end;
   
   SimpleGCExt = public extension class(Utilities)
