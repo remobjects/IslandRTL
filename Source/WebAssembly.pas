@@ -70,8 +70,11 @@ type
     [DllImport(''), SymbolName('__island_from_funcvalue')]
     class method CreateFunc(aVal: WebAssemblyDelegate): IntPtr; external;
 
+    [DllImport(''), SymbolName('__island_clone_handle')]
+    class method CloneHandle(aHandle: IntPtr): IntPtr; external;
+
     [DllImport(''), SymbolName('__island_call')]
-    class method Call(aSelf: IntPtr; aArgs: ^IntPtr; aArgCount: IntPtr; aReleaseArgs: Boolean): IntPtr; external;
+    class method Call(aSelf: IntPtr; aName: String; aArgs: ^IntPtr; aArgCount: IntPtr; aReleaseArgs: Boolean): IntPtr; external;
 
     [DllImport(''), SymbolName('__island_get')]
     class method Get(aSelf: IntPtr; aName: String): IntPtr; external;
@@ -96,6 +99,15 @@ type
 
     [DllImport(''), SymbolName('__island_createElement')]
     class method CreateElement(aElement: String): IntPtr; external;
+
+    [DllImport(''), SymbolName('__island_createTextNode')]
+    class method CreateTextNode(aVal: String): IntPtr; external;
+
+    [DllImport(''), SymbolName('__island_createObject')]
+    class method CreateObject: IntPtr; external;
+
+    [DllImport(''), SymbolName('__island_createArray')]
+    class method CreateArray: IntPtr; external;
 
     [DllImport(''), SymbolName('__island_setTimeout')]
     class method SetTimeout(del: WebAssemblyDelegate; aTimeout: Integer): IntPtr; external;
@@ -156,12 +168,18 @@ type
     property Items[s: String]: Object read get_Items write set_Items; default;
     property Items[i: Integer]: Object read get_Items write set_Items; default;
 
-    method Call(args: array of Object): Object;
+    method Call(aName: String; params args: array of Object): Object;
     begin 
       var lData := new IntPtr[length(args)];
       for i: Integer := 0 to length(args) -1 do
         lData[i] := WebAssembly.CreateHandle(args[i]);
-      exit WebAssembly.GetObjectForHandle(WebAssemblyCalls.Call(fHandle, @lData[0], lData.Length, true));
+      var c := WebAssemblyCalls.Call(fHandle, aName, @lData[0], lData.Length, true);
+      exit WebAssembly.GetObjectForHandle(c);
+    end;
+
+    method Call(args: array of Object): Object;
+    begin 
+      exit Call(nil, args);
     end;
 
     property Count: Integer read WebAssemblyCalls.ArrayLength(fHandle);
@@ -190,6 +208,7 @@ type
     class method CreateHandle(aVal: Object): IntPtr;
     begin
       if aVal = nil then exit 0;
+      if aVal is EcmaScriptObject then exit WebAssemblyCalls.CloneHandle(EcmaScriptObject(aVal).Handle);
       if aVal is Integer then exit WebAssemblyCalls.CreateInteger(aVal as Integer);
       if aVal is Boolean then exit WebAssemblyCalls.CreateBoolean(aVal as Boolean);
       if aVal is Double then exit WebAssemblyCalls.CreateDouble(aVal as Double);
@@ -231,14 +250,34 @@ type
       exit WebAssemblyCalls.SetTimeout(aFN, aTimeOut);
     end;
 
-    class method __island_setInterval(aFN: WebAssemblyDelegate; aTimeOut: Integer): Integer;
+    class method SetInterval(aFN: WebAssemblyDelegate; aTimeOut: Integer): Integer;
     begin 
       exit WebAssemblyCalls.SetInterval(aFN, aTimeOut);
     end;
 
-    class method ClearInterval(aVal: IntPtr);
+    class method ClearInterval(aVal: Integer);
     begin 
       WebAssemblyCalls.ClearInterval(aVal);
+    end;
+
+    class method CreateElement(aName: String): EcmaScriptObject;
+    begin 
+      exit new EcmaScriptObject(WebAssemblyCalls.CreateElement(aName));
+    end;
+
+    class method CreateTextNode(aName: String): EcmaScriptObject;
+    begin 
+      exit new EcmaScriptObject(WebAssemblyCalls.CreateTextNode(aName));
+    end;
+
+    class method CreateObject: EcmaScriptObject;
+    begin 
+      exit new EcmaScriptObject(WebAssemblyCalls.CreateObject);
+    end;
+
+    class method CreateArray: EcmaScriptObject;
+    begin 
+      exit new EcmaScriptObject(WebAssemblyCalls.CreateArray);
     end;
   end;
 

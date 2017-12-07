@@ -152,8 +152,8 @@ function __elements_debug_wasm_fromHexString(orgByteArray, start, val) {
         start++;
     }
 }
-var Elements;
-(function (Elements) {
+var ElementsWebAssembly;
+(function (ElementsWebAssembly) {
     var inst;
     var result;
     var mem;
@@ -175,18 +175,18 @@ var Elements;
         handletable[h] = o;
         return h;
     }
-    Elements.createHandle = createHandle;
+    ElementsWebAssembly.createHandle = createHandle;
     function releaseHandle(handle) {
         if (!handle || handle == 0)
             return;
         handletable[handle] = firstfree;
         firstfree = handle;
     }
-    Elements.releaseHandle = releaseHandle;
+    ElementsWebAssembly.releaseHandle = releaseHandle;
     function getHandleValue(handle) {
         return handletable[handle];
     }
-    Elements.getHandleValue = getHandleValue;
+    ElementsWebAssembly.getHandleValue = getHandleValue;
     function readCharsFromMemory(offs, len) {
         var arr = new Int16Array(mem.buffer, offs, len);
         var s = "";
@@ -194,7 +194,7 @@ var Elements;
             s += String.fromCharCode(arr[i]);
         return s;
     }
-    Elements.readCharsFromMemory = readCharsFromMemory;
+    ElementsWebAssembly.readCharsFromMemory = readCharsFromMemory;
     function readStringFromMemory(ptr) {
         if (ptr == null)
             return null;
@@ -207,15 +207,15 @@ var Elements;
             s += String.fromCharCode(dv.getUint16(8 + (i * 2), true));
         return s;
     }
-    Elements.readStringFromMemory = readStringFromMemory;
+    ElementsWebAssembly.readStringFromMemory = readStringFromMemory;
     function AddReference(val) {
         result.instance.exports["__island_force_addref"](val);
     }
-    Elements.AddReference = AddReference;
+    ElementsWebAssembly.AddReference = AddReference;
     function ReleaseReference(val) {
         result.instance.exports["__island_force_release"](val);
     }
-    Elements.ReleaseReference = ReleaseReference;
+    ElementsWebAssembly.ReleaseReference = ReleaseReference;
     function createDelegate(objectptr) {
         AddReference(objectptr);
         return function () {
@@ -303,22 +303,29 @@ var Elements;
         imp.env.__island_from_stringvalue = function (val) {
             return createHandle(readStringFromMemory(val));
         };
-        imp.env.__island_call = function (thisval, args, argcount, releaseArgs) {
+        imp.env.__island_clone_handle = function (val) {
+            return createHandle(getHandleValue(val));
+        };
+        imp.env.__island_call = function (thisval, name, args, argcount, releaseArgs) {
             var nargs = [];
             if (argcount > 0) {
                 var data = new Int32Array(mem.buffer, args);
                 for (var i = 0; i < argcount; i++) {
                     nargs[i] = handletable[data[i]];
                     if (releaseArgs)
-                        delete handletable[data[i]];
+                        releaseHandle(data[i]);
                 }
             }
-            return createHandle(handletable[thisval].apply(null, nargs));
+            var v = handletable[thisval];
+            var org = v;
+            if (name != null && name != 0)
+                v = v[readStringFromMemory(name)];
+            return createHandle(v.apply(org, nargs));
         };
         imp.env.__island_set = function (thisval, name, value, releaseArgs) {
             var val = handletable[value];
             if (releaseArgs)
-                delete handletable[value];
+                releaseHandle(value);
             handletable[thisval][readStringFromMemory(name)] = val;
         };
         imp.env.__island_get = function (thisval, name) {
@@ -333,7 +340,7 @@ var Elements;
         imp.env.__island_setarray = function (thisval, idx, value, releaseArgs) {
             var val = handletable[value];
             if (releaseArgs)
-                delete handletable[value];
+                releaseHandle(value);
             handletable[thisval][idx] = val;
         };
         imp.env.__island_getElementById = function (id) {
@@ -344,6 +351,17 @@ var Elements;
         };
         imp.env.__island_createElement = function (name) {
             return createHandle(document.createElement(readStringFromMemory(name)));
+        };
+        imp.env.__island_createTextNode = function (name) {
+            return createHandle(document.createTextNode(readStringFromMemory(name)));
+        };
+        imp.env.__island_createObject = function () {
+            var obj = {};
+            return createHandle(obj);
+        };
+        imp.env.__island_createArray = function (name) {
+            var obj = [];
+            return createHandle(obj);
         };
         imp.env.__island_setTimeout = function (fn, timeout) {
             return window.setTimeout(createDelegate(fn), timeout);
@@ -358,6 +376,10 @@ var Elements;
     function fetchAndInstantiate(url, importObject, memorySize, tableSize) {
         if (memorySize === void 0) { memorySize = 16; }
         if (tableSize === void 0) { tableSize = 1024; }
+        if (!importObject)
+            importObject = {};
+        if (!importObject.env)
+            importObject.env = {};
         var bytedata;
         return fetch(url).then(function (response) {
             return response.arrayBuffer();
@@ -383,5 +405,5 @@ var Elements;
             return results;
         });
     }
-    Elements.fetchAndInstantiate = fetchAndInstantiate;
-})(Elements || (Elements = {}));
+    ElementsWebAssembly.fetchAndInstantiate = fetchAndInstantiate;
+})(ElementsWebAssembly || (ElementsWebAssembly = {}));

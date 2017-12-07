@@ -95,7 +95,7 @@ function __elements_debug_wasm_fromHexString(orgByteArray: ArrayBuffer, start: n
 }
 
 
-module Elements {
+module ElementsWebAssembly {
     var inst: any;
     var result: WebAssembly.ResultObject;
     var mem: WebAssembly.Memory;
@@ -261,21 +261,28 @@ module Elements {
         imp.env.__island_from_stringvalue = function(val: number): number {
             return createHandle(readStringFromMemory(val));
         };
-        imp.env.__island_call = function(thisval, args, argcount: number, releaseArgs: boolean): number {
+        imp.env.__island_clone_handle = function(val: number): number {
+            return createHandle(getHandleValue(val));
+        };
+        imp.env.__island_call = function(thisval, name, args, argcount: number, releaseArgs: boolean): number {
             var nargs = [];
             if (argcount > 0) {
                 var data = new Int32Array(mem.buffer, args);
                 for (var i = 0; i < argcount; i++) {
                     nargs[i] = handletable[data[i]];
                     if (releaseArgs)
-                        delete handletable[data[i]];
+                        releaseHandle(data[i]);
                 }
             }
-            return createHandle((handletable[thisval] as Function).apply(null, nargs));
+            var v = handletable[thisval];
+            var org = v;
+            if (name != null && name != 0)
+                v = v[readStringFromMemory(name)];
+            return createHandle((v as Function).apply(org, nargs));
         };
         imp.env.__island_set = function(thisval, name, value: number, releaseArgs: boolean) {
             var val = handletable[value];
-            if (releaseArgs) delete handletable[value];
+            if (releaseArgs) releaseHandle(value);
             handletable[thisval][readStringFromMemory(name)] = val;
         };
         imp.env.__island_get = function(thisval, name: number) {
@@ -289,7 +296,7 @@ module Elements {
         };
         imp.env.__island_setarray = function(thisval, idx, value: number, releaseArgs: boolean) {
             var val = handletable[value];
-            if (releaseArgs) delete handletable[value];
+            if (releaseArgs) releaseHandle(value);
             handletable[thisval][idx] = val;
         };
         imp.env.__island_getElementById = function(id: number): number {
@@ -300,6 +307,17 @@ module Elements {
         };
         imp.env.__island_createElement = function(name: number): number {
             return createHandle(document.createElement(readStringFromMemory(name)));
+        };
+        imp.env.__island_createTextNode = function(name: number): number {
+            return createHandle(document.createTextNode(readStringFromMemory(name)));
+        };
+        imp.env.__island_createObject = function(): number {
+            var obj = {};
+            return createHandle(obj);
+        };        
+        imp.env.__island_createArray = function(name: number): number {
+            var obj = [];
+            return createHandle(obj);
         };
         imp.env.__island_setTimeout = function(fn, timeout: number): number {
             return window.setTimeout(createDelegate(fn), timeout);
@@ -314,6 +332,8 @@ module Elements {
 
 
     export function fetchAndInstantiate(url: string, importObject: any, memorySize: number = 16, tableSize: number = 1024): Promise<WebAssembly.ResultObject> {
+        if (!importObject) importObject = {};
+        if (!importObject.env) importObject.env = {};
         var bytedata: ArrayBuffer;
         return fetch(url).then(response =>
             response.arrayBuffer()
