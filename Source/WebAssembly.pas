@@ -42,7 +42,246 @@ type
 
     [DllImport(''), SymbolName('llvm.wasm.grow.memory')]
     class method GrowMemory(aSize: Integer): Integer; external;
+
+    [DllImport(''), SymbolName('__island_eval')]
+    class method Eval(aVal: String): IntPtr; external;
+
+    [DllImport(''), SymbolName('__island_get_typeof')]
+    class method GetTypeOf(aHandle: IntPtr): WebassemblyType; external;
+
+    [DllImport(''), SymbolName('__island_get_intvalue')]
+    class method GetIntValue(aHandle: IntPtr): Int32; external;
+
+    [DllImport(''), SymbolName('__island_get_doublevalue')]
+    class method GetDoubleValue(aHandle: IntPtr): Double; external;
+
+    [DllImport(''), SymbolName('__island_from_intvalue')]
+    class method CreateInteger(aVal: Integer): IntPtr; external;
+
+    [DllImport(''), SymbolName('__island_from_doublevalue')]
+    class method CreateDouble(aVal: Double): IntPtr; external;
+
+    [DllImport(''), SymbolName('__island_from_boolvalue')]
+    class method CreateBoolean(aVal: Boolean): IntPtr; external;
+
+    [DllImport(''), SymbolName('__island_from_stringvalue')]
+    class method CreateString(aVal: String): IntPtr; external;
+
+    [DllImport(''), SymbolName('__island_from_funcvalue')]
+    class method CreateFunc(aVal: WebAssemblyDelegate): IntPtr; external;
+
+    [DllImport(''), SymbolName('__island_clone_handle')]
+    class method CloneHandle(aHandle: IntPtr): IntPtr; external;
+
+    [DllImport(''), SymbolName('__island_call')]
+    class method Call(aSelf: IntPtr; aName: String; aArgs: ^IntPtr; aArgCount: IntPtr; aReleaseArgs: Boolean): IntPtr; external;
+
+    [DllImport(''), SymbolName('__island_get')]
+    class method Get(aSelf: IntPtr; aName: String): IntPtr; external;
+
+    [DllImport(''), SymbolName('__island_getarray')]
+    class method GetArray(aSelf: IntPtr; aIdx: Integer): IntPtr; external;
+
+    [DllImport(''), SymbolName('__island_getarraylength')]
+    class method ArrayLength(aSelf: IntPtr): Integer; external;
+
+    [DllImport(''), SymbolName('__island_set')]
+    class method &Set(aSelf: IntPtr; aName: String; aVal: IntPtr; aReleaseVal: Boolean): IntPtr; external;
+    
+    [DllImport(''), SymbolName('__island_setarray')]
+    class method &Set(aSelf: IntPtr; aIdx: Integer; aVal: IntPtr; aReleaseVal: Boolean): IntPtr; external;
+
+    [DllImport(''), SymbolName('__island_getElementById')]
+    class method GetElementById(aId: String): IntPtr; external;
+
+    [DllImport(''), SymbolName('__island_getElementByName')]
+    class method GetElementByName(aName: String): IntPtr; external;
+
+    [DllImport(''), SymbolName('__island_createElement')]
+    class method CreateElement(aElement: String): IntPtr; external;
+
+    [DllImport(''), SymbolName('__island_createTextNode')]
+    class method CreateTextNode(aVal: String): IntPtr; external;
+
+    [DllImport(''), SymbolName('__island_createObject')]
+    class method CreateObject: IntPtr; external;
+
+    [DllImport(''), SymbolName('__island_createArray')]
+    class method CreateArray: IntPtr; external;
+
+    [DllImport(''), SymbolName('__island_setTimeout')]
+    class method SetTimeout(del: WebAssemblyDelegate; aTimeout: Integer): IntPtr; external;
+
+    [DllImport(''), SymbolName('__island_setInterval')]
+    class method SetInterval(del: WebAssemblyDelegate; aTimeout: Integer): IntPtr; external;
+
+    [DllImport(''), SymbolName('__island_ClearInterval')]
+    class method ClearInterval(aHandle: IntPtr); external;
   end;
+
+  EcmaScriptObject = public class(IDisposable)
+  private 
+    fHandle: IntPtr;
+    method get_Items(i: Integer): Object;
+    begin 
+      exit WebAssembly.GetObjectForHandle(WebAssemblyCalls.GetArray(fHandle, i));
+    end;
+    method get_Items(i: String): Object;
+    begin 
+      exit WebAssembly.GetObjectForHandle(WebAssemblyCalls.Get(fHandle, i));
+    end;
+    method set_Items(i: Integer; aVal: Object);
+    begin 
+      WebAssemblyCalls.Set(fHandle, i, WebAssembly.CreateHandle(aVal), true);
+    end;
+    method set_Items(i: String; aVal: Object);
+    begin 
+      WebAssemblyCalls.Set(fHandle, i, WebAssembly.CreateHandle(aVal), true);
+    end;
+  public 
+    constructor(aValue: IntPtr);
+    begin 
+      fHandle := aValue;
+    end;
+
+    finalizer;
+    begin 
+      if fHandle <> 0 then 
+        WebAssemblyCalls.FreeHandle(fHandle);
+    end;
+
+    property Handle: IntPtr read fHandle;
+
+    method Release;
+    begin 
+      fHandle := 0;
+    end;      
+
+    method Dispose;
+    begin 
+      if fHandle <> 0 then begin
+        WebAssemblyCalls.FreeHandle(fHandle);
+        fHandle := 0;
+      end;
+    end;
+
+    property Items[s: String]: Object read get_Items write set_Items; default;
+    property Items[i: Integer]: Object read get_Items write set_Items; default;
+
+    method Call(aName: String; params args: array of Object): Object;
+    begin 
+      var lData := new IntPtr[length(args)];
+      for i: Integer := 0 to length(args) -1 do
+        lData[i] := WebAssembly.CreateHandle(args[i]);
+      var c := WebAssemblyCalls.Call(fHandle, aName, @lData[0], lData.Length, true);
+      exit WebAssembly.GetObjectForHandle(c);
+    end;
+
+    method Call(args: array of Object): Object;
+    begin 
+      exit Call(nil, args);
+    end;
+
+    property Count: Integer read WebAssemblyCalls.ArrayLength(fHandle);
+  end;
+
+  WebAssemblyDelegate = public delegate (args: EcmaScriptObject);
+
+  WebAssembly = public static class 
+  private 
+  public 
+    property Global: EcmaScriptObject := new EcmaScriptObject(0); lazy;
+
+    class method GetObjectForHandle(aHandle: IntPtr): Object; // Note; takes ownership (and frees if needed)
+    begin 
+      case WebAssemblyCalls.GetTypeOf(aHandle) of 
+        WebassemblyType.Undefined, WebassemblyType.Null: exit nil;
+        WebassemblyType.String: result := GetStringFromHandle(aHandle);
+        WebassemblyType.Number: result := WebAssemblyCalls.GetDoubleValue(aHandle);
+        WebassemblyType.Boolean: result := WebAssemblyCalls.GetIntValue(aHandle);
+        else 
+          exit new EcmaScriptObject(aHandle);
+      end;
+       WebAssemblyCalls.FreeHandle(aHandle);
+    end;
+
+    class method CreateHandle(aVal: Object): IntPtr;
+    begin
+      if aVal = nil then exit 0;
+      if aVal is EcmaScriptObject then exit WebAssemblyCalls.CloneHandle(EcmaScriptObject(aVal).Handle);
+      if aVal is Integer then exit WebAssemblyCalls.CreateInteger(aVal as Integer);
+      if aVal is Boolean then exit WebAssemblyCalls.CreateBoolean(aVal as Boolean);
+      if aVal is Double then exit WebAssemblyCalls.CreateDouble(aVal as Double);
+      if aVal is Int64 then exit WebAssemblyCalls.CreateDouble(aVal as Int64);
+      if aVal is String then exit WebAssemblyCalls.CreateString(aVal as String);
+      if aVal is WebAssemblyDelegate then exit WebAssemblyCalls.CreateFunc(aVal as WebAssemblyDelegate);
+      raise new Exception('Unknown type for object');
+    end;
+
+    class method Eval(s: String): Object;
+    begin 
+      exit GetObjectForHandle(WebAssemblyCalls.Eval(s));
+    end;
+
+    class method GetStringFromHandle(handle: Int32; aFree: Boolean := false): String;
+    begin 
+      result := String.AllocString(WebAssemblyCalls.GetStringLength(handle));
+      WebAssemblyCalls.GetStringData(handle, @result.fFirstChar);
+      if aFree then 
+        WebAssemblyCalls.FreeHandle(handle);
+    end;
+
+    class method GetElementById(id: String): EcmaScriptObject;
+    begin 
+      var lRes := WebAssemblyCalls.GetElementById(id);
+      if lRes = 0 then exit nil;
+      exit new EcmaScriptObject(lRes);
+    end;
+
+    class method GetElementByName(id: String): EcmaScriptObject;
+    begin 
+      var lRes := WebAssemblyCalls.GetElementByName(id);
+      if lRes = 0 then exit nil;
+      exit new EcmaScriptObject(lRes);
+    end;
+
+    class method SetTimeout(aFN: WebAssemblyDelegate; aTimeOut: Integer): Integer;
+    begin 
+      exit WebAssemblyCalls.SetTimeout(aFN, aTimeOut);
+    end;
+
+    class method SetInterval(aFN: WebAssemblyDelegate; aTimeOut: Integer): Integer;
+    begin 
+      exit WebAssemblyCalls.SetInterval(aFN, aTimeOut);
+    end;
+
+    class method ClearInterval(aVal: Integer);
+    begin 
+      WebAssemblyCalls.ClearInterval(aVal);
+    end;
+
+    class method CreateElement(aName: String): EcmaScriptObject;
+    begin 
+      exit new EcmaScriptObject(WebAssemblyCalls.CreateElement(aName));
+    end;
+
+    class method CreateTextNode(aName: String): EcmaScriptObject;
+    begin 
+      exit new EcmaScriptObject(WebAssemblyCalls.CreateTextNode(aName));
+    end;
+
+    class method CreateObject: EcmaScriptObject;
+    begin 
+      exit new EcmaScriptObject(WebAssemblyCalls.CreateObject);
+    end;
+
+    class method CreateArray: EcmaScriptObject;
+    begin 
+      exit new EcmaScriptObject(WebAssemblyCalls.CreateArray);
+    end;
+  end;
+
+  WebassemblyType = public enum (Null, Undefined, String, Number, &Function, Symbol, Object, Boolean);
   ExternalCalls = public static class 
   private
     [SymbolName('llvm.trap')]
@@ -54,6 +293,15 @@ type
       // Not supported atm!
       trap;
     end;
+
+    [SymbolName('__island_call_delegate')]
+    method CallDelegate(inst: WebAssemblyDelegate; aArgs: IntPtr);
+    begin 
+      var lEC := new EcmaScriptObject(aArgs);
+      inst(lEC);
+      lEC.Release;
+    end;
+
     [SymbolName('ElementsBeginCatch')]
     method ElementsBeginCatch(obj: ^Void): ^Void;empty;
 
@@ -85,13 +333,6 @@ type
         inc(result);
       end;
     end;
-
-    class method GetAndFreeString(handle: Int32): String;
-    begin 
-      result := String.AllocString(WebAssemblyCalls.GetStringLength(handle));
-      WebAssemblyCalls.GetStringData(handle, @result.fFirstChar);
-    end;
-
 
     [SymbolName('memcpy')]    
     method memcpy(destination: ^Void; source: ^Void; aNum: NativeInt): ^Void;

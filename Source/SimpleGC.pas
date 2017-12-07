@@ -649,6 +649,7 @@ type
       {$ENDIF}
         
       var ptr := InternalCalls.Cast(o^);
+      if ptr = nil then exit;
       Debug('AddRef: ');
       Debug(IntPtr(ptr));
       if (^Void(o) < {$IFDEF WEBASSEMBLY}^Void(@StackTop){$ELSE}lList^.StackTop{$ENDIF}) and (^Void(o) >= ^Void(@o)) then exit; // on the stack, should be relatively rare
@@ -670,12 +671,50 @@ type
       {$ENDIF}
       
       var ptr := InternalCalls.Cast(o^);
+      if ptr = nil then exit;
       Debug('Release: ');
       Debug(IntPtr(ptr));
       if (^Void(o) < {$IFDEF WEBASSEMBLY}^Void(@StackTop){$ELSE}lList^.StackTop{$ENDIF}) and (^Void(o) >= ^Void(@o)) then exit; // on the stack, should be relatively rare
       dec(ptr, sizeOf(IntPtr));
       InternalCalls.Decrement(var ^MyIntPtr(ptr)^);
       AddToFreeList(IntPtr(InternalCalls.Cast(o^)));
+    end;
+
+    [SymbolName('__island_force_addref'), DllExport]
+    class method ForceAddRef(ptr: IntPtr);
+    begin 
+      {$IFNDEF WEBASSEMBLY}
+      var lList := fCheckList;
+      if lList= nil then begin 
+        RegisterThread;
+        lList := fCheckList;
+      end;
+      {$ELSE}
+      if not FGCLoaded then InitGC;   
+      {$ENDIF}
+      if ptr = 0 then exit;  
+      dec(ptr, sizeOf(IntPtr));
+      InternalCalls.Increment(var ^MyIntPtr(ptr)^);
+    end;
+
+    [SymbolName('__island_force_release'), DllExport]
+    class method ForceRelease(ptr: IntPtr);
+    begin 
+      {$IFNDEF WEBASSEMBLY}
+      var lList := fCheckList;
+      if lList= nil then begin 
+        RegisterThread;
+        lList := fCheckList;
+      end;
+      {$ELSE}
+      if not FGCLoaded then InitGC;   
+      {$ENDIF}
+      
+      if ptr = 0 then exit;
+      dec(ptr, sizeOf(IntPtr));
+      InternalCalls.Decrement(var ^MyIntPtr(ptr)^);
+      inc(ptr, sizeOf(IntPtr));
+      AddToFreeList(ptr);
     end;
 
     class method SetFinalizer(aPtr: ^Void);
