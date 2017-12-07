@@ -36,7 +36,7 @@ type
       CheckForLastError;
       {$ELSEIF WEBASSEMBLY}
       var lHandle := WebAssemblyCalls.GetOSName;
-      exit ExternalCalls.GetAndFreeString(lHandle);
+      exit WebAssembly.GetStringFromHandle(lHandle, true);
       {$ELSE}{$ERROR}{$ENDIF}
     end;
   public

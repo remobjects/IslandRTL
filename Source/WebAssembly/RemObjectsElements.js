@@ -1,89 +1,8 @@
 ///<reference path="webassembly.es6.d.ts" />
-// __elements_debug_wasm_loaded; Keep this on line 3 for debugging purposes.
+// __elements_debug_wasm_loaded; Keep this on line 3 for debugging purposes
 function __elements_debug_wasm_loaded(url, bytes, data, importObject, memory) {
 }
-function __elements_create_handle(imp, o) {
-    var h = ++imp.env.handlenr;
-    imp.env.handletable[h] = o;
-    return h;
-}
-function __elements_release_handle(imp, handle) {
-    delete imp.env.handletable[handle];
-}
-function __elements_get_string(imp, offs, len) {
-    var arr = new Int16Array(imp.env.memory.buffer, offs, len);
-    var s = "";
-    for (var i = 0; i < len; i++)
-        s += String.fromCharCode(arr[i]);
-    return s;
-}
-function defineElementsSystemFunctions(imp) {
-    imp.__handlenr = 0;
-    imp.__handletable = {};
-    imp.env.__island_consolelogint = function (val) {
-        console.log("Value: " + val);
-    };
-    imp.env.__island_to_lower = function (val, len, invar) {
-        if (invar)
-            return __elements_create_handle(imp, __elements_get_string(imp, val, len).toLowerCase());
-        return __elements_create_handle(imp, __elements_get_string(imp, val, len).toLocaleLowerCase());
-    };
-    imp.env.__island_to_upper = function (val, len, invar) {
-        if (invar)
-            return __elements_create_handle(imp, __elements_get_string(imp, val, len).toUpperCase());
-        return __elements_create_handle(imp, __elements_get_string(imp, val, len).toLocaleUpperCase());
-    };
-    imp.env.__island_get_string_length = function (val) {
-        return imp.handletable[val].length;
-    };
-    imp.env.__island_get_string_data = function (val, tar) {
-        var str = imp.handletable[val];
-        var dest = new Int16Array(imp.env.memory.buffer, tar, str.length);
-        for (var i = 0; i < str.length; i++)
-            dest[i] = str.charCodeAt(i);
-        return str.length;
-    };
-    imp.env.__island_consolelog = function (str, len) {
-        console.log(__elements_get_string(imp, str, len));
-    };
-    imp.env.__island_free_handle = function (handle) {
-        __elements_release_handle(imp, handle);
-    };
-    imp.env.__island_get_os_name = function () {
-        return __elements_create_handle(imp, navigator["oscpu"]);
-    };
-    imp.env.__island_crypto_safe_random = function (target, len) {
-        var tmp = new Uint8Array(imp.env.memory.buffer, target, len);
-        window.crypto.getRandomValues(tmp);
-    };
-    imp.env.__island_getutctime = function () { return Date.now(); };
-    imp.env.__island_getlocaltime = function () { return Date.now(); };
-}
-function fetchAndInstantiate(url, importObject, memorySize, tableSize) {
-    if (memorySize === void 0) { memorySize = 16; }
-    if (tableSize === void 0) { tableSize = 1024; }
-    var bytedata;
-    return fetch(url).then(function (response) {
-        return response.arrayBuffer();
-    }).then(function (bytes) {
-        bytedata = bytes;
-        defineElementsSystemFunctions(importObject);
-        if (!importObject.env.memory)
-            importObject.env.memory = new WebAssembly.Memory({
-                initial: memorySize
-            });
-        if (!importObject.env.table) {
-            importObject.env.table = new WebAssembly.Table({
-                initial: tableSize,
-                element: "anyfunc"
-            });
-        }
-        return WebAssembly.instantiate(bytes, importObject);
-    }).then(function (results) {
-        __elements_debug_wasm_loaded(url, bytedata, results, importObject, importObject.env.memory);
-        return results;
-    });
-}
+// Globals needed for debugging purposes
 var __elements_debug_globals = []; // needed for debugging purposes.
 function __elements_debug_setglobal(id, value) {
     __elements_debug_globals[id] = value;
@@ -233,3 +152,236 @@ function __elements_debug_wasm_fromHexString(orgByteArray, start, val) {
         start++;
     }
 }
+var Elements;
+(function (Elements) {
+    var inst;
+    var result;
+    var mem;
+    var handlenr = 0;
+    var firstfree = null;
+    var handletable = { '-1': Function('return this')() };
+    // Special handles: 0 = null; -1 = global
+    function createHandle(o) {
+        if (o == null)
+            return 0;
+        var h;
+        if (firstfree != null) {
+            h = firstfree;
+            firstfree = handletable[firstfree];
+            handletable[h] = o;
+            return h;
+        }
+        h = ++handlenr;
+        handletable[h] = o;
+        return h;
+    }
+    Elements.createHandle = createHandle;
+    function releaseHandle(handle) {
+        if (!handle || handle == 0)
+            return;
+        handletable[handle] = firstfree;
+        firstfree = handle;
+    }
+    Elements.releaseHandle = releaseHandle;
+    function getHandleValue(handle) {
+        return handletable[handle];
+    }
+    Elements.getHandleValue = getHandleValue;
+    function readCharsFromMemory(offs, len) {
+        var arr = new Int16Array(mem.buffer, offs, len);
+        var s = "";
+        for (var i = 0; i < len; i++)
+            s += String.fromCharCode(arr[i]);
+        return s;
+    }
+    Elements.readCharsFromMemory = readCharsFromMemory;
+    function readStringFromMemory(ptr) {
+        if (ptr == null)
+            return null;
+        var dv = new DataView(mem.buffer, ptr);
+        var len = dv.getInt32(4, true);
+        if (dv.getInt32(4, true) == 0)
+            return ""; // zero length string
+        var s = "";
+        for (var i = 0; i < len; i++)
+            s += String.fromCharCode(dv.getUint16(8 + (i * 2), true));
+        return s;
+    }
+    Elements.readStringFromMemory = readStringFromMemory;
+    function AddReference(val) {
+        result.instance.exports["__island_force_addref"](val);
+    }
+    Elements.AddReference = AddReference;
+    function ReleaseReference(val) {
+        result.instance.exports["__island_force_release"](val);
+    }
+    Elements.ReleaseReference = ReleaseReference;
+    function createDelegate(objectptr) {
+        AddReference(objectptr);
+        return function () {
+            var h = createHandle(arguments);
+            result.instance.exports["__island_call_delegate"](objectptr, h);
+            releaseHandle(h);
+        };
+    }
+    function defineElementsSystemFunctions(imp) {
+        imp.env.__island_consolelogint = function (val) {
+            console.log("Value: " + val);
+        };
+        imp.env.__island_to_lower = function (val, len, invar) {
+            if (invar)
+                return createHandle(readCharsFromMemory(val, len).toLowerCase());
+            return createHandle(readCharsFromMemory(val, len).toLocaleLowerCase());
+        };
+        imp.env.__island_to_upper = function (val, len, invar) {
+            if (invar)
+                return createHandle(readCharsFromMemory(val, len).toUpperCase());
+            return createHandle(readCharsFromMemory(val, len).toLocaleUpperCase());
+        };
+        imp.env.__island_get_string_length = function (val) {
+            return handletable[val].length;
+        };
+        imp.env.__island_get_string_data = function (val, tar) {
+            var str = handletable[val];
+            var dest = new Int16Array(imp.env.memory.buffer, tar, str.length);
+            for (var i = 0; i < str.length; i++)
+                dest[i] = str.charCodeAt(i);
+            return str.length;
+        };
+        imp.env.__island_consolelog = function (str, len) {
+            console.log(readCharsFromMemory(str, len));
+        };
+        imp.env.__island_free_handle = function (handle) {
+            releaseHandle(handle);
+        };
+        imp.env.__island_get_os_name = function () {
+            return createHandle(navigator["oscpu"]);
+        };
+        imp.env.__island_crypto_safe_random = function (target, len) {
+            var tmp = new Uint8Array(imp.env.memory.buffer, target, len);
+            window.crypto.getRandomValues(tmp);
+        };
+        imp.env.__island_getutctime = function () { return Date.now(); };
+        imp.env.__island_getlocaltime = function () { return Date.now(); };
+        imp.env.__island_eval = function (str) {
+            return eval(readStringFromMemory(str));
+        };
+        imp.env.__island_get_typeof = function (handle) {
+            var ht = handletable[handle];
+            if (ht == null)
+                return 0;
+            switch (typeof ht) {
+                case 'undefined': return 1;
+                case 'string': return 2;
+                case 'number': return 3;
+                case 'function': return 4;
+                case 'symbol': return 5;
+                case 'object': return 6;
+                case 'boolean': return 7;
+                default:
+                    return -1;
+            }
+        };
+        imp.env.__island_get_intvalue = function (handle) {
+            return handletable[handle];
+        };
+        imp.env.__island_get_doublevalue = function (handle) {
+            return handletable[handle];
+        };
+        imp.env.__island_from_intvalue = function (val) {
+            return createHandle(val);
+        };
+        imp.env.__island_from_doublevalue = function (val) {
+            return createHandle(val);
+        };
+        imp.env.__island_from_boolvalue = function (val) {
+            return createHandle(val ? true : false);
+        };
+        imp.env.__island_from_funcvalue = function (val) {
+            return createHandle(createDelegate(val));
+        };
+        imp.env.__island_from_stringvalue = function (val) {
+            return createHandle(readStringFromMemory(val));
+        };
+        imp.env.__island_call = function (thisval, args, argcount, releaseArgs) {
+            var nargs = [];
+            if (argcount > 0) {
+                var data = new Int32Array(mem.buffer, args);
+                for (var i = 0; i < argcount; i++) {
+                    nargs[i] = handletable[data[i]];
+                    if (releaseArgs)
+                        delete handletable[data[i]];
+                }
+            }
+            return createHandle(handletable[thisval].apply(null, nargs));
+        };
+        imp.env.__island_set = function (thisval, name, value, releaseArgs) {
+            var val = handletable[value];
+            if (releaseArgs)
+                delete handletable[value];
+            handletable[thisval][readStringFromMemory(name)] = val;
+        };
+        imp.env.__island_get = function (thisval, name) {
+            return createHandle(handletable[thisval][readStringFromMemory(name)]);
+        };
+        imp.env.__island_getarraylength = function (thisval) {
+            return handletable[thisval].length;
+        };
+        imp.env.__island_getarray = function (thisval, idx) {
+            return createHandle(handletable[thisval][idx]);
+        };
+        imp.env.__island_setarray = function (thisval, idx, value, releaseArgs) {
+            var val = handletable[value];
+            if (releaseArgs)
+                delete handletable[value];
+            handletable[thisval][idx] = val;
+        };
+        imp.env.__island_getElementById = function (id) {
+            return createHandle(document.getElementById(readStringFromMemory(id)));
+        };
+        imp.env.__island_getElementByName = function (name) {
+            return createHandle(document.getElementsByName(readStringFromMemory(name)));
+        };
+        imp.env.__island_createElement = function (name) {
+            return createHandle(document.createElement(readStringFromMemory(name)));
+        };
+        imp.env.__island_setTimeout = function (fn, timeout) {
+            return window.setTimeout(createDelegate(fn), timeout);
+        };
+        imp.env.__island_setInterval = function (fn, timeout) {
+            return window.setInterval(createDelegate(fn), timeout);
+        };
+        imp.env.__island_ClearInterval = function (handle) {
+            window.clearInterval(handle);
+        };
+    }
+    function fetchAndInstantiate(url, importObject, memorySize, tableSize) {
+        if (memorySize === void 0) { memorySize = 16; }
+        if (tableSize === void 0) { tableSize = 1024; }
+        var bytedata;
+        return fetch(url).then(function (response) {
+            return response.arrayBuffer();
+        }).then(function (bytes) {
+            bytedata = bytes;
+            defineElementsSystemFunctions(importObject);
+            if (!importObject.env.memory)
+                importObject.env.memory = new WebAssembly.Memory({
+                    initial: memorySize
+                });
+            if (!importObject.env.table) {
+                importObject.env.table = new WebAssembly.Table({
+                    initial: tableSize,
+                    element: "anyfunc"
+                });
+            }
+            return WebAssembly.instantiate(bytes, importObject);
+        }).then(function (results) {
+            __elements_debug_wasm_loaded(url, bytedata, results, importObject, importObject.env.memory);
+            mem = importObject.env.memory;
+            result = results;
+            inst = importObject;
+            return results;
+        });
+    }
+    Elements.fetchAndInstantiate = fetchAndInstantiate;
+})(Elements || (Elements = {}));

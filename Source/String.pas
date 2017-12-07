@@ -719,7 +719,7 @@ begin
   {$IFDEF WINDOWS}
   exit doLCMapString(aInvariant, LCMapStringTransformMode.Lower);
   {$ELSEIF WEBASSEMBLY}
-  exit ExternalCalls.GetAndFreeString(WebAssemblyCalls.ToLower(@fFirstChar, Length, aInvariant));
+  exit WebAssembly.GetStringFromHandle(WebAssemblyCalls.ToLower(@fFirstChar, Length, aInvariant), true);
   {$ELSEIF POSIX}
   {$HINT Non-Invariant ToLower is not implemented for Linux, yet}
   var b := TextConvert.StringToUTF32LE(self);
@@ -742,7 +742,7 @@ begin
   {$IFDEF WINDOWS}
   exit doLCMapString(aInvariant, LCMapStringTransformMode.Upper);
   {$ELSEIF WEBASSEMBLY}
-  exit ExternalCalls.GetAndFreeString(WebAssemblyCalls.Toupper(@fFirstChar, Length, aInvariant));
+  exit WebAssembly.GetStringFromHandle(WebAssemblyCalls.Toupper(@fFirstChar, Length, aInvariant), true);
   {$ELSEIF POSIX or WEBASSEMBLY}
   {$HINT Non-Invariant ToUpper is not implemented for Linux, yet}
   var b := TextConvert.StringToUTF32LE(self);
