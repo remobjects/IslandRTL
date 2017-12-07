@@ -628,7 +628,7 @@ begin
   repeat
     i := self.IndexOf(Separator, i);
     if i ≠ -1 then begin
-      if (i ≠ last) or not aRemoveEmptyEntries then
+      if ((i ≠ last) and (i + Sep_len < self_len - 1)) or not aRemoveEmptyEntries then
         len := len+1;
       i := i + Sep_len;
       last := i;
