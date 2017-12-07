@@ -64,7 +64,7 @@ type
     method LastIndexOfAny(anyOf: array of Char): Integer;
     method Substring(StartIndex: Integer): not nullable String;
     method Substring(StartIndex: Integer; aLength: Integer): not nullable String;
-    method Split(Separator: String): array of String;
+    method Split(Separator: String; aRemoveEmptyEntries: Boolean := false): array of String;
     method Replace(OldValue, NewValue: String): not nullable String;
     method PadStart(TotalWidth: Integer): String; inline;
     method PadStart(TotalWidth: Integer; PaddingChar: Char): String;
@@ -191,12 +191,12 @@ begin
   {$IFDEF WINDOWS}
   var len := rtl.WideCharToMultiByte(rtl.CP_ACP, 0, @self.fFirstChar, Length, nil, 0, nil, nil);
   result := new AnsiChar[len+ if aNullTerminate then 1 else 0];
-  if len <> 0 then 
+  if len <> 0 then
     rtl.WideCharToMultiByte(rtl.CP_ACP, 0, @self.fFirstChar, Length, rtl.LPSTR(@result[0]), len, nil, nil);
   {$ELSEIF ANDROID or WEBASSEMBLY}
   var b := TextConvert.StringToUtf8(self, false);
   result := new AnsiChar[b.Length + if aNullTerminate then 1 else 0];
-  if b.Length <> 0 then 
+  if b.Length <> 0 then
     memcpy(@result[0], @b[0], b.Length);
   {$ELSE}
   var lNewData: ^AnsiChar := nil;
@@ -204,7 +204,7 @@ begin
 
   if lNewLen <> -1  then begin
     result := new AnsiChar[lNewLen+ if aNullTerminate then 1 else 0];
-    if lNewLen <> 0 then 
+    if lNewLen <> 0 then
       rtl.memcpy(@result[0], lNewData, lNewLen);
     rtl.free(lNewData);
   end;
@@ -612,7 +612,7 @@ begin
   exit String.Compare(self:ToLower(), Value:ToLower());
 end;
 
-method String.Split(Separator: String): array of String;
+method String.Split(Separator: String; aRemoveEmptyEntries: Boolean := false): array of String;
 begin
   if (Separator = nil) or (Separator = '') then begin
     result := new String[1];
@@ -624,11 +624,14 @@ begin
   var self_len := Self.Length;
   var len := 0;
   var i := 0;
+  var last := 0;
   repeat
     i := self.IndexOf(Separator, i);
-    if i <> -1 then begin
-      len := len+1;
+    if i ≠ -1 then begin
+      if (i ≠ last) or not aRemoveEmptyEntries then
+        len := len+1;
       i := i + Sep_len;
+      last := i;
       if i >= self_len then break;
     end;
   until i = -1;
@@ -646,16 +649,20 @@ begin
   repeat
     i := self.IndexOf(Separator, old_i);
     if i <> -1 then begin
-      result[len]:= self.Substring(old_i, i-old_i);
+      if (not aRemoveEmptyEntries) or (i-old_i > 0) then begin
+        result[len]:= self.Substring(old_i, i-old_i);
+        len := len+1;
+      end;
       i := i + Sep_len;
-      len := len+1;
       old_i:=i;
     end;
   until i = -1;
 
-  if old_i < self_len then
-    result[len] := self.Substring(old_i, self_len-old_i)
-  else if old_i = self_len then
+  if old_i < self_len then begin
+    if (not aRemoveEmptyEntries) or (self_len-old_i > 0) then
+      result[len] := self.Substring(old_i, self_len-old_i)
+  end
+  else if (not aRemoveEmptyEntries) and (old_i = self_len) then
     result[len] := '';
 end;
 
@@ -784,7 +791,7 @@ end;
 method String.ToCharArray(StartIndex: Integer; aLength: Integer; aNullTerminate: Boolean := false): array of Char;
 begin
   var r := new array of Char(aLength + if aNullTerminate then 1 else 0);
-  if r.Length <> 0 then 
+  if r.Length <> 0 then
     memcpy(@r[0], (@fFirstChar) + StartIndex, aLength * 2);
   if aNullTerminate then r[aLength] := #0;
   exit r;
@@ -959,9 +966,9 @@ class method String.FromCharArray(aArray: array of Char): String;
 begin
   if aArray = nil then
     exit FromPChar(nil,0)
-  else if aArray.Length = 0 then 
+  else if aArray.Length = 0 then
     exit FromPChar(nil,0)
-  else 
+  else
     exit FromPChar(@aArray[0], aArray.Length);
 end;
 
