@@ -18,6 +18,7 @@
     <Compile Include="$(MSBuildThisFileDirectory)GCHandle.pas" />
     <Compile Include="$(MSBuildThisFileDirectory)Guid.pas" />
     <Compile Include="$(MSBuildThisFileDirectory)HashSet.pas" />
+    <Compile Include="$(MSBuildThisFileDirectory)Locale.pas" />
     <Compile Include="$(MSBuildThisFileDirectory)Nullable.pas" />
     <Compile Include="$(MSBuildThisFileDirectory)ObjectPool.pas" />
     <Compile Include="$(MSBuildThisFileDirectory)Queue.pas" />
