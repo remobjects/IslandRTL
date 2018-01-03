@@ -49,7 +49,7 @@ begin
   lTemp := String.FromPChar(@lBuffer[0], lTotal).SubString(0, 1);
   if lTemp.Length > 0 then
   lThousandsSep := lTemp[0];  
-  {$ELSEIF LINUX}
+  {$ELSEIF LINUX AND NOT ANDROID}
   var lTemp := rtl.nl_langinfo_l(rtl.THOUSANDS_SEP, fLocaleID);
   if lTemp <> nil then begin
     var lTempString := String.FromPAnsiChars(lTemp);
@@ -80,7 +80,7 @@ begin
   if lLength = 0 then 
     raise new Exception("Error getting locale name");
   result := String.FromPChar(@lName[0], lLength) as not nullable;
-  {$ELSEIF LINUX}
+  {$ELSEIF LINUX AND NOT ANDROID}
   var lName := rtl.nl_langinfo_l(rtl._NL_IDENTIFICATION_LANGUAGE, fLocaleID);
   if lName = nil then
     raise new Exception("Error getting locale name");
@@ -92,7 +92,7 @@ class method Locale.GetInvariant: not nullable Locale;
 begin
   {$IF WINDOWS}
   result := new Locale(rtl.LOCALE_INVARIANT);
-  {$ELSEIF LINUX}
+  {$ELSEIF LINUX AND NOT ANDROID}
   var lInvariant := 'en_US.utf8'.ToAnsiChars(true);
   result := new Locale(rtl.newLocale(rtl.LC_ALL_MASK, @lInvariant[0], nil));
   {$ENDIF}
@@ -102,7 +102,7 @@ class method Locale.GetCurrent: not nullable Locale;
 begin
   {$IF WINDOWS}
   result := new Locale(rtl.GetThreadLocale);
-  {$ELSEIF LINUX}
+  {$ELSEIF LINUX AND NOT ANDROID}
   var lDefaultName := Environment.GetEnvironmentVariable('LANG');
   if lDefaultName = '' then
     raise new Exception('Can not get default locale');
@@ -110,7 +110,6 @@ begin
   var lName := lDefaultName.ToAnsiChars(true);
   var lLocale := rtl.newlocale(rtl.LC_ALL_MASK, @lName[0], nil);
   result := new Locale(lLocale);
-  writeln('end of GetCurrent');
   {$ENDIF}
 end;
 
