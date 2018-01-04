@@ -76,6 +76,9 @@ type
     [DllImport(''), SymbolName('__island_call')]
     class method Call(aSelf: IntPtr; aName: String; aArgs: ^IntPtr; aArgCount: IntPtr; aReleaseArgs: Boolean): IntPtr; external;
 
+    [DllImport(''), SymbolName('__island_invoke')]
+    class method Invoke(aPtr: IntPtr; aArgs: ^IntPtr; aArgCount: IntPtr): IntPtr;
+
     [DllImport(''), SymbolName('__island_get')]
     class method Get(aSelf: IntPtr; aName: String): IntPtr; external;
 
@@ -205,6 +208,14 @@ type
        WebAssemblyCalls.FreeHandle(aHandle);
     end;
 
+    class method InvokeMethod(aPtr: ^Void; params args: array of Object): Object;
+    begin 
+      var lData := new IntPtr[length(args)];
+      for i: Integer := 0 to length(args) -1 do
+        lData[i] := WebAssembly.CreateHandle(args[i]);
+      var c := WebAssemblyCalls.Invoke(IntPtr(aPtr), @lData[0], lData.Length);
+      exit WebAssembly.GetObjectForHandle(c);
+    end;
     class method CreateHandle(aVal: Object): IntPtr;
     begin
       if aVal = nil then exit 0;
