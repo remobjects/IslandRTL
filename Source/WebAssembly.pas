@@ -77,7 +77,7 @@ type
     class method Call(aSelf: IntPtr; aName: String; aArgs: ^IntPtr; aArgCount: IntPtr; aReleaseArgs: Boolean): IntPtr; external;
 
     [DllImport(''), SymbolName('__island_invoke')]
-    class method Invoke(aPtr: IntPtr; aArgs: ^IntPtr; aArgCount: IntPtr): IntPtr;
+    class method Invoke(aPtr: IntPtr; aArgs: ^IntPtr; aArgCount: IntPtr): IntPtr; external;
 
     [DllImport(''), SymbolName('__island_get')]
     class method Get(aSelf: IntPtr; aName: String): IntPtr; external;
@@ -181,6 +181,14 @@ type
       end;
     end;
 
+    class operator implicit(val: EcmaScriptObject): IntPtr;
+    begin 
+      if val = nil then exit 0;
+      result := val.Handle;
+      val.Release;
+    end;
+
+
     property Items[s: String]: Object read get_Items write set_Items; default;
     property Items[i: Integer]: Object read get_Items write set_Items; default;
 
@@ -271,21 +279,19 @@ type
         var el := ge.Current;
         if el.IsStatic then continue;
         if el.Arguments.Any then continue;
-        if el.Attributes.Any(a -> a.Type = typeOf(EcmaScriptPropertyAttribute)) then begin 
-          var lGet: Func<EcmaScriptObject, Object>;
-          var lSet: Action<EcmaScriptObject, Object>;
-          var lRM := el.ReadMethod;
-          var lWM := el.WriteMethod;
+        var lGet: Func<EcmaScriptObject, Object>;
+        var lSet: Action<EcmaScriptObject, Object>;
+        var lRM := el.ReadMethod;
+        var lWM := el.WriteMethod;
 
-          if lRM <> nil then begin
-            lGet := o -> WebAssembly.InvokeMethod(lRM, [GetPtrFromObject(o)]);
-          end;
-          if lWM <> nil then begin 
-            lSet := (o, v) -> WebAssembly.InvokeMethod(lWM, [GetPtrFromObject(o), v]);
-          end;
-          if (lGet <> nil)  or (lSet <> nil) then 
-            lBase.DefineProperty(el.Name, lGet, lSet);
+        if lRM <> nil then begin
+          lGet := o -> WebAssembly.InvokeMethod(lRM, [GetPtrFromObject(o)]);
         end;
+        if lWM <> nil then begin 
+          lSet := (o, v) -> WebAssembly.InvokeMethod(lWM, [GetPtrFromObject(o), v]);
+        end;
+        if (lGet <> nil)  or (lSet <> nil) then 
+          lBase.DefineProperty(el.Name, lGet, lSet);
       end;
       fProxies.Add(IntPtr(aType.RTTI), lBase);
       exit lBase;
@@ -570,10 +576,6 @@ type
     end;
   end;
   rtl.size_t = IntPtr;
-
-  [AttributeUsage(AttributeTargets.Property)]
-  EcmaScriptPropertyAttribute = public class (Attribute)
-  end;
 
 
 end.

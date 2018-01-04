@@ -370,8 +370,11 @@ module ElementsWebAssembly {
             if (argcount > 0) {
                 var data = new Int32Array(mem.buffer, args);
                 for (var i = 0; i < argcount; i++) {
-                    nargs[i] = handletable[data[i]];
+                    var val = handletable[data[i]];
                     releaseHandle(data[i]);
+                    if (val instanceof Object && '__elements_handle' in val)
+                        val = val.__elements_handle;
+                    nargs[i] = val;
                 }
             }
             var func = (imp.env.table as WebAssembly.Table).get(tableidx);
