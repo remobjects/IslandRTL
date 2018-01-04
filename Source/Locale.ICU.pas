@@ -11,6 +11,9 @@
 
 interface
 
+const
+  U_PARSE_CONTEXT_LEN = 16;
+
 type
   // http://www.icu-project.org/apiref/icu4c/utypes_8h.html
   UErrorCode = public enum (
@@ -58,6 +61,22 @@ type
     UNUM_SEVEN_DIGIT_SYMBOL = 24, UNUM_EIGHT_DIGIT_SYMBOL = 25, UNUM_NINE_DIGIT_SYMBOL = 26, UNUM_FORMAT_SYMBOL_COUNT = 27 
   );
 
+  //http://icu-project.org/apiref/icu4c452/unum_8h.html#a4eb4d3ff13bd506e7078b2be4052266d
+  UNumberFormatStyle = public enum (
+    UNUM_PATTERN_DECIMAL, UNUM_DECIMAL, UNUM_CURRENCY, UNUM_PERCENT, UNUM_SCIENTIFIC, UNUM_SPELLOUT, UNUM_ORDINAL, UNUM_DURATION, 
+    UNUM_NUMBERING_SYSTEM, UNUM_PATTERN_RULEBASED, UNUM_DEFAULT, UNUM_IGNORE
+  );
+
+  UNumberFormat = ^Void;
+
+  //http://icu-project.org/apiref/icu4c/structUParseError.html
+  UParseError = public record
+  public
+    line: Int32; 
+    offset: Int32;
+    preContext: array[0..U_PARSE_CONTEXT_LEN - 1] of AnsiChar;
+    postContext: array[0..U_PARSE_CONTEXT_LEN - 1] of AnsiChar;
+  end;
 
   ICUHelper = public class
   private
@@ -74,11 +93,21 @@ type
     class method GetSymbols;
   public
     class var UNumGetSymbol: unum_getSymbol;
+    class var UNumOpen: unum_open;
+    class var UNumClose: unum_close;
+    class var ULocGetDefault: uloc_getDefault;
+    class var ULocGetName: uloc_getName;
   end;
 
   unum_getSymbol = public function(fmt: ^Void; symbol: UNumberFormatSymbol; buffer: ^Void; bufferLength: Int32; status: ^UErrorCode): Int32;
+  unum_open = public function(style: UNumberFormatStyle; pattern: ^Void; patternLength: Int32; locale: ^Void; parseErr: ^UParseError; status: ^UErrorCode): ^UNumberFormat;
+  unum_close = public procedure(fmt: ^UNumberFormat);
 
-
+  uloc_getDefault = public function: ^Char;
+  uloc_getLanguage = public function(localeID: ^Void; language: ^Void; languageCapacity: Int32; err: ^UErrorCode): Int32;
+  uloc_getCountry = public function(localeID: ^Void; country: ^Void; countryCapacity: Int32; err: ^UErrorCode): Int32;
+  uloc_getName = public function(localeID: ^Void; name: ^Char; nameCapacity: Int32; err: ^UErrorCode): Int32;
+    
 implementation
 
 class constructor ICUHelper;
@@ -122,6 +151,10 @@ end;
 class method ICUHelper.GetSymbols;
 begin
   UNumGetSymbol := unum_getSymbol(GetSymbol(fLib18n, 'unum_getSymbol'));
+  UNumOpen := unum_open(GetSymbol(fLib18n, 'unum_open'));
+  UNumClose := unum_close(GetSymbol(fLib18n, 'unum_close'));
+  ULocGetDefault := uloc_getDefault(GetSymbol(fLibICU, 'uloc_getDefault'));
+  ULocGetName := uloc_getName(GetSymbol(fLibICU, 'uloc_getName'));
 end;
 
 {$ENDIF}

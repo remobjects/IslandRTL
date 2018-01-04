@@ -11,7 +11,7 @@ type
     constructor(aDecimalSeparator: Char; aThousandsSeparator: Char; aCurrency: String);
   end;
 
-  PlatformLocale = {$IF WINDOWS}rtl.LCID{$ELSEIF LINUX}rtl.locale_t{$ENDIF};
+  PlatformLocale = {$IF WINDOWS}rtl.LCID{$ELSEIF LINUX AND NOT ANDROID}rtl.locale_t{$ELSEIF ANDROID}String{$ENDIF};
 
   Locale = public class
   private
@@ -68,6 +68,19 @@ begin
     if lTempString.Length > 1 then
       lCurrency := lTempString.SubString(1);
   end;
+  {$ELSEIF ANDROID}
+  var lParseError: UParseError;
+  var lStatus: UErrorCode;
+  var lBuffer := new Char[30];
+  var lTotal: Int32;
+  var lFormatSettings := ICUHelper.UNumOpen(UNumberFormatStyle.UNUM_CURRENCY, nil, 0, @fLocaleID.ToAnsiChars(true)[0], @lParseError, @lStatus);  
+  lTotal := ICUHelper.UNumGetSymbol(lFormatSettings, UNumberFormatSymbol.UNUM_DECIMAL_SEPARATOR_SYMBOL, @lBuffer[0], lBuffer.Length, @lStatus);
+  lDecimalSep := String.FromPChar(@lBuffer[0], lTotal)[0];
+  lTotal := ICUHelper.UNumGetSymbol(lFormatSettings, UNumberFormatSymbol.UNUM_GROUPING_SEPARATOR_SYMBOL, @lBuffer[0], lBuffer.Length, @lStatus);
+  lThousandsSep := String.FromPChar(@lBuffer[0], lTotal)[0];
+  lTotal := ICUHelper.UNumGetSymbol(lFormatSettings, UNumberFormatSymbol.UNUM_CURRENCY_SYMBOL, @lBuffer[0], lBuffer.Length, @lStatus);
+  lCurrency := String.FromPChar(@lBuffer[0], lTotal);
+  ICUHelper.UNumClose(lFormatSettings);
   {$ENDIF}
   fNumberFormat := new NumberFormatInfo(lDecimalSep, lThousandsSep, lCurrency);
 end;
@@ -85,6 +98,11 @@ begin
   if lName = nil then
     raise new Exception("Error getting locale name");
   result := String.FromPAnsiChars(lName) as not nullable;
+  {$ELSEIF ANDROID}
+  var lErr: UErrorCode;
+  var lName := new Char[80];
+  var lTotal := ICUHelper.ULocGetName(@fLocaleID.ToAnsiChars(true)[0], @lName[0], lName.Length, @lErr);
+  result := String.FromPChar(@lName[0], lTotal) as not nullable;
   {$ENDIF}
 end;
 
@@ -95,6 +113,8 @@ begin
   {$ELSEIF LINUX AND NOT ANDROID}
   var lInvariant := 'en_US.utf8'.ToAnsiChars(true);
   result := new Locale(rtl.newLocale(rtl.LC_ALL_MASK, @lInvariant[0], nil));
+  {$ELSEIF ANDROID}
+  result := new Locale('en_US');
   {$ENDIF}
 end;
 
@@ -110,6 +130,17 @@ begin
   var lName := lDefaultName.ToAnsiChars(true);
   var lLocale := rtl.newlocale(rtl.LC_ALL_MASK, @lName[0], nil);
   result := new Locale(lLocale);
+  {$ELSEIF ANDROID}
+  var lName: ^Char := ICUHelper.ULocGetDefault();
+  var lDefaultName := String.FromPChar(lName);
+  if lDefaultName = '' then begin
+    lDefaultName := Environment.GetEnvironmentVariable('LANG');
+    if lDefaultName = '' then
+      lDefaultName := 'en_US'
+    else
+      lDefaultName := lDefaultName.Replace('.UTF-8', '');
+  end;
+  result := new Locale(lDefaultName);
   {$ENDIF}
 end;
 
