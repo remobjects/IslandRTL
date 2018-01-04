@@ -769,7 +769,10 @@ type
       if not FGCLoaded then InitGC;   
       {$ENDIF}  
       // value is on the stack, should be relatively rare
-      if (^Void(@aDest.fInst) < {$IFDEF WEBASSEMBLY}^Void(@StackTop){$ELSE}lList^.StackTop{$ENDIF}) and (^Void(@aDest.fInst) >= ^Void(@lList)) then exit; 
+      if (^Void(@aDest.fInst) < {$IFDEF WEBASSEMBLY}^Void(@StackTop){$ELSE}lList^.StackTop{$ENDIF}) and (^Void(@aDest.fInst) >= ^Void(@lList)) then begin 
+        aDest.fInst := aSource.fInst;
+        exit; 
+      end;
       
       var lInst := aSource.fInst;
       var lOld := InternalCalls.Exchange(var aDest.fInst, lInst);

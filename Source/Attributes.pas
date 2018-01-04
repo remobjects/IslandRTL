@@ -229,7 +229,7 @@ type
   [AttributeUsage(AttributeTargets.Method or AttributeTargets.Field or AttributeTargets.Property or AttributeTargets.Event or AttributeTargets.Struct or AttributeTargets.Class or AttributeTargets.Enum or AttributeTargets.Delegate)]
   DllExportAttribute = public class(Attribute)
   end;
-
+  
   [AttributeUsage(AttributeTargets.Parameter)]
   InRegAttribute = public class(Attribute)
   public
@@ -309,4 +309,13 @@ type
   public
     constructor; empty;
   end;
+  
+  [AttributeUsage(AttributeTargets.Delegate)]
+  FunctionPointerAttribute = public class(Attribute)
+  end;
+
+  [AttributeUsage(AttributeTargets.Delegate)]
+  BlockPointerAttribute = public class(Attribute)
+  end;
+
 end.

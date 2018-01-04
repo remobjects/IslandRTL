@@ -329,6 +329,13 @@ type
     method GetHashCode: Integer; override;
     method &Equals(obj: Object): Boolean; override;
     begin
+      {$IFDEF cpu64}
+      if assigned(obj) and (obj is Int64) then
+        exit self = Int64(obj);
+      {$else}
+      if assigned(obj) and (obj is Int32) then
+        exit self = Int32(obj);
+      {$ENDIF}
       if assigned(obj) and (obj is NativeInt) then
         exit self = NativeInt(obj)
       else
@@ -367,6 +374,13 @@ type
     method GetHashCode: Integer; override;
     method &Equals(obj: Object): Boolean; override;
     begin
+      {$IFDEF cpu64}
+      if assigned(obj) and (obj is UInt64) then
+        exit self = UInt64(obj);
+      {$else}
+      if assigned(obj) and (obj is UInt32) then
+        exit self = UInt32(obj);
+      {$ENDIF}
       if assigned(obj) and (obj is NativeUInt) then
         exit self = NativeUInt(obj)
       else

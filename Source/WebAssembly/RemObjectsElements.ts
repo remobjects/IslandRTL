@@ -122,8 +122,11 @@ module ElementsWebAssembly {
     export function releaseHandle(handle: number)
     {
         if (!handle || handle == 0) return;
+        var old = handletable[handle];
         handletable[handle] = firstfree;
         firstfree = handle;
+        if (old && old['__elements_handle'])
+            ReleaseReference(old['__elements_handle']);
     }
 
     export function getHandleValue(handle: number): any 
@@ -162,13 +165,15 @@ module ElementsWebAssembly {
         result.instance.exports["__island_force_release"](val);
     }
 
-    function createDelegate(objectptr: number): () => void
+    function createDelegate(objectptr: number): () => any
     {
         AddReference(objectptr);
-        return function() {
+        return function () {
+            (arguments as any).this = this;
             var h = createHandle(arguments);
             result.instance.exports["__island_call_delegate"](objectptr, h);
             releaseHandle(h);
+            return (arguments as any).result;
         }
     }
 
@@ -328,10 +333,59 @@ module ElementsWebAssembly {
         imp.env.__island_ClearInterval = function(handle: number) {
              window.clearInterval(handle);
         };
+        imp.env.__island_DefineValueProperty = function (obj: number, name: number, value: number, flags: number) {
+            Object.defineProperty(handletable[obj], readStringFromMemory(name),
+                {
+                    enumerable: (flags & 1) != 0,
+                    configurable: (flags & 2) != 0,
+                    writable: (flags & 4) != 0,
+                    value: value == 0 ? null : handletable[value]
+                });
+        };
+        imp.env.__island_DefineGetterSetterProperty = function (obj: number, name: number, getter: number, setter: number, flags: number) {
+            var newgetter: () => any = undefined;
+            var newsetter: (a: any) => void = undefined;
+
+            if (getter != 0) {
+                var originalgetter: any = createDelegate(getter);
+                newgetter = function() {
+                    var v = { value: null };
+                    originalgetter(this, v);
+                    return v.value;
+                };
+            }
+            if (setter != 0) {
+                var originalsetter: any = createDelegate(setter);
+                newsetter = function(v) { return originalsetter(this, v) };
+            }
+
+            Object.defineProperty(handletable[obj], readStringFromMemory(name),
+                {
+                    enumerable: (flags & 1) != 0,
+                    configurable: (flags & 2) != 0,
+                    get: newgetter,
+                    set: newsetter
+                });
+        };
+        imp.env.__island_invoke = function (tableidx: number, args: number, argcount: number): number {
+            var nargs = [];
+            if (argcount > 0) {
+                var data = new Int32Array(mem.buffer, args);
+                for (var i = 0; i < argcount; i++) {
+                    var val = handletable[data[i]];
+                    releaseHandle(data[i]);
+                    if (val instanceof Object && '__elements_handle' in val)
+                        val = val.__elements_handle;
+                    nargs[i] = val;
+                }
+            }
+            var func = (imp.env.table as WebAssembly.Table).get(tableidx);
+            return createHandle(func.apply(this, nargs));
+        }
     }
 
 
-    export function fetchAndInstantiate(url: string, importObject: any, memorySize: number = 16, tableSize: number = 1024): Promise<WebAssembly.ResultObject> {
+    export function fetchAndInstantiate(url: string, importObject: any, memorySize: number = 64, tableSize: number = 4096): Promise<WebAssembly.ResultObject> {
         if (!importObject) importObject = {};
         if (!importObject.env) importObject.env = {};
         var bytedata: ArrayBuffer;
@@ -344,12 +398,12 @@ module ElementsWebAssembly {
             importObject.env.memory = new WebAssembly.Memory({
                 initial: memorySize
             });
-        if (!importObject.env.table) {
-            importObject.env.table = new WebAssembly.Table({
-                initial: tableSize,
-                element:"anyfunc"
-            });
-        }
+            if (!importObject.env.table) {
+                importObject.env.table = new WebAssembly.Table({
+                    initial: tableSize,
+                    element:"anyfunc"
+                });
+            }
             return WebAssembly.instantiate(bytes, importObject);
         }
         ).then(results => {
@@ -357,7 +411,12 @@ module ElementsWebAssembly {
             mem = importObject.env.memory;
             result = results;
             inst = importObject;
-            return results;
+            return {
+                module: results.module,
+                instance: result.instance,
+                import: importObject,
+                exports: result.instance.exports
+            }
         });
     }
 

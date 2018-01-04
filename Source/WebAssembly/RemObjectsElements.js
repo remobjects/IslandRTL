@@ -179,8 +179,11 @@ var ElementsWebAssembly;
     function releaseHandle(handle) {
         if (!handle || handle == 0)
             return;
+        var old = handletable[handle];
         handletable[handle] = firstfree;
         firstfree = handle;
+        if (old && old['__elements_handle'])
+            ReleaseReference(old['__elements_handle']);
     }
     ElementsWebAssembly.releaseHandle = releaseHandle;
     function getHandleValue(handle) {
@@ -219,9 +222,11 @@ var ElementsWebAssembly;
     function createDelegate(objectptr) {
         AddReference(objectptr);
         return function () {
+            arguments["this"] = this;
             var h = createHandle(arguments);
             result.instance.exports["__island_call_delegate"](objectptr, h);
             releaseHandle(h);
+            return arguments.result;
         };
     }
     function defineElementsSystemFunctions(imp) {
@@ -372,10 +377,55 @@ var ElementsWebAssembly;
         imp.env.__island_ClearInterval = function (handle) {
             window.clearInterval(handle);
         };
+        imp.env.__island_DefineValueProperty = function (obj, name, value, flags) {
+            Object.defineProperty(handletable[obj], readStringFromMemory(name), {
+                enumerable: (flags & 1) != 0,
+                configurable: (flags & 2) != 0,
+                writable: (flags & 4) != 0,
+                value: value == 0 ? null : handletable[value]
+            });
+        };
+        imp.env.__island_DefineGetterSetterProperty = function (obj, name, getter, setter, flags) {
+            var newgetter = undefined;
+            var newsetter = undefined;
+            if (getter != 0) {
+                var originalgetter = createDelegate(getter);
+                newgetter = function () {
+                    var v = { value: null };
+                    originalgetter(this, v);
+                    return v.value;
+                };
+            }
+            if (setter != 0) {
+                var originalsetter = createDelegate(setter);
+                newsetter = function (v) { return originalsetter(this, v); };
+            }
+            Object.defineProperty(handletable[obj], readStringFromMemory(name), {
+                enumerable: (flags & 1) != 0,
+                configurable: (flags & 2) != 0,
+                get: newgetter,
+                set: newsetter
+            });
+        };
+        imp.env.__island_invoke = function (tableidx, args, argcount) {
+            var nargs = [];
+            if (argcount > 0) {
+                var data = new Int32Array(mem.buffer, args);
+                for (var i = 0; i < argcount; i++) {
+                    var val = handletable[data[i]];
+                    releaseHandle(data[i]);
+                    if (val instanceof Object && '__elements_handle' in val)
+                        val = val.__elements_handle;
+                    nargs[i] = val;
+                }
+            }
+            var func = imp.env.table.get(tableidx);
+            return createHandle(func.apply(this, nargs));
+        };
     }
     function fetchAndInstantiate(url, importObject, memorySize, tableSize) {
-        if (memorySize === void 0) { memorySize = 16; }
-        if (tableSize === void 0) { tableSize = 1024; }
+        if (memorySize === void 0) { memorySize = 64; }
+        if (tableSize === void 0) { tableSize = 4096; }
         if (!importObject)
             importObject = {};
         if (!importObject.env)
@@ -402,7 +452,12 @@ var ElementsWebAssembly;
             mem = importObject.env.memory;
             result = results;
             inst = importObject;
-            return results;
+            return {
+                module: results.module,
+                instance: result.instance,
+                "import": importObject,
+                exports: result.instance.exports
+            };
         });
     }
     ElementsWebAssembly.fetchAndInstantiate = fetchAndInstantiate;

@@ -310,11 +310,27 @@ type
           ProtoSkipValue(var lPtr, lTy);
       end;
     end;
+
+    method get_Read: MethodInfo;
+    begin 
+      var lRM := ReadMethod;
+      if lRM = nil then exit nil;
+      exit DeclaringType.Methods.FirstOrDefault(a -> a.Pointer = lRM);
+    end;
+
+    method get_Write: MethodInfo;
+    begin 
+      var lRM := WriteMethod;
+      if lRM = nil then exit nil;
+      exit DeclaringType.Methods.FirstOrDefault(a -> a.Pointer = lRM);
+    end;
   public
     property Flags: PropertyFlags read get_Flags;
     property IsStatic: Boolean read PropertyFlags.Static in &Flags; override;
     property ReadMethod: ^Void read get_ReadMethod;
     property WriteMethod: ^Void read get_WriteMethod;
+    property &Read: MethodInfo read get_Read;
+    property &Write: MethodInfo read get_Write;
     property Arguments: sequence of ArgumentInfo read get_Arguments;
   end;
 
@@ -483,7 +499,7 @@ type
         raise new NotImplementedException();
         {$ENDIF}
       {$ELSEIF WEBASSEMBLY}
-      raise new NotImplementedException();
+      result := WebAssembly.InvokeMethod(Pointer, lParams);
       {$ELSE}{$ERROR}{$ENDIF}
       for k in Arguments index i do
         if lModes[i+dx] in [ArgumentMode.Var,ArgumentMode.Out] then
