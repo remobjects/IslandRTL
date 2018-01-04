@@ -222,9 +222,11 @@ var ElementsWebAssembly;
     function createDelegate(objectptr) {
         AddReference(objectptr);
         return function () {
+            arguments["this"] = this;
             var h = createHandle(arguments);
             result.instance.exports["__island_call_delegate"](objectptr, h);
             releaseHandle(h);
+            return arguments.result;
         };
     }
     function defineElementsSystemFunctions(imp) {
@@ -422,8 +424,8 @@ var ElementsWebAssembly;
         };
     }
     function fetchAndInstantiate(url, importObject, memorySize, tableSize) {
-        if (memorySize === void 0) { memorySize = 16; }
-        if (tableSize === void 0) { tableSize = 1024; }
+        if (memorySize === void 0) { memorySize = 64; }
+        if (tableSize === void 0) { tableSize = 4096; }
         if (!importObject)
             importObject = {};
         if (!importObject.env)
@@ -450,7 +452,12 @@ var ElementsWebAssembly;
             mem = importObject.env.memory;
             result = results;
             inst = importObject;
-            return results;
+            return {
+                module: results.module,
+                instance: result.instance,
+                "import": importObject,
+                exports: result.instance.exports
+            };
         });
     }
     ElementsWebAssembly.fetchAndInstantiate = fetchAndInstantiate;

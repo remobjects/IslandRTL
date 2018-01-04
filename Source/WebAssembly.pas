@@ -273,10 +273,7 @@ type
       if aType.IsValueType then raise new ArgumentException('Value types not supported!');
       var lBase: EcmaScriptObject := if (aType.BaseType = nil) or (aType.BaseType = typeOf(Object)) then nil else GetProxyFor(aType.BaseType);
       if lBase = nil then lBase := CreateObject else lBase := EcmaScriptObject(Object.Call('create', lBase));
-      var lSeq := aType.Properties;
-      var ge := lSeq.GetEnumerator;
-      while ge.MoveNext do begin 
-        var el := ge.Current;
+      for each el in aType.Properties do begin
         if el.IsStatic then continue;
         if el.Arguments.Any then continue;
         var lGet: Func<EcmaScriptObject, Object>;
@@ -292,6 +289,19 @@ type
         end;
         if (lGet <> nil)  or (lSet <> nil) then 
           lBase.DefineProperty(el.Name, lGet, lSet);
+      end;
+      for each el in aType.Methods do begin 
+        if MethodFlags.Constructor in el.Flags then continue;
+        if MethodFlags.Finalizer in el.Flags then continue;
+        if MethodFlags.Operator in el.Flags then continue;
+        var lMeth := el;
+        var lDel: WebAssemblyDelegate := method(args: EcmaScriptObject) begin 
+          var lArr := new List<Object>;
+          for each lArg in lMeth.Arguments index n do 
+            lArr.Add(args[n]);
+          args['result'] := lMeth.Invoke(args['this'], lArr.ToArray);
+        end;
+        lBase[el.Name] := lDel;
       end;
       fProxies.Add(IntPtr(aType.RTTI), lBase);
       exit lBase;

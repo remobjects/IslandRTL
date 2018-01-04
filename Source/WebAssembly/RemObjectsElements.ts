@@ -165,13 +165,15 @@ module ElementsWebAssembly {
         result.instance.exports["__island_force_release"](val);
     }
 
-    function createDelegate(objectptr: number): () => void
+    function createDelegate(objectptr: number): () => any
     {
         AddReference(objectptr);
-        return function() {
+        return function () {
+            (arguments as any).this = this;
             var h = createHandle(arguments);
             result.instance.exports["__island_call_delegate"](objectptr, h);
             releaseHandle(h);
+            return (arguments as any).result;
         }
     }
 
@@ -383,7 +385,7 @@ module ElementsWebAssembly {
     }
 
 
-    export function fetchAndInstantiate(url: string, importObject: any, memorySize: number = 16, tableSize: number = 1024): Promise<WebAssembly.ResultObject> {
+    export function fetchAndInstantiate(url: string, importObject: any, memorySize: number = 64, tableSize: number = 4096): Promise<WebAssembly.ResultObject> {
         if (!importObject) importObject = {};
         if (!importObject.env) importObject.env = {};
         var bytedata: ArrayBuffer;
@@ -396,12 +398,12 @@ module ElementsWebAssembly {
             importObject.env.memory = new WebAssembly.Memory({
                 initial: memorySize
             });
-        if (!importObject.env.table) {
-            importObject.env.table = new WebAssembly.Table({
-                initial: tableSize,
-                element:"anyfunc"
-            });
-        }
+            if (!importObject.env.table) {
+                importObject.env.table = new WebAssembly.Table({
+                    initial: tableSize,
+                    element:"anyfunc"
+                });
+            }
             return WebAssembly.instantiate(bytes, importObject);
         }
         ).then(results => {
@@ -409,7 +411,12 @@ module ElementsWebAssembly {
             mem = importObject.env.memory;
             result = results;
             inst = importObject;
-            return results;
+            return {
+                module: results.module,
+                instance: result.instance,
+                import: importObject,
+                exports: result.instance.exports
+            }
         });
     }
 
