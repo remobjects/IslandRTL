@@ -122,8 +122,11 @@ module ElementsWebAssembly {
     export function releaseHandle(handle: number)
     {
         if (!handle || handle == 0) return;
+        var old = handletable[handle];
         handletable[handle] = firstfree;
         firstfree = handle;
+        if (old && old['__elements_handle'])
+            ReleaseReference(old['__elements_handle']);
     }
 
     export function getHandleValue(handle: number): any 
@@ -328,6 +331,52 @@ module ElementsWebAssembly {
         imp.env.__island_ClearInterval = function(handle: number) {
              window.clearInterval(handle);
         };
+        imp.env.__island_DefineValueProperty = function (obj: number, name: number, value: number, flags: number) {
+            Object.defineProperty(handletable[obj], readStringFromMemory(name),
+                {
+                    enumerable: (flags & 1) != 0,
+                    configurable: (flags & 2) != 0,
+                    writable: (flags & 4) != 0,
+                    value: value == 0 ? null : handletable[value]
+                });
+        };
+        imp.env.__island_DefineGetterSetterProperty = function (obj: number, name: number, getter: number, setter: number, flags: number) {
+            var newgetter: () => any = undefined;
+            var newsetter: (a: any) => void = undefined;
+
+            if (getter != 0) {
+                var originalgetter: any = createDelegate(getter);
+                newgetter = function() {
+                    var v = { value: null };
+                    originalgetter(this, v);
+                    return v.value;
+                };
+            }
+            if (setter != 0) {
+                var originalsetter: any = createDelegate(setter);
+                newsetter = function(v) { return originalsetter(this, v) };
+            }
+
+            Object.defineProperty(handletable[obj], readStringFromMemory(name),
+                {
+                    enumerable: (flags & 1) != 0,
+                    configurable: (flags & 2) != 0,
+                    get: newgetter,
+                    set: newsetter
+                });
+        };
+        imp.env.__island_invoke = function (tableidx: number, args: number, argcount: number): number {
+            var nargs = [];
+            if (argcount > 0) {
+                var data = new Int32Array(mem.buffer, args);
+                for (var i = 0; i < argcount; i++) {
+                    nargs[i] = handletable[data[i]];
+                    releaseHandle(data[i]);
+                }
+            }
+            var func = (imp.env.table as WebAssembly.Table).get(tableidx);
+            return createHandle(func.apply(this, nargs));
+        }
     }
 
 

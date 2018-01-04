@@ -372,6 +372,48 @@ var ElementsWebAssembly;
         imp.env.__island_ClearInterval = function (handle) {
             window.clearInterval(handle);
         };
+        imp.env.__island_DefineValueProperty = function (obj, name, value, flags) {
+            Object.defineProperty(handletable[obj], readStringFromMemory(name), {
+                enumerable: (flags & 1) != 0,
+                configurable: (flags & 2) != 0,
+                writable: (flags & 4) != 0,
+                value: value == 0 ? null : handletable[value]
+            });
+        };
+        imp.env.__island_DefineGetterSetterProperty = function (obj, name, getter, setter, flags) {
+            var newgetter = undefined;
+            var newsetter = undefined;
+            if (getter != 0) {
+                var originalgetter = createDelegate(getter);
+                newgetter = function () {
+                    var v = { value: null };
+                    originalgetter(this, v);
+                    return v.value;
+                };
+            }
+            if (setter != 0) {
+                var originalsetter = createDelegate(setter);
+                newsetter = function (v) { return originalsetter(this, v); };
+            }
+            Object.defineProperty(handletable[obj], readStringFromMemory(name), {
+                enumerable: (flags & 1) != 0,
+                configurable: (flags & 2) != 0,
+                get: newgetter,
+                set: newsetter
+            });
+        };
+        imp.env.__island_invoke = function (tableidx, args, argcount) {
+            var nargs = [];
+            if (argcount > 0) {
+                var data = new Int32Array(mem.buffer, args);
+                for (var i = 0; i < argcount; i++) {
+                    nargs[i] = handletable[data[i]];
+                    releaseHandle(data[i]);
+                }
+            }
+            var func = imp.env.table.get(tableidx);
+            return createHandle(func.apply(this, nargs));
+        };
     }
     function fetchAndInstantiate(url, importObject, memorySize, tableSize) {
         if (memorySize === void 0) { memorySize = 16; }

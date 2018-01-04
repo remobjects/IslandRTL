@@ -120,7 +120,19 @@ type
 
     [DllImport(''), SymbolName('__island_ClearInterval')]
     class method ClearInterval(aHandle: IntPtr); external;
+
+    [DllImport(''), SymbolName('__island_DefineValueProperty')]
+    class method DefineValueProperty(aSelf: IntPtr; aName: String; aValue: IntPtr; aFlags: EcmaScriptPropertyFlags); external;
+
+    [DllImport(''), SymbolName('__island_DefineGetterSetterProperty')]
+    class method DefineGetterSetterProperty(aSelf: IntPtr; aName: String; aGetter, aSetter: WebAssemblyDelegate; aFlags: EcmaScriptPropertyFlags); external;
   end;
+
+  EcmaScriptPropertyFlags = public flags (
+    Enumerable = 1, 
+    Configurable = 2, 
+    Writable = 4,
+    All = 4 or 2 or 1);
 
   EcmaScriptObject = public class(IDisposable)
   private 
@@ -144,6 +156,7 @@ type
   public 
     constructor(aValue: IntPtr);
     begin 
+      if aValue = 0 then raise new ArgumentNullException('0 not allowed');
       fHandle := aValue;
     end;
 
@@ -171,6 +184,51 @@ type
     property Items[s: String]: Object read get_Items write set_Items; default;
     property Items[i: Integer]: Object read get_Items write set_Items; default;
 
+    method DefineProperty(aName: String; aValue: Object; aFlags: EcmaScriptPropertyFlags := EcmaScriptPropertyFlags.All);
+    begin 
+      WebAssemblyCalls.DefineValueProperty(fHandle, aName, WebAssembly.CreateHandle(aValue), aFlags);
+    end;
+
+    method DefineProperty(aName: String; aGet: Func<Object>; aSet: Action<Object>; aFlags: EcmaScriptPropertyFlags := EcmaScriptPropertyFlags.All);
+    begin 
+      var lGet, lSet: WebAssemblyDelegate;
+      if assigned(aGet) then 
+        lGet := a -> begin 
+          var lObj := EcmaScriptObject(a[1]);
+          lObj['value'] := aGet();
+          lObj.Dispose;
+        end;
+      if assigned(aSet) then 
+        lSet := a -> begin 
+          var lVal := a[1];
+          aSet(lVal);
+          EcmaScriptObject(lVal):Dispose;
+        end;
+      WebAssemblyCalls.DefineGetterSetterProperty(fHandle, aName, lGet, lSet, aFlags);
+    end;
+
+    method DefineProperty(aName: String; aGet: Func<EcmaScriptObject, Object>; aSet: Action<EcmaScriptObject, Object>; aFlags: EcmaScriptPropertyFlags := EcmaScriptPropertyFlags.All);
+    begin 
+      var lGet, lSet: WebAssemblyDelegate;
+      if assigned(aGet) then 
+        lGet := a -> begin 
+          var lObj := EcmaScriptObject(a[1]);
+          var lSelf := new EcmaScriptObject(WebAssemblyCalls.GetArray(a.Handle, 0)); // this shouldn't be unwrapped.
+          lObj['value'] := aGet(lSelf);
+          lSelf.Dispose;
+          lObj.Dispose;
+        end;
+      if assigned(aSet) then 
+        lSet := a -> begin 
+          var lVal := a[1];
+          var lSelf := new EcmaScriptObject(WebAssemblyCalls.GetArray(a.Handle, 0)); // this shouldn't be unwrapped.
+          aSet(lSelf, lVal);
+          lSelf.Dispose;
+          EcmaScriptObject(lVal):Dispose;
+        end;
+      WebAssemblyCalls.DefineGetterSetterProperty(fHandle, aName, lGet, lSet, aFlags);
+    end;
+
     method Call(aName: String; params args: array of Object): Object;
     begin 
       var lData := new IntPtr[length(args)];
@@ -192,8 +250,67 @@ type
 
   WebAssembly = public static class 
   private 
+    fProxies: Dictionary<IntPtr, EcmaScriptObject> := new Dictionary<IntPtr, EcmaScriptObject>;
+
+    class method GetPtrFromObject(o: EcmaScriptObject): Object;
+    begin 
+      exit InternalCalls.Cast<Object>(^Void(Convert.ToInt32(o['__elements_handle'])));
+    end;
+
+    class method GetProxyFor(aType: &Type): EcmaScriptObject;
+    begin 
+      if fProxies.TryGetValue(IntPtr(aType.RTTI), out result) then begin 
+        exit;
+      end;
+      if aType.IsValueType then raise new ArgumentException('Value types not supported!');
+      var lBase: EcmaScriptObject := if (aType.BaseType = nil) or (aType.BaseType = typeOf(Object)) then nil else GetProxyFor(aType.BaseType);
+      if lBase = nil then lBase := CreateObject else lBase := EcmaScriptObject(Object.Call('create', lBase));
+      var lSeq := aType.Properties;
+      var ge := lSeq.GetEnumerator;
+      while ge.MoveNext do begin 
+        var el := ge.Current;
+        if el.IsStatic then continue;
+        if el.Arguments.Any then continue;
+        if el.Attributes.Any(a -> a.Type = typeOf(EcmaScriptPropertyAttribute)) then begin 
+          var lGet: Func<EcmaScriptObject, Object>;
+          var lSet: Action<EcmaScriptObject, Object>;
+          var lRM := el.ReadMethod;
+          var lWM := el.WriteMethod;
+
+          if lRM <> nil then begin
+            lGet := o -> WebAssembly.InvokeMethod(lRM, [GetPtrFromObject(o)]);
+          end;
+          if lWM <> nil then begin 
+            lSet := (o, v) -> WebAssembly.InvokeMethod(lWM, [GetPtrFromObject(o), v]);
+          end;
+          if (lGet <> nil)  or (lSet <> nil) then 
+            lBase.DefineProperty(el.Name, lGet, lSet);
+        end;
+      end;
+      fProxies.Add(IntPtr(aType.RTTI), lBase);
+      exit lBase;
+    end;
   public 
-    property Global: EcmaScriptObject := new EcmaScriptObject(0); lazy;
+    property Global: EcmaScriptObject := new EcmaScriptObject(-1); lazy;
+    property Object: EcmaScriptObject := EcmaScriptObject(&Global['Object']); lazy;
+
+    class method CreateProxy(o: Object): EcmaScriptObject;
+    begin 
+      if o = nil then exit nil;
+      var ov: EcmaScriptObject := GetProxyFor(o.GetType);
+      var ptr := IntPtr(InternalCalls.Cast(o));
+      
+      SimpleGC.ForceAddRef(ptr);
+      result := EcmaScriptObject(Object.Call('create', new EcmaScriptObject(WebAssemblyCalls.CloneHandle(ov.Handle))));
+      result['__elements_handle'] := ptr;
+    end;
+
+    class method ReleaseProxy(o: EcmaScriptObject);
+    begin 
+      var lPtr := Convert.ToInt32(o['__elements_handle']);
+      if lPtr = 0 then exit;
+      SimpleGC.ForceRelease(lPtr);
+    end;
 
     class method GetObjectForHandle(aHandle: IntPtr): Object; // Note; takes ownership (and frees if needed)
     begin 
@@ -202,8 +319,18 @@ type
         WebassemblyType.String: result := GetStringFromHandle(aHandle);
         WebassemblyType.Number: result := WebAssemblyCalls.GetDoubleValue(aHandle);
         WebassemblyType.Boolean: result := WebAssemblyCalls.GetIntValue(aHandle);
-        else 
-          exit new EcmaScriptObject(aHandle);
+        else begin
+          result := new EcmaScriptObject(aHandle);
+          var val := EcmaScriptObject(result)['__elements_handle'];
+          if (val <> nil) then begin
+            EcmaScriptObject(result).Dispose;
+            var lHandle := Convert.ToInt32(val);
+            result := InternalCalls.Cast<Object>(^Void(lHandle));
+            SimpleGC.ForceRelease(lHandle);
+          end;
+
+          exit;
+        end;
       end;
        WebAssemblyCalls.FreeHandle(aHandle);
     end;
@@ -216,6 +343,7 @@ type
       var c := WebAssemblyCalls.Invoke(IntPtr(aPtr), @lData[0], lData.Length);
       exit WebAssembly.GetObjectForHandle(c);
     end;
+
     class method CreateHandle(aVal: Object): IntPtr;
     begin
       if aVal = nil then exit 0;
@@ -226,7 +354,9 @@ type
       if aVal is Int64 then exit WebAssemblyCalls.CreateDouble(aVal as Int64);
       if aVal is String then exit WebAssemblyCalls.CreateString(aVal as String);
       if aVal is WebAssemblyDelegate then exit WebAssemblyCalls.CreateFunc(aVal as WebAssemblyDelegate);
-      raise new Exception('Unknown type for object');
+      var lProxy := CreateProxy(aVal);
+      result := lProxy.Handle;
+      lProxy.Release;
     end;
 
     class method Eval(s: String): Object;
@@ -440,6 +570,10 @@ type
     end;
   end;
   rtl.size_t = IntPtr;
+
+  [AttributeUsage(AttributeTargets.Property)]
+  EcmaScriptPropertyAttribute = public class (Attribute)
+  end;
 
 
 end.
