@@ -91,6 +91,9 @@ type
     class method GetICUVersion: String;
     class method GetSymbol(aLib: ^Void; aSymbolName: String): ^Void;
     class method GetSymbols;
+    {$IF LINUX}
+    class method GetICUPath(var versionSuffix: String): String;
+    {$ENDIF}
   public
     class var UNumGetSymbol: unum_getSymbol;
     class var UNumOpen: unum_open;
@@ -110,6 +113,24 @@ type
     
 implementation
 
+{$IF LINUX AND NOT ANDROID}
+class method ICUHelper.GetICUPath(var versionSuffix: String): String;
+begin
+  var lICUPaths: array[0..2] of String := ['/usr/lib/x86_64-linux-gnu/', '/usr/lib/', '/lib/'];
+  for lPath in lICUPaths do begin
+    var lToTry := lPath + LibICU;
+    for i: Integer := 25 to 99 do begin
+      var lLib := lToTry + '.' + i.ToString;
+      if FileUtils.FileExists(lLib) then begin
+        versionSuffix := i.ToString;
+        exit lPath;
+      end;
+    end;
+  end;
+  result := '';
+end;
+{$ENDIF}
+
 class constructor ICUHelper;
 begin
   {$IF ANDROID}
@@ -118,7 +139,14 @@ begin
   lLibPath := '/system/lib/' + Lib18n;
   fLib18n := rtl.dlopen(@lLibPath.ToAnsiChars(true)[0], rtl.RTLD_LAZY);
   {$ELSEIF LINUX}
-  // TODO
+  var lVersionSuffix: String;
+  var lLibPath := GetICUPath(lVersionSuffix);
+  if lLibPath <> '' then begin
+    var lLib := lLibPath + LibICU + '.' + lVersionSuffix;
+    fLibICU := rtl.dlopen(@lLib.ToAnsiChars(true)[0], rtl.RTLD_LAZY);
+    lLib := lLibPath + Lib18n + '.' + lVersionSuffix;
+    fLib18n := rtl.dlopen(@lLib.ToAnsiChars(true)[0], rtl.RTLD_LAZY);
+  end;
   {$ENDIF}
   fVersion := GetICUVersion;
   GetSymbols;
@@ -135,7 +163,7 @@ begin
   var lToFind := 'unum_getSymbol'.ToAnsiChars(true);
   if rtl.dlsym(fLib18n, @lToFind[0]) <> nil then result := ''
   else begin
-    for i: Integer := 25 to 120 do begin
+    for i: Integer := 25 to 99 do begin
       lToFind := ('unum_getSymbol' + '_' + i.ToString).ToAnsiChars(true);
       if rtl.dlsym(fLib18n, @lToFind[0]) <> nil then exit '_' + i.ToString;
     end;
