@@ -91,7 +91,7 @@ type
     class method GetICUVersion: String;
     class method GetSymbol(aLib: ^Void; aSymbolName: String): ^Void;
     class method GetSymbols;
-    {$IF LINUX}
+    {$IF LINUX AND NOT ANDROID}
     class method GetICUPath(var versionSuffix: String): String;
     {$ENDIF}
   public
@@ -138,7 +138,7 @@ begin
   fLibICU := rtl.dlopen(@lLibPath.ToAnsiChars(true)[0], rtl.RTLD_LAZY);
   lLibPath := '/system/lib/' + Lib18n;
   fLib18n := rtl.dlopen(@lLibPath.ToAnsiChars(true)[0], rtl.RTLD_LAZY);
-  {$ELSEIF LINUX}
+  {$ELSEIF LINUX AND NOT ANDROID}
   var lVersionSuffix: String;
   var lLibPath := GetICUPath(lVersionSuffix);
   if lLibPath <> '' then begin
