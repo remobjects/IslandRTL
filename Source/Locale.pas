@@ -11,7 +11,7 @@ type
     constructor(aDecimalSeparator: Char; aThousandsSeparator: Char; aCurrency: String);
   end;
 
-  PlatformLocale = {$IF WINDOWS}rtl.LCID{$ELSEIF LINUX AND NOT ANDROID}rtl.locale_t{$ELSEIF ANDROID}String{$ENDIF};
+  PlatformLocale = {$IF WINDOWS}rtl.LCID{$ELSEIF LINUX AND NOT ANDROID}rtl.locale_t{$ELSEIF ANDROID OR WEBASSEMBLY}String{$ENDIF};
 
   Locale = public class
   private
@@ -29,14 +29,18 @@ type
     property NumberFormat: NumberFormatInfo read fNumberFormat;
   end;
 
+  {$IF WEBASSEMBLY}
+  LocaleInfo = enum(DecimalSeparator = 0, ThousandsSepatator, Currency);
+  {$ENDIF}
+
 implementation
 
 constructor Locale(aLocaleID: PlatformLocale);
 begin
   fLocaleID := aLocaleID;
   var lCurrency: String := '';
-  var lThousandsSep: Char := #0;
-  var lDecimalSep: Char := #0;
+  var lThousandsSep: Char := ',';
+  var lDecimalSep: Char := '.';
   {$IF WINDOWS}
   var lBuffer := new Char[50];
   var lTotal := rtl.GetLocaleInfo(fLocaleID, rtl.LOCALE_SCURRENCY, @lBuffer[0], lBuffer.Length);
@@ -81,6 +85,10 @@ begin
   lTotal := ICUHelper.UNumGetSymbol(lFormatSettings, UNumberFormatSymbol.UNUM_CURRENCY_SYMBOL, @lBuffer[0], lBuffer.Length, @lStatus);
   lCurrency := String.FromPChar(@lBuffer[0], lTotal);
   ICUHelper.UNumClose(lFormatSettings);
+  {$ELSEIF WEBASSEMBLY}
+  lDecimalSep := WebAssemblyCalls.GetLocaleInfo(aLocaleID, Int32(LocaleInfo.DecimalSeparator))[0];
+  lThousandsSep := WebAssemblyCalls.GetLocaleInfo(aLocaleID, Int32(LocaleInfo.ThousandsSepatator))[0];
+  lCurrency := WebAssemblyCalls.GetLocaleInfo(aLocaleID, Int32(LocaleInfo.Currency));
   {$ENDIF}
   fNumberFormat := new NumberFormatInfo(lDecimalSep, lThousandsSep, lCurrency);
 end;
@@ -103,6 +111,8 @@ begin
   var lName := new Char[80];
   var lTotal := ICUHelper.ULocGetName(@fLocaleID.ToAnsiChars(true)[0], @lName[0], lName.Length, @lErr);
   result := String.FromPChar(@lName[0], lTotal) as not nullable;
+  {$ELSEIF WEBASSEMBLY}
+  result := fLocaleID as not nullable;
   {$ENDIF}
 end;
 
@@ -113,7 +123,7 @@ begin
   {$ELSEIF LINUX AND NOT ANDROID}
   var lInvariant := 'en_US.utf8'.ToAnsiChars(true);
   result := new Locale(rtl.newLocale(rtl.LC_ALL_MASK, @lInvariant[0], nil));
-  {$ELSEIF ANDROID}
+  {$ELSEIF ANDROID OR WEBASSEMBLY}
   result := new Locale('en_US');
   {$ENDIF}
 end;
@@ -141,6 +151,8 @@ begin
       lDefaultName := lDefaultName.Replace('.UTF-8', '');
   end;
   result := new Locale(lDefaultName);
+  {$ELSEIF WEBASSEMBLY}
+  result := new Locale(WebAssemblyCalls.GetCurrentLocale);
   {$ENDIF}
 end;
 

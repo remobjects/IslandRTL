@@ -117,6 +117,12 @@ type
 
     [DllImport(''), SymbolName('__island_ClearInterval')]
     class method ClearInterval(aHandle: IntPtr); external;
+
+    [DllImport(''), SymbolName('__island_getLocaleInfo')]
+    class method GetLocaleInfo(locale: String; info: Int32): String; external;
+
+    [DllImport(''), SymbolName('__island_getCurrentLocale')]
+    class method GetCurrentLocale: String; external;
   end;
 
   EcmaScriptObject = public class(IDisposable)

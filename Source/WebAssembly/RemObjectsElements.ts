@@ -328,6 +328,28 @@ module ElementsWebAssembly {
         imp.env.__island_ClearInterval = function(handle: number) {
              window.clearInterval(handle);
         };
+        imp.env.__island_getLocaleInfo = function (locale: string, info: number): string {
+            var lFormat = new Intl.NumberFormat(locale);
+            switch (info) {
+                case 0:
+                    // Decimal separator
+                    var n = lFormat.format(1.1);
+                    return n.substring(1, 2);
+
+                case 1:
+                    // Thousands separator
+                    var n = lFormat.format(3500);
+                    return n.substring(1, 2);
+
+                case 2:
+                    return '';
+                default:
+                    return '';
+            }
+        };
+        imp.env.__island_getCurrentLocale = function (): string {
+            return navigator.language;
+        };
     }
 
 
