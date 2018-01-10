@@ -443,6 +443,8 @@ var ElementsWebAssembly;
             importObject.env = {};
         var bytedata;
         return fetch(url).then(function (response) {
+            if (response.status >= 400)
+                throw new Error("Invalid response to request: " + response.statusText);
             return response.arrayBuffer();
         }).then(function (bytes) {
             bytedata = bytes;

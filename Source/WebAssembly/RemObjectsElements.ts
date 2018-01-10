@@ -399,9 +399,11 @@ module ElementsWebAssembly {
         if (!importObject) importObject = {};
         if (!importObject.env) importObject.env = {};
         var bytedata: ArrayBuffer;
-        return fetch(url).then(response =>
-            response.arrayBuffer()
-        ).then(bytes => {
+        return fetch(url).then(response => {
+            if (response.status >= 400)
+                throw new Error("Invalid response to request: " + response.statusText);
+            return response.arrayBuffer();
+        }).then(bytes => {
             bytedata = bytes;
             defineElementsSystemFunctions(importObject);
             if (!importObject.env.memory)
