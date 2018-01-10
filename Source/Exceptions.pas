@@ -17,7 +17,6 @@ type
     begin
       exit self.GetType().Name+': '+Message;
     end;
-
   end;
 
   WindowsException = public class(Exception)
@@ -44,12 +43,16 @@ type
   AssertionException = public class(Exception)
   end;
 
-
   NotImplementedException = public class (Exception)
   public
     constructor;
     begin
       inherited constructor('Not implemented');
+    end;
+
+    constructor (aMessage: not nullable String);
+    begin
+      inherited constructor(aMessage);
     end;
   end;
 
@@ -58,6 +61,11 @@ type
     constructor;
     begin
       inherited constructor('Not supported');
+    end;
+
+    constructor (aMessage: not nullable String);
+    begin
+      inherited constructor(aMessage);
     end;
   end;
 
