@@ -328,6 +328,11 @@ type
     // if it's an external object it gets wrapped as EcmaScriptObject
     begin 
       if o = 0 then exit 0;
+      if WebAssemblyCalls.GetTypeOf(o) = WebassemblyType.String then begin
+        result := IntPtr(InternalCalls.Cast(GetStringFromHandle(o)));
+        WebAssemblyCalls.FreeHandle(o);
+        exit;
+      end;
       var lEC := new EcmaScriptObject(o);
       if lEC['__elements_handle'] <> nil then begin
         result := Convert.ToInt32(lEC['__elements_handle']);
@@ -345,11 +350,15 @@ type
     begin 
       if o = 0 then exit 0;
       var lRes := InternalCalls.Cast<Object>(^Void(o));
+      if lRes is String then begin 
+        exit WebAssemblyCalls.CreateString(String(lRes));
+      end;
       if lRes is not EcmaScriptObject then 
         lRes := CreateProxy(lRes);
       result := EcmaScriptObject(lRes).Handle;
       EcmaScriptObject(lRes).Release;
     end;
+    
     class method ReleaseProxy(o: EcmaScriptObject);
     begin 
       if o = nil then exit;
@@ -413,6 +422,7 @@ type
 
     class method GetStringFromHandle(handle: Int32; aFree: Boolean := false): String;
     begin 
+      if handle = 0 then exit nil;
       result := String.AllocString(WebAssemblyCalls.GetStringLength(handle));
       WebAssemblyCalls.GetStringData(handle, @result.fFirstChar);
       if aFree then 
