@@ -131,7 +131,17 @@ module ElementsWebAssembly {
 
     export function getHandleValue(handle: number): any 
     {
+        if (!handle || handle == 0) return null;
         return handletable[handle];
+    }
+    
+    export function getAndReleaseHandleValue(handle: number): any 
+    {
+        if (!handle || handle == 0) return;
+        var old = handletable[handle];
+        handletable[handle] = firstfree;
+        firstfree = handle;
+        return old;
     }
 
     export function readCharsFromMemory(offs, len: number): string

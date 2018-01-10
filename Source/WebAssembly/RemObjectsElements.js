@@ -187,9 +187,20 @@ var ElementsWebAssembly;
     }
     ElementsWebAssembly.releaseHandle = releaseHandle;
     function getHandleValue(handle) {
+        if (!handle || handle == 0)
+            return null;
         return handletable[handle];
     }
     ElementsWebAssembly.getHandleValue = getHandleValue;
+    function getAndReleaseHandleValue(handle) {
+        if (!handle || handle == 0)
+            return;
+        var old = handletable[handle];
+        handletable[handle] = firstfree;
+        firstfree = handle;
+        return old;
+    }
+    ElementsWebAssembly.getAndReleaseHandleValue = getAndReleaseHandleValue;
     function readCharsFromMemory(offs, len) {
         var arr = new Int16Array(mem.buffer, offs, len);
         var s = "";

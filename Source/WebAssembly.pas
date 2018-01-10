@@ -313,6 +313,7 @@ type
     class method CreateProxy(o: Object): EcmaScriptObject;
     begin 
       if o = nil then exit nil;
+      if o is EcmaScriptObject then exit EcmaScriptObject(o);
       var ov: EcmaScriptObject := GetProxyFor(o.GetType);
       var ptr := IntPtr(InternalCalls.Cast(o));
       
@@ -320,9 +321,39 @@ type
       result := EcmaScriptObject(Object.Call('create', new EcmaScriptObject(WebAssemblyCalls.CloneHandle(ov.Handle))));
       result['__elements_handle'] := ptr;
     end;
+    
+    [SymbolName('__island_wrap')]
+    class method Wrap(o: IntPtr): IntPtr; 
+    // o is a handle, if it points to an elements object it gets unwrapped and returned
+    // if it's an external object it gets wrapped as EcmaScriptObject
+    begin 
+      if o = 0 then exit 0;
+      var lEC := new EcmaScriptObject(o);
+      if lEC['__elements_handle'] <> nil then begin
+        result := Convert.ToInt32(lEC['__elements_handle']);
+        lEC.Dispose;
+        exit;
+      end;
+      // We don't add a reference because ecmascriptobject is on the stack and the 
+      // gc can't run before the variable is gone.
+      exit IntPtr(InternalCalls.Cast(lEC));
+    end;
 
+    [SymbolName('__island_unwrap')]
+    class method Unwrap(o: IntPtr): IntPtr; 
+    // o is a pointer, returns either a handle ot a proxy or the handle to an ecmascriptobject.
+    begin 
+      if o = 0 then exit 0;
+      var lRes := InternalCalls.Cast<Object>(^Void(o));
+      if lRes is not EcmaScriptObject then 
+        lRes := CreateProxy(lRes);
+      result := EcmaScriptObject(lRes).Handle;
+      EcmaScriptObject(lRes).Release;
+    end;
     class method ReleaseProxy(o: EcmaScriptObject);
     begin 
+      if o = nil then exit;
+      if o['__elements_handle'] = nil then exit;
       var lPtr := Convert.ToInt32(o['__elements_handle']);
       if lPtr = 0 then exit;
       SimpleGC.ForceRelease(lPtr);
