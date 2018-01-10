@@ -322,7 +322,7 @@ type
       result['__elements_handle'] := ptr;
     end;
     
-    [SymbolName('__island_wrap')]
+    [SymbolName('__island_wrap'), Used, DllExport]
     class method Wrap(o: IntPtr): IntPtr; 
     // o is a handle, if it points to an elements object it gets unwrapped and returned
     // if it's an external object it gets wrapped as EcmaScriptObject
@@ -344,7 +344,7 @@ type
       exit IntPtr(InternalCalls.Cast(lEC));
     end;
 
-    [SymbolName('__island_unwrap')]
+    [SymbolName('__island_unwrap'), Used, DllExport]
     class method Unwrap(o: IntPtr): IntPtr; 
     // o is a pointer, returns either a handle ot a proxy or the handle to an ecmascriptobject.
     begin 
@@ -485,14 +485,14 @@ type
     [SymbolName('llvm.trap')]
     class method trap; external;
   public
-    [SymbolName('ElementsRaiseException')]
+    [SymbolName('ElementsRaiseException'), Used, DllExport]
     method RaiseException(aRaiseAddress: ^Void; aRaiseFrame: ^Void; aRaiseObject: Object);
     begin 
       // Not supported atm!
       trap;
     end;
 
-    [SymbolName('__island_call_delegate')]
+    [SymbolName('__island_call_delegate'), Used, DllExport]
     method CallDelegate(inst: WebAssemblyDelegate; aArgs: IntPtr);
     begin 
       var lEC := new EcmaScriptObject(aArgs);
