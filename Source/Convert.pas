@@ -261,7 +261,178 @@ type
       Value := sValue;
       exit True;
     end;
+    method ToSByte(o: Object): SByte;
+    begin 
+      if o = nil then raise new ArgumentNullException('o is null');
+      if o is SByte then exit SByte(o);
+      if o is Int16 then exit Int16(o);
+      if o is Int32 then exit Int32(o);
+      if o is Int64 then exit Int64(o);
+      if o is Byte then exit Byte(o);
+      if o is UInt16 then exit UInt16(o);
+      if o is UInt32 then exit UInt32(o);
+      if o is UInt64 then exit UInt64(o);
+      if o is Single then exit Int32(Single(o));
+      if o is Double then exit Int32(Double(o));
+      if o is String then exit SByte.Parse(String(o));
+      raise new ArgumentException('Unknown type for o');
+    end;
 
+    method ToInt16(o: Object): Int16;
+    begin 
+      if o = nil then raise new ArgumentNullException('o is null');
+      if o is SByte then exit SByte(o);
+      if o is Int16 then exit Int16(o);
+      if o is Int32 then exit Int32(o);
+      if o is Int64 then exit Int64(o);
+      if o is Byte then exit Byte(o);
+      if o is UInt16 then exit UInt16(o);
+      if o is UInt32 then exit UInt32(o);
+      if o is UInt64 then exit UInt64(o);
+      if o is Single then exit Int16(Single(o));
+      if o is Double then exit Int16(Double(o));
+      if o is String then exit Int16.Parse(String(o));
+      raise new ArgumentException('Unknown type for o');
+    end;
+
+
+    method ToInt32(o: Object): Int32;
+    begin 
+      if o = nil then raise new ArgumentNullException('o is null');
+      if o is SByte then exit SByte(o);
+      if o is Int16 then exit Int16(o);
+      if o is Int32 then exit Int32(o);
+      if o is Int64 then exit Int64(o);
+      if o is Byte then exit Byte(o);
+      if o is UInt16 then exit UInt16(o);
+      if o is UInt32 then exit UInt32(o);
+      if o is UInt64 then exit UInt64(o);
+      if o is Single then exit Int32(Single(o));
+      if o is Double then exit Int32(Double(o));
+      if o is String then exit Int32.Parse(String(o));
+      raise new ArgumentException('Unknown type for o');
+    end;
+
+    method ToInt64(o: Object): Int64;
+    begin 
+      if o = nil then raise new ArgumentNullException('o is null');
+      if o is SByte then exit SByte(o);
+      if o is Int16 then exit Int16(o);
+      if o is Int32 then exit Int32(o);
+      if o is Int64 then exit Int64(o);
+      if o is Byte then exit Byte(o);
+      if o is UInt16 then exit UInt16(o);
+      if o is UInt32 then exit UInt32(o);
+      if o is UInt64 then exit UInt64(o);
+      if o is Single then exit Int64(Single(o));
+      if o is Double then exit Int64(Double(o));
+      if o is String then exit Int64.Parse(String(o));
+      raise new ArgumentException('Unknown type for o');
+    end;
+
+    method ToByte(o: Object): Byte;
+    begin 
+      if o = nil then raise new ArgumentNullException('o is null');
+      if o is SByte then exit SByte(o);
+      if o is Int16 then exit Int16(o);
+      if o is Int32 then exit Int32(o);
+      if o is Int64 then exit Int64(o);
+      if o is Byte then exit Byte(o);
+      if o is UInt16 then exit UInt16(o);
+      if o is UInt32 then exit UInt32(o);
+      if o is UInt64 then exit UInt64(o);
+      if o is Single then exit Byte(Single(o));
+      if o is Double then exit Byte(Double(o));
+      if o is String then exit Byte.Parse(String(o));
+      raise new ArgumentException('Unknown type for o');
+    end;
+
+    method ToUInt16(o: Object): UInt16;
+    begin 
+      if o = nil then raise new ArgumentNullException('o is null');
+      if o is SByte then exit SByte(o);
+      if o is Int16 then exit Int16(o);
+      if o is Int32 then exit Int32(o);
+      if o is Int64 then exit Int64(o);
+      if o is Byte then exit Byte(o);
+      if o is UInt16 then exit UInt16(o);
+      if o is UInt32 then exit UInt32(o);
+      if o is UInt64 then exit UInt64(o);
+      if o is Single then exit UInt16(Single(o));
+      if o is Double then exit UInt16(Double(o));
+      if o is String then exit UInt16.Parse(String(o));
+      raise new ArgumentException('Unknown type for o');
+    end;
+
+
+    method ToUInt32(o: Object): UInt32;
+    begin 
+      if o = nil then raise new ArgumentNullException('o is null');
+      if o is SByte then exit SByte(o);
+      if o is Int16 then exit Int16(o);
+      if o is Int32 then exit Int32(o);
+      if o is Int64 then exit Int64(o);
+      if o is Byte then exit Byte(o);
+      if o is UInt16 then exit UInt16(o);
+      if o is UInt32 then exit UInt32(o);
+      if o is UInt64 then exit UInt64(o);
+      if o is Single then exit UInt32(Single(o));
+      if o is Double then exit UInt32(Double(o));
+      if o is String then exit UInt32.Parse(String(o));
+      raise new ArgumentException('Unknown type for o');
+    end;
+
+    method ToUInt64(o: Object): UInt64;
+    begin 
+      if o = nil then raise new ArgumentNullException('o is null');
+      if o is SByte then exit SByte(o);
+      if o is Int16 then exit Int16(o);
+      if o is Int32 then exit Int32(o);
+      if o is Int64 then exit Int64(o);
+      if o is Byte then exit Byte(o);
+      if o is UInt16 then exit UInt16(o);
+      if o is UInt32 then exit UInt32(o);
+      if o is UInt64 then exit UInt64(o);
+      if o is Single then exit UInt64(Single(o));
+      if o is Double then exit UInt64(Double(o));
+      if o is String then exit UInt64.Parse(String(o));
+      raise new ArgumentException('Unknown type for o');
+    end;
+
+    method ToDouble(o: Object): Double;
+    begin 
+      if o = nil then raise new ArgumentNullException('o is null');
+      if o is SByte then exit SByte(o);
+      if o is Int16 then exit Int16(o);
+      if o is Int32 then exit Int32(o);
+      if o is Int64 then exit Int64(o);
+      if o is Byte then exit Byte(o);
+      if o is UInt16 then exit UInt16(o);
+      if o is UInt32 then exit UInt32(o);
+      if o is UInt64 then exit UInt64(o);
+      if o is Single then exit Single(o);
+      if o is Double then exit Double(o);
+      if o is String then exit Double.Parse(String(o));
+      raise new ArgumentException('Unknown type for o');
+    end;
+
+
+    method ToSingle(o: Object): Single;
+    begin 
+      if o = nil then raise new ArgumentNullException('o is null');
+      if o is SByte then exit SByte(o);
+      if o is Int16 then exit Int16(o);
+      if o is Int32 then exit Int32(o);
+      if o is Int64 then exit Int64(o);
+      if o is Byte then exit Byte(o);
+      if o is UInt16 then exit UInt16(o);
+      if o is UInt32 then exit UInt32(o);
+      if o is UInt64 then exit UInt64(o);
+      if o is Single then exit Single(o);
+      if o is Double then exit Double(o);
+      if o is String then exit Single.Parse(String(o));
+      raise new ArgumentException('Unknown type for o');
+    end;
   end;
 
 end.

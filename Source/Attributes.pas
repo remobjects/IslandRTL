@@ -150,6 +150,7 @@ type
     property Message: String; readonly;
     property Fail: Boolean; readonly;
   end;
+
   [AttributeUsage(AttributeTargets.Class or AttributeTargets.Method)]
   ConditionalAttribute = public class(Attribute)
   public
@@ -160,7 +161,6 @@ type
 
     property Conditional: String; readonly;
   end;
-
 
   [AttributeUsage(AttributeTargets.Method or AttributeTargets.Field or AttributeTargets.Class or AttributeTargets.Method or AttributeTargets.Interface)]
   UsedAttribute = public class(Attribute)
@@ -211,6 +211,9 @@ type
 
     property Name: String read fName;
   end;
+
+  ExportAttribute = public DllExportAttribute;
+  ImportAttribute = public DllImportAttribute;
 
   [AttributeUsage(AttributeTargets.Method)]
   DllImportAttribute = public class(Attribute)
@@ -273,16 +276,15 @@ type
   PackedAttribute = public class(Attribute)
   end;
 
-  
   [AttributeUsage(AttributeTargets.Method)]
   GlobalConstructorAttribute = public class(Attribute)
-  public 
+  public
     constructor(aPriority: Integer); empty;
   end;
 
   [AttributeUsage(AttributeTargets.Method)]
   GlobalDestructorAttribute = public class(Attribute)
-  public 
+  public
     constructor(aPriority: Integer); empty;
   end;
 
@@ -309,4 +311,13 @@ type
   public
     constructor; empty;
   end;
+
+  [AttributeUsage(AttributeTargets.Delegate)]
+  FunctionPointerAttribute = public class(Attribute)
+  end;
+
+  [AttributeUsage(AttributeTargets.Delegate)]
+  BlockPointerAttribute = public class(Attribute)
+  end;
+
 end.

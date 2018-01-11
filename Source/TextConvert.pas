@@ -321,7 +321,7 @@ type
         end
         {$ENDREGION}
         {$REGION 1 Byte Char}
-        else if (ch or $7f) = $7f then begin
+        else begin
           // 0xxxxxxx
           var code := ch;
           if (code < $0)  or (code > $7F) then MalformedError;
@@ -330,12 +330,8 @@ type
           {$ENDIF}
           str.Append(Char(code));
           inc(pos,1);
-        end
-        {$ENDREGION}
-        else begin
-          BadUTF8Error;
-          inc(pos);
         end;
+        {$ENDREGION}
       end;
       exit str.ToString;
     end;

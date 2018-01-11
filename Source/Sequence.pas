@@ -35,4 +35,12 @@ type
     method CompareTo(a: T): Integer;
   end;
 
+  INotifyPropertyChanged = public interface 
+    event PropertyChanged: Action<Object, String>;
+  end;
+
+  INotifyPropertyChanging = public interface 
+    event PropertyChanging: Action<Object, String>;
+  end;
+
 end.
