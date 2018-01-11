@@ -213,7 +213,7 @@ type
   end;
 
   ExportAttribute = public DllExportAttribute;
-  ImportAttribute = public ImportAttribute;
+  ImportAttribute = public DllImportAttribute;
 
   [AttributeUsage(AttributeTargets.Method)]
   DllImportAttribute = public class(Attribute)
@@ -275,7 +275,6 @@ type
   [AttributeUsage(AttributeTargets.Struct)]
   PackedAttribute = public class(Attribute)
   end;
-
 
   [AttributeUsage(AttributeTargets.Method)]
   GlobalConstructorAttribute = public class(Attribute)
