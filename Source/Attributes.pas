@@ -212,6 +212,9 @@ type
     property Name: String read fName;
   end;
 
+  ExportAttribute = public DllExportAttribute;
+  ImportAttribute = public ImportAttribute;
+
   [AttributeUsage(AttributeTargets.Method)]
   DllImportAttribute = public class(Attribute)
   private
@@ -229,7 +232,7 @@ type
   [AttributeUsage(AttributeTargets.Method or AttributeTargets.Field or AttributeTargets.Property or AttributeTargets.Event or AttributeTargets.Struct or AttributeTargets.Class or AttributeTargets.Enum or AttributeTargets.Delegate)]
   DllExportAttribute = public class(Attribute)
   end;
-  
+
   [AttributeUsage(AttributeTargets.Parameter)]
   InRegAttribute = public class(Attribute)
   public
@@ -309,7 +312,7 @@ type
   public
     constructor; empty;
   end;
-  
+
   [AttributeUsage(AttributeTargets.Delegate)]
   FunctionPointerAttribute = public class(Attribute)
   end;
