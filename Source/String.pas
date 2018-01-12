@@ -13,6 +13,7 @@ type
     constructor; empty; // not callable
     {$IFDEF WINDOWS}
     method doLCMapString(aInvariant: Boolean := false; aMode:LCMapStringTransformMode := LCMapStringTransformMode.None):String;
+    method doLCMapString(aLocale: Locale; aMode:LCMapStringTransformMode := LCMapStringTransformMode.None): String;
     {$ENDIF}
     method TestChar(c: Char; Arr : array of Char): Boolean;
     method MakeInvariantString: String;
@@ -74,6 +75,8 @@ type
     method ToUpper(aInvariant: Boolean := false): String;
     method ToLowerInvariant: String;inline;
     method ToUpperInvariant: String;inline;
+    method ToLower(aLocale: Locale): String;
+    method ToUpper(aLocale: Locale): String;
     method Trim: String;
     method Trim(aChars: array of Char): String;
     method TrimStart: String;
@@ -689,6 +692,23 @@ begin
   lrequired_size := rtl.LCMapStringW(locale, options,@self.fFirstChar, self.Length, @result.fFirstChar, lrequired_size);
   if (lrequired_size = 0) and (rtl.GetLastError <> 0) then RaiseError('Problem with calling LCMapString (2nd call)');
 end;
+
+method String.doLCMapString(aLocale: Locale; aMode:LCMapStringTransformMode := LCMapStringTransformMode.None): String;
+begin
+  if self.Length = 0 then exit self;
+
+  var options: UInt32;
+  if aMode = LCMapStringTransformMode.Lower then options := rtl.LCMAP_LOWERCASE
+  else if aMode = LCMapStringTransformMode.Upper then options := rtl.LCMAP_UPPERCASE
+  else aMode := 0;
+
+
+  var lrequired_size := self.Length * 2;
+  var lBuffer := new Char[lrequired_size];
+  lrequired_size := rtl.LCMapStringW(aLocale.PlatformLocale, options, @self.fFirstChar, self.Length, @lBuffer[0], lrequired_size);
+  if (lrequired_size = 0) and (rtl.GetLastError <> 0) then RaiseError('Problem with calling LCMapString (2nd call)');
+  result := String.FromPChar(@lBuffer[0], lrequired_size - 1);
+end;
 {$ENDIF}
 
 method String.PadStart(TotalWidth: Integer): String;
@@ -1068,6 +1088,52 @@ end;
 method String.ToUpperInvariant: String;
 begin
   exit ToUpper(True);
+end;
+
+method String.ToLower(aLocale: Locale): String;
+begin
+  {$IFDEF WINDOWS}
+  exit doLCMapString(aLocale, LCMapStringTransformMode.Lower);
+  {$ELSEIF WEBASSEMBLY}
+  // TODO locale not yet...
+  exit WebAssembly.GetStringFromHandle(WebAssemblyCalls.ToLower(@fFirstChar, Length, aInvariant), true);
+  {$ELSEIF POSIX AND NOT ANDROID}
+  var b := TextConvert.StringToUTF32LE(self);
+  for i: Int32 := 0 to RemObjects.Elements.System.length(b)-1 step 4 do begin
+    var ch := b[i] + (Int32(b[i+1]) shl 8) + (Int32(b[i+2]) shl 16) + (Int32(b[i+3]) shl 24);
+    var u := rtl.towlower_l(ch, aLocale.PlatformLocale);
+    b[i] := u and $ff;
+    b[i+1] := (u shr 8) and $ff;
+    b[i+2] := (u shr 16) and $ff;
+    b[i+3] := (u shr 24) and $ff;
+  end;
+  result := TextConvert.UTF32LEToString(b);
+  {$ELSEIF ANDROID}
+  // TODO
+  {$ENDIF}
+end;
+
+method String.ToUpper(aLocale: Locale): String;
+begin
+  {$IFDEF WINDOWS}
+  exit doLCMapString(aLocale, LCMapStringTransformMode.Upper);
+  {$ELSEIF WEBASSEMBLY}
+  // TODO Not yet locale...
+  exit WebAssembly.GetStringFromHandle(WebAssemblyCalls.Toupper(@fFirstChar, Length, aInvariant), true);
+  {$ELSEIF POSIX AND NOT ANDROID}
+  var b := TextConvert.StringToUTF32LE(self);
+  for i: Int32 := 0 to RemObjects.Elements.System.length(b)-1 step 4 do begin
+    var ch := b[i] + (Int32(b[i+1]) shl 8) + (Int32(b[i+2]) shl 16) + (Int32(b[i+3]) shl 24);
+    var u := rtl.towupper_l(ch, aLocale.PlatformLocale);
+    b[i] := u and $ff;
+    b[i+1] := (u shr 8) and $ff;
+    b[i+2] := (u shr 16) and $ff;
+    b[i+3] := (u shr 24) and $ff;
+  end;
+  result := TextConvert.UTF32LEToString(b);
+  {$ELSEIF ANDROID}
+  // TODO using ICU
+  {$ENDIF}
 end;
 
 { String_Constructors }

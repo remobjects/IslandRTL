@@ -27,6 +27,7 @@ type
     class property Current: Locale read GetCurrent;
     property Identifier: not nullable String read GetIdentifier;
     property NumberFormat: NumberFormatInfo read fNumberFormat;
+    property PlatformLocale: PlatformLocale read fLocaleID;
   end;
 
   {$IF WEBASSEMBLY}
