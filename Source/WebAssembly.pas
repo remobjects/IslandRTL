@@ -242,7 +242,7 @@ type
       var lData := new IntPtr[length(args)];
       for i: Integer := 0 to length(args) -1 do
         lData[i] := WebAssembly.CreateHandle(args[i]);
-      var c := WebAssemblyCalls.Call(fHandle, aName, @lData[0], lData.Length, true);
+      var c := WebAssemblyCalls.Call(fHandle, aName, if length(lData) = 0 then nil else @lData[0], lData.Length, true);
       exit WebAssembly.GetObjectForHandle(c);
     end;
 
