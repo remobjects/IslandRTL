@@ -100,6 +100,8 @@ type
     class var UNumClose: unum_close;
     class var ULocGetDefault: uloc_getDefault;
     class var ULocGetName: uloc_getName;
+    class var UStrToUpper: u_strToUpper;
+    class var UStrToLower: u_strToLower;
   end;
 
   unum_getSymbol = public function(fmt: ^Void; symbol: UNumberFormatSymbol; buffer: ^Void; bufferLength: Int32; status: ^UErrorCode): Int32;
@@ -110,7 +112,10 @@ type
   uloc_getLanguage = public function(localeID: ^Void; language: ^Void; languageCapacity: Int32; err: ^UErrorCode): Int32;
   uloc_getCountry = public function(localeID: ^Void; country: ^Void; countryCapacity: Int32; err: ^UErrorCode): Int32;
   uloc_getName = public function(localeID: ^Void; name: ^Char; nameCapacity: Int32; err: ^UErrorCode): Int32;
-    
+
+  u_strToUpper = public function(dest: ^Void; destCapaciy: Int32; src: ^Void; srcLength: Int32; localeID: ^Void; err: ^UErrorCode): Int32;
+  u_strToLower = public function(dest: ^Void; destCapaciy: Int32; src: ^Void; srcLength: Int32; localeID: ^Void; err: ^UErrorCode): Int32;
+
 implementation
 
 {$IF LINUX AND NOT ANDROID}
@@ -183,6 +188,8 @@ begin
   UNumClose := unum_close(GetSymbol(fLib18n, 'unum_close'));
   ULocGetDefault := uloc_getDefault(GetSymbol(fLibICU, 'uloc_getDefault'));
   ULocGetName := uloc_getName(GetSymbol(fLibICU, 'uloc_getName'));
+  UStrToUpper := u_strToUpper(GetSymbol(fLibICU, 'u_strToUpper'));
+  UStrToLower := u_strToLower(GetSymbol(fLibICU, 'u_strToLower'));
 end;
 
 {$ENDIF}

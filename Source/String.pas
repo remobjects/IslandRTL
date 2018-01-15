@@ -16,7 +16,6 @@ type
     method doLCMapString(aLocale: Locale; aMode:LCMapStringTransformMode := LCMapStringTransformMode.None): String;
     {$ENDIF}
     method TestChar(c: Char; Arr : array of Char): Boolean;
-    method MakeInvariantString: String;
     class method RaiseError(aMessage: String);
     method CheckIndex(aIndex: Integer);
     method GetNonGenericEnumerator: IEnumerator; implements IEnumerable.GetEnumerator;
@@ -743,58 +742,19 @@ end;
 
 method String.ToLower(aInvariant: Boolean := false): String;
 begin
-  {$IFDEF WINDOWS}
-  exit doLCMapString(aInvariant, LCMapStringTransformMode.Lower);
-  {$ELSEIF WEBASSEMBLY}
+  {$IF WEBASSEMBLY}
   exit WebAssembly.GetStringFromHandle(WebAssemblyCalls.ToLower(@fFirstChar, Length, aInvariant), true);
-  {$ELSEIF POSIX}
-  {$HINT Non-Invariant ToLower is not implemented for Linux, yet}
-  var b := TextConvert.StringToUTF32LE(self);
-  for i: Int32 := 0 to RemObjects.Elements.System.length(b)-1 step 4 do begin
-    var ch := b[i] + (Int32(b[i+1]) shl 8) + (Int32(b[i+2]) shl 16) + (Int32(b[i+3]) shl 24);
-    var u := rtl.towlower(ch);
-    b[i] := u and $ff;
-    b[i+1] := (u shr 8) and $ff;
-    b[i+2] := (u shr 16) and $ff;
-    b[i+3] := (u shr 24) and $ff;
-  end;
-  result := TextConvert.UTF32LEToString(b);
   {$ELSE}
-  {$ERROR Not Implemented}
+  exit ToLower(Locale.Invariant);
   {$ENDIF}
 end;
 
 method String.ToUpper(aInvariant: Boolean := false): String;
 begin
-  {$IFDEF WINDOWS}
-  exit doLCMapString(aInvariant, LCMapStringTransformMode.Upper);
-  {$ELSEIF WEBASSEMBLY}
+  {$IF WEBASSEMBLY}
   exit WebAssembly.GetStringFromHandle(WebAssemblyCalls.Toupper(@fFirstChar, Length, aInvariant), true);
-  {$ELSEIF POSIX or WEBASSEMBLY}
-  {$HINT Non-Invariant ToUpper is not implemented for Linux, yet}
-  var b := TextConvert.StringToUTF32LE(self);
-  for i: Int32 := 0 to RemObjects.Elements.System.length(b)-1 step 4 do begin
-    var ch := b[i] + (Int32(b[i+1]) shl 8) + (Int32(b[i+2]) shl 16) + (Int32(b[i+3]) shl 24);
-    var u := rtl.towupper(ch);
-    b[i] := u and $ff;
-    b[i+1] := (u shr 8) and $ff;
-    b[i+2] := (u shr 16) and $ff;
-    b[i+3] := (u shr 24) and $ff;
-  end;
-  result := TextConvert.UTF32LEToString(b);
   {$ELSE}
-  {$ERROR Not Implemented}
-  {$ENDIF}
-end;
-
-method String.MakeInvariantString: String;
-begin
-  {$IFDEF WINDOWS}
-  exit doLCMapString(true, LCMapStringTransformMode.None);
-  {$ELSEIF POSIX or WEBASSEMBLY}
-  exit self; {$WARNING POSIX: implement MakeInvariantString}
-  {$ELSE}
-  {$ERROR Not Implemented}
+  exit ToUpper(Locale.Invariant);
   {$ENDIF}
 end;
 
@@ -1082,12 +1042,20 @@ end;
 
 method String.ToLowerInvariant: String;
 begin
-  exit ToLower(True);
+  {$IF WEBASSEMBLY}
+  exit WebAssembly.GetStringFromHandle(WebAssemblyCalls.ToLower(@fFirstChar, Length, true), true);
+  {$ELSE}
+  exit ToLower(Locale.Invariant);
+  {$ENDIF}
 end;
 
 method String.ToUpperInvariant: String;
 begin
-  exit ToUpper(True);
+  {$IF WEBASSEMBLY}
+  exit WebAssembly.GetStringFromHandle(WebAssemblyCalls.Toupper(@fFirstChar, Length, true), true);
+  {$ELSE}
+  exit ToUpper(Locale.Invariant);
+  {$ENDIF}
 end;
 
 method String.ToLower(aLocale: Locale): String;
@@ -1109,7 +1077,15 @@ begin
   end;
   result := TextConvert.UTF32LEToString(b);
   {$ELSEIF ANDROID}
-  // TODO
+  result := AllocString(self.Length);
+  var lErr: UErrorCode;
+  var lTotal := ICUHelper.UStrToLower(@result.fFirstChar, self.Length, @fFirstChar, self.Length, @aLocale.PlatformLocale.ToAnsiChars(true)[0], @lErr);
+  if lErr <> UErrorCode.U_ZERO_ERROR then begin
+    result := AllocString(lTotal);
+    ICUHelper.UStrToLower(@result.fFirstChar, lTotal, @fFirstChar, self.Length, @aLocale.PlatformLocale.ToAnsiChars(true)[0], @lErr);
+    if lErr <> UErrorCode.U_ZERO_ERROR then
+      raise new Exception('Error calling u_strToLower');
+  end;
   {$ENDIF}
 end;
 
@@ -1132,7 +1108,15 @@ begin
   end;
   result := TextConvert.UTF32LEToString(b);
   {$ELSEIF ANDROID}
-  // TODO using ICU
+  result := AllocString(self.Length);
+  var lErr: UErrorCode;
+  var lTotal := ICUHelper.UStrToUpper(@result.fFirstChar, self.Length, @fFirstChar, self.Length, @aLocale.PlatformLocale.ToAnsiChars(true)[0], @lErr);
+  if lErr <> UErrorCode.U_ZERO_ERROR then begin
+    result := AllocString(lTotal);
+    ICUHelper.UStrToUpper(@result.fFirstChar, lTotal, @fFirstChar, self.Length, @aLocale.PlatformLocale.ToAnsiChars(true)[0], @lErr);
+    if lErr <> UErrorCode.U_ZERO_ERROR then
+      raise new Exception('Error calling u_strToLower');
+  end;
   {$ENDIF}
 end;
 

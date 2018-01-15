@@ -20,6 +20,8 @@ type
     class method GetInvariant: not nullable Locale;
     class method GetCurrent: not nullable Locale;
     method GetIdentifier: not nullable String;
+    class var fCurrent: Locale;
+    class var fInvariant: Locale;
   protected
     constructor(aLocaleID: PlatformLocale);
   public
@@ -119,42 +121,48 @@ end;
 
 class method Locale.GetInvariant: not nullable Locale;
 begin
-  {$IF WINDOWS}
-  result := new Locale(rtl.LOCALE_INVARIANT);
-  {$ELSEIF LINUX AND NOT ANDROID}
-  var lInvariant := 'en_US.utf8'.ToAnsiChars(true);
-  result := new Locale(rtl.newLocale(rtl.LC_ALL_MASK, @lInvariant[0], nil));
-  {$ELSEIF ANDROID OR WEBASSEMBLY}
-  result := new Locale('en_US');
-  {$ENDIF}
+  if fInvariant = nil then begin
+    {$IF WINDOWS}
+    fInvariant := new Locale(rtl.LOCALE_INVARIANT);
+    {$ELSEIF LINUX AND NOT ANDROID}
+    var lInvariant := 'en_US.utf8'.ToAnsiChars(true);
+    fInvariant := new Locale(rtl.newLocale(rtl.LC_ALL_MASK, @lInvariant[0], nil));
+    {$ELSEIF ANDROID OR WEBASSEMBLY}
+    fInvariant := new Locale('en_US');
+    {$ENDIF}
+  end;
+  result := fInvariant;
 end;
 
 class method Locale.GetCurrent: not nullable Locale;
 begin
-  {$IF WINDOWS}
-  result := new Locale(rtl.GetThreadLocale);
-  {$ELSEIF LINUX AND NOT ANDROID}
-  var lDefaultName := Environment.GetEnvironmentVariable('LANG');
-  if lDefaultName = '' then
-    raise new Exception('Can not get default locale');
-  lDefaultName := lDefaultName.Replace('.UTF-8', '.utf8');
-  var lName := lDefaultName.ToAnsiChars(true);
-  var lLocale := rtl.newlocale(rtl.LC_ALL_MASK, @lName[0], nil);
-  result := new Locale(lLocale);
-  {$ELSEIF ANDROID}
-  var lName: ^Char := ICUHelper.ULocGetDefault();
-  var lDefaultName := String.FromPChar(lName);
-  if lDefaultName = '' then begin
-    lDefaultName := Environment.GetEnvironmentVariable('LANG');
+  if fCurrent = nil then begin
+    {$IF WINDOWS}
+    fCurrent := new Locale(rtl.GetThreadLocale);
+    {$ELSEIF LINUX AND NOT ANDROID}
+    var lDefaultName := Environment.GetEnvironmentVariable('LANG');
     if lDefaultName = '' then
-      lDefaultName := 'en_US'
-    else
+      raise new Exception('Can not get default locale');
+    lDefaultName := lDefaultName.Replace('.UTF-8', '.utf8');
+    var lName := lDefaultName.ToAnsiChars(true);
+    var lLocale := rtl.newlocale(rtl.LC_ALL_MASK, @lName[0], nil);
+    fCurrent := new Locale(lLocale);
+    {$ELSEIF ANDROID}
+    var lName: ^Char := ICUHelper.ULocGetDefault();
+    var lDefaultName := String.FromPChar(lName);
+    if lDefaultName = '' then begin
+      lDefaultName := Environment.GetEnvironmentVariable('LANG');
+      if lDefaultName = '' then
+        lDefaultName := 'en_US'
+      else
       lDefaultName := lDefaultName.Replace('.UTF-8', '');
+    end;
+    fCurrent := new Locale(lDefaultName);
+    {$ELSEIF WEBASSEMBLY}
+    fCurrent := new Locale(WebAssemblyCalls.GetCurrentLocale);
+    {$ENDIF}
   end;
-  result := new Locale(lDefaultName);
-  {$ELSEIF WEBASSEMBLY}
-  result := new Locale(WebAssemblyCalls.GetCurrentLocale);
-  {$ENDIF}
+  result := fCurrent;
 end;
 
 constructor NumberFormatInfo(aDecimalSeparator: Char; aThousandsSeparator: Char; aCurrency: String);
