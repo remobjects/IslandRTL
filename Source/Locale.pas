@@ -89,9 +89,16 @@ begin
   lCurrency := String.FromPChar(@lBuffer[0], lTotal);
   ICUHelper.UNumClose(lFormatSettings);
   {$ELSEIF WEBASSEMBLY}
-  lDecimalSep := WebAssemblyCalls.GetLocaleInfo(aLocaleID, Int32(LocaleInfo.DecimalSeparator))[0];
-  lThousandsSep := WebAssemblyCalls.GetLocaleInfo(aLocaleID, Int32(LocaleInfo.ThousandsSepatator))[0];
-  lCurrency := WebAssemblyCalls.GetLocaleInfo(aLocaleID, Int32(LocaleInfo.Currency));
+  var lHandle := WebAssemblyCalls.GetLocaleInfo(aLocaleID, Int32(LocaleInfo.DecimalSeparator));
+  var lString := WebAssembly.GetStringFromHandle(lHandle, true);
+  if lString.Length > 0 then
+    lDecimalSep := lString[0];
+  lHandle := WebAssemblyCalls.GetLocaleInfo(aLocaleID, Int32(LocaleInfo.ThousandsSepatator));
+  lString := WebAssembly.GetStringFromHandle(lHandle, true);
+  if lString.Length > 0 then
+    lThousandsSep := lString[0];
+  lHandle := WebAssemblyCalls.GetLocaleInfo(aLocaleID, Int32(LocaleInfo.Currency));
+  lCurrency := WebAssembly.GetStringFromHandle(lHandle, true);
   {$ENDIF}
   fNumberFormat := new NumberFormatInfo(lDecimalSep, lThousandsSep, lCurrency);
 end;

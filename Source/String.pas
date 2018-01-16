@@ -1063,8 +1063,8 @@ begin
   {$IFDEF WINDOWS}
   exit doLCMapString(aLocale, LCMapStringTransformMode.Lower);
   {$ELSEIF WEBASSEMBLY}
-  // TODO locale not yet...
-  exit WebAssembly.GetStringFromHandle(WebAssemblyCalls.ToLower(@fFirstChar, Length, aInvariant), true);
+  // JavaScript standard does not have lowerCase function with a locale as parameter yet
+  exit WebAssembly.GetStringFromHandle(WebAssemblyCalls.ToLower(@fFirstChar, Length, false), true);
   {$ELSEIF POSIX AND NOT ANDROID}
   var b := TextConvert.StringToUTF32LE(self);
   for i: Int32 := 0 to RemObjects.Elements.System.length(b)-1 step 4 do begin
@@ -1094,8 +1094,8 @@ begin
   {$IFDEF WINDOWS}
   exit doLCMapString(aLocale, LCMapStringTransformMode.Upper);
   {$ELSEIF WEBASSEMBLY}
-  // TODO Not yet locale...
-  exit WebAssembly.GetStringFromHandle(WebAssemblyCalls.Toupper(@fFirstChar, Length, aInvariant), true);
+  // JavaScript standard does not have upperCase function with a locale as parameter yet
+  exit WebAssembly.GetStringFromHandle(WebAssemblyCalls.Toupper(@fFirstChar, Length, false), true);
   {$ELSEIF POSIX AND NOT ANDROID}
   var b := TextConvert.StringToUTF32LE(self);
   for i: Int32 := 0 to RemObjects.Elements.System.length(b)-1 step 4 do begin

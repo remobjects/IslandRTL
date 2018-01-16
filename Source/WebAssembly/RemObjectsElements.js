@@ -433,6 +433,29 @@ var ElementsWebAssembly;
             var func = imp.env.table.get(tableidx);
             return createHandle(func.apply(this, nargs));
         };
+        imp.env.__island_getLocaleInfo = function (locale, info) {
+            var lFormat = new Intl.NumberFormat(locale);
+            switch (info) {
+                case 0:
+                    // Decimal separator
+                    var n = lFormat.format(1.1);
+                    return createHandle(n.substring(1, 1));
+                case 1:
+                    // Thousands separator
+                    var n = lFormat.format(3500);
+                    return createHandle(n.substring(1, 2));
+                case 2:
+                    return createHandle('');
+                default:
+                    return createHandle('');
+            }
+        };
+        imp.env.__island_getCurrentLocale = function () {
+            if (navigator.languages != undefined)
+                return navigator.languages[0];
+            else
+                return navigator.language;
+        };
     }
     function fetchAndInstantiate(url, importObject, memorySize, tableSize) {
         if (memorySize === void 0) { memorySize = 64; }
