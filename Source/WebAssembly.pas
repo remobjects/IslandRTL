@@ -248,7 +248,7 @@ type
       var lData := new IntPtr[length(args)];
       for i: Integer := 0 to length(args) -1 do
         lData[i] := WebAssembly.CreateHandle(args[i]);
-      var c := WebAssemblyCalls.Call(fHandle, aName, @lData[0], lData.Length, true);
+      var c := WebAssemblyCalls.Call(fHandle, aName, if length(lData) = 0 then nil else @lData[0], lData.Length, true);
       exit WebAssembly.GetObjectForHandle(c);
     end;
 
@@ -271,6 +271,25 @@ type
       exit InternalCalls.Cast<Object>(^Void(Convert.ToInt32(o['__elements_handle'])));
     end;
 
+    class method UnwrapIfNeeded(aType: &Type; aVal: Object): Object;
+    begin 
+      if aVal = nil then exit nil;
+      if aType = nil then exit nil;
+      if aType.IsValueType then exit aVal;
+      var lVal := InternalCalls.Cast<Object>(^Void(Convert.ToUInt32(aVal)));
+      if lVal = 0 then exit nil;
+      if lVal is String then exit lVal;
+      exit CreateProxy(aVal);
+    end;
+
+    class method WrapIfNeeded(aType: &Type; aVal: Object): Object;
+    begin
+      if aVal = nil then exit nil;
+      if aType = nil then exit nil;
+      if aType.IsValueType then exit aVal;
+      exit Int32(InternalCalls.Cast(aVal));
+    end;
+
     class method GetProxyFor(aType: &Type): EcmaScriptObject;
     begin 
       if fProxies.TryGetValue(IntPtr(aType.RTTI), out result) then begin 
@@ -288,10 +307,10 @@ type
         var lWM := el.WriteMethod;
 
         if lRM <> nil then begin
-          lGet := o -> WebAssembly.InvokeMethod(lRM, [GetPtrFromObject(o)]);
+          lGet := o -> UnwrapIfNeeded(el.Type, WebAssembly.InvokeMethod(lRM, [GetPtrFromObject(o)]));
         end;
         if lWM <> nil then begin 
-          lSet := (o, v) -> WebAssembly.InvokeMethod(lWM, [GetPtrFromObject(o), v]);
+          lSet := (o, v) -> WebAssembly.InvokeMethod(lWM, [GetPtrFromObject(o), WrapIfNeeded(el.Type, v)]);
         end;
         if (lGet <> nil)  or (lSet <> nil) then 
           lBase.DefineProperty(el.Name, lGet, lSet);
@@ -303,9 +322,11 @@ type
         var lMeth := el;
         var lDel: WebAssemblyDelegate := method(args: EcmaScriptObject) begin 
           var lArr := new List<Object>;
-          for each lArg in lMeth.Arguments index n do 
-            lArr.Add(args[n]);
-          args['result'] := lMeth.Invoke(args['this'], lArr.ToArray);
+          for each lArg in lMeth.Arguments index n do begin
+            var lTmp := lArg;
+            lArr.Add(WrapIfNeeded(lTmp.Type, args[n]));
+          end;
+          args['result'] := UnwrapIfNeeded(lMeth.Type, lMeth.Invoke(args['this'], lArr.ToArray));
         end;
         lBase[el.Name] := lDel;
       end;
