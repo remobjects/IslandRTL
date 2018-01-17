@@ -392,8 +392,9 @@ module ElementsWebAssembly {
             var func = (imp.env.table as WebAssembly.Table).get(tableidx);
             return createHandle(func.apply(this, nargs));
         }
-        imp.env.__island_getLocaleInfo = function (locale: string, info: number): number {       
-            var lFormat = new Intl.NumberFormat(locale);
+        imp.env.__island_getLocaleInfo = function (locale: number, localeLength: number, info: number): number {       
+            var lLocale = readCharsFromMemory(locale, localeLength);
+            var lFormat = new Intl.NumberFormat(lLocale);
             switch (info) {
                 case 0:
                     // Decimal separator
@@ -412,11 +413,11 @@ module ElementsWebAssembly {
                     return createHandle('');
             }
         };
-        imp.env.__island_getCurrentLocale = function (): string {
+        imp.env.__island_getCurrentLocale = function (): number {
             if (navigator.languages != undefined)
-                return navigator.languages[0];
+                return createHandle(navigator.languages[0]);
             else
-                return navigator.language;
+                return createHandle(navigator.language);
         };
     }
 

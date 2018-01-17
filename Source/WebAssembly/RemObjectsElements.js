@@ -433,8 +433,9 @@ var ElementsWebAssembly;
             var func = imp.env.table.get(tableidx);
             return createHandle(func.apply(this, nargs));
         };
-        imp.env.__island_getLocaleInfo = function (locale, info) {
-            var lFormat = new Intl.NumberFormat(locale);
+        imp.env.__island_getLocaleInfo = function (locale, localeLength, info) {
+            var lLocale = readCharsFromMemory(locale, localeLength);
+            var lFormat = new Intl.NumberFormat(lLocale);
             switch (info) {
                 case 0:
                     // Decimal separator
@@ -452,9 +453,9 @@ var ElementsWebAssembly;
         };
         imp.env.__island_getCurrentLocale = function () {
             if (navigator.languages != undefined)
-                return navigator.languages[0];
+                return createHandle(navigator.languages[0]);
             else
-                return navigator.language;
+                return createHandle(navigator.language);
         };
     }
     function fetchAndInstantiate(url, importObject, memorySize, tableSize) {

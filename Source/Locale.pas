@@ -89,15 +89,15 @@ begin
   lCurrency := String.FromPChar(@lBuffer[0], lTotal);
   ICUHelper.UNumClose(lFormatSettings);
   {$ELSEIF WEBASSEMBLY}
-  var lHandle := WebAssemblyCalls.GetLocaleInfo(aLocaleID, Int32(LocaleInfo.DecimalSeparator));
+  var lHandle := WebAssemblyCalls.GetLocaleInfo(@aLocaleID.fFirstChar, aLocaleID.Length, Int32(LocaleInfo.DecimalSeparator));
   var lString := WebAssembly.GetStringFromHandle(lHandle, true);
   if lString.Length > 0 then
     lDecimalSep := lString[0];
-  lHandle := WebAssemblyCalls.GetLocaleInfo(aLocaleID, Int32(LocaleInfo.ThousandsSepatator));
+  lHandle := WebAssemblyCalls.GetLocaleInfo(@aLocaleID.fFirstChar, aLocaleID.Length, Int32(LocaleInfo.ThousandsSepatator));
   lString := WebAssembly.GetStringFromHandle(lHandle, true);
   if lString.Length > 0 then
     lThousandsSep := lString[0];
-  lHandle := WebAssemblyCalls.GetLocaleInfo(aLocaleID, Int32(LocaleInfo.Currency));
+  lHandle := WebAssemblyCalls.GetLocaleInfo(@aLocaleID.fFirstChar, aLocaleID.Length, Int32(LocaleInfo.Currency));
   lCurrency := WebAssembly.GetStringFromHandle(lHandle, true);
   {$ENDIF}
   fNumberFormat := new NumberFormatInfo(lDecimalSep, lThousandsSep, lCurrency);
@@ -135,10 +135,11 @@ begin
     var lInvariant := 'en_US.utf8'.ToAnsiChars(true);
     fInvariant := new Locale(rtl.newLocale(rtl.LC_ALL_MASK, @lInvariant[0], nil));
     {$ELSEIF ANDROID OR WEBASSEMBLY}
-    fInvariant := new Locale('en_US');
+    var lLocale := 'en-US';
+    fInvariant := new Locale(lLocale);
     {$ENDIF}
   end;
-  result := fInvariant;
+  result := fInvariant as not nullable;
 end;
 
 class method Locale.GetCurrent: not nullable Locale;
@@ -166,10 +167,11 @@ begin
     end;
     fCurrent := new Locale(lDefaultName);
     {$ELSEIF WEBASSEMBLY}
-    fCurrent := new Locale(WebAssemblyCalls.GetCurrentLocale);
+    var lHandle := WebAssemblyCalls.GetCurrentLocale;    
+    fCurrent := new Locale(WebAssembly.GetStringFromHandle(lHandle, true));
     {$ENDIF}
   end;
-  result := fCurrent;
+  result := fCurrent as not nullable;
 end;
 
 constructor NumberFormatInfo(aDecimalSeparator: Char; aThousandsSeparator: Char; aCurrency: String);
