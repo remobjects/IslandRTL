@@ -392,6 +392,33 @@ module ElementsWebAssembly {
             var func = (imp.env.table as WebAssembly.Table).get(tableidx);
             return createHandle(func.apply(this, nargs));
         }
+        imp.env.__island_getLocaleInfo = function (locale: number, localeLength: number, info: number): number {       
+            var lLocale = readCharsFromMemory(locale, localeLength);
+            var lFormat = new Intl.NumberFormat(lLocale);
+            switch (info) {
+                case 0:
+                    // Decimal separator
+                    var n = lFormat.format(1.1);
+                    return createHandle(n.substring(1, 1));
+
+                case 1:
+                    // Thousands separator
+                    var n = lFormat.format(3500);
+                    return createHandle(n.substring(1, 2));
+
+                case 2:
+                    return createHandle('');
+
+                default:
+                    return createHandle('');
+            }
+        };
+        imp.env.__island_getCurrentLocale = function (): number {
+            if (navigator.languages != undefined)
+                return createHandle(navigator.languages[0]);
+            else
+                return createHandle(navigator.language);
+        };
     }
 
 

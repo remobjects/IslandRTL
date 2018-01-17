@@ -126,6 +126,12 @@ type
 
     [DllImport(''), SymbolName('__island_DefineGetterSetterProperty')]
     class method DefineGetterSetterProperty(aSelf: IntPtr; aName: String; aGetter, aSetter: WebAssemblyDelegate; aFlags: EcmaScriptPropertyFlags); external;
+
+    [DllImport(''), SymbolName('__island_getLocaleInfo')]
+    class method GetLocaleInfo(locale: ^Char; localeLength: Integer; info: Integer): Int32; external;
+
+    [DllImport(''), SymbolName('__island_getCurrentLocale')]
+    class method GetCurrentLocale: Int32; external;
   end;
 
   EcmaScriptPropertyFlags = public flags (
