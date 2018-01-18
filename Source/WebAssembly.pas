@@ -279,7 +279,7 @@ type
       var lVal := InternalCalls.Cast<Object>(^Void(Convert.ToUInt32(aVal)));
       if lVal = 0 then exit nil;
       if lVal is String then exit lVal;
-      exit CreateProxy(aVal);
+      exit CreateProxy(lVal);
     end;
 
     class method WrapIfNeeded(aType: &Type; aVal: Object): Object;
