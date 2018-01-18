@@ -5,7 +5,7 @@ interface
 type
   Single = public record
   private
-    class method DoTryParse(s: String; out Value: Single; aRaiseOverflowException: Boolean):Boolean;
+    class method DoTryParse(s: String; aLocale: Locale; out Value: Single; aRaiseOverflowException: Boolean):Boolean;
     const SignificantBitmask: UInt32      = $80000000;
     const ExponentBitmask: UInt32         = $7F800000;
     const FractionBitmask: UInt32         = $007FFFFF;
@@ -20,7 +20,8 @@ type
     method GetHashCode: Integer; override;
     method &Equals(obj: Object): Boolean; override;
     class method Parse(s: String): Single;
-    class method TryParse(s: String; out Value: Single): Boolean;
+    class method TryParse(s: String; out Value: Single): Boolean; inline;
+    class method TryParse(s: String; aLocale: Locale; out Value: Single): Boolean; inline;
 
     class method MinValue: Single;
     class method MaxValue: Single;
@@ -36,7 +37,7 @@ type
 
   Double = public record
   private
-    class method DoTryParse(s: String; out Value: Double; aRaiseOverflowException: Boolean):Boolean; inline;
+    class method DoTryParse(s: String; aLocale: Locale; out Value: Double; aRaiseOverflowException: Boolean): Boolean; inline;
   assembly
     const SignificantBitmask: UInt64      = $8000000000000000;
     const ExponentBitmask: UInt64         = $7FF0000000000000;
@@ -62,6 +63,7 @@ type
     method ToString(aNumberOfDecimalDigits: UInt32): String;
     class method Parse(s: String): Double;
     class method TryParse(s: String; out Value: Double): Boolean;
+    class method TryParse(s: String; aLocale: Locale; out Value: Double): Boolean;
     method GetHashCode: Integer; override;
     method &Equals(obj: Object): Boolean; override;
 
@@ -170,15 +172,20 @@ end;
 
 class method Double.Parse(s: String): Double;
 begin
-  if not DoTryParse(s, out result, true) then Convert.RaiseFormatException;
+  if not DoTryParse(s, Locale.Invariant, out result, true) then Convert.RaiseFormatException;
 end;
 
 class method Double.TryParse(s: String; out Value: Double): Boolean;
 begin
-  exit DoTryParse(s, out Value, false);
+  exit DoTryParse(s, Locale.Invariant, out Value, false);
 end;
 
-class method Double.DoTryParse(s: String; out Value: Double; aRaiseOverflowException: Boolean): Boolean;
+class method Double.TryParse(s: String; aLocale: Locale; out Value: Double): Boolean;
+begin
+  exit DoTryParse(s, aLocale, out Value, false);
+end;
+
+class method Double.DoTryParse(s: String; aLocale: Locale; out Value: Double; aRaiseOverflowException: Boolean): Boolean;
 begin
   exit Convert.TryParseDouble(s, out Value, aRaiseOverflowException);
 end;
@@ -263,18 +270,23 @@ end;
 
 class method Single.Parse(s: String): Single;
 begin
-  if not DoTryParse(s, out result, true) then Convert.RaiseFormatException;
+  if not DoTryParse(s, Locale.Invariant, out result, true) then Convert.RaiseFormatException;
 end;
 
 class method Single.TryParse(s: String; out Value: Single): Boolean;
 begin
-  exit DoTryParse(s, out Value, false);
+  exit DoTryParse(s, Locale.Invariant, out Value, false);
 end;
 
-class method Single.DoTryParse(s: String; out Value: Single; aRaiseOverflowException: Boolean): Boolean;
+class method Single.TryParse(s: String; aLocale: Locale; out Value: Single): Boolean;
+begin
+  exit DoTryParse(s, aLocale, out Value, false);
+end;
+
+class method Single.DoTryParse(s: String; aLocale: Locale; out Value: Single; aRaiseOverflowException: Boolean): Boolean;
 begin
   var sValue : Double;
-  if not Convert.TryParseDouble(s,out sValue, aRaiseOverflowException) then exit False;
+  if not Convert.TryParseDouble(s, aLocale, out sValue, aRaiseOverflowException) then exit False;
   if sValue >= 0 then begin
     if sValue > MaxValue then
       if aRaiseOverflowException then Convert.RaiseOverflowException else exit False;
