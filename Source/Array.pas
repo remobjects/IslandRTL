@@ -34,6 +34,8 @@ type
       &Copy(aSource, 0, aDest, 0, aCount);
     end;
 
+    method Get(i: Integer): Object; abstract;
+    method &Set(i: Integer; v: Object); abstract;
   end;
 
   &Array<T> = public class(&Array, IEnumerable<T>, IEnumerable)
@@ -49,6 +51,16 @@ type
 
   public
     property Item[I: Integer]: T read (@fFirstItem)[I] write (@fFirstItem)[I];
+    method Get(i: Integer): Object; override;
+    begin 
+      exit Item[i];
+    end;
+
+    method &Set(i: Integer; v: Object); override;
+    begin 
+      Item[i] := T(v);
+    end;
+
 
     method GetEnumerator: IEnumerator<T>; iterator;
     begin

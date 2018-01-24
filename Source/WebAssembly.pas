@@ -140,7 +140,7 @@ type
     Writable = 4,
     All = 4 or 2 or 1);
 
-  EcmaScriptObject = public class(IDisposable)
+  EcmaScriptObject = public class(IDisposable, IDynamicObject)
   private 
     fHandle: IntPtr;
     method get_Items(i: Integer): Object;
@@ -159,6 +159,36 @@ type
     begin 
       WebAssemblyCalls.Set(fHandle, i, WebAssembly.CreateHandle(aVal), true);
     end;
+
+    method GetMember(aName: String; aGetFlags: Integer; aArgs: array of Object): Object;
+    begin 
+      if aArgs.Length = 1 then 
+        exit self.Items[Convert.ToInt32(aArgs[0])];
+      if aArgs.Length = 0 then 
+        exit self.Items[aName];
+      raise new Exception('Array accessors not allowed in EcmaScript');
+    end;
+
+    method SetMember(aName: String; aGetFlags: Integer; aArgs: array of Object): Object;
+    begin 
+      if aArgs.Length = 2 then begin
+        self.Items[Convert.ToInt32(aArgs[0])] := aArgs[1];
+        exit;
+      end;
+      if aArgs.Length = 1 then begin
+        self.Items[aName] := aArgs[0];
+        exit;
+      end;
+      raise new Exception('Array accessors not allowed in EcmaScript');
+    end;
+
+    method Invoke(aName: String; aGetFlags: Integer; aArgs: array of Object): Object;
+    begin 
+      if aName = nil then 
+        exit Call(aArgs);
+      exit Call(aName, aArgs);
+    end;
+
   public 
     constructor(aValue: IntPtr);
     begin 
@@ -297,7 +327,7 @@ type
       end;
       if aType.IsValueType then raise new ArgumentException('Value types not supported!');
       var lBase: EcmaScriptObject := if (aType.BaseType = nil) or (aType.BaseType = typeOf(Object)) then nil else GetProxyFor(aType.BaseType);
-      if lBase = nil then lBase := CreateObject else lBase := EcmaScriptObject(Object.Call('create', lBase));
+      if lBase = nil then lBase := CreateObject else lBase := EcmaScriptObject(EcmaScriptObject(Object).Call('create', lBase));
       for each el in aType.Properties do begin
         if el.IsStatic then continue;
         if el.Arguments.Any then continue;
@@ -334,8 +364,8 @@ type
       exit lBase;
     end;
   public 
-    property Global: EcmaScriptObject := new EcmaScriptObject(-1); lazy;
-    property Object: EcmaScriptObject := EcmaScriptObject(&Global['Object']); lazy;
+    property Global: dynamic := new EcmaScriptObject(-1); lazy;
+    property Object: dynamic := EcmaScriptObject(&Global)['Object']; lazy;
 
     class method CreateProxy(o: Object): EcmaScriptObject;
     begin 
@@ -345,7 +375,7 @@ type
       var ptr := IntPtr(InternalCalls.Cast(o));
       
       SimpleGC.ForceAddRef(ptr);
-      result := EcmaScriptObject(Object.Call('create', new EcmaScriptObject(WebAssemblyCalls.CloneHandle(ov.Handle))));
+      result := EcmaScriptObject(EcmaScriptObject(Object).Call('create', new EcmaScriptObject(WebAssemblyCalls.CloneHandle(ov.Handle))));
       result['__elements_handle'] := ptr;
     end;
     

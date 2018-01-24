@@ -58,5 +58,6 @@
     <Compile Include="Monitor.pas" />
     <Compile Include="Sequence.pas" />
     <Compile Include="Linq.pas" />
+    <Compile Include="Dynamic.pas" />
   </ItemGroup>
 </Project>

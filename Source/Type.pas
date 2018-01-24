@@ -254,6 +254,45 @@ type
     property InstanceOffset: Integer read get_InstanceOffset; // only for instances!
     property StaticValuePointer: ^Void read get_StaticValuePointer; // only for static
     property IsStatic: Boolean read FieldFlags.Static in &Flags; override;
+
+    method GetValue(aInst: Object): Object;
+    begin 
+      var lPtr: ^Void;
+      if IsStatic then begin 
+        if aInst <> nil then raise new Exception('Cannot provide instance for static field');
+        lPtr := StaticValuePointer;
+      end else begin 
+        if aInst = nil then raise new Exception('Must provide instance for instance field');
+        lPtr := InternalCalls.Cast(aInst);
+        if self.DeclaringType.IsValueType then 
+          lPtr := ^Void(^Byte(lPtr) + 4);
+      end;
+      if self.Type.IsValueType then begin 
+        var lRes := DefaultGC.New(&Type.RTTI, &Type.SizeOfType + sizeOf(^Void));
+        memcpy(^Byte(lRes) +sizeOf(^Void), lPtr, &Type.SizeOfType);
+        exit InternalCalls.Cast<Object>(lRes);
+      end else 
+        exit ^Object(lPtr)^;
+    end;
+
+    method SetValue(aInst, aValue: Object);
+    begin
+      var lPtr: ^Void;
+      if IsStatic then begin 
+        if aInst <> nil then raise new Exception('Cannot provide instance for static field');
+        lPtr := StaticValuePointer;
+      end else begin 
+        if aInst = nil then raise new Exception('Must provide instance for instance field');
+        lPtr := InternalCalls.Cast(aInst);
+        if self.DeclaringType.IsValueType then 
+          lPtr := ^Void(^Byte(lPtr) + 4);
+      end;
+      if self.Type.IsValueType then begin 
+        if aValue = nil then raise new Exception('Value for struct cannot be null');
+        memcpy(lPtr, ^Byte(InternalCalls.Cast(aValue)) +sizeOf(^Void), &Type.SizeOfType);
+      end else 
+        ^Object(lPtr)^ := aValue;
+    end;
   end;
 
   FieldFlags = public flags(&Static = 1, &Volatile = 2, &ReadOnly = 4);
@@ -332,11 +371,32 @@ type
     property &Read: MethodInfo read get_Read;
     property &Write: MethodInfo read get_Write;
     property Arguments: sequence of ArgumentInfo read get_Arguments;
+
+    method GetValue(aInst: Object; aArgs: array of Object): Object;
+    begin 
+      var lRead := &Read;
+      if lRead = nil then raise new Exception('No read accessor for this property!');
+      exit lRead.Invoke(aInst, aArgs);
+    end;
+
+    method SetValue(aInst: Object; aArgs: array of Object; aValue: Object);
+    begin 
+      var lWrite := &Write;
+      if lWrite = nil then raise new Exception('No write accessor for this property!');
+      if (aArgs = nil) or (aArgs.Length = 0)then aArgs := [aValue] else begin 
+        var lArgs := new Object[aArgs.Length+1];
+        Array.Copy(aArgs, lArgs, aArgs.Length);
+        lArgs[lArgs.Length-1] := aValue;
+        aArgs := lArgs;
+      end;
+      lWrite.Invoke(aInst, aArgs);
+    end;
   end;
 
 
   PropertyFlags = public flags(
-    &Static = 1);
+    &Static = 1,
+    &Default = 2);
 
   EventInfo = public class(MemberInfo)
   private
@@ -870,6 +930,12 @@ type
     method Instantiate: Object; // Creates a new instance of this type and calls the default constructor, fails if none is present!
     begin
       exit Instantiate<DefaultGC>();
+    end;
+
+    method IsAssignableFrom(aOrg: &Type): Boolean;
+    begin 
+      if aOrg = nil then exit false;
+      exit aOrg.IsSubclassOf(self);
     end;
   end;
 
