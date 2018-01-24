@@ -156,7 +156,12 @@ type
       exit String.FromPChar(@arr[0],aDigits);
     end;
 
-    method TryParseDouble(s: String; out Value: Double; aRaiseOverflowException: Boolean):Boolean;
+    method TryParseDouble(s: String; out Value: Double; aRaiseOverflowException: Boolean):Boolean; inline;
+    begin
+      exit TryParseDouble(s, Locale.Invariant, out Value, aRaiseOverflowException);
+    end;
+
+    method TryParseDouble(s: String; aLocale: Locale; out Value: Double; aRaiseOverflowException: Boolean):Boolean;
     begin
       //[ws][sign]integral-digits[.[fractional-digits]][e[sign]exponential-digits][ws] 
 
@@ -164,7 +169,7 @@ type
       s := s.Trim;
       if String.IsNullOrEmpty(s) then exit false; //empty string
 
-      var sdot := s.IndexOf(DecimalChar);
+      var sdot := s.IndexOf(aLocale.NumberFormat.DecimalSeparator);
       var se := s.IndexOf('e');
       if se = -1 then se := s.IndexOf('E');
       if (se <> -1) and (sdot <> -1) and (sdot>se) then exit false;
