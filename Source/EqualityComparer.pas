@@ -6,6 +6,11 @@ type
     method GetHashCode(obj: T):Integer;
   end;
 
+  IEquatable<T> = public interface
+    method Equals(other: T): Boolean;
+    method GetHashCode: Integer;
+  end;
+
   DefaultEqualityComparer<T> = assembly class(IEqualityComparer<T>)
   public
 
