@@ -867,7 +867,7 @@ type
       if assigned(a) <> assigned(b) then exit false;
       if assigned(a) then
         exit (a.fValue = b.fValue);
-      exit false;
+      exit true;
     end;
 
     class operator NotEqual(a, b: &Type): Boolean;

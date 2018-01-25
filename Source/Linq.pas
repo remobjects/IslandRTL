@@ -159,9 +159,7 @@ extension method ISequence<T>.ToArray(): array of T; public;
 begin
   if self is array of T then exit self as array of T;
   if self is List<T> then exit (self as List<T>).ToArray();
-
-  var lCount := Count;
-  result := new array of T(lCount);
+  exit self.ToList().ToArray;
 end;
 
 extension method ISequence<T>.ToList(): List<T>; public;

@@ -67,7 +67,7 @@ type
       var lCL := &Type(aInstance);
       var lStatic := lCL <> nil;
       if not lStatic then lCL := aInstance.GetType;
-
+      
       if length(aArgs) = 0 then begin
         for each el in lCL.Fields do begin
           if (not lStatic or el.IsStatic)
@@ -86,7 +86,6 @@ type
         end;
 
         var lMethods := lCL.Methods.Where(el ->(not lStatic or el.IsStatic)
-          and (el.Arguments.Count = length(aArgs))
           and if DynamicGetFlags.CaseSensitive in DynamicGetFlags(aGetFlags) then el.Name = aName else el.Name.EqualsIgnoreCase(aName)).ToList;
         if lMethods.Count <> 0 then begin
           if length(aArgs) <> 0 then
