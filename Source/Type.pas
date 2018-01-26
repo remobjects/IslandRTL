@@ -841,18 +841,18 @@ type
           ProtoSkipValue(var lPtr, lTy);
       end;
     end;
-    method get_Code: Integer;
+    method get_Code: TypeCodes;
     begin
       var lPtr := fValue^.Ext^.MemberInfoData;
       var lKey: Integer;
       var lTy: ProtoReadType;
       while ProtoReadHeader(var lPtr, out lKey, out lTy) do begin
         if (lKey = 10) and (lTy = ProtoReadType.varint) then
-          exit ProtoReadVarInt(var lPtr)
+          exit TypeCodes(ProtoReadVarInt(var lPtr))
         else
           ProtoSkipValue(var lPtr, lTy);
       end;
-      exit -1;
+      exit TypeCodes(-1);
     end;
   assembly
     fValue: ^IslandTypeInfo;
@@ -898,7 +898,12 @@ type
       end;
       exit false;
     end;
-    property Code: Integer read get_Code;
+    property Code: TypeCodes read get_Code;
+    property IsSigned: Boolean read Code in [TypeCodes.SByte, TypeCodes.Int16, TypeCodes.Int32, TypeCodes.Int64, TypeCodes.IntPtr, TypeCodes.UInt64];
+    property IsInteger: Boolean read Code in [TypeCodes.SByte, TypeCodes.Int16, TypeCodes.Int32, TypeCodes.Int64, TypeCodes.Byte, TypeCodes.UInt16, TypeCodes.UInt32, TypeCodes.UInt64, TypeCodes.IntPtr, TypeCodes.UInt64];
+    property IsIntegerOrFloat: Boolean read Code in [TypeCodes.SByte, TypeCodes.Int16, TypeCodes.Int32, TypeCodes.Int64, TypeCodes.Byte, TypeCodes.UInt16, TypeCodes.UInt32, TypeCodes.UInt64, TypeCodes.IntPtr, TypeCodes.UInt64, TypeCodes.Single, TypeCodes.Double];
+    property IsFloat: Boolean read Code in [TypeCodes.Single, TypeCodes.Double];
+
     property DefFlags: TypeDefFlags read get_DefFlags;
     property SizeOfType: Integer read get_SizeOfType;
     property BoxedDataOffset: Integer read get_BoxedDataOffset;
