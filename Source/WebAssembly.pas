@@ -496,14 +496,14 @@ type
         WebAssemblyCalls.FreeHandle(handle);
     end;
 
-    class method GetElementById(id: String): dynamic;
+    class method GetElementById(id: String): EcmaScriptObject;
     begin 
       var lRes := WebAssemblyCalls.GetElementById(id);
       if lRes = 0 then exit nil;
       exit new EcmaScriptObject(lRes);
     end;
 
-    class method GetElementByName(id: String): dynamic;
+    class method GetElementByName(id: String): EcmaScriptObject;
     begin 
       var lRes := WebAssemblyCalls.GetElementByName(id);
       if lRes = 0 then exit nil;
@@ -525,22 +525,22 @@ type
       WebAssemblyCalls.ClearInterval(aVal);
     end;
 
-    class method CreateElement(aName: String): dynamic;
+    class method CreateElement(aName: String): EcmaScriptObject;
     begin 
       exit new EcmaScriptObject(WebAssemblyCalls.CreateElement(aName));
     end;
 
-    class method CreateTextNode(aName: String): dynamic;
+    class method CreateTextNode(aName: String): EcmaScriptObject;
     begin 
       exit new EcmaScriptObject(WebAssemblyCalls.CreateTextNode(aName));
     end;
 
-    class method CreateObject: dynamic;
+    class method CreateObject: EcmaScriptObject;
     begin 
       exit new EcmaScriptObject(WebAssemblyCalls.CreateObject);
     end;
 
-    class method CreateArray: dynamic;
+    class method CreateArray: EcmaScriptObject;
     begin 
       exit new EcmaScriptObject(WebAssemblyCalls.CreateArray);
     end;
