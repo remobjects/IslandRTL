@@ -2,6 +2,41 @@
 
 type
   DynamicGetFlags = public flags (None = 0, FollowedByCall = 1, CaseSensitive = 2, CallDefault = 4, NilSafe = 8, NilOnBindingFailure = 16) of Integer;
+  DynamicBinaryOperator = public enum (  
+    None,
+    &Add,
+    Sub, 
+    Mul, 
+    IntDiv,
+    &Div,
+    &Mod,
+    &Shl,
+    &Shr,
+    &UShr,
+    &And, 
+    &Or, 
+    &Xor,
+    GreaterEqual, 
+    LessEqual, 
+    Greater, 
+    Less, 
+    Equal, 
+    NotEqual,
+    &Implies = 25,
+    extended = 28,
+    Pow = 29,
+    BoolOr =   10000, 
+    BoolAnd =  10001);
+  DynamicUnaryOperator = public enum (
+    &Not = 0,
+    Neg = 1, 
+    Plus = 5, 
+    Increment = 6, 
+    Decrement = 7, 
+    DecrementPost = 13,
+    ExtendedPrefix = 14,
+    ExtendedPostfix = 15
+  );
   DynamicInvokeException = public class(Exception) end;
   DynamicHelpers = public static class
   protected
@@ -182,12 +217,30 @@ type
         raise new DynamicInvokeException('No overload with these parameters');
       exit lMethod.invoke(if lGroup.Inst is &Type then nil else lGroup.Inst, aArgs);
     end;
+
+    method Binary(aLeft, aRight: Object; aOp: DynamicBinaryOperator): Object;
+    begin 
+      var lVal := IDynamicObject(aLeft);
+      if assigned(lVal) and lVal.Binary(aRight, true, aOp, out result) then exit;
+      lVal := IDynamicObject(aRight);
+      if assigned(lVal) and lVal.Binary(aLeft, false, aOp, out result) then exit;
+      raise new Exception('Binary operator '+aOp+' not supported on these type');
+    end;
+
+    method Unary(aLeft: Object; aOp: DynamicUnaryOperator): Object;
+    begin 
+      var lVal := IDynamicObject(aLeft);
+      if assigned(lVal) and lVal.Unary(aOp, out result) then exit;
+      raise new Exception('Unary operator '+aOp+' not supported on this type');
+    end;
   end;
 
   IDynamicObject = public interface 
     method GetMember(aName: String; aGetFlags: Integer; aArgs: array of Object): Object;
     method SetMember(aName: String; aGetFlags: Integer; aArgs: array of Object): Object;
     method Invoke(aName: String; aGetFlags: Integer; aArgs: array of Object): Object;
+    method Unary(aOp: DynamicUnaryOperator; out aResult: Object): Boolean;
+    method Binary(aOther: Object; aSelfIsLeftSide: Boolean; aOp: DynamicBinaryOperator; out aResult: Object): Boolean;
   end;
 
   DynamicMethodGroup = public class

@@ -189,6 +189,16 @@ type
       exit Call(aName, aArgs);
     end;
 
+    method Unary(aOp: DynamicUnaryOperator; out aResult: Object): Boolean;
+    begin 
+      exit false;
+    end;
+
+    method Binary(aOther: Object; aSelfIsLeftSide: Boolean; aOp: DynamicBinaryOperator; out aResult: Object): Boolean;
+    begin 
+      exit false;
+    end;
+
   public 
     constructor(aValue: IntPtr);
     begin 
