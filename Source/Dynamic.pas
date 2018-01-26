@@ -182,13 +182,8 @@ type
         exit;
       end;
       var lCL := &Type(aInstance);
-      writeLn('SetMember CL: '+lCL);
-      writeLn('Name: '+aName);
-      writeLn('Len: '+aArgs.Length);
       var lStatic := lCL <> nil;
       if not lStatic then lCL := aInstance.GetType;
-      writeLn('CL: '+lCL);
-      writeLn('Static: '+lStatic);
       if aArgs.Length = 0 then raise new Exception('No value provided for SetMember');
 
       if length(aArgs) = 1 then begin
