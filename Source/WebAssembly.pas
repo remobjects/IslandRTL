@@ -7,130 +7,130 @@
 type
   WebAssemblyCalls = public static class
   public
-    [DllImport(''), SymbolName('__island_consolelogint')]
+    [DllImport('', EntryPoint := '__island_consolelogint')]
     class method ConsoleLog(val: Integer); external;
 
-    [DllImport(''), SymbolName('__island_consolelog')]
+    [DllImport('', EntryPoint := '__island_consolelog')]
     class method ConsoleLog(s: ^Char; len: Integer); external;
 
-    [DllImport(''), SymbolName('__island_getutctime')]
+    [DllImport('', EntryPoint := '__island_getutctime')]
     class method GetUTCTime: Double; external;
 
-    [DllImport(''), SymbolName('__island_getlocaltime')]
+    [DllImport('', EntryPoint := '__island_getlocaltime')]
     class method GetLocalTime: Double; external;
 
-    [DllImport(''), SymbolName('__island_get_os_name')]
+    [DllImport('', EntryPoint := '__island_get_os_name')]
     class method GetOSName: Int32; external;
 
-    [DllImport(''), SymbolName('__island_get_string_length')]
+    [DllImport('', EntryPoint := '__island_get_string_length')]
     class method GetStringLength(handle: Int32): Int32; external;
 
-    [DllImport(''), SymbolName('__island_get_string_data')]
+    [DllImport('', EntryPoint := '__island_get_string_data')]
     class method GetStringData(handle: Int32; target: ^Char): Int32; external;
 
-    [DllImport(''), SymbolName('__island_free_handle')]
+    [DllImport('', EntryPoint := '__island_free_handle')]
     class method FreeHandle(handle: Int32); external;
 
-    [DllImport(''), SymbolName('__island_crypto_safe_random')]
+    [DllImport('', EntryPoint := '__island_crypto_safe_random')]
     class method CryptoSafeRandom(target: ^Byte; len: Integer); external;
 
-    [DllImport(''), SymbolName('__island_to_lower')]
+    [DllImport('', EntryPoint := '__island_to_lower')]
     class method ToLower(val: ^Char; data: Integer; aInvariant: Boolean): Integer; external;
 
-    [DllImport(''), SymbolName('__island_to_upper')]
+    [DllImport('', EntryPoint := '__island_to_upper')]
     class method Toupper(val: ^Char; data: Integer; aInvariant: Boolean): Integer; external;
 
-    [DllImport(''), SymbolName('llvm.wasm.grow.memory')]
+    [DllImport('', EntryPoint := 'llvm.wasm.grow.memory')]
     class method GrowMemory(aSize: Integer): Integer; external;
 
-    [DllImport(''), SymbolName('__island_eval')]
+    [DllImport('', EntryPoint := '__island_eval')]
     class method Eval(aVal: String): IntPtr; external;
 
-    [DllImport(''), SymbolName('__island_get_typeof')]
+    [DllImport('', EntryPoint := '__island_get_typeof')]
     class method GetTypeOf(aHandle: IntPtr): WebassemblyType; external;
 
-    [DllImport(''), SymbolName('__island_get_intvalue')]
+    [DllImport('', EntryPoint := '__island_get_intvalue')]
     class method GetIntValue(aHandle: IntPtr): Int32; external;
 
-    [DllImport(''), SymbolName('__island_get_doublevalue')]
+    [DllImport('', EntryPoint := '__island_get_doublevalue')]
     class method GetDoubleValue(aHandle: IntPtr): Double; external;
 
-    [DllImport(''), SymbolName('__island_from_intvalue')]
+    [DllImport('', EntryPoint := '__island_from_intvalue')]
     class method CreateInteger(aVal: Integer): IntPtr; external;
 
-    [DllImport(''), SymbolName('__island_from_doublevalue')]
+    [DllImport('', EntryPoint := '__island_from_doublevalue')]
     class method CreateDouble(aVal: Double): IntPtr; external;
 
-    [DllImport(''), SymbolName('__island_from_boolvalue')]
+    [DllImport('', EntryPoint := '__island_from_boolvalue')]
     class method CreateBoolean(aVal: Boolean): IntPtr; external;
 
-    [DllImport(''), SymbolName('__island_from_stringvalue')]
+    [DllImport('', EntryPoint := '__island_from_stringvalue')]
     class method CreateString(aVal: String): IntPtr; external;
 
-    [DllImport(''), SymbolName('__island_from_funcvalue')]
+    [DllImport('', EntryPoint := '__island_from_funcvalue')]
     class method CreateFunc(aVal: WebAssemblyDelegate): IntPtr; external;
 
-    [DllImport(''), SymbolName('__island_clone_handle')]
+    [DllImport('', EntryPoint := '__island_clone_handle')]
     class method CloneHandle(aHandle: IntPtr): IntPtr; external;
 
-    [DllImport(''), SymbolName('__island_call')]
+    [DllImport('', EntryPoint := '__island_call')]
     class method Call(aSelf: IntPtr; aName: String; aArgs: ^IntPtr; aArgCount: IntPtr; aReleaseArgs: Boolean): IntPtr; external;
 
-    [DllImport(''), SymbolName('__island_invoke')]
+    [DllImport('', EntryPoint := '__island_invoke')]
     class method Invoke(aPtr: IntPtr; aArgs: ^IntPtr; aArgCount: IntPtr): IntPtr; external;
 
-    [DllImport(''), SymbolName('__island_get')]
+    [DllImport('', EntryPoint := '__island_get')]
     class method Get(aSelf: IntPtr; aName: String): IntPtr; external;
 
-    [DllImport(''), SymbolName('__island_getarray')]
+    [DllImport('', EntryPoint := '__island_getarray')]
     class method GetArray(aSelf: IntPtr; aIdx: Integer): IntPtr; external;
 
-    [DllImport(''), SymbolName('__island_getarraylength')]
+    [DllImport('', EntryPoint := '__island_getarraylength')]
     class method ArrayLength(aSelf: IntPtr): Integer; external;
 
-    [DllImport(''), SymbolName('__island_set')]
+    [DllImport('', EntryPoint := '__island_set')]
     class method &Set(aSelf: IntPtr; aName: String; aVal: IntPtr; aReleaseVal: Boolean): IntPtr; external;
     
-    [DllImport(''), SymbolName('__island_setarray')]
+    [DllImport('', EntryPoint := '__island_setarray')]
     class method &Set(aSelf: IntPtr; aIdx: Integer; aVal: IntPtr; aReleaseVal: Boolean): IntPtr; external;
 
-    [DllImport(''), SymbolName('__island_getElementById')]
+    [DllImport('', EntryPoint := '__island_getElementById')]
     class method GetElementById(aId: String): IntPtr; external;
 
-    [DllImport(''), SymbolName('__island_getElementByName')]
+    [DllImport('', EntryPoint := '__island_getElementByName')]
     class method GetElementByName(aName: String): IntPtr; external;
 
-    [DllImport(''), SymbolName('__island_createElement')]
+    [DllImport('', EntryPoint := '__island_createElement')]
     class method CreateElement(aElement: String): IntPtr; external;
 
-    [DllImport(''), SymbolName('__island_createTextNode')]
+    [DllImport('', EntryPoint := '__island_createTextNode')]
     class method CreateTextNode(aVal: String): IntPtr; external;
 
-    [DllImport(''), SymbolName('__island_createObject')]
+    [DllImport('', EntryPoint := '__island_createObject')]
     class method CreateObject: IntPtr; external;
 
-    [DllImport(''), SymbolName('__island_createArray')]
+    [DllImport('', EntryPoint := '__island_createArray')]
     class method CreateArray: IntPtr; external;
 
-    [DllImport(''), SymbolName('__island_setTimeout')]
+    [DllImport('', EntryPoint := '__island_setTimeout')]
     class method SetTimeout(del: WebAssemblyDelegate; aTimeout: Integer): IntPtr; external;
 
-    [DllImport(''), SymbolName('__island_setInterval')]
+    [DllImport('', EntryPoint := '__island_setInterval')]
     class method SetInterval(del: WebAssemblyDelegate; aTimeout: Integer): IntPtr; external;
 
-    [DllImport(''), SymbolName('__island_ClearInterval')]
+    [DllImport('', EntryPoint := '__island_ClearInterval')]
     class method ClearInterval(aHandle: IntPtr); external;
 
-    [DllImport(''), SymbolName('__island_DefineValueProperty')]
+    [DllImport('', EntryPoint := '__island_DefineValueProperty')]
     class method DefineValueProperty(aSelf: IntPtr; aName: String; aValue: IntPtr; aFlags: EcmaScriptPropertyFlags); external;
 
-    [DllImport(''), SymbolName('__island_DefineGetterSetterProperty')]
+    [DllImport('', EntryPoint := '__island_DefineGetterSetterProperty')]
     class method DefineGetterSetterProperty(aSelf: IntPtr; aName: String; aGetter, aSetter: WebAssemblyDelegate; aFlags: EcmaScriptPropertyFlags); external;
 
-    [DllImport(''), SymbolName('__island_getLocaleInfo')]
+    [DllImport('', EntryPoint := '__island_getLocaleInfo')]
     class method GetLocaleInfo(locale: ^Char; localeLength: Integer; info: Integer): Int32; external;
 
-    [DllImport(''), SymbolName('__island_getCurrentLocale')]
+    [DllImport('', EntryPoint := '__island_getCurrentLocale')]
     class method GetCurrentLocale: Int32; external;
   end;
 
