@@ -227,8 +227,9 @@ type
       end;
       var lDyn := IDynamicObject(aInstance);
       if lDyn <> nil then exit lDyn.Invoke(nil, aGetFlags, aArgs);
-      if aInstance is &Type then
-        raise new DynamicInvokeException('Cannot invoke class');
+      if aInstance is &Type then begin
+        aInstance := new DynamicMethodGroup(nil, &Type(aInstance).Methods.Where(a -> MethodFlags.Constructor in a.Flags).ToList);
+      end;
       var lGroup := DynamicMethodGroup(aInstance);
       if lGroup = nil then
         lGroup := GetMember(aInstance, 'Invoke', Integer(DynamicGetFlags.FollowedByCall), nil) as DynamicMethodGroup;
@@ -237,6 +238,11 @@ type
       var lMethod: &MethodInfo := FindBestMatch(lGroup, aArgs);
       if lMethod = nil then
         raise new DynamicInvokeException('No overload with these parameters');
+      if MethodFlags.Constructor in lMethod.Flags then begin 
+        result := InternalCalls.Cast<Object>(DefaultGC.New(lMethod.DeclaringType.RTTI, lMethod.DeclaringType.SizeOfType));
+        lMethod.invoke(result, aArgs);
+        exit;
+      end;
       exit lMethod.invoke(if lGroup.Inst is &Type then nil else lGroup.Inst, aArgs);
     end;
 
