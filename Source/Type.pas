@@ -251,7 +251,7 @@ type
     end;
   public
     property Flags: FieldFlags read get_Flags;
-    property InstanceOffset: Integer read get_InstanceOffset; // only for instances!
+    property InstanceOffset: Integer read get_InstanceOffset; // only for instances
     property StaticValuePointer: ^Void read get_StaticValuePointer; // only for static
     property IsStatic: Boolean read FieldFlags.Static in &Flags; override;
 
@@ -264,12 +264,13 @@ type
       end else begin 
         if aInst = nil then raise new Exception('Must provide instance for instance field');
         lPtr := InternalCalls.Cast(aInst);
+        lPtr := ^Void(^Byte(lPtr) + InstanceOffset);
         if self.DeclaringType.IsValueType then 
-          lPtr := ^Void(^Byte(lPtr) + 4);
+          lPtr := ^Void(^Byte(lPtr) + DeclaringType.BoxedDataOffset);
       end;
       if self.Type.IsValueType then begin 
-        var lRes := DefaultGC.New(&Type.RTTI, &Type.SizeOfType + sizeOf(^Void));
-        memcpy(^Byte(lRes) +sizeOf(^Void), lPtr, &Type.SizeOfType);
+        var lRes := DefaultGC.New(&Type.RTTI, &Type.SizeOfType + &Type.BoxedDataOffset);
+        memcpy(^Byte(lRes) +&Type.BoxedDataOffset, lPtr, &Type.SizeOfType);
         exit InternalCalls.Cast<Object>(lRes);
       end else 
         exit ^Object(lPtr)^;
@@ -284,12 +285,13 @@ type
       end else begin 
         if aInst = nil then raise new Exception('Must provide instance for instance field');
         lPtr := InternalCalls.Cast(aInst);
+        lPtr := ^Void(^Byte(lPtr) + InstanceOffset);
         if self.DeclaringType.IsValueType then 
-          lPtr := ^Void(^Byte(lPtr) + 4);
+          lPtr := ^Void(^Byte(lPtr) + DeclaringType.BoxedDataOffset);
       end;
       if self.Type.IsValueType then begin 
         if aValue = nil then raise new Exception('Value for struct cannot be null');
-        memcpy(lPtr, ^Byte(InternalCalls.Cast(aValue)) +sizeOf(^Void), &Type.SizeOfType);
+        memcpy(lPtr, ^Byte(InternalCalls.Cast(aValue)) + &Type.BoxedDataOffset, &Type.SizeOfType);
       end else 
         ^Object(lPtr)^ := aValue;
     end;
