@@ -124,43 +124,46 @@ type
       var lCL := &Type(aInstance);
       var lStatic := lCL <> nil;
       if not lStatic then lCL := aInstance.GetType;
-      
-      if length(aArgs) = 0 then begin
-        for each el in lCL.Fields do begin
-          if (not lStatic or el.IsStatic)
-           and if DynamicGetFlags.CaseSensitive in DynamicGetFlags(aGetFlags) then el.Name = aName else el.Name.EqualsIgnoreCase(aName) then begin
-             exit el.GetValue(aInstance);
+                      
+      while lCL <> nil do begin      
+        if length(aArgs) = 0 then begin
+          for each el in lCL.Fields do begin
+            if (not lStatic or el.IsStatic)
+             and if DynamicGetFlags.CaseSensitive in DynamicGetFlags(aGetFlags) then el.Name = aName else el.Name.EqualsIgnoreCase(aName) then begin
+               exit el.GetValue(aInstance);
+            end;
+          end;
+          if (DynamicGetFlags.CallDefault in DynamicGetFlags(aGetFlags)) and (DynamicGetFlags.FollowedByCall not in DynamicGetFlags(aGetFlags))  then 
+          for each el in lCL.Methods do begin
+            if (not lStatic or el.IsStatic)
+              and (el.Arguments.Count = 0)
+              and (el.Type <> nil) 
+              and if DynamicGetFlags.CaseSensitive in DynamicGetFlags(aGetFlags) then el.Name = aName else el.Name.EqualsIgnoreCase(aName) then begin
+               exit el.Invoke(aInstance, []);
+            end;
+          end;
+
+          var lMethods := lCL.Methods.Where(el ->(not lStatic or el.IsStatic)
+            and if DynamicGetFlags.CaseSensitive in DynamicGetFlags(aGetFlags) then el.Name = aName else el.Name.EqualsIgnoreCase(aName)).ToList;
+          if lMethods.Count <> 0 then begin
+            if length(aArgs) <> 0 then
+              raise new DynamicInvokeException('Indexer parameters cannot be applied to method group');
+
+            exit new DynamicMethodGroup(aInstance, lMethods);
           end;
         end;
-        if (DynamicGetFlags.CallDefault in DynamicGetFlags(aGetFlags)) and (DynamicGetFlags.FollowedByCall not in DynamicGetFlags(aGetFlags))  then 
-        for each el in lCL.Methods do begin
-          if (not lStatic or el.IsStatic)
-            and (el.Arguments.Count = 0)
-            and (el.Type <> nil) 
-            and if DynamicGetFlags.CaseSensitive in DynamicGetFlags(aGetFlags) then el.Name = aName else el.Name.EqualsIgnoreCase(aName) then begin
-             exit el.Invoke(aInstance, []);
+        var lProps := lCL.Properties.Where(el ->(not lStatic or el.IsStatic)
+            and (el.Arguments.Count = length(aArgs))
+            and if DynamicGetFlags.CaseSensitive in DynamicGetFlags(aGetFlags) then el.Name = aName else el.Name.EqualsIgnoreCase(aName)).Select(a -> a.Read).Where(a -> a <> nil).ToList;
+        if lProps.Count > 0 then begin 
+          var lMethod := FindBestMatch(new DynamicMethodGroup(aInstance, lProps), aArgs);
+          if lMethod <> nil then begin 
+            exit lMethod.Invoke(aInstance, aArgs);
           end;
         end;
-
-        var lMethods := lCL.Methods.Where(el ->(not lStatic or el.IsStatic)
-          and if DynamicGetFlags.CaseSensitive in DynamicGetFlags(aGetFlags) then el.Name = aName else el.Name.EqualsIgnoreCase(aName)).ToList;
-        if lMethods.Count <> 0 then begin
-          if length(aArgs) <> 0 then
-            raise new DynamicInvokeException('Indexer parameters cannot be applied to method group');
-
-          exit new DynamicMethodGroup(aInstance, lMethods);
-        end;
+        lCL := if lCL.fValue^.ParentType <> nil then new &Type(lCL.fValue^.ParentType) else nil;
       end;
-      var lProps := lCL.Properties.Where(el ->(not lStatic or el.IsStatic)
-          and (el.Arguments.Count = length(aArgs))
-          and if DynamicGetFlags.CaseSensitive in DynamicGetFlags(aGetFlags) then el.Name = aName else el.Name.EqualsIgnoreCase(aName)).Select(a -> a.Read).Where(a -> a <> nil).ToList;
-      if lProps.Count > 0 then begin 
-        var lMethod := FindBestMatch(new DynamicMethodGroup(aInstance, lProps), aArgs);
-        if lMethod <> nil then begin 
-          exit lMethod.Invoke(aInstance, aArgs);
-        end;
-      end;
-      
+    
       if DynamicGetFlags.NilOnBindingFailure in DynamicGetFlags(aGetFlags) then exit nil;
       raise new DynamicInvokeException('No element with this name: '+aName);
     end;
