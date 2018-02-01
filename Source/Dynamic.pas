@@ -188,27 +188,30 @@ type
       var lStatic := lCL <> nil;
       if not lStatic then lCL := aInstance.GetType;
       if aArgs.Length = 0 then raise new Exception('No value provided for SetMember');
-
-      if length(aArgs) = 1 then begin
-        for each el in lCL.Fields do begin
-          if (not lStatic or el.IsStatic)
-           and if DynamicGetFlags.CaseSensitive in DynamicGetFlags(aGetFlags) then el.Name = aName else el.Name.EqualsIgnoreCase(aName) then begin
-             el.SetValue(aInstance, aArgs[0]);
+      
+      while lCL <> nil do begin      
+        if length(aArgs) = 1 then begin
+          for each el in lCL.Fields do begin
+            if (not lStatic or el.IsStatic)
+             and if DynamicGetFlags.CaseSensitive in DynamicGetFlags(aGetFlags) then el.Name = aName else el.Name.EqualsIgnoreCase(aName) then begin
+               el.SetValue(aInstance, aArgs[0]);
+              exit;
+            end;
+          end;
+        end;
+        var lProps := lCL.Properties.Where(el ->(not lStatic or el.IsStatic)
+            and (el.Arguments.Count = length(aArgs)-1)
+            and if DynamicGetFlags.CaseSensitive in DynamicGetFlags(aGetFlags) then el.Name = aName else el.Name.EqualsIgnoreCase(aName)).Select(a -> a.Write).Where(a -> a <> nil).ToList;
+        if lProps.Count > 0 then begin 
+          var lMethod := FindBestMatch(new DynamicMethodGroup(aInstance, lProps), aArgs);
+          if lMethod <> nil then begin 
+            lMethod.Invoke(aInstance, aArgs);
             exit;
           end;
         end;
+        lCL := if lCL.fValue^.ParentType <> nil then new &Type(lCL.fValue^.ParentType) else nil;
       end;
-      var lProps := lCL.Properties.Where(el ->(not lStatic or el.IsStatic)
-          and (el.Arguments.Count = length(aArgs)-1)
-          and if DynamicGetFlags.CaseSensitive in DynamicGetFlags(aGetFlags) then el.Name = aName else el.Name.EqualsIgnoreCase(aName)).Select(a -> a.Write).Where(a -> a <> nil).ToList;
-      if lProps.Count > 0 then begin 
-        var lMethod := FindBestMatch(new DynamicMethodGroup(aInstance, lProps), aArgs);
-        if lMethod <> nil then begin 
-          lMethod.Invoke(aInstance, aArgs);
-          exit;
-        end;
-      end;
-      
+
       if DynamicGetFlags.NilOnBindingFailure in DynamicGetFlags(aGetFlags) then exit;
       raise new DynamicInvokeException('No element with this name: '+aName);
     end;
