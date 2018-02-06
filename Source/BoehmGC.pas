@@ -8,7 +8,9 @@ type
   DefaultGC = public BoehmGC;
   BoehmGC = public record(ILifetimeStrategy<BoehmGC>)
   assembly
+    {$HIDE h6} // DO NOT REMOVE!!
     var fInst: IntPtr;
+    {$SHOW h6}
     class var fFinalizer: ^Void;
     class var fLoaded: Integer; assembly;
     class var fLock: Integer;

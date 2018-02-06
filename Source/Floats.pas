@@ -5,7 +5,7 @@ interface
 type
   Single = public record
   private
-    class method DoTryParse(s: String; out Value: Single; aRaiseOverflowException: Boolean):Boolean;
+    class method DoTryParse(s: String; aLocale: Locale; out Value: Single; aRaiseOverflowException: Boolean):Boolean;
     const SignificantBitmask: UInt32      = $80000000;
     const ExponentBitmask: UInt32         = $7F800000;
     const FractionBitmask: UInt32         = $007FFFFF;
@@ -17,10 +17,12 @@ type
     const UInt32_NAN: UInt32              = $FFC00000;
   public
     method ToString: String; override;
+    method ToString(aLocale: Locale): String;
     method GetHashCode: Integer; override;
     method &Equals(obj: Object): Boolean; override;
     class method Parse(s: String): Single;
-    class method TryParse(s: String; out Value: Single): Boolean;
+    class method TryParse(s: String; out Value: Single): Boolean; inline;
+    class method TryParse(s: String; aLocale: Locale; out Value: Single): Boolean; inline;
 
     class method MinValue: Single;
     class method MaxValue: Single;
@@ -36,7 +38,7 @@ type
 
   Double = public record
   private
-    class method DoTryParse(s: String; out Value: Double; aRaiseOverflowException: Boolean):Boolean; inline;
+    class method DoTryParse(s: String; aLocale: Locale; out Value: Double; aRaiseOverflowException: Boolean): Boolean; inline;
   assembly
     const SignificantBitmask: UInt64      = $8000000000000000;
     const ExponentBitmask: UInt64         = $7FF0000000000000;
@@ -59,9 +61,12 @@ type
     end;
   public
     method ToString: String; override;
-    method ToString(aNumberOfDecimalDigits: UInt32): String;
+    method ToString(aLocale: Locale): String;
+    method ToString(aNumberOfDecimalDigits: UInt32): String; inline;
+    method ToString(aNumberOfDecimalDigits: UInt32; aLocale: Locale): String; 
     class method Parse(s: String): Double;
     class method TryParse(s: String; out Value: Double): Boolean;
+    class method TryParse(s: String; aLocale: Locale; out Value: Double): Boolean;
     method GetHashCode: Integer; override;
     method &Equals(obj: Object): Boolean; override;
 
@@ -83,15 +88,22 @@ type
     class const maxpos = 1024;
     class method CalcLastDigit(var data: array[0..maxpos] of Byte; aStart, aCount: Integer);
   public
-    class method Convert(aValue: Double; aPrecision: Integer): String;
+    class method Convert(aValue: Double; aPrecision: Integer): String; inline;
+    class method Convert(aValue: Double; aPrecision: Integer; aLocale: Locale): String;
     class method ConvertToDecimal(aValue: Double; aNumberOfDecimalDigits: UInt32): String;
+    class method ConvertToDecimal(aValue: Double; aNumberOfDecimalDigits: UInt32; aLocale: Locale): String;
   end;
 
 implementation
 
 method Double.ToString: String;
 begin
-  exit FloatToString.Convert(self, 16);
+  exit ToString(Locale.Current);
+end;
+
+method Double.ToString(aLocale: Locale): String;
+begin
+  exit FloatToString.Convert(self, 16, aLocale);
 end;
 
 method Double.GetHashCode: Integer;
@@ -165,31 +177,46 @@ end;
 
 method Double.ToString(aNumberOfDecimalDigits: UInt32): String;
 begin
-  exit FloatToString.ConvertToDecimal(self, aNumberOfDecimalDigits);
+  exit FloatToString.ConvertToDecimal(self, aNumberOfDecimalDigits, Locale.Current);
+end;
+
+method Double.ToString(aNumberOfDecimalDigits: UInt32; aLocale: Locale): String;
+begin
+  exit FloatToString.ConvertToDecimal(self, aNumberOfDecimalDigits, aLocale);
 end;
 
 class method Double.Parse(s: String): Double;
 begin
-  if not DoTryParse(s, out result, true) then Convert.RaiseFormatException;
+  if not DoTryParse(s, Locale.Invariant, out result, true) then Convert.RaiseFormatException;
 end;
 
 class method Double.TryParse(s: String; out Value: Double): Boolean;
 begin
-  exit DoTryParse(s, out Value, false);
+  exit DoTryParse(s, Locale.Invariant, out Value, false);
 end;
 
-class method Double.DoTryParse(s: String; out Value: Double; aRaiseOverflowException: Boolean): Boolean;
+class method Double.TryParse(s: String; aLocale: Locale; out Value: Double): Boolean;
+begin
+  exit DoTryParse(s, aLocale, out Value, false);
+end;
+
+class method Double.DoTryParse(s: String; aLocale: Locale; out Value: Double; aRaiseOverflowException: Boolean): Boolean;
 begin
   exit Convert.TryParseDouble(s, out Value, aRaiseOverflowException);
 end;
 
 method Single.ToString: String;
 begin
+  exit ToString(Locale.Current);  
+end;
+
+method Single.ToString(aLocale: Locale): String;
+begin
   if Self = 0 then exit '0';
   if IsNaN(Self) then exit 'NaN';
   if IsNegativeInfinity(Self) then exit '-Infinity';
   if IsPositiveInfinity(Self) then exit 'Infinity';
-  exit FloatToString.Convert(self,8);
+  exit FloatToString.Convert(self, 8, aLocale);
 end;
 
 method Single.GetHashCode: Integer;
@@ -263,18 +290,23 @@ end;
 
 class method Single.Parse(s: String): Single;
 begin
-  if not DoTryParse(s, out result, true) then Convert.RaiseFormatException;
+  if not DoTryParse(s, Locale.Invariant, out result, true) then Convert.RaiseFormatException;
 end;
 
 class method Single.TryParse(s: String; out Value: Single): Boolean;
 begin
-  exit DoTryParse(s, out Value, false);
+  exit DoTryParse(s, Locale.Invariant, out Value, false);
 end;
 
-class method Single.DoTryParse(s: String; out Value: Single; aRaiseOverflowException: Boolean): Boolean;
+class method Single.TryParse(s: String; aLocale: Locale; out Value: Single): Boolean;
+begin
+  exit DoTryParse(s, aLocale, out Value, false);
+end;
+
+class method Single.DoTryParse(s: String; aLocale: Locale; out Value: Single; aRaiseOverflowException: Boolean): Boolean;
 begin
   var sValue : Double;
-  if not Convert.TryParseDouble(s,out sValue, aRaiseOverflowException) then exit False;
+  if not Convert.TryParseDouble(s, aLocale, out sValue, aRaiseOverflowException) then exit False;
   if sValue >= 0 then begin
     if sValue > MaxValue then
       if aRaiseOverflowException then Convert.RaiseOverflowException else exit False;
@@ -288,6 +320,11 @@ begin
 end;
 
 class method FloatToString.Convert(aValue: Double; aPrecision: Integer): String;
+begin
+  exit Convert(aValue, aPrecision, Locale.Current);
+end;
+
+class method FloatToString.Convert(aValue: Double; aPrecision: Integer; aLocale: Locale): String;
 const
   digits: not nullable String = '0123456789';
 begin
@@ -296,6 +333,7 @@ begin
   if Double.IsNegativeInfinity(aValue) then exit '-Infinity';
   if Double.IsPositiveInfinity(aValue) then exit 'Infinity';
 
+  if aLocale = nil then aLocale := aLocale.Current;
   var data: array[0..maxpos] of Byte;
   var cur_position := 0;
   var exponent := 0;
@@ -384,7 +422,7 @@ begin
   if (nexp > aPrecision) or (exponent < -4) then begin// => #.#####E+## | #.#####E-##
     buf[bufpos] := digits[data[0]];
     inc(bufpos);
-    buf[bufpos] := DecimalChar;
+    buf[bufpos] := aLocale.NumberFormat.DecimalSeparator;
     inc(bufpos);
     var st_cnt := aPrecision-1;
     CalcLastDigit(var data, 1, aPrecision-1);
@@ -432,7 +470,7 @@ begin
     end;
     if is_fraction_present then begin
       var t_buf := bufpos;
-      buf[bufpos] := DecimalChar;
+      buf[bufpos] := aLocale.NumberFormat.DecimalSeparator;
       inc(bufpos);
       for i: Integer:= st_cnt-1 downto nexp+2 do
         if data[i] = 0 then dec(st_cnt) else break;
@@ -453,7 +491,7 @@ begin
   else begin// => 0.##### - 0.000#####
     buf[bufpos] := '0';
     inc(bufpos);
-    buf[bufpos] := DecimalChar;
+    buf[bufpos] := aLocale.NumberFormat.DecimalSeparator;
     inc(bufpos);
     for i:Integer :=0 to nexp-2 do begin
       buf[bufpos] := '0';
@@ -501,11 +539,17 @@ begin
 end;
 
 class method FloatToString.ConvertToDecimal(aValue: Double; aNumberOfDecimalDigits: UInt32): String;
+begin
+  exit ConvertToDecimal(aValue, aNumberOfDecimalDigits, Locale.Current);
+end;
+
+class method FloatToString.ConvertToDecimal(aValue: Double; aNumberOfDecimalDigits: UInt32; aLocale: Locale): String;
 const
   digits: not nullable String = '0123456789';
 begin
   if (aValue = 0) and (aNumberOfDecimalDigits = 0) then exit '0';
 
+  if aLocale = nil then aLocale := Locale.Current;
   var data: array[0..maxpos + 1 {extra digits for rounding}] of Byte;
   var cur_position := 0;
   var exponent := 0;
@@ -597,7 +641,7 @@ begin
       inc(bufpos);
     end;
     if aNumberOfDecimalDigits > 0 then begin
-      buf[bufpos] := DecimalChar;
+      buf[bufpos] := aLocale.NumberFormat.DecimalSeparator;
       inc(bufpos);
       var st_cnt := aNumberOfDecimalDigits + exponent + 1;
       for i:Integer:=nexp+1 to st_cnt-1 do begin
@@ -616,7 +660,7 @@ begin
     CalcLastDigit(var data, 1, aNumberOfDecimalDigits+1);
     buf[bufpos] := '0';
     inc(bufpos);
-    buf[bufpos] := DecimalChar;
+    buf[bufpos] := aLocale.NumberFormat.DecimalSeparator;
     inc(bufpos);
     for i:Integer :=0 to nexp-2 do begin
       buf[bufpos] := '0';

@@ -135,8 +135,7 @@ begin
     var lInvariant := 'en_US.utf8'.ToAnsiChars(true);
     fInvariant := new Locale(rtl.newLocale(rtl.LC_ALL_MASK, @lInvariant[0], nil));
     {$ELSEIF ANDROID OR WEBASSEMBLY}
-    var lLocale := 'en-US';
-    fInvariant := new Locale(lLocale);
+    fInvariant := new Locale('en-US');
     {$ENDIF}
   end;
   result := fInvariant as not nullable;

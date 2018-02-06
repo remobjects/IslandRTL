@@ -69,7 +69,7 @@ type
       if lHashEntry = nil then exit nil;
       repeat
         if SameType(lHashEntry^, aType, lIntfHash1, lIntfHash2) then
-          exit aType;
+          exit InternalCalls.Cast(aInstance);
         inc(lHashEntry);
       until lHashEntry^ = nil;
       exit nil;
