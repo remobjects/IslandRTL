@@ -133,7 +133,6 @@ type
     {$ENDIF}
     [SymbolName('ElementsRaiseException')]
     class method RaiseException(aRaiseAddress: ^Void; aRaiseFrame: ^Void; aRaiseObject: Object);
-    class method DefaultUserEntryPoint(args: array of String): Integer; empty;
 
     [SymbolName('main')]
     class method main: Integer;
@@ -329,10 +328,12 @@ type
 
 
 
+method DefaultUserEntryPoint(args: array of String): Integer; empty;
+  
 // This is needed by anything msvc compiled; it's the offset in fs for the tls array
 var
   [Alias, SymbolName('__elements_entry_point'), &Weak]
-  UserEntryPoint: UserEntryPointType := @ExternalCalls.DefaultUserEntryPoint;
+  UserEntryPoint: UserEntryPointType := @DefaultUserEntryPoint;
   [SymbolName('_tls_index')]
   _tls_index: Cardinal; public;
   [SectionName('.tls'), SymbolName('_tls_start')]
