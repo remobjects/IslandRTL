@@ -25,7 +25,11 @@ type
     fLongDatePattern: String;
     fShortTimePattern: String;
     fLongTimePattern: String;
+    fTimePattern: String;
+    fUse24HPattern: Boolean;
     fIsReadOnly: Boolean;
+    fTimeMarkSuffix: Boolean; 
+    fLeadingZeroForHour: Boolean;
     method SetShortDayNames(aValue: array of String);
     method SetLongDayNames(aValue: array of String);
     method SetShortMonthNames(aValue: array of String);
@@ -38,6 +42,10 @@ type
     method SetLongTimePattern(aValue: String);
     method SetShortDatePattern(aValue: String);
     method SetLongDatePattern(aValue: String);
+    method SetTimePattern(aValue: String);
+    method SetUse24HPattern(aValue: Boolean);
+    method SetTimeMarkSuffix(aValue: Boolean);
+    method SetLeadingZeroForHour(aValue: Boolean);
     method CheckReadOnly;
     {$IF WINDOWS}
     method GetStringFromLocale(aLocaleID: PlatformLocale; aLocaleItem: rtl.LCTYPE): String;
@@ -56,6 +64,9 @@ type
     property LongTimePattern: String read fLongTimePattern write SetLongTimePattern;
     property ShortDatePattern: String read fShortDatePattern write SetShortDatePattern;
     property LongDatePattern: String read fLongDatePattern write SetLongDatePattern;
+    property TimePattern: String read fTimePattern write SetTimePattern;
+    property Use24HPattern: Boolean read fUse24HPattern write SetUse24HPattern;
+    property TimeMarkSuffix: Boolean read fTimeMarkSuffix write SetTimeMarkSuffix;
     property IsReadOnly: Boolean read fIsReadOnly;
   end;
 
@@ -156,6 +167,30 @@ method DateTimeFormatInfo.SetLongDatePattern(aValue: String);
 begin
   CheckReadOnly;
   fLongDatePattern := aValue;
+end;
+
+method DateTimeFormatInfo.SetTimePattern(aValue: String);
+begin
+  CheckReadOnly;
+  fTimePattern := aValue;
+end;
+
+method DateTimeFormatInfo.SetUse24HPattern(aValue: Boolean);
+begin
+  CheckReadOnly;
+  fUse24HPattern := aValue;
+end;
+
+method DateTimeFormatInfo.SetTimeMarkSuffix(aValue: Boolean);
+begin
+  CheckReadOnly;
+  fTimeMarkSuffix := aValue;
+end;
+
+method DateTimeFormatInfo.SetLeadingZeroForHour(aValue: Boolean);
+begin
+  CheckReadOnly;
+  fLeadingZeroForHour := aValue;
 end;
 
 method DateTimeFormatInfo.CheckReadOnly;
@@ -314,8 +349,7 @@ begin
     fShortDayNames[i] := GetStringFromLocale(aLocale, rtl.LOCALE_SABBREVDAYNAME1 + i);
     fLongDayNames[i] := GetStringFromLocale(aLocale, rtl.LOCALE_SDAYNAME1 + i);
   end;
-  for
-
+  
   for i: Integer := 0 to 11 do begin
     fShortMonthNames[i] := GetStringFromLocale(aLocale, rtl.LOCALE_SABBREVMONTHNAME1 + i);
     fLongMonthNames[i] := GetStringFromLocale(aLocale, rtl.LOCALE_SMONTHNAME1 + i);
@@ -327,8 +361,11 @@ begin
   fPMString := GetStringFromLocale(aLocale, rtl.LOCALE_S2359);
   fShortDatePattern := GetStringFromLocale(aLocale, rtl.LOCALE_SSHORTDATE);
   fLongDatePattern := GetStringFromLocale(aLocale, rtl.LOCALE_SLONGDATE);
-  //fShortTimePattern := GetStringFromLocale(aLocale, rtl.LOCALE_SSHORTTIME);
-  //fLongTimePattern := GetStringFromLocale(aLocale, rtl.LOCALE_SLO
+  fTimePattern := GetStringFromLocale(aLocale, rtl.LOCALE_STIMEFORMAT);
+  fUse24HPattern := (GetStringFromLocale(aLocale, rtl.LOCALE_ITIME) = '1');
+  fTimeMarkSuffix := (GetStringFromLocale(aLocale, rtl.LOCALE_ITIMEMARKPOSN) = '0');
+  fLeadingZeroForHour := (GetStringFromLocale(aLocale, rtl.LOCALE_ITIMEMARKPOSN) = '1');
+  fLongTimePattern := fShortTimePattern;
   {$ENDIF}
 end;
 
