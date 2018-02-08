@@ -134,8 +134,6 @@ type
     [SymbolName('ElementsRaiseException')]
     class method RaiseException(aRaiseAddress: ^Void; aRaiseFrame: ^Void; aRaiseObject: Object);
 
-    [SymbolName('main')]
-    class method main: Integer;
     [SymbolName('mainCRTStartup')]
     class method mainCRTStartup: Integer;
     [SymbolName('_DllMainCRTStartup'), CallingConvention(CallingConvention.Stdcall)]
@@ -360,6 +358,8 @@ var
 
 [SymbolName('__elements_tls_callback_method'), Used, CallingConvention(CallingConvention.Stdcall)]
 method elements_tls_callback(aHandle: ^Void; aReason: rtl.DWORD; aReserved: ^Void);public;
+[SymbolName('main')]
+method main: Integer;
 
 
 method ElementsThreadHelper(aParam: ^Void): rtl.DWORD;
@@ -1094,7 +1094,7 @@ begin
 end;
 
 
-method ExternalCalls.main: Integer;
+method main: Integer;
 begin
   Utilities.Initialize;
   var cnt: Int32;
