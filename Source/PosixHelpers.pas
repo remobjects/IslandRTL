@@ -13,6 +13,7 @@ type
     func: atexitfunc;
     next: ^atexitrec;
   end;
+  UserEntryPointType =public method (args: array of String): Integer;
   dliteratecb = function (info :^__struct_dl_phdr_info; size: size_t; data: ^Void): Integer;
   {$IFDEF ARM}rtl.__struct__Unwind_Exception = rtl.__struct__Unwind_Control_Block;{$ENDIF}
   ExternalCalls = public static class
@@ -91,15 +92,22 @@ type
     [SymbolName('ElementsRethrow')]
     method ElementsRethrow;
 
-    [SymbolName('__elements_entry_point'), &Weak]
-    method UserEntryPoint(args: array of String): Integer; external;
+    //[SymbolName('__elements_entry_point'), &Weak]
+    //method UserEntryPoint(args: array of String): Integer; external;
+
+    method DefaultUserEntryPoint(aArgs: array of String): Integer; empty;
+  
+    var
+    [Alias, SymbolName('__elements_entry_point'), &Weak]
+    UserEntryPoint: UserEntryPointType := @DefaultUserEntryPoint;
+
     [SymbolName({$IF EMSCRIPTEN OR ANDROID}'_start'{$ELSE}'__elements_entry_point_helper'{$ENDIF}), Used]
     method Entrypoint(argc: Integer; argv: ^^AnsiChar; _envp: ^^AnsiChar): Integer;
     {$IF NOT EMSCRIPTEN AND NOT ANDROID}
     [SymbolName('_start'), Naked]
     method _start;
     [SymbolName('__libc_start_main', 'libc.so.6'), &weak]
-    method libc_main(main: LibCEntryHelper; argc: Integer; argv: ^^Char; init: LibCEntryHelper; fini: LibCFinalizerHelper); external;
+    method libc_main(main: LibCEntryHelper; argc: Integer; argv: ^^Char; aInit: LibCEntryHelper; aFini: LibCFinalizerHelper); external;
     {$ENDIF}
     [SymbolName('__elements_init'), Used]
     method init(_nargs: Integer; _args: ^^AnsiChar; _envp: ^^AnsiChar): Integer;
