@@ -95,14 +95,6 @@ type
     //[SymbolName('__elements_entry_point'), &Weak]
     //method UserEntryPoint(args: array of String): Integer; external;
 
-    method DefaultUserEntryPoint(aArgs: array of String): Integer; empty;
-  
-    var
-    [Alias, SymbolName('__elements_entry_point'), &Weak]
-    UserEntryPoint: UserEntryPointType := @DefaultUserEntryPoint;
-
-    [SymbolName({$IF EMSCRIPTEN OR ANDROID}'_start'{$ELSE}'__elements_entry_point_helper'{$ENDIF}), Used]
-    method Entrypoint(argc: Integer; argv: ^^AnsiChar; _envp: ^^AnsiChar): Integer;
     {$IF NOT EMSCRIPTEN AND NOT ANDROID}
     [SymbolName('_start'), Naked]
     method _start;
@@ -250,6 +242,16 @@ method free(v: ^Void);inline;
 begin 
    rtl.Free(v);
 end;
+
+
+method DefaultUserEntryPoint(aArgs: array of String): Integer; empty;
+  
+var
+[Alias, SymbolName('__elements_entry_point'), &Weak]
+UserEntryPoint: UserEntryPointType := @DefaultUserEntryPoint;
+
+[SymbolName({$IF EMSCRIPTEN OR ANDROID}'_start'{$ELSE}'__elements_entry_point_helper'{$ENDIF}), Used]
+method Entrypoint(argc: Integer; argv: ^^AnsiChar; _envp: ^^AnsiChar): Integer;
 
 implementation
 
@@ -462,16 +464,16 @@ begin
 end;
 {$ENDIF}
 {$HIDE W27}
-method ExternalCalls.Entrypoint(argc: Integer; argv: ^^AnsiChar; _envp: ^^AnsiChar): Integer;
+method Entrypoint(argc: Integer; argv: ^^AnsiChar; _envp: ^^AnsiChar): Integer;
 begin
-  ExternalCalls.nargs := nargs;
-  ExternalCalls.args := args;
+  ExternalCalls.nargs := argc;
+  ExternalCalls.args := argv;
   ExternalCalls.envp := _envp;
   Utilities.Initialize;
   exit UserEntryPoint([]);
   {$IF NOT EMSCRIPTEN AND NOT ANDROID}
   {$HIDE H14}
-  libc_main(nil, 0, nil, nil, nil); // do not remove, this is there to ensure it's linked in.
+  ExternalCalls.libc_main(nil, 0, nil, nil, nil); // do not remove, this is there to ensure it's linked in.
   {$SHOW H14}
   {$ENDIF}
 end;
