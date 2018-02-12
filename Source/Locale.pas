@@ -41,6 +41,10 @@ type
     method CheckReadOnly;
     {$IF WINDOWS}
     method GetStringFromLocale(aLocaleID: PlatformLocale; aLocaleItem: rtl.LCTYPE): String;
+    {$ELSEIF LINUX AND NOT ANDROID}
+    method GetStringFromLocale(aLocaleID: PlatformLocale; aLocaleItem: Integer): String;
+    method GetDateSeparator(aShortDatePattern: String): String;
+    method GetTimeSeparator(aShortTimePattern: String): String;
     {$ENDIF}
   public
     constructor(aLocale: PlatformLocale; aIsReadonly: Boolean := false);
@@ -308,14 +312,13 @@ end;
 
 constructor DateTimeFormatInfo(aLocale: PlatformLocale; aIsReadonly: Boolean := false);
 begin
-  {$IF WINDOWS}
   fIsReadOnly := aIsReadonly;
+  {$IF WINDOWS}  
   for i: Integer := 0 to 6 do begin
     fShortDayNames[i] := GetStringFromLocale(aLocale, rtl.LOCALE_SABBREVDAYNAME1 + i);
     fLongDayNames[i] := GetStringFromLocale(aLocale, rtl.LOCALE_SDAYNAME1 + i);
   end;
-  for
-
+  
   for i: Integer := 0 to 11 do begin
     fShortMonthNames[i] := GetStringFromLocale(aLocale, rtl.LOCALE_SABBREVMONTHNAME1 + i);
     fLongMonthNames[i] := GetStringFromLocale(aLocale, rtl.LOCALE_SMONTHNAME1 + i);
@@ -329,6 +332,25 @@ begin
   fLongDatePattern := GetStringFromLocale(aLocale, rtl.LOCALE_SLONGDATE);
   //fShortTimePattern := GetStringFromLocale(aLocale, rtl.LOCALE_SSHORTTIME);
   //fLongTimePattern := GetStringFromLocale(aLocale, rtl.LOCALE_SLO
+  {$ELSEIF LINUX}
+  for i: Integer := 0 to 6 do begin
+    fShortDayNames[i] := GetStringFromLocale(aLocale, rtl.ABDAY_1 + i);
+    fLongDayNames[i] := GetStringFromLocale(aLocale, rtl.DAY_1 + i);
+  end;
+
+  for i: Integer := 0 to 11 do begin
+    fShortMonthNames[i] := GetStringFromLocale(aLocale, rtl.ABMON_1 + i);
+    fLongMonthNames[i] := GetStringFromLocale(aLocale, rtl.MON_1 + i);
+  end;
+
+  fAMString := GetStringFromLocale(aLocale, rtl.AM_STR);
+  fPMString := GetStringFromLocale(aLocale, rtl.PM_STR);  
+  fShortDatePattern := GetStringFromLocale(aLocale, rtl.D_FMT); 
+  fLongDatePattern := GetStringFromLocale(aLocale, rtl.D_T_FMT);
+  fShortTimePattern := GetStringFromLocale(aLocale, rtl.T_FMT);
+  fLongTimePattern := GetStringFromLocale(aLocale, rtl.T_FMT_AMPM);
+  fDateSeparator := GetDateSeparator(fShortDatePattern);
+  fTimeSeparator := GetTimeSeparator(fShortTimePattern);
   {$ENDIF}
 end;
 
@@ -338,6 +360,66 @@ begin
   var lBuffer := new Char[50];
   var lTotal := rtl.GetLocaleInfo(aLocaleID, aLocaleItem, @lBuffer[0], lBuffer.Length);
   result := String.FromPChar(@lBuffer[0], lTotal - 1);
+end;
+{$ELSEIF LINUX AND NOT ANDROID}
+method DateTimeFormatInfo.GetStringFromLocale(aLocaleID: PlatformLocale; aLocaleItem: Integer): String;
+begin
+  var lTemp := rtl.nl_langinfo_l(aLocaleItem, aLocaleID);
+  if lTemp <> nil then
+    result := String.FromPAnsiChars(lTemp)
+  else
+    result := '';
+end;
+
+method DateTimeFormatInfo.GetDateSeparator(aShortDatePattern: String): String;
+begin
+  var lDayPos := aShortDatePattern.IndexOfAny(['d', 'e']);
+  var lMonthPos := aShortDatePattern.IndexOf('m');
+  var lYearPos := aShortDatePattern.IndexOfAny(['C', 'Y']);
+  var lSeparator: String := '/';
+  if (lDayPos >= 0) and (lMonthPos >= 0) then begin
+    var lBeginPos := Math.Min(lDayPos, lMonthPos);
+    var lEndPos := Math.Max(lDayPos, lMonthPos);
+    lSeparator := aShortDatePattern.Substring(lBeginPos + 1, (lEndPos - 1) - (lBeginPos + 1));
+  end
+  else 
+    if (lMonthPos >= 0) and (lYearPos >= 0) then begin
+      var lBeginPos := Math.Min(lYearPos, lMonthPos);
+      var lEndPos := Math.Max(lYearPos, lMonthPos);
+      lSeparator := aShortDatePattern.Substring(lBeginPos + 1, (lEndPos - 1) - (lBeginPos + 1));  
+    end;
+
+  if (lSeparator.IndexOf('%') <= 0) and (lSeparator <> '/') then
+    exit lSeparator;
+
+  // search for standard chars if all fails...
+  var lPos := aShortDatePattern.IndexOfAny(['/', '.', '\', '-']);
+  if lPos >= 0 then
+    lSeparator := aShortDatePattern[lPos];
+  
+  result := lSeparator;
+end;
+
+method DateTimeFormatInfo.GetTimeSeparator(aShortTimePattern: String): String;
+begin
+  var lHourPos := aShortTimePattern.IndexOfAny(['H', 'I']);
+  var lMinPos := aShortTimePattern.IndexOf('M');
+  var lSeparator: String := ':';
+  if (lHourPos >= 0) and (lMinPos >= 0) then begin
+    var lBeginPos := Math.Min(lHourPos, lMinPos);
+    var lEndPos := Math.Max(lHourPos, lMinPos);
+    lSeparator := aShortTimePattern.Substring(lBeginPos + 1, (lEndPos - 1) - (lBeginPos + 1));
+  end;
+
+  if (lSeparator.IndexOf('%') <= 0) and (lSeparator <> ':') then
+    exit lSeparator;
+
+  // search for standard chars if all fails...
+  var lPos := aShortTimePattern.IndexOfAny([':', '.']);
+  if lPos >= 0 then
+    lSeparator := aShortTimePattern[lPos];
+  
+  result := lSeparator;
 end;
 {$ENDIF}
 
