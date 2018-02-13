@@ -53,6 +53,7 @@ type
     method GetStringFromLocale(aLocaleID: PlatformLocale; aLocaleItem: Integer): String;
     method GetDateSeparator(aShortDatePattern: String): String;
     method GetTimeSeparator(aShortTimePattern: String): String;
+    method AdjustPattern(aPattern: String): String;
     {$ENDIF}
   public
     constructor(aLocale: PlatformLocale; aIsReadonly: Boolean := false);
@@ -385,11 +386,13 @@ begin
   fAMString := GetStringFromLocale(aLocale, rtl.AM_STR);
   fPMString := GetStringFromLocale(aLocale, rtl.PM_STR);  
   fShortDatePattern := GetStringFromLocale(aLocale, rtl.D_FMT); 
-  fLongDatePattern := GetStringFromLocale(aLocale, rtl.D_T_FMT);
+  fLongDatePattern := AdjustPattern(GetStringFromLocale(aLocale, rtl.D_T_FMT));
   fShortTimePattern := GetStringFromLocale(aLocale, rtl.T_FMT);
-  fLongTimePattern := GetStringFromLocale(aLocale, rtl.T_FMT_AMPM);
+  fLongTimePattern := AdjustPattern(GetStringFromLocale(aLocale, rtl.T_FMT_AMPM));
   fDateSeparator := GetDateSeparator(fShortDatePattern);
   fTimeSeparator := GetTimeSeparator(fShortTimePattern);
+  fShortDatePattern := AdjustPattern(fShortDatepattern);
+  fShortTimePattern := AdjustPattern(fShortTimePattern);
   {$ENDIF}
 end;
 
@@ -459,6 +462,15 @@ begin
     lSeparator := aShortTimePattern[lPos];
   
   result := lSeparator;
+end;
+
+method DateTimeFormatInfo.AdjustPattern(aPattern: String): String;
+begin
+  var lToFind:    array of String := ['%a',    '%A',  '%b',   '%B', '%d', '%e', '%H', '%I', '%k', '%I', '%m', '%M', '%p', '%P', '%S', '%y', '%Y',   '%z',  '%Z'];
+  var lToReplace: array of String := ['ddd', 'dddd', 'MMM', 'MMMM', 'dd', 'dd', 'HH', 'hh', 'h',  'hh', 'MM', 'mm', 'tt', 'tt', 'ss', 'yy', 'yyyy', 'zzz', 'zzz'];
+  result := aPattern;
+  for i: Integer := low(lToFind) to high(lToFind) do
+    result := result.Replace(lToFind[i], lToReplace[i]);
 end;
 {$ENDIF}
 
