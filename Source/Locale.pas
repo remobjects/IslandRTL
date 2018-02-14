@@ -2,6 +2,10 @@
 
 interface
 
+{$IFDEF ANDROID}
+  {$DEFINE ICU_LOCALE}
+{$ENDIF}
+
 type
   NumberFormatInfo = public class
   public
@@ -25,11 +29,7 @@ type
     fLongDatePattern: String;
     fShortTimePattern: String;
     fLongTimePattern: String;
-    fTimePattern: String;
-    fUse24HPattern: Boolean;
     fIsReadOnly: Boolean;
-    fTimeMarkSuffix: Boolean; 
-    fLeadingZeroForHour: Boolean;
     method SetShortDayNames(aValue: array of String);
     method SetLongDayNames(aValue: array of String);
     method SetShortMonthNames(aValue: array of String);
@@ -42,10 +42,6 @@ type
     method SetLongTimePattern(aValue: String);
     method SetShortDatePattern(aValue: String);
     method SetLongDatePattern(aValue: String);
-    method SetTimePattern(aValue: String);
-    method SetUse24HPattern(aValue: Boolean);
-    method SetTimeMarkSuffix(aValue: Boolean);
-    method SetLeadingZeroForHour(aValue: Boolean);
     method CheckReadOnly;
     {$IF WINDOWS}
     method GetStringFromLocale(aLocaleID: PlatformLocale; aLocaleItem: rtl.LCTYPE): String;
@@ -54,6 +50,8 @@ type
     method GetDateSeparator(aShortDatePattern: String): String;
     method GetTimeSeparator(aShortTimePattern: String): String;
     method AdjustPattern(aPattern: String): String;
+    {$ELSEIF ICU_LOCALE}
+    method GetDateTimePattern(aTimeStyle: UDateFormatStyle; aDateStyle: UDateFormatStyle; aLocaleID: PlatformLocale): String;
     {$ENDIF}
   public
     constructor(aLocale: PlatformLocale; aIsReadonly: Boolean := false);
@@ -69,13 +67,10 @@ type
     property LongTimePattern: String read fLongTimePattern write SetLongTimePattern;
     property ShortDatePattern: String read fShortDatePattern write SetShortDatePattern;
     property LongDatePattern: String read fLongDatePattern write SetLongDatePattern;
-    property TimePattern: String read fTimePattern write SetTimePattern;
-    property Use24HPattern: Boolean read fUse24HPattern write SetUse24HPattern;
-    property TimeMarkSuffix: Boolean read fTimeMarkSuffix write SetTimeMarkSuffix;
     property IsReadOnly: Boolean read fIsReadOnly;
   end;
 
-  PlatformLocale = {$IF WINDOWS}rtl.LCID{$ELSEIF LINUX AND NOT ANDROID}rtl.locale_t{$ELSEIF ANDROID OR WEBASSEMBLY}String{$ENDIF};
+  PlatformLocale = {$IF WINDOWS}rtl.LCID{$ELSEIF LINUX AND NOT ANDROID}rtl.locale_t{$ELSEIF ICU_LOCALE OR WEBASSEMBLY}String{$ENDIF};
 
   Locale = public class
   private
@@ -174,30 +169,6 @@ begin
   fLongDatePattern := aValue;
 end;
 
-method DateTimeFormatInfo.SetTimePattern(aValue: String);
-begin
-  CheckReadOnly;
-  fTimePattern := aValue;
-end;
-
-method DateTimeFormatInfo.SetUse24HPattern(aValue: Boolean);
-begin
-  CheckReadOnly;
-  fUse24HPattern := aValue;
-end;
-
-method DateTimeFormatInfo.SetTimeMarkSuffix(aValue: Boolean);
-begin
-  CheckReadOnly;
-  fTimeMarkSuffix := aValue;
-end;
-
-method DateTimeFormatInfo.SetLeadingZeroForHour(aValue: Boolean);
-begin
-  CheckReadOnly;
-  fLeadingZeroForHour := aValue;
-end;
-
 method DateTimeFormatInfo.CheckReadOnly;
 begin
   if IsReadOnly then
@@ -241,7 +212,7 @@ begin
     if lTempString.Length > 1 then
       lCurrency := lTempString.SubString(1);
   end;
-  {$ELSEIF ANDROID}
+  {$ELSEIF ICU_LOCALE}
   var lParseError: UParseError;
   var lStatus: UErrorCode;
   var lBuffer := new Char[30];
@@ -282,7 +253,7 @@ begin
   if lName = nil then
     raise new Exception("Error getting locale name");
   result := String.FromPAnsiChars(lName) as not nullable;
-  {$ELSEIF ANDROID}
+  {$ELSEIF ICU_LOCALE}
   var lErr: UErrorCode;
   var lName := new Char[80];
   var lTotal := ICUHelper.ULocGetName(@fLocaleID.ToAnsiChars(true)[0], @lName[0], lName.Length, @lErr);
@@ -300,7 +271,7 @@ begin
     {$ELSEIF LINUX AND NOT ANDROID}
     var lInvariant := 'en_US.utf8'.ToAnsiChars(true);
     fInvariant := new Locale(rtl.newLocale(rtl.LC_ALL_MASK, @lInvariant[0], nil));
-    {$ELSEIF ANDROID OR WEBASSEMBLY}
+    {$ELSEIF ICU_LOCALE OR WEBASSEMBLY}
     fInvariant := new Locale('en-US');
     {$ENDIF}
   end;
@@ -320,7 +291,7 @@ begin
     var lName := lDefaultName.ToAnsiChars(true);
     var lLocale := rtl.newlocale(rtl.LC_ALL_MASK, @lName[0], nil);
     fCurrent := new Locale(lLocale);
-    {$ELSEIF ANDROID}
+    {$ELSEIF ICU_LOCALE}
     var lName: ^Char := ICUHelper.ULocGetDefault();
     var lDefaultName := String.FromPChar(lName);
     if lDefaultName = '' then begin
@@ -367,12 +338,8 @@ begin
   fShortDatePattern := GetStringFromLocale(aLocale, rtl.LOCALE_SSHORTDATE);
   fLongDatePattern := GetStringFromLocale(aLocale, rtl.LOCALE_SLONGDATE);
   fShortTimePattern := GetStringFromLocale(aLocale, rtl.LOCALE_SSHORTTIME);
-  fTimePattern := GetStringFromLocale(aLocale, rtl.LOCALE_STIMEFORMAT);
-  fUse24HPattern := (GetStringFromLocale(aLocale, rtl.LOCALE_ITIME) = '1');
-  fTimeMarkSuffix := (GetStringFromLocale(aLocale, rtl.LOCALE_ITIMEMARKPOSN) = '0');
-  fLeadingZeroForHour := (GetStringFromLocale(aLocale, rtl.LOCALE_ITIMEMARKPOSN) = '1');
-  fLongTimePattern := fShortTimePattern;
-  {$ELSEIF LINUX}
+  fLongTimePattern := GetStringFromLocale(aLocale, rtl.LOCALE_STIMEFORMAT);
+  {$ELSEIF LINUX AND NOT ANDROID}
   for i: Integer := 0 to 6 do begin
     fShortDayNames[i] := GetStringFromLocale(aLocale, rtl.ABDAY_1 + i);
     fLongDayNames[i] := GetStringFromLocale(aLocale, rtl.DAY_1 + i);
@@ -393,6 +360,43 @@ begin
   fTimeSeparator := GetTimeSeparator(fShortTimePattern);
   fShortDatePattern := AdjustPattern(fShortDatepattern);
   fShortTimePattern := AdjustPattern(fShortTimePattern);
+  {$ELSEIF ICU_LOCALE}
+  var lErr: UErrorCode;
+  var lData := ICUHelper.UDatOpen(UDateFormatStyle.UDAT_FULL, UDateFormatStyle.UDAT_FULL, aLocale, nil, 0, nil, 0, @lErr);
+  var lBuffer := new Char[50];
+  var lTotal := 0;
+
+  for i: Integer := 1 to 7 do begin
+    lTotal := ICUHelper.UDatGetSymbols(lData, UDateFormatSymbolType.UDAT_SHORT_WEEKDAYS, i, @lBuffer[0], lBuffer.Length, @lErr);
+    fShortDayNames[i] := String.FromPChar(@lBuffer[0], lTotal)[0];
+
+    lTotal := ICUHelper.UDatGetSymbols(lData, UDateFormatSymbolType.UDAT_WEEKDAYS, i, @lBuffer[0], lBuffer.Length, @lErr);
+    fLongDayNames[i] := String.FromPChar(@lBuffer[0], lTotal)[0];
+  end;
+
+  for i: Integer := 0 to 11 do begin
+    lTotal := ICUHelper.UDatGetSymbols(lData, UDateFormatSymbolType.UDAT_SHORT_MONTHS, i, @lBuffer[0], lBuffer.Length, @lErr);
+    fShortMonthNames[i] := String.FromPChar(@lBuffer[0], lTotal)[0];
+
+    lTotal := ICUHelper.UDatGetSymbols(lData, UDateFormatSymbolType.UDAT_MONTHS, i, @lBuffer[0], lBuffer.Length, @lErr);
+    fLongMonthNames[i] := String.FromPChar(@lBuffer[0], lTotal)[0];
+  end;
+
+  lTotal := ICUHelper.UDatGetSymbols(lData, UDateFormatSymbolType.UDAT_AM_PMS, 0, @lBuffer[0], lBuffer.Length, @lErr);
+  fAMString := String.FromPChar(@lBuffer[0], lTotal)[0];
+  lTotal := ICUHelper.UDatGetSymbols(lData, UDateFormatSymbolType.UDAT_AM_PMS, 1, @lBuffer[0], lBuffer.Length, @lErr);
+  fPMString := String.FromPChar(@lBuffer[0], lTotal)[0];
+
+  fShortDatePattern := GetDateTimePattern(UDateFormatStyle.UDAT_NONE, UDateFormatStyle.UDAT_SHORT, aLocale);
+  fLongDatePattern := GetDateTimePattern(UDateFormatStyle.UDAT_NONE, UDateFormatStyle.UDAT_LONG, aLocale);
+  fShortTimePattern := GetDateTimePattern(UDateFormatStyle.UDAT_SHORT, UDateFormatStyle.UDAT_NONE, aLocale);
+  fLongTimePattern := GetDateTimePattern(UDateFormatStyle.UDAT_MEDIUM, UDateFormatStyle.UDAT_NONE, aLocale);
+
+  // TODO convert patterns from ICU and get date and time seps.
+  
+  //fDateSeparator := GetDateSeparator(fShortDatePattern);
+  //fTimeSeparator := GetTimeSeparator(fShortTimePattern);
+  ICUHelper.UDatClose(lData);
   {$ENDIF}
 end;
 
@@ -471,6 +475,17 @@ begin
   result := aPattern;
   for i: Integer := low(lToFind) to high(lToFind) do
     result := result.Replace(lToFind[i], lToReplace[i]);
+end;
+{$ELSEIF ICU_LOCALE}
+method DateTimeFormatInfo.GetDateTimePattern(aTimeStyle: UDateFormatStyle; aDateStyle: UDateFormatStyle; aLocaleID: PlatformLocale): String;
+begin
+  var lErr: UErrorCode;
+  var lGMT := 'GMT'.ToAnsiChars(true);
+  var lBuffer := new Char[100];
+  var lData := ICUHelper.UDatOpen(aTimeStyle, aDateStyle, aLocaleID, @lGMT[0], length('GMT'), nil, 0, @lErr);
+  var lTotal := ICUHelper.UDatToPattern(lData, 0, @lBuffer[0], lBuffer.Length, @lErr);
+  result := String.FromPChar(@lBuffer[0], lTotal)[0];
+  ICUHelper.UNumClose(lData);
 end;
 {$ENDIF}
 
