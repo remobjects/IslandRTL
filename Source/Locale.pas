@@ -8,10 +8,12 @@ interface
 
 type
   NumberFormatInfo = public class
+    fIsReadOnly: Boolean;
   public
     property DecimalSeparator: Char;
     property ThousandsSeparator: Char;
     property Currency: String;
+    property IsReadOnly: Boolean read fIsReadOnly;
     constructor(aDecimalSeparator: Char; aThousandsSeparator: Char; aCurrency: String);
   end;
 
@@ -55,8 +57,6 @@ type
     method GetTimeSeparator(aShortTimePattern: String): String;
     method AdjustPattern(aPattern: String): String;
     {$ENDIF}
-
-
   public
     constructor(aLocale: PlatformLocale; aIsReadonly: Boolean := false);
     property ShortDayNames: array of String read fShortDayNames write SetShortDayNames;
@@ -79,6 +79,7 @@ type
   Locale = public class
   private
     fNumberFormat: NumberFormatInfo;
+    fDateTimeFormat: DateTimeFormatInfo;
     fLocaleID: PlatformLocale;
     class method GetInvariant: not nullable Locale;
     class method GetCurrent: not nullable Locale;
@@ -86,7 +87,7 @@ type
     class var fCurrent: Locale;
     class var fInvariant: Locale;
   protected
-    constructor(aLocaleID: PlatformLocale);
+    constructor(aLocaleID: PlatformLocale; aIsReadOnly: Boolean := false);
   public
     class property Invariant: Locale read GetInvariant;
     class property Current: Locale read GetCurrent;
@@ -179,7 +180,7 @@ begin
     raise new Exception('Can not modify this DateTimeFormatInfo instance');
 end;
 
-constructor Locale(aLocaleID: PlatformLocale);
+constructor Locale(aLocaleID: PlatformLocale; aIsReadOnly: Boolean := false);
 begin
   fLocaleID := aLocaleID;
   var lCurrency: String := '';
@@ -242,6 +243,7 @@ begin
   lCurrency := WebAssembly.GetStringFromHandle(lHandle, true);
   {$ENDIF}
   fNumberFormat := new NumberFormatInfo(lDecimalSep, lThousandsSep, lCurrency);
+  fDateTimeFormat := new DateTimeFormatInfo(aLocaleID, aIsReadOnly);
 end;
 
 method Locale.GetIdentifier: not nullable String;
@@ -271,12 +273,12 @@ class method Locale.GetInvariant: not nullable Locale;
 begin
   if fInvariant = nil then begin
     {$IF WINDOWS}
-    fInvariant := new Locale(rtl.LOCALE_INVARIANT);
+    fInvariant := new Locale(rtl.LOCALE_INVARIANT, true);
     {$ELSEIF LINUX AND NOT ANDROID}
     var lInvariant := 'en_US.utf8'.ToAnsiChars(true);
-    fInvariant := new Locale(rtl.newLocale(rtl.LC_ALL_MASK, @lInvariant[0], nil));
+    fInvariant := new Locale(rtl.newLocale(rtl.LC_ALL_MASK, @lInvariant[0], nil), true);
     {$ELSEIF ICU_LOCALE OR WEBASSEMBLY}
-    fInvariant := new Locale('en-US');
+    fInvariant := new Locale('en-US', true);
     {$ENDIF}
   end;
   result := fInvariant as not nullable;
@@ -294,7 +296,7 @@ begin
     lDefaultName := lDefaultName.Replace('.UTF-8', '.utf8');
     var lName := lDefaultName.ToAnsiChars(true);
     var lLocale := rtl.newlocale(rtl.LC_ALL_MASK, @lName[0], nil);
-    fCurrent := new Locale(lLocale);
+    fCurrent := new Locale(lLocale, true);
     {$ELSEIF ICU_LOCALE}
     var lName: ^Char := ICUHelper.ULocGetDefault();
     var lDefaultName := String.FromPChar(lName);
@@ -305,10 +307,10 @@ begin
       else
       lDefaultName := lDefaultName.Replace('.UTF-8', '');
     end;
-    fCurrent := new Locale(lDefaultName);
+    fCurrent := new Locale(lDefaultName, true);
     {$ELSEIF WEBASSEMBLY}
     var lHandle := WebAssemblyCalls.GetCurrentLocale;
-    fCurrent := new Locale(WebAssembly.GetStringFromHandle(lHandle, true));
+    fCurrent := new Locale(WebAssembly.GetStringFromHandle(lHandle, true), true);
     {$ENDIF}
   end;
   result := fCurrent as not nullable;
