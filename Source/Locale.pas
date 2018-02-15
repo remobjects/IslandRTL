@@ -8,13 +8,21 @@ interface
 
 type
   NumberFormatInfo = public class
+  private
+    fCurrency: String;
+    fThousandsSeparator: Char;
+    fDecimalSeparator: Char;
     fIsReadOnly: Boolean;
+    method SetCurrency(value: String);    
+    method SetThousandsSeparator(value: Char);      
+    method SetDecimalSeparator(value: Char);
+    method CheckReadOnly;
   public
-    property DecimalSeparator: Char;
-    property ThousandsSeparator: Char;
-    property Currency: String;
+    property DecimalSeparator: Char read fDecimalSeparator write SetDecimalSeparator;
+    property ThousandsSeparator: Char read fThousandsSeparator write SetThousandsSeparator;
+    property Currency: String read fCurrency write SetCurrency;
     property IsReadOnly: Boolean read fIsReadOnly;
-    constructor(aDecimalSeparator: Char; aThousandsSeparator: Char; aCurrency: String);
+    constructor(aDecimalSeparator: Char; aThousandsSeparator: Char; aCurrency: String; aIsReadOnly: Boolean := false);
   end;
 
   DateTimeFormatInfo = public class
@@ -242,7 +250,7 @@ begin
   lHandle := WebAssemblyCalls.GetLocaleInfo(@aLocaleID.fFirstChar, aLocaleID.Length, Int32(LocaleInfo.Currency));
   lCurrency := WebAssembly.GetStringFromHandle(lHandle, true);
   {$ENDIF}
-  fNumberFormat := new NumberFormatInfo(lDecimalSep, lThousandsSep, lCurrency);
+  fNumberFormat := new NumberFormatInfo(lDecimalSep, lThousandsSep, lCurrency, aIsReadOnly);
   fDateTimeFormat := new DateTimeFormatInfo(aLocaleID, aIsReadOnly);
 end;
 
@@ -316,11 +324,12 @@ begin
   result := fCurrent as not nullable;
 end;
 
-constructor NumberFormatInfo(aDecimalSeparator: Char; aThousandsSeparator: Char; aCurrency: String);
+constructor NumberFormatInfo(aDecimalSeparator: Char; aThousandsSeparator: Char; aCurrency: String; aIsReadOnly: Boolean := false);
 begin
   DecimalSeparator := aDecimalSeparator;
   ThousandsSeparator := aThousandsSeparator;
   Currency := aCurrency;
+  fIsReadOnly := aIsReadOnly;
 end;
 
 constructor DateTimeFormatInfo(aLocale: PlatformLocale; aIsReadonly: Boolean := false);
@@ -492,5 +501,29 @@ begin
     result := result.Replace(lToFind[i], lToReplace[i]);
 end;
 {$ENDIF}
+
+method NumberFormatInfo.SetDecimalSeparator(value: Char);
+begin
+  CheckReadOnly;
+  fDecimalSeparator := value;
+end;
+
+method NumberFormatInfo.SetThousandsSeparator(value: Char);
+begin
+  CheckReadOnly;
+  fThousandsSeparator := value;
+end;
+
+method NumberFormatInfo.SetCurrency(value: String);
+begin
+  CheckReadOnly;
+  fCurrency := value;
+end;
+
+method NumberFormatInfo.CheckReadOnly;
+begin
+  if IsReadOnly then
+    raise new Exception('Can not modify this NumberFormatInfo instance');
+end;
 
 end.
