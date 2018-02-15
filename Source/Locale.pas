@@ -47,12 +47,16 @@ type
     method GetStringFromLocale(aLocaleID: PlatformLocale; aLocaleItem: rtl.LCTYPE): String;
     {$ELSEIF LINUX AND NOT ANDROID}
     method GetStringFromLocale(aLocaleID: PlatformLocale; aLocaleItem: Integer): String;
-    method GetDateSeparator(aShortDatePattern: String): String;
-    method GetTimeSeparator(aShortTimePattern: String): String;
-    method AdjustPattern(aPattern: String): String;
     {$ELSEIF ICU_LOCALE}
     method GetDateTimePattern(aTimeStyle: UDateFormatStyle; aDateStyle: UDateFormatStyle; aLocaleID: PlatformLocale): String;
     {$ENDIF}
+    {$IF LINUX OR ICU_LOCALE}
+    method GetDateSeparator(aShortDatePattern: String): String;
+    method GetTimeSeparator(aShortTimePattern: String): String;
+    method AdjustPattern(aPattern: String): String;
+    {$ENDIF}
+
+
   public
     constructor(aLocale: PlatformLocale; aIsReadonly: Boolean := false);
     property ShortDayNames: array of String read fShortDayNames write SetShortDayNames;
@@ -352,14 +356,12 @@ begin
 
   fAMString := GetStringFromLocale(aLocale, rtl.AM_STR);
   fPMString := GetStringFromLocale(aLocale, rtl.PM_STR);  
-  fShortDatePattern := GetStringFromLocale(aLocale, rtl.D_FMT); 
+  fShortDatePattern := AdjustPattern(GetStringFromLocale(aLocale, rtl.D_FMT)); 
   fLongDatePattern := AdjustPattern(GetStringFromLocale(aLocale, rtl.D_T_FMT));
-  fShortTimePattern := GetStringFromLocale(aLocale, rtl.T_FMT);
+  fShortTimePattern := AdjustPattern(GetStringFromLocale(aLocale, rtl.T_FMT));
   fLongTimePattern := AdjustPattern(GetStringFromLocale(aLocale, rtl.T_FMT_AMPM));
   fDateSeparator := GetDateSeparator(fShortDatePattern);
   fTimeSeparator := GetTimeSeparator(fShortTimePattern);
-  fShortDatePattern := AdjustPattern(fShortDatepattern);
-  fShortTimePattern := AdjustPattern(fShortTimePattern);
   {$ELSEIF ICU_LOCALE}
   var lErr: UErrorCode;
   var lData := ICUHelper.UDatOpen(UDateFormatStyle.UDAT_FULL, UDateFormatStyle.UDAT_FULL, aLocale, nil, 0, nil, 0, @lErr);
@@ -387,15 +389,12 @@ begin
   lTotal := ICUHelper.UDatGetSymbols(lData, UDateFormatSymbolType.UDAT_AM_PMS, 1, @lBuffer[0], lBuffer.Length, @lErr);
   fPMString := String.FromPChar(@lBuffer[0], lTotal)[0];
 
-  fShortDatePattern := GetDateTimePattern(UDateFormatStyle.UDAT_NONE, UDateFormatStyle.UDAT_SHORT, aLocale);
-  fLongDatePattern := GetDateTimePattern(UDateFormatStyle.UDAT_NONE, UDateFormatStyle.UDAT_LONG, aLocale);
-  fShortTimePattern := GetDateTimePattern(UDateFormatStyle.UDAT_SHORT, UDateFormatStyle.UDAT_NONE, aLocale);
-  fLongTimePattern := GetDateTimePattern(UDateFormatStyle.UDAT_MEDIUM, UDateFormatStyle.UDAT_NONE, aLocale);
-
-  // TODO convert patterns from ICU and get date and time seps.
-  
-  //fDateSeparator := GetDateSeparator(fShortDatePattern);
-  //fTimeSeparator := GetTimeSeparator(fShortTimePattern);
+  fShortDatePattern := AdjustPattern(GetDateTimePattern(UDateFormatStyle.UDAT_NONE, UDateFormatStyle.UDAT_SHORT, aLocale));
+  fLongDatePattern := AdjustPattern(GetDateTimePattern(UDateFormatStyle.UDAT_NONE, UDateFormatStyle.UDAT_LONG, aLocale));
+  fShortTimePattern := AdjustPattern(GetDateTimePattern(UDateFormatStyle.UDAT_SHORT, UDateFormatStyle.UDAT_NONE, aLocale));
+  fLongTimePattern := AdjustPattern(GetDateTimePattern(UDateFormatStyle.UDAT_MEDIUM, UDateFormatStyle.UDAT_NONE, aLocale));
+  fDateSeparator := GetDateSeparator(fShortDatePattern);
+  fTimeSeparator := GetTimeSeparator(fShortTimePattern);
   ICUHelper.UDatClose(lData);
   {$ENDIF}
 end;
@@ -416,26 +415,33 @@ begin
   else
     result := '';
 end;
+{$ELSEIF ICU_LOCALE}
+method DateTimeFormatInfo.GetDateTimePattern(aTimeStyle: UDateFormatStyle; aDateStyle: UDateFormatStyle; aLocaleID: PlatformLocale): String;
+begin
+  var lErr: UErrorCode;
+  var lGMT := 'GMT'.ToAnsiChars(true);
+  var lBuffer := new Char[100];
+  var lData := ICUHelper.UDatOpen(aTimeStyle, aDateStyle, aLocaleID, @lGMT[0], length('GMT'), nil, 0, @lErr);
+  var lTotal := ICUHelper.UDatToPattern(lData, 0, @lBuffer[0], lBuffer.Length, @lErr);
+  result := String.FromPChar(@lBuffer[0], lTotal)[0];
+  ICUHelper.UNumClose(lData);
+end;
+{$ENDIF}
 
+{$IF LINUX OR ICU_LOCALE}
 method DateTimeFormatInfo.GetDateSeparator(aShortDatePattern: String): String;
 begin
-  var lDayPos := aShortDatePattern.IndexOfAny(['d', 'e']);
-  var lMonthPos := aShortDatePattern.IndexOf('m');
-  var lYearPos := aShortDatePattern.IndexOfAny(['C', 'Y']);
+  var lDayPos := aShortDatePattern.IndexOf('dd');
+  var lMonthPos := aShortDatePattern.IndexOf('MM');
+  var lYearLength := 4;
   var lSeparator: String := '/';
   if (lDayPos >= 0) and (lMonthPos >= 0) then begin
     var lBeginPos := Math.Min(lDayPos, lMonthPos);
     var lEndPos := Math.Max(lDayPos, lMonthPos);
-    lSeparator := aShortDatePattern.Substring(lBeginPos + 1, (lEndPos - 1) - (lBeginPos + 1));
-  end
-  else 
-    if (lMonthPos >= 0) and (lYearPos >= 0) then begin
-      var lBeginPos := Math.Min(lYearPos, lMonthPos);
-      var lEndPos := Math.Max(lYearPos, lMonthPos);
-      lSeparator := aShortDatePattern.Substring(lBeginPos + 1, (lEndPos - 1) - (lBeginPos + 1));  
-    end;
+    lSeparator := aShortDatePattern.Substring(lBeginPos + 'dd'.Length, lEndPos - (lBeginPos + 'dd'.Length));
+  end;
 
-  if (lSeparator.IndexOf('%') <= 0) and (lSeparator <> '/') then
+  if (lSeparator.IndexOf('dd') < 0) and (lSeparator.IndexOf('MM') < 0) and (lSeparator <> '/') then
     exit lSeparator;
 
   // search for standard chars if all fails...
@@ -448,16 +454,18 @@ end;
 
 method DateTimeFormatInfo.GetTimeSeparator(aShortTimePattern: String): String;
 begin
-  var lHourPos := aShortTimePattern.IndexOfAny(['H', 'I']);
-  var lMinPos := aShortTimePattern.IndexOf('M');
+  var lHourPos := aShortTimePattern.IndexOf('HH');
+  if lHourPos = -1 then
+    lHourPos := aShortTimePattern.IndexOf('hh');
+  var lMinPos := aShortTimePattern.IndexOf('mm');
   var lSeparator: String := ':';
   if (lHourPos >= 0) and (lMinPos >= 0) then begin
     var lBeginPos := Math.Min(lHourPos, lMinPos);
     var lEndPos := Math.Max(lHourPos, lMinPos);
-    lSeparator := aShortTimePattern.Substring(lBeginPos + 1, (lEndPos - 1) - (lBeginPos + 1));
+    lSeparator := aShortTimePattern.Substring(lBeginPos + 'hh'.Length, lEndPos - (lBeginPos + 'hh'.Length));
   end;
 
-  if (lSeparator.IndexOf('%') <= 0) and (lSeparator <> ':') then
+  if (lSeparator.IndexOf('hh') < 0) and (lSeparator.IndexOf('HH') < 0) and (lSeparator.IndexOf('mm') < 0) and (lSeparator <> ':') then
     exit lSeparator;
 
   // search for standard chars if all fails...
@@ -470,22 +478,16 @@ end;
 
 method DateTimeFormatInfo.AdjustPattern(aPattern: String): String;
 begin
-  var lToFind:    array of String := ['%a',    '%A',  '%b',   '%B', '%d', '%e', '%H', '%I', '%k', '%I', '%m', '%M', '%p', '%P', '%S', '%y', '%Y',   '%z',  '%Z'];
-  var lToReplace: array of String := ['ddd', 'dddd', 'MMM', 'MMMM', 'dd', 'dd', 'HH', 'hh', 'h',  'hh', 'MM', 'mm', 'tt', 'tt', 'ss', 'yy', 'yyyy', 'zzz', 'zzz'];
+  {$IF LINUX}
+  var lToFind:    array of String := ['%a',    '%A',  '%b',   '%B', '%d', '%e', '%H', '%I', '%k', '%I', '%m', '%M', '%p', '%P', '%S', '%C', '%y', '%Y',   '%z',  '%Z'];
+  var lToReplace: array of String := ['ddd', 'dddd', 'MMM', 'MMMM', 'dd', 'dd', 'HH', 'hh', 'h',  'hh', 'MM', 'mm', 'tt', 'tt', 'ss', 'yy', 'yy', 'yyyy', 'zzz', 'zzz'];
+  {$ELSEIF ICU_LOCALE}
+  var lToFind:    array of String := ['GGG', 'GG', 'G', 'y',    'EEEE', 'EEE', 'EE',  'E',   'a',  'ZZZ', 'ZZ',  'Z',  'zz',  'z'];
+  var lToReplace: array of String := ['g',   'g',  'g', 'yyyy', 'dddd', 'ddd', 'ddd', 'ddd', 'tt', 'zzz', 'zzz', 'zz', 'zzz', 'zzz'];
+  {$ENDIF}
   result := aPattern;
   for i: Integer := low(lToFind) to high(lToFind) do
     result := result.Replace(lToFind[i], lToReplace[i]);
-end;
-{$ELSEIF ICU_LOCALE}
-method DateTimeFormatInfo.GetDateTimePattern(aTimeStyle: UDateFormatStyle; aDateStyle: UDateFormatStyle; aLocaleID: PlatformLocale): String;
-begin
-  var lErr: UErrorCode;
-  var lGMT := 'GMT'.ToAnsiChars(true);
-  var lBuffer := new Char[100];
-  var lData := ICUHelper.UDatOpen(aTimeStyle, aDateStyle, aLocaleID, @lGMT[0], length('GMT'), nil, 0, @lErr);
-  var lTotal := ICUHelper.UDatToPattern(lData, 0, @lBuffer[0], lBuffer.Length, @lErr);
-  result := String.FromPChar(@lBuffer[0], lTotal)[0];
-  ICUHelper.UNumClose(lData);
 end;
 {$ENDIF}
 
