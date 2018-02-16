@@ -101,6 +101,7 @@ type
     class property Current: Locale read GetCurrent;
     property Identifier: not nullable String read GetIdentifier;
     property NumberFormat: NumberFormatInfo read fNumberFormat;
+    property DateTimeFormat: DateTimeFormatInfo read fDateTimeFormat;
     property PlatformLocale: PlatformLocale read fLocaleID;
   end;
 
