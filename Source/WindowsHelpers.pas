@@ -133,10 +133,7 @@ type
     {$ENDIF}
     [SymbolName('ElementsRaiseException')]
     class method RaiseException(aRaiseAddress: ^Void; aRaiseFrame: ^Void; aRaiseObject: Object);
-    class method DefaultUserEntryPoint(args: array of String): Integer; empty;
 
-    [SymbolName('main')]
-    class method main: Integer;
     [SymbolName('mainCRTStartup')]
     class method mainCRTStartup: Integer;
     [SymbolName('_DllMainCRTStartup'), CallingConvention(CallingConvention.Stdcall)]
@@ -329,10 +326,12 @@ type
 
 
 
+method DefaultUserEntryPoint(args: array of String): Integer; empty;
+  
 // This is needed by anything msvc compiled; it's the offset in fs for the tls array
 var
   [Alias, SymbolName('__elements_entry_point'), &Weak]
-  UserEntryPoint: UserEntryPointType := @ExternalCalls.DefaultUserEntryPoint;
+  UserEntryPoint: UserEntryPointType := @DefaultUserEntryPoint;
   [SymbolName('_tls_index')]
   _tls_index: Cardinal; public;
   [SectionName('.tls'), SymbolName('_tls_start')]
@@ -359,6 +358,8 @@ var
 
 [SymbolName('__elements_tls_callback_method'), Used, CallingConvention(CallingConvention.Stdcall)]
 method elements_tls_callback(aHandle: ^Void; aReason: rtl.DWORD; aReserved: ^Void);public;
+[SymbolName('main')]
+method main: Integer;
 
 
 method ElementsThreadHelper(aParam: ^Void): rtl.DWORD;
@@ -1093,7 +1094,7 @@ begin
 end;
 
 
-method ExternalCalls.main: Integer;
+method main: Integer;
 begin
   Utilities.Initialize;
   var cnt: Int32;

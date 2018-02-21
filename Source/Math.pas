@@ -75,6 +75,7 @@ type
     class method Min(a,b: Integer): Integer;
     class method Min(a,b: Int64): Int64;
     [SymbolName('fmod'), Used]
+    {$IFDEF WebAssembly}[DLLExport]{$ENDIF}
     class method fmod(x, y: Double): Double;
     class method IEEERemainder(x, y: Double): Double;
     [SymbolName('acos')]
@@ -95,6 +96,7 @@ type
     class method Exp(d: Double): Double;
     class method Exp2(d: Double):Double;
     [SymbolName('floor'), Used]
+    {$IFDEF WebAssembly}[DLLExport]{$ENDIF}
     class method Floor(d: Double): Double;
     [SymbolName('log')]
     class method Log(a: Double): Double;
@@ -118,6 +120,7 @@ type
     [SymbolName('tanh')]
     class method Tanh(d:   Double): Double;
     [SymbolName('trunc'), Used]
+    {$IFDEF WebAssembly}[DLLExport]{$ENDIF}
     class method Truncate(d: Double): Double;
 
     const PI: Double = 3.141592653589793238462643383279502884197169399375105820974944592307816406286208998628034825342117067982148086513282306647093844609550582232;

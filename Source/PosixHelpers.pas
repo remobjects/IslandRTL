@@ -13,6 +13,7 @@ type
     func: atexitfunc;
     next: ^atexitrec;
   end;
+  UserEntryPointType =public method (args: array of String): Integer;
   dliteratecb = function (info :^__struct_dl_phdr_info; size: size_t; data: ^Void): Integer;
   {$IFDEF ARM}rtl.__struct__Unwind_Exception = rtl.__struct__Unwind_Control_Block;{$ENDIF}
   ExternalCalls = public static class
@@ -91,15 +92,14 @@ type
     [SymbolName('ElementsRethrow')]
     method ElementsRethrow;
 
-    [SymbolName('__elements_entry_point'), &Weak]
-    method UserEntryPoint(args: array of String): Integer; external;
-    [SymbolName({$IF EMSCRIPTEN OR ANDROID}'_start'{$ELSE}'__elements_entry_point_helper'{$ENDIF}), Used]
-    method Entrypoint(argc: Integer; argv: ^^AnsiChar; _envp: ^^AnsiChar): Integer;
+    //[SymbolName('__elements_entry_point'), &Weak]
+    //method UserEntryPoint(args: array of String): Integer; external;
+
     {$IF NOT EMSCRIPTEN AND NOT ANDROID}
     [SymbolName('_start'), Naked]
     method _start;
     [SymbolName('__libc_start_main', 'libc.so.6'), &weak]
-    method libc_main(main: LibCEntryHelper; argc: Integer; argv: ^^Char; init: LibCEntryHelper; fini: LibCFinalizerHelper); external;
+    method libc_main(main: LibCEntryHelper; argc: Integer; argv: ^^Char; aInit: LibCEntryHelper; aFini: LibCFinalizerHelper); external;
     {$ENDIF}
     [SymbolName('__elements_init'), Used]
     method init(_nargs: Integer; _args: ^^AnsiChar; _envp: ^^AnsiChar): Integer;
@@ -242,6 +242,16 @@ method free(v: ^Void);inline;
 begin 
    rtl.Free(v);
 end;
+
+
+method DefaultUserEntryPoint(aArgs: array of String): Integer; empty;
+  
+var
+[Alias, SymbolName('__elements_entry_point'), &Weak]
+UserEntryPoint: UserEntryPointType := @DefaultUserEntryPoint;
+
+[SymbolName({$IF EMSCRIPTEN OR ANDROID}'_start'{$ELSE}'__elements_entry_point_helper'{$ENDIF}), Used]
+method Entrypoint(argc: Integer; argv: ^^AnsiChar; _envp: ^^AnsiChar): Integer;
 
 implementation
 
@@ -454,16 +464,16 @@ begin
 end;
 {$ENDIF}
 {$HIDE W27}
-method ExternalCalls.Entrypoint(argc: Integer; argv: ^^AnsiChar; _envp: ^^AnsiChar): Integer;
+method Entrypoint(argc: Integer; argv: ^^AnsiChar; _envp: ^^AnsiChar): Integer;
 begin
-  ExternalCalls.nargs := nargs;
-  ExternalCalls.args := args;
+  ExternalCalls.nargs := argc;
+  ExternalCalls.args := argv;
   ExternalCalls.envp := _envp;
   Utilities.Initialize;
   exit UserEntryPoint([]);
   {$IF NOT EMSCRIPTEN AND NOT ANDROID}
   {$HIDE H14}
-  libc_main(nil, 0, nil, nil, nil); // do not remove, this is there to ensure it's linked in.
+  ExternalCalls.libc_main(nil, 0, nil, nil, nil); // do not remove, this is there to ensure it's linked in.
   {$SHOW H14}
   {$ENDIF}
 end;

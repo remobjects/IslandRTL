@@ -706,7 +706,7 @@ begin
   var lBuffer := new Char[lrequired_size];
   lrequired_size := rtl.LCMapStringW(aLocale.PlatformLocale, options, @self.fFirstChar, self.Length, @lBuffer[0], lrequired_size);
   if (lrequired_size = 0) and (rtl.GetLastError <> 0) then RaiseError('Problem with calling LCMapString (2nd call)');
-  result := String.FromPChar(@lBuffer[0], lrequired_size - 1);
+  result := String.FromPChar(@lBuffer[0], lrequired_size);
 end;
 {$ENDIF}
 
