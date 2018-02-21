@@ -470,7 +470,7 @@ type
     class method CreateHandle(aVal: Object): IntPtr;
     begin
       if aVal = nil then exit 0;
-      if aVal is EcmaScriptObject then exit WebAssemblyCalls.CloneHandle(EcmaScriptObject(aVal).Handle);
+      if aVal is EcmaScriptObject then begin var lPtr := InternalCalls.Cast(aVal); var lObject := EcmaScriptObject(aVal); lObject['__elements_handle'] := NativeInt(lPtr); exit WebAssemblyCalls.CloneHandle(lObject.Handle); end;
       if aVal is Integer then exit WebAssemblyCalls.CreateInteger(aVal as Integer);
       if aVal is Boolean then exit WebAssemblyCalls.CreateBoolean(aVal as Boolean);
       if aVal is Double then exit WebAssemblyCalls.CreateDouble(aVal as Double);
