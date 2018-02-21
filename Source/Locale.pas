@@ -28,9 +28,9 @@ type
   DateTimeFormatInfo = public class
   private
     fShortDayNames := new String[7];
-    fLongDayNames: array of String;
-    fShortMonthNames: array of String;
-    fLongMonthNames: array of String;
+    fLongDayNames := new String[7];
+    fShortMonthNames := new String[12];
+    fLongMonthNames := new String[12];
     fDateSeparator: String;
     fTimeSeparator: String;
     fAMString: String;
