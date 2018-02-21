@@ -600,6 +600,7 @@ type
     end;
 
     [SymbolName('memcpy')]    
+    [DLLExport]
     method memcpy(destination: ^Void; source: ^Void; aNum: NativeInt): ^Void;
     begin
       result := destination;
@@ -634,6 +635,7 @@ type
     end;
 
     [SymbolName('memset')]
+    [DLLExport]
     method memset(ptr: ^Void; value: Integer; aNum: NativeInt): ^Void;
     begin
       value := value and $FF;
@@ -661,6 +663,7 @@ type
     end;
 
     [SymbolName('memmove')]
+    [DLLExport]
     method memmove(destination: ^Void; source: ^Void; aNum: NativeInt): ^Void;
     begin
       result := destination;
