@@ -123,9 +123,15 @@ type
 
     class method GC_my_register_my_thread: Integer;
     begin 
+      {$IFDEF WINDOWS}
+      var sb: GC_stack_base;
+      GC_get_stack_base(@sb);
+      exit GC_register_my_thread(@sb);
+      {$ELSE}
       var sb: __struct_GC_stack_base;
       GC_get_stack_base(@sb);
       exit GC_register_my_thread(@sb);
+      {$ENDIF}
     end;
 
   public
