@@ -67,7 +67,24 @@ type
     UNUM_NUMBERING_SYSTEM, UNUM_PATTERN_RULEBASED, UNUM_DEFAULT, UNUM_IGNORE
   );
 
+  //http://icu-project.org/apiref/icu4c/udat_8h.html#a5eefb511a1a2cdc12bcbd06ed29880f4
+  UDateFormatSymbolType = public enum (
+    UDAT_ERAS, UDAT_MONTHS, UDAT_SHORT_MONTHS, UDAT_WEEKDAYS, UDAT_SHORT_WEEKDAYS, UDAT_AM_PMS, UDAT_LOCALIZED_CHARS, 
+    UDAT_ERA_NAMES, UDAT_NARROW_MONTHS, UDAT_NARROW_WEEKDAYS, UDAT_STANDALONE_MONTHS, UDAT_STANDALONE_SHORT_MONTHS, 
+    UDAT_STANDALONE_NARROW_MONTHS, UDAT_STANDALONE_WEEKDAYS, UDAT_STANDALONE_SHORT_WEEKDAYS, UDAT_STANDALONE_NARROW_WEEKDAYS, 
+    UDAT_QUARTERS, UDAT_SHORT_QUARTERS, UDAT_STANDALONE_QUARTERS, UDAT_STANDALONE_SHORT_QUARTERS, UDAT_SHORTER_WEEKDAYS, 
+    UDAT_STANDALONE_SHORTER_WEEKDAYS, UDAT_CYCLIC_YEARS_WIDE, UDAT_CYCLIC_YEARS_ABBREVIATED, UDAT_CYCLIC_YEARS_NARROW, 
+    UDAT_ZODIAC_NAMES_WIDE, UDAT_ZODIAC_NAMES_ABBREVIATED, UDAT_ZODIAC_NAMES_NARROW
+  );
+
+  //http://icu-project.org/apiref/icu4c/udat_8h.html#adb4c5a95efb888d04d38db7b3efff0c5
+  UDateFormatStyle = public enum (
+    UDAT_FULL, UDAT_LONG, UDAT_MEDIUM, UDAT_SHORT, UDAT_DEFAULT, UDAT_RELATIVE, UDAT_NONE, UDAT_PATTERN, UDAT_IGNORE
+  );
+
   UNumberFormat = ^Void;
+  UDateFormat = ^Void;
+  UBool = Byte;
 
   //http://icu-project.org/apiref/icu4c/structUParseError.html
   UParseError = public record
@@ -102,6 +119,11 @@ type
     class var ULocGetName: uloc_getName;
     class var UStrToUpper: u_strToUpper;
     class var UStrToLower: u_strToLower;
+    class var UDatGetSymbols: udat_getSymbols;
+    class var UDatCountSymbols: udat_countSymbols;
+    class var UDatOpen: udat_open;
+    class var UDatToPattern: udat_toPattern;
+    class var UDatClose: udat_close;
   end;
 
   unum_getSymbol = public function(fmt: ^Void; symbol: UNumberFormatSymbol; buffer: ^Void; bufferLength: Int32; status: ^UErrorCode): Int32;
@@ -115,6 +137,13 @@ type
 
   u_strToUpper = public function(dest: ^Void; destCapaciy: Int32; src: ^Void; srcLength: Int32; localeID: ^Void; err: ^UErrorCode): Int32;
   u_strToLower = public function(dest: ^Void; destCapaciy: Int32; src: ^Void; srcLength: Int32; localeID: ^Void; err: ^UErrorCode): Int32;
+
+  udat_open = public function(timeStyle: UDateFormatStyle; dateStyle: UDateFormatStyle; locale: ^Void; tzID: ^Void; tzIDLength: Int32; 
+    pattern: ^Void; patternLength: Int32; err: ^UErrorCode): ^UDateFormat;
+  udat_getSymbols = public function(fmt: ^UDateFormat; &type: UDateFormatSymbolType; symbolIndex: Int32; &result: ^Void; resultLength: Int32; err: ^UErrorCode): Int32;
+  udat_countSymbols = public function(fmt: ^UDateFormat; &type: UDateFormatSymbolType): Int32;
+  udat_toPattern = public function(fmt: ^UDateFormat; localized: UBool; &result: ^Void; resultLength: Int32; err: ^UErrorCode): Int32;
+  udat_close = public procedure(format: ^UDateFormat);
 
 implementation
 
@@ -190,6 +219,11 @@ begin
   ULocGetName := uloc_getName(GetSymbol(fLibICU, 'uloc_getName'));
   UStrToUpper := u_strToUpper(GetSymbol(fLibICU, 'u_strToUpper'));
   UStrToLower := u_strToLower(GetSymbol(fLibICU, 'u_strToLower'));
+  UDatGetSymbols := udat_getSymbols(GetSymbol(fLib18n, 'udat_getSymbols'));
+  UDatCountSymbols := udat_countSymbols(GetSymbol(fLib18n, 'udat_countSymbols'));
+  UDatOpen := udat_open(GetSymbol(fLib18n, 'udat_open'));
+  UDatToPattern := udat_toPattern(GetSymbol(fLib18n, 'udat_toPattern'));
+  UDatClose := udat_close(GetSymbol(fLib18n, 'udat_close'));
 end;
 
 {$ENDIF}
