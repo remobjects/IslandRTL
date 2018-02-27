@@ -419,6 +419,12 @@ module ElementsWebAssembly {
             else
                 return createHandle(navigator.language);
         };
+        imp.env.__island_alert = function (message: number, messageLen: number) {
+            window.alert(readCharsFromMemory(message, messageLen));
+        };
+        imp.env.__island_getWindow = function (): number {
+            return createHandle(window);
+        };
     }
 
 

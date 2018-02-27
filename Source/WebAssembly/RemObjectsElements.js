@@ -457,6 +457,12 @@ var ElementsWebAssembly;
             else
                 return createHandle(navigator.language);
         };
+        imp.env.__island_alert = function (message, messageLen) {
+            window.alert(readCharsFromMemory(message, messageLen));
+        };
+        imp.env.__island_getWindow = function () {
+            return createHandle(window);
+        };
     }
     function fetchAndInstantiate(url, importObject, memorySize, tableSize) {
         if (memorySize === void 0) { memorySize = 64; }

@@ -132,6 +132,12 @@ type
 
     [DllImport('', EntryPoint := '__island_getCurrentLocale')]
     class method GetCurrentLocale: Int32; external;
+
+    [DllImport('', EntryPoint := '__island_alert')]
+    class method ShowMessage(message: ^Char; messageLength: Int32); external;
+
+    [DllImport('', EntryPoint := '__island_getWindow')]
+    class method GetWindowObject: IntPtr; external;
   end;
 
   EcmaScriptPropertyFlags = public flags (
