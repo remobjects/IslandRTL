@@ -550,6 +550,11 @@ type
     begin 
       exit new EcmaScriptObject(WebAssemblyCalls.CreateArray);
     end;
+
+    class method GetWindowObject: dynamic;
+    begin
+      exit new EcmaScriptObject(WebAssemblyCalls.GetWindowObject);
+    end;
   end;
 
   WebassemblyType = public enum (Null, Undefined, String, Number, &Function, Symbol, Object, Boolean);
