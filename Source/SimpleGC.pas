@@ -23,7 +23,7 @@ type
   {$ENDIF}
   MyIntPtr = {$IFNDEF CPU64}Int32{$ELSE CPU64}Int64{$ENDIF};
   {$IFDEF WEBASSEMBLY}
-  DefaultGC = SimpleGC;
+  DefaultGC = public SimpleGC;
   {$ENDIF}
   SimpleGC<T> = public lifetimestrategy(SimpleGC) T;
   SimpleGC = public record (ILifetimeStrategy<SimpleGC>)
