@@ -3,7 +3,7 @@
 interface
 
 type
-  Tuple<T1> = public class
+  Tuple<T1> = public record
   public
     constructor(aItem1: T1);
     property Item1: T1; readonly;
@@ -11,7 +11,7 @@ type
     method &Equals(arg1: Object): Boolean; override;
   end;
 
-  Tuple<T1, T2> = public class
+  Tuple<T1, T2> = public record
   public
     constructor(aItem1: T1; aItem2: T2);
     property Item1: T1; readonly;
@@ -20,7 +20,7 @@ type
     method &Equals(arg1: Object): Boolean; override;
   end;
 
-  Tuple<T1, T2, T3> = public class
+  Tuple<T1, T2, T3> = public record
   public
     constructor(aItem1: T1; aItem2: T2; aItem3: T3);
     property Item1: T1; readonly;
@@ -30,7 +30,7 @@ type
     method &Equals(arg1: Object): Boolean; override;
   end;
 
-  Tuple<T1, T2, T3, T4> = public class
+  Tuple<T1, T2, T3, T4> = public record
   public
     constructor(aItem1: T1; aItem2: T2; aItem3: T3; aItem4: T4);
     property Item1: T1; readonly;
@@ -41,7 +41,7 @@ type
     method &Equals(arg1: Object): Boolean; override;
   end;
 
-  Tuple<T1, T2, T3, T4, T5> = public class
+  Tuple<T1, T2, T3, T4, T5> = public record
   public
     constructor(aItem1: T1; aItem2: T2; aItem3: T3; aItem4: T4; aItem5: T5);
     property Item1: T1; readonly;
@@ -53,7 +53,7 @@ type
     method &Equals(arg1: Object): Boolean; override;
   end;
 
-  Tuple<T1, T2, T3, T4, T5, T6> = public class
+  Tuple<T1, T2, T3, T4, T5, T6> = public record
   public
     constructor(aItem1: T1; aItem2: T2; aItem3: T3; aItem4: T4; aItem5: T5; aItem6: T6);
     property Item1: T1; readonly;
@@ -66,7 +66,7 @@ type
     method &Equals(arg1: Object): Boolean; override;
   end;
 
-  Tuple<T1, T2, T3, T4, T5, T6, T7> = public class
+  Tuple<T1, T2, T3, T4, T5, T6, T7> = public record
   public
     constructor(aItem1: T1; aItem2: T2; aItem3: T3; aItem4: T4; aItem5: T5; aItem6: T6; aItem7: T7);
     property Item1: T1; readonly;
@@ -80,7 +80,7 @@ type
     method &Equals(arg1: Object): Boolean; override;
   end;
 
-  Tuple<T1, T2, T3, T4, T5, T6, T7, T8> = public class
+  Tuple<T1, T2, T3, T4, T5, T6, T7, T8> = public record
   public
     constructor(aItem1: T1; aItem2: T2; aItem3: T3; aItem4: T4; aItem5: T5; aItem6: T6; aItem7: T7; aItem8: T8);
     property Item1: T1; readonly;
