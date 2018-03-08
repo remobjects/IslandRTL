@@ -22,7 +22,7 @@ type
     method pow_int;
     begin
       var sValue := 2.0;
-      var s1: double;
+      var s1: Double;
       s1 := Math.Pow(sValue, 5);
       Assert.AreEqual(s1, 32.0);
       s1 := Math.Pow(sValue, 8);
