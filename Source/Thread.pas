@@ -92,23 +92,27 @@ type
   end;
   {$ELSE}
   WaitHandle = public abstract class(IDisposable)
-  private
+  protected
+    method DoWait(aTimeMS: Integer): Boolean; abstract;
+    method DoWait; abstract;
+    method DoDispose; abstract;
   public
-    method Wait(aTimeMS: Integer): Boolean; abstract;
-    method Wait;abstract;
-    method Dispose; abstract;
+    method Wait(aTimeMS: Integer): Boolean;
+    method Wait;
+    method Dispose;
   end;
   Mutex = public class(WaitHandle)
   private
     fMutex: rtl.pthread_mutex_t;
     fDisposed: Boolean;
+  protected
+    method DoWait(aTimeMS: Integer): Boolean; override;
+    method DoWait; override;
+    method DoDispose; override;
   public
     constructor(aInitialValue: Boolean);
     method Release;
-    method Wait(aTimeMS: Integer): Boolean; override;
-    method Wait; override;
-    finalizer;
-    method Dispose; override;
+    finalizer;    
   end;
 
   EventWaitHandle = public class(WaitHandle)
@@ -116,13 +120,14 @@ type
     fMutex: rtl.pthread_mutex_t;
     fCV: rtl.pthread_cond_t;
     fDisposed, fAutoReset, fValue: Boolean;
+  protected
+    method DoWait(aTimeMS: Integer): Boolean; override;
+    method DoWait; override;
+    method DoDispose; override;
   public
     constructor(aAutoReset: Boolean; aInitialValue: Boolean);
     method &Set;
     method Reset;
-    method Wait(aTimeMS: Integer): Boolean; override;
-    method Wait; override;
-    method Dispose; override;
     finalizer;
   end;
   {$ENDIF}
@@ -382,6 +387,22 @@ begin
   rtl.ReleaseMutex(fHandle);
 end;
 {$ELSE}
+
+method WaitHandle.Wait(aTimeMS: Integer): Boolean;
+begin
+  exit DoWait(aTimeMS);
+end;
+
+method WaitHandle.Wait;
+begin
+  DoWait;
+end;
+
+method WaitHandle.Dispose;
+begin
+  DoDispose;
+end;
+
 constructor Mutex(aInitialValue: Boolean);
 begin
   rtl.pthread_mutex_init(@fMutex, nil);
@@ -393,7 +414,7 @@ begin
   rtl.pthread_mutex_unlock(@fMutex);
 end;
 
-method Mutex.Wait(aTimeMS: Integer): Boolean;
+method Mutex.DoWait(aTimeMS: Integer): Boolean;
 begin
   var ts: rtl.__struct_timespec;
   rtl.clock_gettime(rtl.CLOCK_REALTIME , @ts);
@@ -402,7 +423,7 @@ begin
   exit rtl.pthread_mutex_timedlock(@fMutex, @ts) = 0;
 end;
 
-method Mutex.Wait;
+method Mutex.DoWait;
 begin
   rtl.pthread_mutex_lock(@fMutex);
 end;
@@ -412,7 +433,7 @@ begin
   Dispose;
 end;
 
-method Mutex.Dispose;
+method Mutex.DoDispose;
 begin
   if not fDisposed then begin
     rtl.pthread_mutex_destroy(@fMutex);
@@ -446,7 +467,7 @@ begin
   rtl.pthread_mutex_unlock(@fMutex);
 end;
 
-method EventWaitHandle.Wait(aTimeMS: Integer): Boolean;
+method EventWaitHandle.DoWait(aTimeMS: Integer): Boolean;
 begin
   var ts, ts2: rtl.__struct_timespec;
   rtl.clock_gettime(rtl.CLOCK_REALTIME , @ts);
@@ -467,7 +488,7 @@ begin
   rtl.pthread_mutex_unlock(@fMutex);
 end;
 
-method EventWaitHandle.Wait;
+method EventWaitHandle.DoWait;
 begin
   rtl.pthread_mutex_lock(@fMutex);
   loop begin
@@ -480,7 +501,7 @@ begin
   rtl.pthread_mutex_unlock(@fMutex);
 end;
 
-method EventWaitHandle.Dispose;
+method EventWaitHandle.DoDispose;
 begin
   if not fDisposed then begin
     fDisposed := true;
@@ -495,4 +516,5 @@ begin
 end;
 {$ENDIF}
 {$ENDIF}
+
 end.

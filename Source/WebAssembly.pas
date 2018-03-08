@@ -132,6 +132,12 @@ type
 
     [DllImport('', EntryPoint := '__island_getCurrentLocale')]
     class method GetCurrentLocale: Int32; external;
+
+    [DllImport('', EntryPoint := '__island_alert')]
+    class method ShowMessage(message: ^Char; messageLength: Int32); external;
+
+    [DllImport('', EntryPoint := '__island_getWindow')]
+    class method GetWindowObject: IntPtr; external;
   end;
 
   EcmaScriptPropertyFlags = public flags (
@@ -543,6 +549,11 @@ type
     class method CreateArray: dynamic;
     begin 
       exit new EcmaScriptObject(WebAssemblyCalls.CreateArray);
+    end;
+
+    class method GetWindowObject: dynamic;
+    begin
+      exit new EcmaScriptObject(WebAssemblyCalls.GetWindowObject);
     end;
   end;
 
