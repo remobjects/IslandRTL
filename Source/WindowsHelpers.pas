@@ -139,11 +139,6 @@ type
     [SymbolName('_DllMainCRTStartup'), CallingConvention(CallingConvention.Stdcall)]
     class method DllMainCRTStartup(aModule: rtl.HMODULE; aReason: rtl.DWORD; aReserved: ^Void): Boolean;
 
-    [SymbolName('__elements_dll_entry'), &Weak]
-    class method DllEntry;  external;
-    [SymbolName('__elements_dll_exit'), &Weak]
-    class method DllExit;  external;
-
     class property ModuleHandle: rtl.HMODULE read fModuleHandle;
 
 
@@ -252,6 +247,7 @@ type
 {$SHOW H7}{$SHOW H6}
 
   UserEntryPointType =public method (args: array of String): Integer;
+  DllMainType = public method (aModule: rtl.HMODULE; aReason: rtl.DWORD; aReserved: ^Void): Boolean;
   ThreadRec = public class
   public
     property Call: rtl.PTHREAD_START_ROUTINE;
@@ -327,11 +323,14 @@ type
 
 
 method DefaultUserEntryPoint(args: array of String): Integer; empty;
+method DefaultDllMain(aModule: rtl.HMODULE; aReason: rtl.DWORD; aReserved: ^Void): Boolean; 
   
 // This is needed by anything msvc compiled; it's the offset in fs for the tls array
 var
   [Alias, SymbolName('__elements_entry_point'), &Weak]
   UserEntryPoint: UserEntryPointType := @DefaultUserEntryPoint;
+  [Alias, SymbolName('__elements_dll_main'), &Weak]
+  DllMain: DllMainType := @DefaultDllMain;
   [SymbolName('_tls_index')]
   _tls_index: Cardinal; public;
   [SectionName('.tls'), SymbolName('_tls_start')]
@@ -1116,14 +1115,11 @@ type
 method ExternalCalls.DllMainCRTStartup(aModule: rtl.HMODULE; aReason: rtl.DWORD; aReserved: ^Void): Boolean;
 begin
   fModuleHandle := aModule;
-  var m: VoidMethod;
-  if aReason = rtl.DLL_PROCESS_ATTACH then begin
-    m := @DllEntry;
-    if assigned(m) then m();
-  end;
-  if aReason = rtl.DLL_PROCESS_ATTACH then
-    m := @DllExit;
-    if assigned(m) then m();
+  exit DllMain(aModule, aReason, aReserved);
+end;
+
+method DefaultDllMain(aModule: rtl.HMODULE; aReason: rtl.DWORD; aReserved: ^Void): Boolean; 
+begin 
   exit true;
 end;
 
