@@ -1,4 +1,4 @@
-namespace Elements.RTL2.Tests.Shared;
+﻿namespace Elements.RTL2.Tests.Shared;
 
 uses
   RemObjects.Elements.EUnit;
@@ -18,18 +18,18 @@ type
 
     method doTest3(aValue: Double);
     begin
-      var res: double;
+      var res: Double;
       Assert.AreEqual(false, Double.TryParse(aValue.ToString,out res));
     end;
 
   public
     method TestStd;
     begin
-      dotest(123456);
-      dotest(-123456);
-      dotest(123.456);
-      dotest(-123.456E-10);
-      dotest(123.456E+10);
+      doTest(123456);
+      doTest(-123456);
+      doTest(123.456);
+      doTest(-123.456E-10);
+      doTest(123.456E+10);
       doTest2('+12345E-2',+12345E-2);
       doTest2('+12345E+2',+12345E+2);
       doTest2('-12345E2',-12345E2);
@@ -80,24 +80,24 @@ type
   public
     method TestStd;
     begin
-      dotest(123456);
-      dotest(-123456);
-      dotest(123.456);
-      dotest(-123.456E-10);
-      dotest(123.456E+10);
+      doTest(123456);
+      doTest(-123456);
+      doTest(123.456);
+      doTest(-123.456E-10);
+      doTest(123.456E+10);
       doTest2('+12345E-2',+12345E-2);
       doTest2('+12345E+2',+12345E+2);
       doTest2('-12345E2',-12345E2);
       doTest2(       '-123456789012345678.90123456789e1',
-               single(-123456789012345678.90123456789e1));
+               Single(-123456789012345678.90123456789e1));
 
 
       doTest2(       '-12345678901234567890123456789.0',
-               single(-12345678901234567890123456789.0));
+               Single(-12345678901234567890123456789.0));
       doTest2(       '-12345678901234567890123456789E-2',
-               single(-12345678901234567890123456789E-2));
+               Single(-12345678901234567890123456789E-2));
       doTest2(       '123456789012345678901234567890E9',
-               single(123456789012345678901234567890E9));
+               Single(123456789012345678901234567890E9));
 
       doTest(Single.MaxValue);
       doTest(Single.MinValue);
@@ -108,7 +108,7 @@ type
     begin
       doTest3(Single.PositiveInfinity);
       doTest3(Single.NegativeInfinity);
-      doTest3(Single.NaN);
+      doTest3(Single.NAN);
     end;
 
 

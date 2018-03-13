@@ -7,17 +7,17 @@ type
   TextConvert_Utf_conversion = public class(Test)
   private
     const ggg: String = 'русский текст';
-    const ggg_UTF8: array of byte =                       [$D1, $80, $D1, $83, $D1, $81, $D1, $81, $D0, $BA, $D0, $B8, $D0, $B9, $20, $D1, $82, $D0, $B5, $D0, $BA, $D1, $81, $D1, $82];
-    const ggg_UTF8_BOM: array of byte =    [$EF, $BB, $BF, $D1, $80, $D1, $83, $D1, $81, $D1, $81, $D0, $BA, $D0, $B8, $D0, $B9, $20, $D1, $82, $D0, $B5, $D0, $BA, $D1, $81, $D1, $82];
-    const ggg_UTF16LE: array of byte =               [$40, $04, $43, $04, $41, $04, $41, $04, $3A, $04, $38, $04, $39, $04, $20, $00, $42, $04, $35, $04, $3A, $04, $41, $04, $42, $04];
-    const ggg_UTF16LE_BOM: array of byte = [$FF, $FE, $40, $04, $43, $04, $41, $04, $41, $04, $3A, $04, $38, $04, $39, $04, $20, $00, $42, $04, $35, $04, $3A, $04, $41, $04, $42, $04];
-    const ggg_UTF16BE: array of byte =               [$04, $40, $04, $43, $04, $41, $04, $41, $04, $3A, $04, $38, $04, $39, $00, $20, $04, $42, $04, $35, $04, $3A, $04, $41, $04, $42];                                                       
-    const ggg_UTF16BE_BOM: array of byte = [$FE, $FF, $04, $40, $04, $43, $04, $41, $04, $41, $04, $3A, $04, $38, $04, $39, $00, $20, $04, $42, $04, $35, $04, $3A, $04, $41, $04, $42];
-    const ggg_UTF32LE: array of byte =                         [$40, $04, $00, $00, $43, $04, $00, $00, $41, $04, $00, $00, $41, $04, $00, $00, $3A, $04, $00, $00, $38, $04, $00, $00, $39, $04, $00, $00, $20, $00, $00, $00, $42, $04, $00, $00, $35, $04, $00, $00, $3A, $04, $00, $00, $41, $04, $00, $00, $42, $04, $00, $00];
-    const ggg_UTF32LE_BOM: array of byte = [$FF, $FE, $00, $00, $40, $04, $00, $00, $43, $04, $00, $00, $41, $04, $00, $00, $41, $04, $00, $00, $3A, $04, $00, $00, $38, $04, $00, $00, $39, $04, $00, $00, $20, $00, $00, $00, $42, $04, $00, $00, $35, $04, $00, $00, $3A, $04, $00, $00, $41, $04, $00, $00, $42, $04, $00, $00];
-    const ggg_UTF32BE: array of byte =                         [$00, $00, $04, $40, $00, $00, $04, $43, $00, $00, $04, $41, $00, $00, $04, $41, $00, $00, $04, $3A, $00, $00, $04, $38, $00, $00, $04, $39, $00, $00, $00, $20, $00, $00, $04, $42, $00, $00, $04, $35, $00, $00, $04, $3A, $00, $00, $04, $41, $00, $00, $04, $42];
-    const ggg_UTF32BE_BOM: array of byte = [$00, $00, $FE, $FF, $00, $00, $04, $40, $00, $00, $04, $43, $00, $00, $04, $41, $00, $00, $04, $41, $00, $00, $04, $3A, $00, $00, $04, $38, $00, $00, $04, $39, $00, $00, $00, $20, $00, $00, $04, $42, $00, $00, $04, $35, $00, $00, $04, $3A, $00, $00, $04, $41, $00, $00, $04, $42];
-    class method ArraytoString(aValue: array of byte):String;
+    const ggg_UTF8: array of Byte =                       [$D1, $80, $D1, $83, $D1, $81, $D1, $81, $D0, $BA, $D0, $B8, $D0, $B9, $20, $D1, $82, $D0, $B5, $D0, $BA, $D1, $81, $D1, $82];
+    const ggg_UTF8_BOM: array of Byte =    [$EF, $BB, $BF, $D1, $80, $D1, $83, $D1, $81, $D1, $81, $D0, $BA, $D0, $B8, $D0, $B9, $20, $D1, $82, $D0, $B5, $D0, $BA, $D1, $81, $D1, $82];
+    const ggg_UTF16LE: array of Byte =               [$40, $04, $43, $04, $41, $04, $41, $04, $3A, $04, $38, $04, $39, $04, $20, $00, $42, $04, $35, $04, $3A, $04, $41, $04, $42, $04];
+    const ggg_UTF16LE_BOM: array of Byte = [$FF, $FE, $40, $04, $43, $04, $41, $04, $41, $04, $3A, $04, $38, $04, $39, $04, $20, $00, $42, $04, $35, $04, $3A, $04, $41, $04, $42, $04];
+    const ggg_UTF16BE: array of Byte =               [$04, $40, $04, $43, $04, $41, $04, $41, $04, $3A, $04, $38, $04, $39, $00, $20, $04, $42, $04, $35, $04, $3A, $04, $41, $04, $42];
+    const ggg_UTF16BE_BOM: array of Byte = [$FE, $FF, $04, $40, $04, $43, $04, $41, $04, $41, $04, $3A, $04, $38, $04, $39, $00, $20, $04, $42, $04, $35, $04, $3A, $04, $41, $04, $42];
+    const ggg_UTF32LE: array of Byte =                         [$40, $04, $00, $00, $43, $04, $00, $00, $41, $04, $00, $00, $41, $04, $00, $00, $3A, $04, $00, $00, $38, $04, $00, $00, $39, $04, $00, $00, $20, $00, $00, $00, $42, $04, $00, $00, $35, $04, $00, $00, $3A, $04, $00, $00, $41, $04, $00, $00, $42, $04, $00, $00];
+    const ggg_UTF32LE_BOM: array of Byte = [$FF, $FE, $00, $00, $40, $04, $00, $00, $43, $04, $00, $00, $41, $04, $00, $00, $41, $04, $00, $00, $3A, $04, $00, $00, $38, $04, $00, $00, $39, $04, $00, $00, $20, $00, $00, $00, $42, $04, $00, $00, $35, $04, $00, $00, $3A, $04, $00, $00, $41, $04, $00, $00, $42, $04, $00, $00];
+    const ggg_UTF32BE: array of Byte =                         [$00, $00, $04, $40, $00, $00, $04, $43, $00, $00, $04, $41, $00, $00, $04, $41, $00, $00, $04, $3A, $00, $00, $04, $38, $00, $00, $04, $39, $00, $00, $00, $20, $00, $00, $04, $42, $00, $00, $04, $35, $00, $00, $04, $3A, $00, $00, $04, $41, $00, $00, $04, $42];
+    const ggg_UTF32BE_BOM: array of Byte = [$00, $00, $FE, $FF, $00, $00, $04, $40, $00, $00, $04, $43, $00, $00, $04, $41, $00, $00, $04, $41, $00, $00, $04, $3A, $00, $00, $04, $38, $00, $00, $04, $39, $00, $00, $00, $20, $00, $00, $04, $42, $00, $00, $04, $35, $00, $00, $04, $3A, $00, $00, $04, $41, $00, $00, $04, $42];
+    class method ArraytoString(aValue: array of Byte):String;
     begin
       var str := new StringBuilder;
       for i:Integer:=0 to aValue.Length-1 do
@@ -26,14 +26,14 @@ type
     end;
   public
     method test_UTF8ToString;
-    begin      
-      var b := TextConvert.UTF8ToString(ggg_UTF8);      
+    begin
+      var b := TextConvert.UTF8ToString(ggg_UTF8);
       Assert.AreEqual(b,ggg);
     end;
 
     method test_UTF8ToString_BOM;
-    begin      
-      var b := TextConvert.UTF8ToString(ggg_UTF8_BOM);      
+    begin
+      var b := TextConvert.UTF8ToString(ggg_UTF8_BOM);
       Assert.AreEqual(b,ggg);
     end;
 
@@ -167,23 +167,23 @@ type
 
     method test;
     begin
-      var a: array of byte  := [$F4, $8F, $BF, $BD];
-      var b :=  TextConvert.UTF8ToString(a); 
-      var c := TextConvert.StringToUTF8(b); 
+      var a: array of Byte  := [$F4, $8F, $BF, $BD];
+      var b :=  TextConvert.UTF8ToString(a);
+      var c := TextConvert.StringToUTF8(b);
       var a1 := ArraytoString(a);
       var c1 := ArraytoString(c);
       Assert.AreEqual(a1,c1);
 
       c := TextConvert.StringToUTF16BE(b);
       a1 := ArraytoString(c);//16be
-      A := [$DB, $FF, $DF, $FD];
+      a := [$DB, $FF, $DF, $FD];
       c1 := ArraytoString(a);
       Assert.AreEqual(a1,c1);
 
       c := TextConvert.StringToUTF32BE(b);
       a1 := ArraytoString(c);//32be
-      A := [$00, $10,$FF, $FD];
-      c1 := ArraytoString(A);
+      a := [$00, $10,$FF, $FD];
+      c1 := ArraytoString(a);
       Assert.AreEqual(a1,c1);
     end;
 
