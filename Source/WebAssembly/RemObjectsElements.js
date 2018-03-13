@@ -18,6 +18,8 @@ function __elements_debug_wasm_toHexString(orgByteArray, start, len) {
         start = 0;
     if (!len)
         len = byteArray.length;
+    if (start + len > byteArray.length)
+        len = byteArray.length - start;
     for (var i = 0; i < len; i++) {
         if (i % 4096 == 4095) {
             s += ch;
