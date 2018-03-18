@@ -106,7 +106,7 @@ type
       if lSign then exit False;
       var sValue : UInt64 := arr[0];
 
-      for i:Integer := 1 to arr.Length-1 do begin
+      for i: Integer := 1 to arr.Length-1 do begin
         if (sValue > UInt64.MaxValue / 10) or (sValue*10 > UInt64.MaxValue - arr[i]) then begin
           if aRaiseOverflowException then
             RaiseOverflowException
@@ -122,14 +122,28 @@ type
     method HexStringToUInt64(s: String): UInt64;
     begin
       var arr: array of Byte;
-      if not ParseHex(s,out arr) then RaiseBadHexString;
+      if not ParseHex(s, out arr) then RaiseBadHexString;
       var sValue : UInt64 := arr[0];
 
-      for i:Integer := 1 to arr.Length-1 do begin
+      for i: Integer := 1 to arr.Length-1 do begin
         if (sValue > UInt64.MaxValue shr 4) or (sValue shl 4 > UInt64.MaxValue - arr[i]) then RaiseOverflowException;
         sValue := (sValue shl 4)+arr[i];
       end;
       exit sValue;
+    end;
+
+    method TryHexStringToUInt64(s: String; out Value: UInt64): Boolean;
+    begin
+      var arr: array of Byte;
+      if not ParseHex(s, out arr) then exit false;
+      var sValue : UInt64 := arr[0];
+
+      for i: Integer := 1 to arr.Length-1 do begin
+        if (sValue > UInt64.MaxValue shr 4) or (sValue shl 4 > UInt64.MaxValue - arr[i]) then exit false;
+        sValue := (sValue shl 4)+arr[i];
+      end;
+      Value := sValue;
+      result := true;
     end;
 
     method UInt64ToHexString(v: UInt64; aDigits: Integer): String;
@@ -163,7 +177,7 @@ type
 
     method TryParseDouble(s: String; aLocale: Locale; out Value: Double; aRaiseOverflowException: Boolean):Boolean;
     begin
-      //[ws][sign]integral-digits[.[fractional-digits]][e[sign]exponential-digits][ws] 
+      //[ws][sign]integral-digits[.[fractional-digits]][e[sign]exponential-digits][ws]
 
       if String.IsNullOrEmpty(s) then exit false; //empty string
       s := s.Trim;
@@ -197,20 +211,20 @@ type
         end;
         sValue := sValue*10+arr[i];
       end;
-      
+
       var arr1: array of Byte;
       if (sdot <> -1) then begin
-        if (se <> -1) then begin                 
+        if (se <> -1) then begin
           s1 := s.Substring(sdot+1,(se-sdot)-1);
         end
         else begin
-          s1 := s.Substring(sdot+1);        
+          s1 := s.Substring(sdot+1);
         end;
         // xxx.xxx
         // xxx.
         if not String.IsNullOrEmpty(s1) then begin
           var lsign1: Boolean;
-          if not ParseString(s1, out lsign1, out arr1) then exit false;        
+          if not ParseString(s1, out lsign1, out arr1) then exit false;
           if lsign1 then exit false;
           var sfract: Double:=arr1[arr1.Length-1];
           for i:Integer := arr1.Length-2 downto 0 do begin
@@ -228,22 +242,22 @@ type
         // 0.xxxxx
         if (arr.Count = 1) and (arr[0] = 0) and (sdot<>-1) then begin
           for i:Integer:=0 to arr1.Count-1 do
-            if arr1[i] = 0 then 
+            if arr1[i] = 0 then
               dec(lexp)
-            else 
+            else
               break;
         end;
-        if (lexp > 308)or (lexp<-308) then 
-          if aRaiseOverflowException then 
+        if (lexp > 308)or (lexp<-308) then
+          if aRaiseOverflowException then
             RaiseOverflowException
-          else 
+          else
             exit false;
         if lexp = 308 then begin
           sValue := sValue *  Math.Pow(10, exp-1);
           if sValue > Double.MaxValue /10 then begin
-            if aRaiseOverflowException then 
+            if aRaiseOverflowException then
               RaiseOverflowException
-            else 
+            else
               exit false;
           end;
           sValue := sValue*10;
@@ -251,9 +265,9 @@ type
         else if lexp = -308 then begin
           sValue := sValue *  Math.Pow(10, exp+1);
           if -sValue < Double.MinValue *10 then begin
-            if aRaiseOverflowException then 
+            if aRaiseOverflowException then
               RaiseOverflowException
-            else 
+            else
               exit false;
           end;
           sValue := sValue*0.1;
@@ -262,12 +276,12 @@ type
           sValue := sValue *  Math.Pow(10, exp);
         end;
       end;
-      if lSign then sValue := -sValue;  
+      if lSign then sValue := -sValue;
       Value := sValue;
       exit True;
     end;
     method ToSByte(o: Object): SByte;
-    begin 
+    begin
       if o = nil then raise new ArgumentNullException('o is null');
       if o is SByte then exit SByte(o);
       if o is Int16 then exit Int16(o);
@@ -284,7 +298,7 @@ type
     end;
 
     method ToInt16(o: Object): Int16;
-    begin 
+    begin
       if o = nil then raise new ArgumentNullException('o is null');
       if o is SByte then exit SByte(o);
       if o is Int16 then exit Int16(o);
@@ -302,7 +316,7 @@ type
 
 
     method ToInt32(o: Object): Int32;
-    begin 
+    begin
       if o = nil then raise new ArgumentNullException('o is null');
       if o is SByte then exit SByte(o);
       if o is Int16 then exit Int16(o);
@@ -319,7 +333,7 @@ type
     end;
 
     method ToInt64(o: Object): Int64;
-    begin 
+    begin
       if o = nil then raise new ArgumentNullException('o is null');
       if o is SByte then exit SByte(o);
       if o is Int16 then exit Int16(o);
@@ -336,7 +350,7 @@ type
     end;
 
     method ToByte(o: Object): Byte;
-    begin 
+    begin
       if o = nil then raise new ArgumentNullException('o is null');
       if o is SByte then exit SByte(o);
       if o is Int16 then exit Int16(o);
@@ -353,7 +367,7 @@ type
     end;
 
     method ToUInt16(o: Object): UInt16;
-    begin 
+    begin
       if o = nil then raise new ArgumentNullException('o is null');
       if o is SByte then exit SByte(o);
       if o is Int16 then exit Int16(o);
@@ -371,7 +385,7 @@ type
 
 
     method ToUInt32(o: Object): UInt32;
-    begin 
+    begin
       if o = nil then raise new ArgumentNullException('o is null');
       if o is SByte then exit SByte(o);
       if o is Int16 then exit Int16(o);
@@ -388,7 +402,7 @@ type
     end;
 
     method ToUInt64(o: Object): UInt64;
-    begin 
+    begin
       if o = nil then raise new ArgumentNullException('o is null');
       if o is SByte then exit SByte(o);
       if o is Int16 then exit Int16(o);
@@ -405,7 +419,7 @@ type
     end;
 
     method ToDouble(o: Object): Double;
-    begin 
+    begin
       if o = nil then raise new ArgumentNullException('o is null');
       if o is SByte then exit SByte(o);
       if o is Int16 then exit Int16(o);
@@ -423,7 +437,7 @@ type
 
 
     method ToSingle(o: Object): Single;
-    begin 
+    begin
       if o = nil then raise new ArgumentNullException('o is null');
       if o is SByte then exit SByte(o);
       if o is Int16 then exit Int16(o);
