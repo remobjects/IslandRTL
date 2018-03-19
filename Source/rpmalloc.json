@@ -1,0 +1,54 @@
+{
+  "files": [ "..\\..\\rpmalloc\\rpmalloc\\rpmalloc.c" ],
+  "outpath": ".",
+  "language":  "oxygene",
+  "namespace": "RemObjects.Elements.System.rpmalloc",
+  "defines": [
+    "size_t=IntPtr",
+    "uintptr_t=UIntPtr",
+    "ptrdiff_t=IntPtr",
+    "int64_t=Int64",
+    "uint64_t=UInt64",
+    "int32_t=Int32",
+    "uint32_t=UInt32",
+    "int16_t=Int16",
+    "uint16_t=UInt16",
+    "int8_t=Byte",
+    "uint8_t=SByte",
+    "ENABLE_GLOBAL_CACHE=1",
+    "EINVAL=22",
+    "ENOMEM=12"
+
+  ],
+  "uses":  ["rtl"],
+  "nonDefines": [
+    "ENABLE_GUARDS",
+    "ENABLE_ASSERTS",
+    "PLATFORM_WINDOWS",
+    "PLATFORM_POSIX",
+    "ARCH_64BIT",
+    "ENABLE_STATISTICS",
+    "ENABLE_UNLIMITED_CACHE",
+    "DEFAULT_SPAN_MAP_COUNT",
+    "MIN_SPAN_CACHE_SIZE",
+    "MIN_SPAN_CACHE_RELEASE",
+    "MAX_SPAN_CACHE_DIVISOR",
+    "ENABLE_THREAD_CACHE",
+    "MIN_LARGE_SPAN_CACHE_SIZE",
+    "MIN_LARGE_SPAN_CACHE_RELEASE",
+    "MAX_LARGE_SPAN_CACHE_DIVISOR",
+    "MAX_GLOBAL_CACHE_MULTIPLIER"
+  ],
+  "includes": {
+    "stddef.h": "",
+    "stdint.h": "",
+    "string.h": "",
+    "assert.h": "",
+    "errno.h": "",
+    "unistd.h": "",
+    "pthread.h": "",
+    "sys/mman.h": "",
+    "sched.h": ""
+  },
+  "includePaths": ["..\\..\\rpmalloc\\rpmalloc\\" ]
+}

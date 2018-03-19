@@ -16,7 +16,7 @@
     <WarnOnCaseMismatch>True</WarnOnCaseMismatch>
     <Platform Condition="'$(Platform)' == ''">AnyCPU</Platform>
     <GenerateDebugInfo>True</GenerateDebugInfo>
-    <DefineConstants>WebAssembly;CPU32;NOTHREADS;NOFILES</DefineConstants>
+    <DefineConstants>WebAssembly;CPU32;NOTHREADS;NOFILES;ENABLE_UNLIMITED_CACHE</DefineConstants>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)' == 'Debug'">
     <OutputPath>Bin\Debug</OutputPath>
@@ -50,7 +50,9 @@
     <Architecture>wasm32</Architecture>
   </PropertyGroup>
   <ItemGroup>
-    <Compile Include="rpmalloc.pas" />
+    <Compile Include="rpmalloc.pas">
+      <SubType>Code</SubType>
+    </Compile>
     <Compile Include="SimpleGC.pas" />
     <Compile Include="WebAssembly.pas" />
   </ItemGroup>

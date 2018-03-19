@@ -33,7 +33,6 @@ type
 
     property ValidOn: AttributeTargets read fValidOn;
     property AllowMultiple: Boolean;
-    {$HINT Handle `AttributeUsageAttribute.Inherited` in compiler}
     property &Inherited: Boolean;
   end;
 

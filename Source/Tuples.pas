@@ -127,7 +127,7 @@ end;
 method Tuple<T1>.&Equals(arg1: Object): Boolean;
 begin
   var lTuple := Tuple<T1>(arg1);
-  exit assigned(lTuple) and (lTuple.Item1.Equals(Item1));
+  exit (lTuple.Item1.Equals(Item1));
 end;
 
 constructor Tuple<T1, T2>(aItem1: T1; aItem2: T2);
@@ -146,7 +146,7 @@ end;
 method Tuple<T1, T2>.&Equals(arg1: Object): Boolean;
 begin
   var lTuple := Tuple<T1, T2>(arg1);
-  exit assigned(lTuple) and lTuple.Item1.Equals(Item1) and lTuple.Item2.Equals(Item2);
+  exit lTuple.Item1.Equals(Item1) and lTuple.Item2.Equals(Item2);
 end;
 
 constructor Tuple<T1, T2, T3>(aItem1: T1; aItem2: T2; aItem3: T3);
@@ -168,7 +168,7 @@ end;
 method Tuple<T1, T2, T3>.&Equals(arg1: Object): Boolean;
 begin
   var lTuple := Tuple<T1, T2, T3>(arg1);
-  exit assigned(lTuple) and lTuple.Item1.Equals(Item1) and lTuple.Item2.Equals(Item2) and lTuple.Item3.Equals(Item3);
+  exit lTuple.Item1.Equals(Item1) and lTuple.Item2.Equals(Item2) and lTuple.Item3.Equals(Item3);
 end;
 
 
@@ -193,7 +193,7 @@ end;
 method Tuple<T1, T2, T3, T4>.&Equals(arg1: Object): Boolean;
 begin
   var lTuple := Tuple<T1, T2, T3, T4>(arg1);
-  exit assigned(lTuple) and lTuple.Item1.Equals(Item1) and lTuple.Item2.Equals(Item2) and lTuple.Item3.Equals(Item3) and lTuple.Item4.Equals(Item4);
+  exit lTuple.Item1.Equals(Item1) and lTuple.Item2.Equals(Item2) and lTuple.Item3.Equals(Item3) and lTuple.Item4.Equals(Item4);
 end;
 
 constructor Tuple<T1, T2, T3, T4, T5>(aItem1: T1; aItem2: T2; aItem3: T3; aItem4: T4; aItem5: T5);
@@ -218,7 +218,7 @@ end;
 method Tuple<T1, T2, T3, T4, T5>.&Equals(arg1: Object): Boolean;
 begin
   var lTuple := Tuple<T1, T2, T3, T4, T5>(arg1);
-  exit assigned(lTuple) and lTuple.Item1.Equals(Item1) and lTuple.Item2.Equals(Item2) and lTuple.Item3.Equals(Item3) and lTuple.Item4.Equals(Item4) and lTuple.Item5.Equals(Item5);
+  exit lTuple.Item1.Equals(Item1) and lTuple.Item2.Equals(Item2) and lTuple.Item3.Equals(Item3) and lTuple.Item4.Equals(Item4) and lTuple.Item5.Equals(Item5);
 end;
 
 constructor Tuple<T1, T2, T3, T4, T5, T6>(aItem1: T1; aItem2: T2; aItem3: T3; aItem4: T4; aItem5: T5; aItem6: T6);
@@ -245,7 +245,7 @@ end;
 method Tuple<T1, T2, T3, T4, T5, T6>.&Equals(arg1: Object): Boolean;
 begin
   var lTuple := Tuple<T1, T2, T3, T4, T5, T6>(arg1);
-  exit assigned(lTuple) and lTuple.Item1.Equals(Item1) and lTuple.Item2.Equals(Item2) and lTuple.Item3.Equals(Item3) and lTuple.Item4.Equals(Item4) and lTuple.Item5.Equals(Item5)
+  exit lTuple.Item1.Equals(Item1) and lTuple.Item2.Equals(Item2) and lTuple.Item3.Equals(Item3) and lTuple.Item4.Equals(Item4) and lTuple.Item5.Equals(Item5)
     and lTuple.Item6.Equals(Item6);
 end;
 
@@ -276,7 +276,7 @@ end;
 method Tuple<T1, T2, T3, T4, T5, T6, T7>.&Equals(arg1: Object): Boolean;
 begin
   var lTuple := Tuple<T1, T2, T3, T4, T5, T6, T7>(arg1);
-  exit assigned(lTuple) and lTuple.Item1.Equals(Item1) and lTuple.Item2.Equals(Item2) and lTuple.Item3.Equals(Item3) and lTuple.Item4.Equals(Item4) and lTuple.Item5.Equals(Item5)
+  exit lTuple.Item1.Equals(Item1) and lTuple.Item2.Equals(Item2) and lTuple.Item3.Equals(Item3) and lTuple.Item4.Equals(Item4) and lTuple.Item5.Equals(Item5)
     and lTuple.Item6.Equals(Item6) and lTuple.Item7.Equals(Item7);
 end;
 
@@ -308,7 +308,7 @@ end;
 method Tuple<T1, T2, T3, T4, T5, T6, T7, T8>.&Equals(arg1: Object): Boolean;
 begin
   var lTuple := Tuple<T1, T2, T3, T4, T5, T6, T7, T8>(arg1);
-  exit assigned(lTuple) and lTuple.Item1.Equals(Item1) and lTuple.Item2.Equals(Item2) and lTuple.Item3.Equals(Item3) and lTuple.Item4.Equals(Item4) and lTuple.Item5.Equals(Item5)
+  exit lTuple.Item1.Equals(Item1) and lTuple.Item2.Equals(Item2) and lTuple.Item3.Equals(Item3) and lTuple.Item4.Equals(Item4) and lTuple.Item5.Equals(Item5)
     and lTuple.Item6.Equals(Item6) and lTuple.Item7.Equals(Item7) and lTuple.Item8.Equals(Item8);
 end;
 

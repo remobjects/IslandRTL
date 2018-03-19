@@ -5,6 +5,59 @@
   [assembly:AssemblyDefineAttribute('NOTHREADS')]
 
 type
+  RemObjects.Elements.System.rpmalloc.__Global = public partial class 
+  assembly
+    const 
+      _SC_PAGESIZE = 1;
+      MAP_ANONYMOUS = $20;
+      MAP_PRIVATE = $2;
+      PROT_READ = 1;
+      PROT_WRITE = 2;
+      MAP_FAILED: ^Void = nil;
+    class method munmap(addr: ^Void; size: IntPtr): Integer;
+    begin 
+      //ExternalCalls.trap;
+    end;
+
+    class var LastPtr: ^Byte;
+    class var SpaceLeft: Integer;
+
+    class method mmap(addr: ^Void; size: IntPtr; prot, flags: Integer; handle, offset: IntPtr): ^Void;
+    begin
+      if LastPtr = nil then begin 
+        var lNew := ((size + 65535) / 65536);
+        LastPtr := ^Byte(WebAssemblyCalls.GrowMemory(lNew)  * 65536);
+        SpaceLeft := ((size + 65535) / 65536) * 65536;
+      end else if size > SpaceLeft then begin 
+        var lNew := (size - SpaceLeft + 65535) / 65536;
+        WebAssemblyCalls.GrowMemory(lNew);
+        SpaceLeft := SpaceLeft + (lNew * 65536);
+      end;
+      assert(size <= SpaceLeft);
+      result := LastPtr;
+      LastPtr := LastPtr + size;
+      SpaceLeft := SpaceLeft - size;
+    end;
+
+    class method sysconf(i: Integer): IntPtr;
+    begin 
+      if i = _SC_PAGESIZE then 
+        exit 4096; //65536;
+      exit -1;
+    end;
+
+    class method __sync_add_and_fetch(val: ^Int32; &add: Int32): Int32; inline;
+    begin
+      exit InternalCalls.Add(var (val)^, &add) + &add;
+    end;
+
+    class method __sync_bool_compare_and_swap(val: ^^Void; oldval: ^Void; newval: ^Void): Integer; inline;
+    begin
+      exit (if InternalCalls.CompareExchange(var (val)^, newval, oldval) = oldval then (1) else (0));
+    end;
+
+
+  end;
   WebAssemblyCalls = public static class
   public
     [DllImport('', EntryPoint := '__island_consolelogint')]
@@ -560,13 +613,16 @@ type
   WebassemblyType = public enum (Null, Undefined, String, Number, &Function, Symbol, Object, Boolean);
   ExternalCalls = public static class 
   private
+  public
     [SymbolName('llvm.trap')]
     class method trap; external;
-  public
     [SymbolName('ElementsRaiseException'), Used, DllExport]
     method RaiseException(aRaiseAddress: ^Void; aRaiseFrame: ^Void; aRaiseObject: Object);
     begin 
       // Not supported atm!
+      var s: ^Char := 'Fatal exception in WebAssembly!';
+      WebAssemblyCalls.ConsoleLog(s, wcslen(s));
+      writeLn('Exception: '+aRaiseObject);
       trap;
     end;
 
@@ -708,6 +764,32 @@ type
     end;
   end;
   rtl.size_t = IntPtr;
-
+  var MAllocInitialized: Boolean; assembly;
+  
+  [SymbolName('malloc')]
+  method malloc(size: rtl.size_t): ^Void; public;
+  begin
+    // TODO: when threading, load the thread
+    if not MAllocInitialized then begin 
+      MAllocInitialized := true;
+      // this is commented out till rpmalloc supports 65k pages
+      //rpmalloc._memory_config.page_size := 65536;
+      //rpmalloc._memory_config.span_size := 65536 * 4;
+      //rpmalloc.rpmalloc_initialize_config(@rpmalloc._memory_config);
+      rpmalloc.rpmalloc_initialize();
+    end;
+    exit rpmalloc.rpmalloc(size);
+  end;
+ 
+  [SymbolName('free')]
+  method free(val: ^Void); public;
+  begin
+    // TODO: when threading, load the thread
+    if not MAllocInitialized then begin 
+      MAllocInitialized := true;
+      rpmalloc.rpmalloc_initialize;
+    end;
+    rpmalloc.rpfree(val);
+  end;
 
 end.
