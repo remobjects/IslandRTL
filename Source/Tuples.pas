@@ -9,6 +9,16 @@ type
     property Item1: T1; readonly;
     method GetHashCode: Integer; override;
     method &Equals(arg1: Object): Boolean; override;
+
+    class operator Equal(a, b: &Tuple<T1>): Boolean;
+    begin 
+      exit (EqualityComparer.Equals(a.Item1, b.Item1));
+    end;
+
+    class operator NotEqual(a, b: &Tuple<T1>): Boolean;
+    begin 
+      exit not (a = b);
+    end;
   end;
 
   Tuple<T1, T2> = public record
@@ -18,6 +28,16 @@ type
     property Item2: T2; readonly;
     method GetHashCode: Integer; override;
     method &Equals(arg1: Object): Boolean; override;
+
+    class operator Equal(a, b: &Tuple<T1, T2>): Boolean;
+    begin 
+      exit (EqualityComparer.Equals(a.Item1, b.Item1)) and (EqualityComparer.Equals(a.Item2, b.Item2));
+    end;
+
+    class operator NotEqual(a, b: &Tuple<T1, T2>): Boolean;
+    begin 
+      exit not (a = b);
+    end;
   end;
 
   Tuple<T1, T2, T3> = public record
@@ -28,6 +48,16 @@ type
     property Item3: T3; readonly;
     method GetHashCode: Integer; override;
     method &Equals(arg1: Object): Boolean; override;
+
+    class operator Equal(a, b: &Tuple<T1, T2, T3>): Boolean;
+    begin 
+      exit (EqualityComparer.Equals(a.Item1, b.Item1)) and (EqualityComparer.Equals(a.Item2, b.Item2)) and (EqualityComparer.Equals(a.Item3, b.Item3));
+    end;
+
+    class operator NotEqual(a, b: &Tuple<T1, T2, T3>): Boolean;
+    begin 
+      exit not (a = b);
+    end;
   end;
 
   Tuple<T1, T2, T3, T4> = public record
@@ -39,6 +69,16 @@ type
     property Item4: T4; readonly;
     method GetHashCode: Integer; override;
     method &Equals(arg1: Object): Boolean; override;
+
+    class operator Equal(a, b: &Tuple<T1, T2, T3, T4>): Boolean;
+    begin 
+      exit (EqualityComparer.Equals(a.Item1, b.Item1)) and (EqualityComparer.Equals(a.Item2, b.Item2)) and (EqualityComparer.Equals(a.Item3, b.Item3)) and (EqualityComparer.Equals(a.Item4, b.Item4));
+    end;
+
+    class operator NotEqual(a, b: &Tuple<T1, T2, T3, T4>): Boolean;
+    begin 
+      exit not (a = b);
+    end;
   end;
 
   Tuple<T1, T2, T3, T4, T5> = public record
@@ -51,6 +91,16 @@ type
     property Item5: T5; readonly;
     method GetHashCode: Integer; override;
     method &Equals(arg1: Object): Boolean; override;
+
+    class operator Equal(a, b: &Tuple<T1, T2, T3, T4, T5>): Boolean;
+    begin 
+      exit (EqualityComparer.Equals(a.Item1, b.Item1)) and (EqualityComparer.Equals(a.Item2, b.Item2)) and (EqualityComparer.Equals(a.Item3, b.Item3)) and (EqualityComparer.Equals(a.Item4, b.Item4)) and (EqualityComparer.Equals(a.Item5, b.Item5));
+    end;
+
+    class operator NotEqual(a, b: &Tuple<T1, T2, T3, T4, T5>): Boolean;
+    begin 
+      exit not (a = b);
+    end;
   end;
 
   Tuple<T1, T2, T3, T4, T5, T6> = public record
@@ -64,6 +114,16 @@ type
     property Item6: T6; readonly;
     method GetHashCode: Integer; override;
     method &Equals(arg1: Object): Boolean; override;
+
+    class operator Equal(a, b: &Tuple<T1, T2, T3, T4, T5, T6>): Boolean;
+    begin 
+      exit (EqualityComparer.Equals(a.Item1, b.Item1)) and (EqualityComparer.Equals(a.Item2, b.Item2)) and (EqualityComparer.Equals(a.Item3, b.Item3)) and (EqualityComparer.Equals(a.Item4, b.Item4)) and (EqualityComparer.Equals(a.Item5, b.Item5)) and (EqualityComparer.Equals(a.Item6, b.Item6));
+    end;
+
+    class operator NotEqual(a, b: &Tuple<T1, T2, T3, T4, T5, T6>): Boolean;
+    begin 
+      exit not (a = b);
+    end;
   end;
 
   Tuple<T1, T2, T3, T4, T5, T6, T7> = public record
@@ -78,6 +138,16 @@ type
     property Item7: T7; readonly;
     method GetHashCode: Integer; override;
     method &Equals(arg1: Object): Boolean; override;
+
+    class operator Equal(a, b: &Tuple<T1, T2, T3, T4, T5, T6, T7>): Boolean;
+    begin 
+      exit (EqualityComparer.Equals(a.Item1, b.Item1)) and (EqualityComparer.Equals(a.Item2, b.Item2)) and (EqualityComparer.Equals(a.Item3, b.Item3)) and (EqualityComparer.Equals(a.Item4, b.Item4)) and (EqualityComparer.Equals(a.Item5, b.Item5)) and (EqualityComparer.Equals(a.Item6, b.Item6)) and (EqualityComparer.Equals(a.Item7, b.Item7));
+    end;
+
+    class operator NotEqual(a, b: &Tuple<T1, T2, T3, T4, T5, T6, T7>): Boolean;
+    begin 
+      exit not (a = b);
+    end;
   end;
 
   Tuple<T1, T2, T3, T4, T5, T6, T7, T8> = public record
@@ -93,6 +163,16 @@ type
     property Item8: T8; readonly;
     method GetHashCode: Integer; override;
     method &Equals(arg1: Object): Boolean; override;
+
+    class operator Equal(a, b: &Tuple<T1, T2, T3, T4, T5, T6, T7, T8>): Boolean;
+    begin 
+      exit (EqualityComparer.Equals(a.Item1, b.Item1)) and (EqualityComparer.Equals(a.Item2, b.Item2)) and (EqualityComparer.Equals(a.Item3, b.Item3)) and (EqualityComparer.Equals(a.Item4, b.Item4)) and (EqualityComparer.Equals(a.Item5, b.Item5)) and (EqualityComparer.Equals(a.Item6, b.Item6)) and (EqualityComparer.Equals(a.Item7, b.Item7)) and (EqualityComparer.Equals(a.Item8, b.Item8));
+    end;
+
+    class operator NotEqual(a, b: &Tuple<T1, T2, T3, T4, T5, T6, T7, T8>): Boolean;
+    begin 
+      exit not (a = b);
+    end;
   end;
 
   Tuple = public static class

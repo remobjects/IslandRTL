@@ -11,7 +11,27 @@ type
     method GetHashCode: Integer;
   end;
 
+  
+  EqualityComparer = public static class 
+  public 
+    method Equals<T>(a, b: T): Boolean;
+    begin 
+      exit DefaultEqualityComparer<T>.Instance.Equals(a, b);
+    end;
+
+    method GetHashCode<T>(a: T): Integer;
+    begin 
+      exit DefaultEqualityComparer<T>.Instance.GetHashCode(a);
+    end;
+  end;
+
   DefaultEqualityComparer<T> = assembly class(IEqualityComparer<T>)
+  private
+    class method get_Instance: DefaultEqualityComparer<T>;
+    begin
+      if fInstance = nil then fInstance := new DefaultEqualityComparer<T>;
+      exit fInstance;
+    end;
   public
 
     method Equals(x: T; y: T): Boolean;
@@ -23,6 +43,9 @@ type
     begin
       exit obj.GetHashCode;
     end;
+
+    class var fInstance: DefaultEqualityComparer<T>; private;
+    class property Instance: DefaultEqualityComparer<T> read get_Instance; public;
   end;
 
   EqualityComparer<T> = assembly class(IEqualityComparer<T>)
