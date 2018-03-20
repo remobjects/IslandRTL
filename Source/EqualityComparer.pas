@@ -11,6 +11,11 @@ type
     method GetHashCode: Integer;
   end;
 
+  INumber = public interface(IComparable)
+  end;
+
+  IIntegerNumber = public interface(INumber)
+  end;
   
   EqualityComparer = public static class 
   public 

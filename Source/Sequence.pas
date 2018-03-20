@@ -35,6 +35,10 @@ type
     method CompareTo(a: T): Integer;
   end;
 
+  IComparable = public interface
+    method CompareTo(a: Object): Object;
+  end;
+
   INotifyPropertyChanged = public interface 
     event PropertyChanged: Action<Object, String>;
   end;

@@ -3,7 +3,7 @@
 interface
 
 type
-  Single = public record
+  Single = public record(INumber, IComparable, IComparable<Single>, IEquatable<Single>)
   private
     class method DoTryParse(s: String; aLocale: Locale; out Value: Single; aRaiseOverflowException: Boolean):Boolean;
     const SignificantBitmask: UInt32      = $80000000;
@@ -34,9 +34,29 @@ type
     class method IsInfinity(Value: Single): Boolean;
     class method IsPositiveInfinity(Value: Single): Boolean;
     class method IsNegativeInfinity(Value: Single): Boolean;
+
+    method &Equals(other: Single): Boolean;
+    begin 
+      exit other = self;
+    end;
+
+    method CompareTo(a: Object): Object;
+    begin 
+      if a is Single then 
+        exit CompareTo(Single(a));
+      exit CompareTo(Convert.ToSingle(a));
+    end;
+
+    method CompareTo(a: Single): Integer;
+    begin 
+      if self < a then exit -1;
+      if self > a then exit 1;
+      if self = a then exit 0;
+      exit IsNaN(self).CompareTo(IsNaN(a));
+    end;
   end;
 
-  Double = public record
+  Double = public record(INumber, IComparable, IComparable<Double>, IEquatable<Double>)
   private
     class method DoTryParse(s: String; aLocale: Locale; out Value: Double; aRaiseOverflowException: Boolean): Boolean; inline;
   assembly
@@ -80,6 +100,27 @@ type
     class method IsInfinity(Value: Double): Boolean;
     class method IsPositiveInfinity(Value: Double): Boolean;
     class method IsNegativeInfinity(Value: Double): Boolean;
+
+    
+    method &Equals(other: Double): Boolean;
+    begin 
+      exit other = self;
+    end;
+
+    method CompareTo(a: Object): Object;
+    begin 
+      if a is Double then 
+        exit CompareTo(Double(a));
+      exit CompareTo(Convert.ToDouble(a));
+    end;
+
+    method CompareTo(a: Double): Integer;
+    begin 
+      if self < a then exit -1;
+      if self > a then exit 1;
+      if self = a then exit 0;
+      exit IsNaN(self).CompareTo(IsNaN(a));
+    end;
   end;
 
   FloatToString = static private class

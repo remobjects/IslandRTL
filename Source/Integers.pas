@@ -3,7 +3,7 @@
 interface
 
 type
-  SByte = public record
+  SByte = public record(INumber, IIntegerNumber, IEquatable<SByte>, IComparable, IComparable<SByte>)
   private
     class method DoTryParse(s: String; out Value: SByte; aRaiseOverflowException: Boolean):Boolean;
     begin
@@ -44,9 +44,30 @@ type
 
     const MinValue: SByte = $80;
     const MaxValue: SByte = $7f;
+
+
+    
+    method &Equals(other: SByte): Boolean;
+    begin 
+      exit self = other;
+    end;
+    
+    method CompareTo(a: Object): Object;
+    begin 
+      if a is SByte then 
+        exit CompareTo(SByte(a));
+      exit CompareTo(Convert.ToSByte(a));
+    end;
+
+    method CompareTo(a: SByte): Integer;
+    begin 
+      if self < a then exit -1;
+      if self > a then exit 1;
+      exit 0;
+    end;
   end;
 
-  Byte = public record
+  Byte = public record(INumber, IIntegerNumber, IEquatable<Byte>, IComparable, IComparable<Byte>)
   private
     class method DoTryParse(s: String; out Value: Byte; aRaiseOverflowException: Boolean):Boolean;
     begin
@@ -80,9 +101,30 @@ type
 
     const MinValue: Byte = $0;
     const MaxValue: Byte = $ff;
+
+
+    
+    method &Equals(other: Byte): Boolean;
+    begin 
+      exit self = other;
+    end;
+    
+    method CompareTo(a: Object): Object;
+    begin 
+      if a is Byte then 
+        exit CompareTo(Byte(a));
+      exit CompareTo(Convert.ToByte(a));
+    end;
+
+    method CompareTo(a: Byte): Integer;
+    begin 
+      if self < a then exit -1;
+      if self > a then exit 1;
+      exit 0;
+    end;
   end;
 
-  Int16 = public record
+  Int16 = public record(INumber, IIntegerNumber, IEquatable<Int16>, IComparable, IComparable<Int16>)
   private
     class method DoTryParse(s: String; out Value: Int16; aRaiseOverflowException: Boolean):Boolean;
     begin
@@ -122,9 +164,30 @@ type
 
     const MinValue: Int16 = $8000;
     const MaxValue: Int16 = $7fff;
+
+
+    
+    method &Equals(other: Int16): Boolean;
+    begin 
+      exit self = other;
+    end;
+    
+    method CompareTo(a: Object): Object;
+    begin 
+      if a is Int16 then 
+        exit CompareTo(Int16(a));
+      exit CompareTo(Convert.ToInt16(a));
+    end;
+
+    method CompareTo(a: Int16): Integer;
+    begin 
+      if self < a then exit -1;
+      if self > a then exit 1;
+      exit 0;
+    end;
   end;
 
-  UInt16 = public record
+  UInt16 = public record(INumber, IIntegerNumber, IEquatable<UInt16>, IComparable, IComparable<UInt16>)
   private
     class method DoTryParse(s: String; out Value: UInt16; aRaiseOverflowException: Boolean):Boolean;
     begin
@@ -158,9 +221,30 @@ type
 
     const MinValue: UInt16 = $0;
     const MaxValue: UInt16 = $ffff;
+
+
+    
+    method &Equals(other: UInt16): Boolean;
+    begin 
+      exit self = other;
+    end;
+    
+    method CompareTo(a: Object): Object;
+    begin 
+      if a is UInt16 then 
+        exit CompareTo(UInt16(a));
+      exit CompareTo(Convert.ToUInt16(a));
+    end;
+
+    method CompareTo(a: UInt16): Integer;
+    begin 
+      if self < a then exit -1;
+      if self > a then exit 1;
+      exit 0;
+    end;
   end;
 
-  Int32 = public record
+  Int32 = public record(INumber, IIntegerNumber, IEquatable<Int32>, IComparable, IComparable<Int32>)
   private
     class method DoTryParse(s: String; out Value: Int32; aRaiseOverflowException: Boolean):Boolean;
     begin
@@ -201,9 +285,29 @@ type
 
     const MinValue: Int32 = $80000000;
     const MaxValue: Int32 = $7fffffff;
+
+   
+    method &Equals(other: Int32): Boolean;
+    begin 
+      exit self = other;
+    end;
+    
+    method CompareTo(a: Object): Object;
+    begin 
+      if a is Int32 then 
+        exit CompareTo(Int32(a));
+      exit CompareTo(Convert.ToInt32(a));
+    end;
+
+    method CompareTo(a: Int32): Integer;
+    begin 
+      if self < a then exit -1;
+      if self > a then exit 1;
+      exit 0;
+    end;
   end;
 
-  UInt32 = public record
+  UInt32 = public record(INumber, IIntegerNumber, IEquatable<UInt32>, IComparable, IComparable<UInt32>)
   private
     class method DoTryParse(s: String; out Value: UInt32; aRaiseOverflowException: Boolean):Boolean;
     begin
@@ -238,9 +342,30 @@ type
 
     const MinValue: UInt32 = 0;
     const MaxValue: UInt32 = $ffffffff;
+
+
+    
+    method &Equals(other: UInt32): Boolean;
+    begin 
+      exit self = other;
+    end;
+    
+    method CompareTo(a: Object): Object;
+    begin 
+      if a is UInt32 then 
+        exit CompareTo(UInt32(a));
+      exit CompareTo(Convert.ToUInt32(a));
+    end;
+
+    method CompareTo(a: UInt32): Integer;
+    begin 
+      if self < a then exit -1;
+      if self > a then exit 1;
+      exit 0;
+    end;
   end;
 
-  Int64 = public record
+  Int64 = public record(INumber, IIntegerNumber, IEquatable<Int64>, IComparable, IComparable<Int64>)
   private
     class method DoTryParse(s: String; out Value: Int64; aRaiseOverflowException: Boolean):Boolean; inline;
     begin
@@ -271,9 +396,30 @@ type
 
     const MinValue: Int64 = $8000000000000000;
     const MaxValue: Int64 = $7fffffffffffffff;
+
+
+    
+    method &Equals(other: Int64): Boolean;
+    begin 
+      exit self = other;
+    end;
+    
+    method CompareTo(a: Object): Object;
+    begin 
+      if a is Int64 then 
+        exit CompareTo(Int64(a));
+      exit CompareTo(Convert.ToInt64(a));
+    end;
+
+    method CompareTo(a: Int64): Integer;
+    begin 
+      if self < a then exit -1;
+      if self > a then exit 1;
+      exit 0;
+    end;
   end;
 
-  UInt64 = public record
+  UInt64 = public record(INumber, IIntegerNumber, IEquatable<UInt64>, IComparable, IComparable<UInt64>)
   private
     class method DoTryParse(s: String; out Value: UInt64; aRaiseOverflowException: Boolean):Boolean;inline;
     begin
@@ -303,9 +449,30 @@ type
 
     const MinValue: UInt64 = $0;
     const MaxValue: UInt64 = $ffffffffffffffff;
+
+
+    
+    method &Equals(other: UInt64): Boolean;
+    begin 
+      exit self = other;
+    end;
+    
+    method CompareTo(a: Object): Object;
+    begin 
+      if a is UInt64 then 
+        exit CompareTo(UInt64(a));
+      exit CompareTo(Convert.ToUInt64(a));
+    end;
+
+    method CompareTo(a: UInt64): Integer;
+    begin 
+      if self < a then exit -1;
+      if self > a then exit 1;
+      exit 0;
+    end;
   end;
 
-  NativeInt = public record
+  NativeInt = public record(INumber, IIntegerNumber, IEquatable<NativeInt>, IComparable, IComparable<NativeInt>)
   private
     class method DoTryParse(s: String; out Value: NativeInt; aRaiseOverflowException: Boolean):Boolean;
     begin
@@ -354,9 +521,30 @@ type
 
     const MinValue: NativeInt = {$IFDEF cpu64}$8000000000000000{$ELSE}$80000000{$ENDIF};
     const MaxValue: NativeInt = {$IFDEF cpu64}$7fffffffffffffff{$ELSE}$7fffffff{$ENDIF};
+
+
+    
+    method &Equals(other: NativeInt): Boolean;
+    begin 
+      exit self = other;
+    end;
+    
+    method CompareTo(a: Object): Object;
+    begin 
+      if a is NativeInt then 
+        exit CompareTo(NativeInt(a));
+      exit CompareTo(NativeInt(Convert.ToInt64(a)));
+    end;
+
+    method CompareTo(a: NativeInt): Integer;
+    begin 
+      if self < a then exit -1;
+      if self > a then exit 1;
+      exit 0;
+    end;
   end;
 
-  NativeUInt = public record
+  NativeUInt = public record(INumber, IIntegerNumber, IEquatable<NativeUInt>, IComparable, IComparable<NativeUInt>)
   private
     class method DoTryParse(s: String; out Value: NativeUInt; aRaiseOverflowException: Boolean):Boolean;
     begin
@@ -397,8 +585,29 @@ type
       exit DoTryParse(s, out Value, false);
     end;
 
-    const MinValue: NativeInt = $0;
-    const MaxValue: NativeInt = {$IFDEF cpu64}$ffffffffffffffff{$ELSE}$ffffffff{$ENDIF};
+    const MinValue: NativeUInt = $0;
+    const MaxValue: NativeUInt = {$IFDEF cpu64}$ffffffffffffffff{$ELSE}$ffffffff{$ENDIF};
+
+
+    
+    method &Equals(other: NativeUInt): Boolean;
+    begin 
+      exit self = other;
+    end;
+    
+    method CompareTo(a: Object): Object;
+    begin 
+      if a is NativeUInt then 
+        exit CompareTo(NativeUInt(a));
+      exit CompareTo(NativeUInt(Convert.ToUInt64(a)));
+    end;
+
+    method CompareTo(a: NativeUInt): Integer;
+    begin 
+      if self < a then exit -1;
+      if self > a then exit 1;
+      exit 0;
+    end;
   end;
 
   IntPtr = public NativeInt;

@@ -15,14 +15,33 @@ type
     method GetHashCode: Integer; override; empty; // not callable
   end;
 
-  Boolean = public record
+  Boolean = public record(IEquatable<Boolean>, IComparable, IComparable<Boolean>)
   public
     method ToString: String; override;
     method GetHashCode: Integer; override;
     method &Equals(obj: Object): Boolean; override;
+
+    method &Equals(other: Boolean): Boolean;
+    begin 
+      exit self = other;
+    end;
+    
+    method CompareTo(a: Object): Object;
+    begin 
+      if a is Boolean then 
+        exit CompareTo(Boolean(a));
+      exit CompareTo(a);
+    end;
+
+    method CompareTo(a: Boolean): Integer;
+    begin 
+      if self = a then exit 0;
+      if self then exit 1;
+      exit -1;
+    end;
   end;
 
-  Char = public record
+  Char = public record(IEquatable<Char>, IComparable, IComparable<Char>)
   public
     method ToString: String; override;
     method GetHashCode: Integer; override;
@@ -31,13 +50,53 @@ type
     class method IsNumber(aChar: Char): Boolean;
     method ToLower(aInvariant: Boolean := false): Char;
     method ToUpper(aInvariant: Boolean := false): Char;
+
+    
+    method &Equals(other: Char): Boolean;
+    begin 
+      exit self = other;
+    end;
+    
+    method CompareTo(a: Object): Object;
+    begin 
+      if a is Char then 
+        exit CompareTo(Char(a));
+      exit CompareTo(a);
+    end;
+
+    method CompareTo(a: Char): Integer;
+    begin 
+      if self < a then exit -1;
+      if self > a then exit 1;
+      exit 0;
+    end;
   end;
 
-  AnsiChar = public record
+  AnsiChar = public record(IEquatable<AnsiChar>, IComparable, IComparable<AnsiChar>)
   public
     method ToString: String; override;
     method GetHashCode: Integer; override;
     method &Equals(obj: Object): Boolean; override;
+
+    
+    method &Equals(other: AnsiChar): Boolean;
+    begin 
+      exit self = other;
+    end;
+    
+    method CompareTo(a: Object): Object;
+    begin 
+      if a is AnsiChar then 
+        exit CompareTo(AnsiChar(a));
+      exit CompareTo(a);
+    end;
+
+    method CompareTo(a: AnsiChar): Integer;
+    begin 
+      if self < a then exit -1;
+      if self > a then exit 1;
+      exit 0;
+    end;
   end;
 
   Debug = public static class
