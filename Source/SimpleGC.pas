@@ -81,20 +81,20 @@ type
 
 
     [Conditional('DEBUGGC')]
-    class method Debug(s: String);
+    class method Debug(s: ^Char);
     begin
-      writeLn(s);
+      WebAssemblyCalls.ConsoleLog(s, ExternalCalls.wcslen(s));
     end;
     [Conditional('DEBUGGC')]
     class method Debug(s: ^Void);
     begin
-      writeLn('ptr');
+      WebAssemblyCalls.ConsoleLog('ptr', 3);
       WebAssemblyCalls.ConsoleLog(Integer(s));
     end;
     [Conditional('DEBUGGC')]
     class method Debug(s: Integer);
     begin
-      writeLn('Int');
+      WebAssemblyCalls.ConsoleLog('Int', 3);
       WebAssemblyCalls.ConsoleLog(s);
     end;
 
@@ -188,14 +188,15 @@ type
       end;
     end;
     {$ELSEIF WEBASSEMBLY}
-    [SymbolName('__stack_pointer')]
-    class var StackPointer: ^IntPtr; external;
     [SymbolName('__stack_start')]
     class var StackTop: IntPtr; external;
     class method CheckThread;
     begin 
-      var lCurrentStackTop := StackPointer;
+      // in wasm; we can take the address of any var here and get the stack top.
+      var lCurrentStackTop: ^IntPtr;
       var lEnd := @StackTop;
+      lCurrentStackTop := ^IntPtr(@lCurrentStackTop);
+      Debug('checkthread');
       while lCurrentStackTop < lEnd do begin 
         var lCurrent := lCurrentStackTop^;
         if fGlobalFreeList.Contains(lCurrent) then 
@@ -340,7 +341,7 @@ type
         var c := fBlackList.Count;
         if c = 0 then break;
         for i: Integer := c -1 downto 0 do begin 
-          var el := fWalkList[i];
+          var el := fBlackList[i];
           var lRC := ^UIntPtr(el)[-1];
           Debug('ScanBlack');
           Debug(el);
@@ -348,6 +349,7 @@ type
             Debug('ScanBlack: is not gray');
             continue;
           end;
+
           InternalCalls.Add(var ^UIntPtr(el)[-1], + 1); // decrease and set gray
           InternalCalls.And(var ^UIntPtr(el)[-1], not Gray);
           AddChildrenBlack(el);
@@ -366,7 +368,7 @@ type
         Debug('Checking at ');
         Debug(i * sizeOf(IntPtr));
         if (lGI[i / 8] and (1 shl (i mod 8))) <> 0 then begin
-          var p := ^IntPtr(el)[i * sizeOf(IntPtr)];
+          var p := ^IntPtr(el)[i];
           if p <> 0 then begin
             Debug('Value is set, adding to walk list');
             Debug(p);
@@ -381,12 +383,12 @@ type
       Debug('Walking children for blacklist');
       var lExt := ^^IslandTypeInfo(el)^^.Ext;
       var lGI := ^Byte(lExt^.GCInfo);
-      if lGI = nil then exit; // can't be right.
+      if lGI = nil then exit; 
       for i: Integer := (lExt^.TypeSize / sizeOf(IntPtr)) -1 downto 0 do begin 
         Debug('Checking at ');
         Debug(i * sizeOf(IntPtr));
         if (lGI[i / 8] and (1 shl (i mod 8))) <> 0 then begin
-          var p := ^IntPtr(el)[i * sizeOf(IntPtr)];
+          var p := ^IntPtr(el)[i];
           if p <> 0 then begin
             Debug('Value is set, adding to black walk list');
             Debug(p);
@@ -445,6 +447,8 @@ type
       fGlobalFreeList.AddAllItemsToList(fRemoveList);
       for i: Integer := fRemoveList.Count -1 downto 0 do begin 
         var el := fRemoveList[i];
+        Debug('removelistroot');
+        Debug(el);
         fWalkList.Add(el);
         MarkGray;
       end;
@@ -570,8 +574,18 @@ type
       end;
     end;
     {$ELSE}
+    class var fCounter: Integer;
     class method AddToFreeList(aList: IntPtr);
     begin 
+      inc(fCounter);
+      if fCounter = 100 then begin 
+        WebAssemblyCalls.SetTimeout(-> begin 
+          GC(true);
+          fCounter := 0;
+        end, 0);
+      end;
+      Debug('AddToFreeList');
+      Debug(aList);
       fGlobalFreeList.Add(aList);
       SetBit(aList);
     end;
@@ -580,6 +594,7 @@ type
   public 
     class method GC(&aWait: Boolean);
     begin 
+
       {$IFDEF WEBASSEMBLY}
       DoGC;
       {$ELSE}
@@ -613,7 +628,7 @@ type
       ^^Void(result)^ := aTTY;
       memset(^Byte(result) + sizeOf(^Void), 0, aSize - sizeOf(^Void));
       AddToFreeList(IntPtr(result)); // ensure the value gets scanned.
-      
+
       if ^^Void(aTTY)[Utilities.FinalizerIndex] <> fFinalizer then begin
         SetFinalizer(result);
       end;
