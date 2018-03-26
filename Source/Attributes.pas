@@ -230,6 +230,16 @@ type
 
   [AttributeUsage(AttributeTargets.Method or AttributeTargets.Field or AttributeTargets.Property or AttributeTargets.Event or AttributeTargets.Struct or AttributeTargets.Class or AttributeTargets.Enum or AttributeTargets.Delegate)]
   DllExportAttribute = public class(Attribute)
+  private 
+    fName: String;
+  public
+    constructor; empty;  
+    constructor(aName: String);
+    begin 
+      fName := aName;
+    end;
+    
+    property Name: String read fName;
   end;
 
   [AttributeUsage(AttributeTargets.Parameter)]
