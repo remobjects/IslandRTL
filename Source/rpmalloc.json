@@ -15,31 +15,26 @@
     "uint16_t=UInt16",
     "int8_t=Byte",
     "uint8_t=SByte",
-    "ENABLE_GLOBAL_CACHE=1",
     "EINVAL=22",
-    "ENOMEM=12"
-
+    "ENOMEM=12",
+    "DISABLE_UNMAP=1",
+    "ENABLE_UNLIMITED_CACHE=0",
+    "ENABLE_GLOBAL_CACHE"
   ],
   "uses":  ["rtl"],
   "nonDefines": [
-    "ENABLE_GUARDS",
     "ENABLE_ASSERTS",
     "PLATFORM_WINDOWS",
     "PLATFORM_POSIX",
     "ARCH_64BIT",
     "ENABLE_STATISTICS",
-    "ENABLE_UNLIMITED_CACHE",
-    "DEFAULT_SPAN_MAP_COUNT",
-    "MIN_SPAN_CACHE_SIZE",
-    "MIN_SPAN_CACHE_RELEASE",
-    "MAX_SPAN_CACHE_DIVISOR",
-    "ENABLE_THREAD_CACHE",
-    "MIN_LARGE_SPAN_CACHE_SIZE",
-    "MIN_LARGE_SPAN_CACHE_RELEASE",
-    "MAX_LARGE_SPAN_CACHE_DIVISOR",
-    "MAX_GLOBAL_CACHE_MULTIPLIER"
+    "ENABLE_UNLIMITED_THREAD_CACHE",
+    "ENABLE_UNLIMITED_GLOBAL_CACHE"
   ],
   "includes": {
+    "stdio.h":"",
+    "stdlib.h":"",
+    "stdatomic.h":"",
     "stddef.h": "",
     "stdint.h": "",
     "string.h": "",

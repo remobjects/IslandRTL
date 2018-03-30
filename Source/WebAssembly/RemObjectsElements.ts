@@ -176,16 +176,26 @@ module ElementsWebAssembly {
         result.instance.exports["__island_force_release"](val);
     }
 
+    export function destroyDelegate(val: () => any)
+    {
+        if (val && (val as any).__elements_instance) {
+            ReleaseReference((val as any).__elements_instance);
+        }
+    }
+
     function createDelegate(objectptr: number): () => any
     {
         AddReference(objectptr);
-        return function () {
+        var res = function () {
             (arguments as any).this = this;
             var h = createHandle(arguments);
             result.instance.exports["__island_call_delegate"](objectptr, h);
             releaseHandle(h);
             return (arguments as any).result;
-        }
+        };
+
+        (res as any).__elements_instance = objectptr;
+        return res;
     }
 
     function defineElementsSystemFunctions(imp: any) {

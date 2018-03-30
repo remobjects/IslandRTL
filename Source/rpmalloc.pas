@@ -9,110 +9,57 @@ uses
 
 {$GLOBALS ON}
 
-{$IF NOT ENABLE_THREAD_CACHE}
-// / Build time configurable limits
-// ! Size of heap hashmap
-// ! Enable per-thread cache
-const ENABLE_THREAD_CACHE = 1; public;
-{$ENDIF}
-{$IF NOT ENABLE_STATISTICS}
-// ! Enable validation of args to public entry points
-// ! Enable statistics collection
-const ENABLE_STATISTICS = 0; public;
-{$ENDIF}
-{$IF NOT ENABLE_ASSERTS}
-// ! Enable asserts
-const ENABLE_ASSERTS = 0; public;
-{$ENDIF}
-{$IF NOT ENABLE_GUARDS}
-// ! Support preloading
-// ! Enable overwrite/underwrite guards
-const ENABLE_GUARDS = 0; public;
-{$ENDIF}
-{$IF NOT ENABLE_UNLIMITED_CACHE}
-// ! Unlimited cache disables any cache limitations
-const ENABLE_UNLIMITED_CACHE = 0; public;
-{$ENDIF}
-{$IF NOT DEFAULT_SPAN_MAP_COUNT}
-// ! Default number of spans to map in call to map more virtual memory
-const DEFAULT_SPAN_MAP_COUNT = 16; public;
-{$ENDIF}
-// ! Minimum cache size to remain after a release to global cache
-const MIN_SPAN_CACHE_SIZE = 64; public;
-// ! Minimum number of spans to transfer between thread and global cache
-const MIN_SPAN_CACHE_RELEASE = 16; public;
-// ! Maximum cache size divisor (max cache size will be max allocation count divided by this divisor)
-const MAX_SPAN_CACHE_DIVISOR = 4; public;
-// ! Minimum cache size to remain after a release to global cache, large spans
-const MIN_LARGE_SPAN_CACHE_SIZE = 8; public;
-// ! Minimum number of spans to transfer between thread and global cache, large spans
-const MIN_LARGE_SPAN_CACHE_RELEASE = 4; public;
-// ! Maximum cache size divisor, large spans (max cache size will be max allocation count divided by this divisor)
-const MAX_LARGE_SPAN_CACHE_DIVISOR = 16; public;
-// ! Multiplier for global span cache limit (max cache size will be calculated like thread cache and multiplied with this)
-const MAX_GLOBAL_CACHE_MULTIPLIER = 8; public;
-// #undef ENABLE_GLOBAL_CACHE
-// #undef MIN_SPAN_CACHE_SIZE
-// #undef MIN_SPAN_CACHE_RELEASE
-// #undef MAX_SPAN_CACHE_DIVISOR
-// #undef MIN_LARGE_SPAN_CACHE_SIZE
-// #undef MIN_LARGE_SPAN_CACHE_RELEASE
-// #undef MAX_LARGE_SPAN_CACHE_DIVISOR
-// / Platform and arch specifics
-const ARCH_64BIT = 0; public;
-const PLATFORM_WINDOWS = 0; public;
-const PLATFORM_POSIX = 1; public;
-
 method atomic_load32(src: ^atomic32_t): Int32; public;
 begin
-  exit (src)^.nonatomic;
+  exit atomic_load_explicit(src, memory_order_relaxed);
 end;
 
 method atomic_store32(dst: ^atomic32_t; val: Int32); public;
 begin
-  (dst)^.nonatomic := val;
+  atomic_store_explicit(dst, val, memory_order_relaxed);
 end;
 
 method atomic_incr32(val: ^atomic32_t): Int32; public;
 begin
-  exit __sync_add_and_fetch(@(val)^.nonatomic, 1);
+  exit (atomic_fetch_add_explicit(val, 1, memory_order_relaxed) + 1);
 end;
 
 method atomic_add32(val: ^atomic32_t; &add: Int32): Int32; public;
 begin
-  exit __sync_add_and_fetch(@(val)^.nonatomic, &add);
+  exit (atomic_fetch_add_explicit(val, &add, memory_order_relaxed) + &add);
 end;
 
 method atomic_load_ptr(src: ^atomicptr_t): ^Void; public;
 begin
-  exit ^Void(UIntPtr((src)^.nonatomic));
+  exit atomic_load_explicit(src, memory_order_relaxed);
 end;
 
 method atomic_store_ptr(dst: ^atomicptr_t; val: ^Void); public;
 begin
-  (dst)^.nonatomic := val;
+  atomic_store_explicit(dst, val, memory_order_relaxed);
 end;
 
 method atomic_cas_ptr(dst: ^atomicptr_t; val: ^Void; ref: ^Void): Int32; public;
 begin
-  exit __sync_bool_compare_and_swap(@(dst)^.nonatomic, ref, val);
+  exit atomic_compare_exchange_weak_explicit(dst, @ref, val, memory_order_release, memory_order_acquire);
 end;
 
 var _memory_config: rpmalloc_config_t; assembly;
 var _memory_page_size: IntPtr; assembly;
 var _memory_page_size_shift: IntPtr; assembly;
-var _memory_page_mask: IntPtr; assembly;
 var _memory_map_granularity: IntPtr; assembly;
 var _memory_span_size: IntPtr; assembly;
 var _memory_span_size_shift: IntPtr; assembly;
 var _memory_span_mask: UIntPtr; assembly;
+var _memory_span_map_count: IntPtr; assembly;
+var _memory_span_release_count: IntPtr; assembly;
+var _memory_span_release_count_large: IntPtr; assembly;
 var _memory_size_class: array[0..122] of size_class_t; assembly;
 var _memory_medium_size_limit: IntPtr; assembly;
 var _memory_heap_id: atomic32_t; assembly;
-{$IF ENABLE_THREAD_CACHE}
-var _memory_max_allocation: array[0..31] of UInt32; assembly;
-{$ENDIF}
-var _memory_heaps: array[0..78] of atomicptr_t; assembly;
+var _memory_huge_pages: Int32; assembly;
+var _memory_span_cache: array[0..31] of global_cache_t; assembly;
+var _memory_heaps: array[0..46] of atomicptr_t; assembly;
 var _memory_orphan_heaps: atomicptr_t; assembly;
 var _memory_orphan_counter: atomic32_t; assembly;
 var _memory_active_heaps: atomic32_t; assembly;
@@ -145,41 +92,12 @@ end;
 // ! Lookup a memory heap from heap ID
 method _memory_heap_lookup(id: Int32): ^heap_t; private;
 begin
-  var list_idx: UInt32 := (id mod 79);
+  var list_idx: UInt32 := (id mod 47);
   var heap: ^heap_t := atomic_load_ptr(@_memory_heaps[list_idx]);
   while (Boolean(heap) and Boolean(((heap)^.id ≠ id))) do
     heap := (heap)^.next_heap;
   exit heap;
 end;
-
-{$IF ENABLE_THREAD_CACHE}
-method _memory_counter_increase(counter: ^span_counter_t; global_counter: ^UInt32; span_count: IntPtr); private;
-begin
-  if ((() -> begin
-    var _tmp0 := (counter)^.current_allocations + 1;
-    (counter)^.current_allocations := _tmp0;
-    exit _tmp0;
-  end)() > (counter)^.max_allocations) then begin
-    (counter)^.max_allocations := (counter)^.current_allocations;
-    var cache_limit_max: UInt32 := (UInt32(_memory_span_size) - 2); readonly;
-    {$IF not ENABLE_UNLIMITED_CACHE}
-    (counter)^.cache_limit := ((counter)^.max_allocations / (if (span_count = 1) then (MAX_SPAN_CACHE_DIVISOR) else (MAX_LARGE_SPAN_CACHE_DIVISOR)));
-    var cache_limit_min: UInt32 := (if (span_count = 1) then ((MIN_SPAN_CACHE_RELEASE + MIN_SPAN_CACHE_SIZE)) else ((MIN_LARGE_SPAN_CACHE_RELEASE + MIN_LARGE_SPAN_CACHE_SIZE))); readonly;
-    if ((counter)^.cache_limit < cache_limit_min) then begin
-      (counter)^.cache_limit := cache_limit_min;
-    end;
-    if ((counter)^.cache_limit > cache_limit_max) then begin
-      (counter)^.cache_limit := cache_limit_max;
-    end;
-    {$ELSE}
-    (counter)^.cache_limit := cache_limit_max;
-    {$ENDIF}
-    if ((counter)^.max_allocations > (global_counter)^) then begin
-      (global_counter)^ := (counter)^.max_allocations;
-    end;
-  end;
-end;
-{$ENDIF}
 
 // ! Map more virtual memory
 method _memory_map(size: IntPtr; offset: ^IntPtr): ^Void; private;
@@ -187,74 +105,21 @@ begin
 
 
 
+
   exit _memory_config.memory_map(size, offset);
 end;
 
 // ! Unmap virtual memory
-method _memory_unmap(address: ^Void; size: IntPtr; offset: IntPtr; release: Int32); private;
+method _memory_unmap(address: ^Void; size: IntPtr; offset: IntPtr; release: IntPtr); private;
 begin
 
 
-
-
-  _memory_config.memory_unmap(address, size, offset, release);
-end;
-
-// ! Make flags field in a span from flags, remainder/distance and count
-// ! Check if span has any of the given flags
-// ! Get the distance from flags field
-// ! Get the remainder from flags field
-// ! Get the count from flags field
-// ! Set the remainder in the flags field (MUST be done from the owner heap thread)
-// ! Resize the given super span to the given count of spans, store the remainder in the heap reserved spans fields
-method _memory_set_span_remainder_as_reserved(heap: ^heap_t; span: ^span_t; use_count: IntPtr); private;
-begin
-  var current_count: IntPtr := (1 + (((span)^.flags shr 9) and 127));
+  if release then begin
 
 
 
-
-
-  (heap)^.span_reserve := ^Void((^AnsiChar(span) + IntPtr((use_count * _memory_span_size))));
-  (heap)^.spans_reserved := (current_count - use_count);
-  if not Boolean(((span)^.flags and (1 or 2))) then begin
-    // We must store the heap id before setting as master, to force unmaps to defer to this heap thread
-    atomic_store32(@(span)^.heap_id, (heap)^.id);
-
-    (heap)^.span_reserve_master := span;
-    (span)^.flags := UInt16(((1 or (UInt16((current_count - 1)) shl 2)) or (UInt16((use_count - 1)) shl 9)));
-
-
-
-
-  end
-  else begin
-    if ((span)^.flags and 1) then begin
-      // Only owner heap thread can modify a master span
-
-      var remains: UInt16 := (1 + (((span)^.flags shr 2) and 127));
-
-      (heap)^.span_reserve_master := span;
-      (span)^.flags := UInt16(((1 or (UInt16((remains - 1)) shl 2)) or (UInt16((use_count - 1)) shl 9)));
-
-
-
-    end
-    else begin
-      // SPAN_FLAG_SUBSPAN
-      // Resizing a subspan is a safe operation in any thread
-      var distance: UInt16 := (1 + (((span)^.flags shr 2) and 127));
-      var master: ^span_t := ^Void((^AnsiChar(span) + IntPtr((-Int32(distance) * Int32(_memory_span_size)))));
-      (heap)^.span_reserve_master := master;
-
-
-      (span)^.flags := UInt16(((2 or (UInt16((distance - 1)) shl 2)) or (UInt16((use_count - 1)) shl 9)));
-
-
-
-    end;
   end;
-
+  _memory_config.memory_unmap(address, size, offset, release);
 end;
 
 // ! Map in memory pages for the given number of spans (or use previously reserved pages)
@@ -268,74 +133,77 @@ begin
       (heap)^.spans_reserved := _tmp0;
       exit _tmp0;
     end)();
-    // Declare the span to be a subspan with given distance from master span
-    var distance: UInt16 := UInt16((UIntPtr(IntPtr((^AnsiChar(span) - ^AnsiChar((heap)^.span_reserve_master)))) shr _memory_span_size_shift));
-    (span)^.flags := UInt16(((2 or (UInt16((distance - 1)) shl 2)) or (UInt16((span_count - 1)) shl 9)));
+    if (span = (heap)^.span_reserve_master) then begin
 
-
-
-    (span)^.data.block.align_offset := 0;
+    end
+    else begin
+      // Declare the span to be a subspan with given distance from master span
+      var distance: UInt32 := UInt32((UIntPtr(IntPtr((^AnsiChar(span) - ^AnsiChar((heap)^.span_reserve_master)))) shr _memory_span_size_shift));
+      (span)^.flags := 2;
+      (span)^.total_spans_or_distance := distance;
+      (span)^.align_offset := 0;
+    end;
+    (span)^.span_count := UInt32(span_count);
     exit span;
   end;
-  // We cannot request extra spans if we already have some (but not enough) pending reserved spans
-  var request_spans: IntPtr := (if (Boolean((heap)^.spans_reserved) or Boolean((span_count > _memory_config.span_map_count))) then (span_count) else (_memory_config.span_map_count));
+  // If we already have some, but not enough, reserved spans, release those to heap cache and map a new
+  // full set of spans. Otherwise we would waste memory if page size > span size (huge pages)
+  var request_spans: IntPtr := (if (span_count > _memory_span_map_count) then (span_count) else (_memory_span_map_count));
+  if (Boolean((_memory_page_size > _memory_span_size)) and Boolean(((request_spans * _memory_span_size) mod _memory_page_size))) then begin
+    (() -> begin
+      var _tmp1 := request_spans + (_memory_span_map_count - (request_spans mod _memory_span_map_count));
+      request_spans := _tmp1;
+      exit _tmp1;
+    end)();
+  end;
   var align_offset: IntPtr := 0;
   var span: ^span_t := _memory_map((request_spans * _memory_span_size), @align_offset);
-  (span)^.flags := UInt16(((0 or (UInt16((request_spans - 1)) shl 2)) or (UInt16((request_spans - 1)) shl 9)));
+  (span)^.align_offset := UInt32(align_offset);
+  (span)^.total_spans_or_distance := UInt32(request_spans);
+  (span)^.span_count := UInt32(span_count);
+  (span)^.flags := 1;
+  atomic_store32(@(span)^.remaining_spans, Int32(request_spans));
 
-
-
-  (span)^.data.block.align_offset := UInt16(align_offset);
   if (request_spans > span_count) then begin
-    // We have extra spans, store them as reserved spans in heap
-    _memory_set_span_remainder_as_reserved(heap, span, span_count);
+    if (heap)^.spans_reserved then begin
+      var prev_span: ^span_t := (heap)^.span_reserve;
+      if (prev_span = (heap)^.span_reserve_master) then begin
+
+      end
+      else begin
+        var distance: UInt32 := UInt32((UIntPtr(IntPtr((^AnsiChar(prev_span) - ^AnsiChar((heap)^.span_reserve_master)))) shr _memory_span_size_shift));
+        (prev_span)^.flags := 2;
+        (prev_span)^.total_spans_or_distance := distance;
+        (prev_span)^.align_offset := 0;
+      end;
+      (prev_span)^.span_count := UInt32((heap)^.spans_reserved);
+      atomic_store32(@(prev_span)^.heap_id, (heap)^.id);
+      _memory_heap_cache_insert(heap, prev_span);
+    end;
+    (heap)^.span_reserve_master := span;
+    (heap)^.span_reserve := ^Void((^AnsiChar(span) + IntPtr((span_count * _memory_span_size))));
+    (heap)^.spans_reserved := (request_spans - span_count);
   end;
   exit span;
 end;
 
-// ! Defer unmapping of the given span to the owner heap
-method _memory_unmap_defer(heap_id: Int32; span: ^span_t): Int32; private;
-begin
-  // Get the heap and link in pointer in list of deferred operations
-  var heap: ^heap_t := _memory_heap_lookup(heap_id);
-  if not Boolean(heap) then begin
-    exit 0;
-  end;
-  atomic_store32(@(span)^.heap_id, heap_id);
-  var last_ptr: ^Void;
-  repeat
-    last_ptr := atomic_load_ptr(@(heap)^.defer_unmap);
-    (span)^.next_span := last_ptr;
-  until Boolean(atomic_cas_ptr(@(heap)^.defer_unmap, span, last_ptr));
-  exit 1;
-end;
-
 // ! Unmap memory pages for the given number of spans (or mark as unused if no partial unmappings)
-method _memory_unmap_span(heap: ^heap_t; span: ^span_t); private;
+method _memory_unmap_span(span: ^span_t); private;
 begin
-  var span_count: IntPtr := (1 + (((span)^.flags shr 9) and 127));
-
-  // A plain run of spans can be unmapped directly
-  if not Boolean(((span)^.flags and (1 or 2))) then begin
-    _memory_unmap(span, (span_count * _memory_span_size), (span)^.data.list.align_offset, 1);
-    exit;
-  end;
-  var is_master: UInt32 := ((span)^.flags and 1);
-  var master: ^span_t := (if is_master then (span) else (^Void((^AnsiChar(span) + IntPtr((-Int32((1 + (((span)^.flags shr 2) and 127))) * Int32(_memory_span_size)))))));
+  var span_count: IntPtr := (span)^.span_count;
 
 
-  // Check if we own the master span, otherwise defer (only owner of master span can modify remainder field)
-  var master_heap_id: Int32 := atomic_load32(@(master)^.heap_id);
-  if (Boolean(heap) and Boolean((master_heap_id ≠ (heap)^.id))) then begin
-    if _memory_unmap_defer(master_heap_id, span) then begin
-      exit;
-    end;
-  end;
+  var is_master: Int32 := not Boolean(not Boolean(((span)^.flags and 1)));
+  var master: ^span_t := (if is_master then (span) else (^Void((^AnsiChar(span) + IntPtr(-Int32(((span)^.total_spans_or_distance * _memory_span_size)))))));
+
+
   if not Boolean(is_master) then begin
-    // Directly unmap subspans
+    // Directly unmap subspans (unless huge pages, in which case we defer and unmap entire page range with master)
 
-    _memory_unmap(span, (span_count * _memory_span_size), 0, 0);
+    if (_memory_span_size ≥ _memory_page_size) then begin
+      _memory_unmap(span, (span_count * _memory_span_size), 0, 0);
 
+    end;
   end
   else begin
     // Special double flag to denote an unmapped master
@@ -346,57 +214,20 @@ begin
       exit _tmp0;
     end)();
   end;
-  // We are in owner thread of the master span
-  var remains: UInt32 := (1 + (((master)^.flags shr 2) and 127));
-
-  remains := (if (UInt32(span_count) ≥ remains) then (0) else ((remains - UInt32(span_count))));
-  if not Boolean(remains) then begin
+  if (atomic_add32(@(master)^.remaining_spans, -Int32(span_count)) ≤ 0) then begin
     // Everything unmapped, unmap the master span with release flag to unmap the entire range of the super span
 
-    span_count := (1 + (((master)^.flags shr 9) and 127));
-    _memory_unmap(master, (span_count * _memory_span_size), (master)^.data.list.align_offset, 1);
-
-  end
-  else begin
-    // Set remaining spans
-    (master)^.flags := UInt16((((master)^.flags and 65027) or (UInt16((remains - 1)) shl 2)));
-
-  end;
-end;
-
-// ! Process pending deferred cross-thread unmaps
-method _memory_unmap_deferred(heap: ^heap_t; wanted_count: IntPtr): ^span_t; private;
-begin
-  // Grab the current list of deferred unmaps
-
-  var span: ^span_t := atomic_load_ptr(@(heap)^.defer_unmap);
-  if (Boolean(not Boolean(span)) or Boolean(not Boolean(atomic_cas_ptr(@(heap)^.defer_unmap, 0, span)))) then begin
-    exit 0;
-  end;
-  var found_span: ^span_t := 0;
-  repeat
-    // Verify that we own the master span, otherwise re-defer to owner
-    var next: ^Void := (span)^.next_span;
-    if (Boolean(not Boolean(found_span)) and Boolean(((1 + (((span)^.flags shr 9) and 127)) = wanted_count))) then begin
-
-      found_span := span;
-    end
-    else begin
-      var is_master: UInt32 := ((span)^.flags and 1);
-      var master: ^span_t := (if is_master then (span) else (^Void((^AnsiChar(span) + IntPtr((-Int32((1 + (((span)^.flags shr 2) and 127))) * Int32(_memory_span_size)))))));
-      var master_heap_id: Int32 := atomic_load32(@(master)^.heap_id);
-      if (Boolean((atomic_load32(@(span)^.heap_id) = master_heap_id)) or Boolean(not Boolean(_memory_unmap_defer(master_heap_id, span)))) then begin
-        // We own the master span (or heap merged and abandoned)
-        _memory_unmap_span(heap, span);
-      end;
+    var unmap_count: IntPtr := (master)^.span_count;
+    if (_memory_span_size < _memory_page_size) then begin
+      unmap_count := (master)^.total_spans_or_distance;
     end;
-    span := next;
-  until not span;
-  exit found_span;
+
+    _memory_unmap(master, (unmap_count * _memory_span_size), (master)^.align_offset, ((master)^.total_spans_or_distance * _memory_span_size));
+  end;
 end;
 
 // ! Unmap a single linked list of spans
-method _memory_unmap_span_list(heap: ^heap_t; span: ^span_t); private;
+method _memory_unmap_span_list(span: ^span_t); private;
 begin
   var list_size: IntPtr := (span)^.data.list.size;
   begin
@@ -413,7 +244,7 @@ begin
     // for loop: body
     begin
       var next_span: ^span_t := (span)^.next_span;
-      _memory_unmap_span(heap, span);
+      _memory_unmap_span(span);
       span := next_span;
     end;
     _continuelabel0:;
@@ -426,55 +257,26 @@ begin
 
 end;
 
-{$IF ENABLE_THREAD_CACHE}
-method _memory_span_split(heap: ^heap_t; span: ^span_t; use_count: IntPtr): ^span_t; private;
+method _memory_span_split(span: ^span_t; use_count: IntPtr): ^span_t; private;
 begin
-  var distance: UInt16 := 0;
-  var current_count: IntPtr := (1 + (((span)^.flags shr 9) and 127));
-
-
-  if not Boolean(((span)^.flags and (1 or 2))) then begin
-    // Must store heap in master span before use, to avoid issues when unmapping subspans
-    atomic_store32(@(span)^.heap_id, (heap)^.id);
-
-    (span)^.flags := UInt16(((1 or (UInt16((current_count - 1)) shl 2)) or (UInt16((use_count - 1)) shl 9)));
+  var current_count: IntPtr := (span)^.span_count;
+  var distance: UInt32 := 0;
 
 
 
-
-  end
-  else begin
-    if ((span)^.flags and 1) then begin
-      // Only valid to call on master span if we own it
-
-      var remains: UInt16 := (1 + (((span)^.flags shr 2) and 127));
-
-      (span)^.flags := UInt16(((1 or (UInt16((remains - 1)) shl 2)) or (UInt16((use_count - 1)) shl 9)));
-
-
-
-    end
-    else begin
-      // SPAN_FLAG_SUBSPAN
-      distance := (1 + (((span)^.flags shr 2) and 127));
-      (span)^.flags := UInt16(((2 or (UInt16((distance - 1)) shl 2)) or (UInt16((use_count - 1)) shl 9)));
-
-
-
-    end;
+  (span)^.span_count := UInt32(use_count);
+  if ((span)^.flags and 2) then begin
+    distance := (span)^.total_spans_or_distance;
   end;
   // Setup remainder as a subspan
   var subspan: ^span_t := ^Void((^AnsiChar(span) + IntPtr((use_count * _memory_span_size))));
-  (subspan)^.flags := UInt16(((2 or (UInt16(((distance + use_count) - 1)) shl 2)) or (UInt16(((current_count - use_count) - 1)) shl 9)));
-
-
-
-  (subspan)^.data.list.align_offset := 0;
+  (subspan)^.flags := 2;
+  (subspan)^.total_spans_or_distance := UInt32((distance + use_count));
+  (subspan)^.span_count := UInt32((current_count - use_count));
+  (subspan)^.align_offset := 0;
   exit subspan;
 end;
-{$ENDIF}
 
-{$IF ENABLE_THREAD_CACHE}
 // ! Add span to head of single linked span list
 method _memory_span_list_push(head: ^^span_t; span: ^span_t): IntPtr; private;
 begin
@@ -488,9 +290,7 @@ begin
   (head)^ := span;
   exit (span)^.data.list.size;
 end;
-{$ENDIF}
 
-{$IF ENABLE_THREAD_CACHE}
 // ! Remove span from head of single linked span list, returns the new list head
 method _memory_span_list_pop(head: ^^span_t): ^span_t; private;
 begin
@@ -504,9 +304,7 @@ begin
   (head)^ := next_span;
   exit span;
 end;
-{$ENDIF}
 
-{$IF ENABLE_THREAD_CACHE}
 // ! Split a single linked span list
 method _memory_span_list_split(span: ^span_t; limit: IntPtr): ^span_t; private;
 begin
@@ -531,7 +329,6 @@ begin
   end;
   exit next;
 end;
-{$ENDIF}
 
 // ! Add a span to a double linked list
 method _memory_span_list_doublelink_add(head: ^^span_t; span: ^span_t); private;
@@ -562,16 +359,97 @@ begin
   end;
 end;
 
+method _memory_cache_insert(cache: ^global_cache_t; span: ^span_t; cache_limit: IntPtr); private;
+begin
+
+  var list_size: Int32 := Int32((span)^.data.list.size);
+  // Unmap if cache has reached the limit
+  if (atomic_add32(@(cache)^.size, list_size) > Int32(cache_limit)) then begin
+    {$IF not ENABLE_UNLIMITED_GLOBAL_CACHE}
+    _memory_unmap_span_list(span);
+    atomic_add32(@(cache)^.size, -list_size);
+    exit;
+    {$ENDIF}
+  end;
+  var current_cache: ^Void;
+  var new_cache: ^Void;
+  repeat
+    current_cache := atomic_load_ptr(@(cache)^.cache);
+    (span)^.prev_span := ^Void((UIntPtr(current_cache) and _memory_span_mask));
+    new_cache := ^Void((UIntPtr(span) or (UIntPtr(atomic_incr32(@(cache)^.counter)) and not _memory_span_mask)));
+  until Boolean(atomic_cas_ptr(@(cache)^.cache, new_cache, current_cache));
+end;
+
+// ! Extract a number of memory page spans from the global cache
+method _memory_cache_extract(cache: ^global_cache_t): ^span_t; private;
+begin
+  var span_ptr: UIntPtr;
+  repeat
+    var global_span: ^Void := atomic_load_ptr(@(cache)^.cache);
+    span_ptr := (UIntPtr(global_span) and _memory_span_mask);
+    if span_ptr then begin
+      var span: ^span_t := ^Void(span_ptr);
+      // By accessing the span ptr before it is swapped out of list we assume that a contending thread
+      // does not manage to traverse the span to being unmapped before we access it
+      var new_cache: ^Void := ^Void((UIntPtr((span)^.prev_span) or (UIntPtr(atomic_incr32(@(cache)^.counter)) and not _memory_span_mask)));
+      if atomic_cas_ptr(@(cache)^.cache, new_cache, global_span) then begin
+        atomic_add32(@(cache)^.size, -Int32((span)^.data.list.size));
+        exit span;
+      end;
+    end;
+  until not span_ptr;
+  exit 0;
+end;
+
+// ! Finalize a global cache, only valid from allocator finalization (not thread safe)
+method _memory_cache_finalize(cache: ^global_cache_t); private;
+begin
+  var current_cache: ^Void := atomic_load_ptr(@(cache)^.cache);
+  var span: ^span_t := ^Void((UIntPtr(current_cache) and _memory_span_mask));
+  while span do begin
+    var skip_span: ^span_t := ^Void((UIntPtr((span)^.prev_span) and _memory_span_mask));
+    atomic_add32(@(cache)^.size, -Int32((span)^.data.list.size));
+    _memory_unmap_span_list(span);
+    span := skip_span;
+  end;
+
+  atomic_store_ptr(@(cache)^.cache, 0);
+  atomic_store32(@(cache)^.size, 0);
+end;
+
+// ! Insert the given list of memory page spans in the global cache
+method _memory_global_cache_insert(span: ^span_t); private;
+begin
+  var span_count: IntPtr := (span)^.span_count;
+  {$IF ENABLE_UNLIMITED_GLOBAL_CACHE}
+  _memory_cache_insert(@_memory_span_cache[(span_count - 1)], span, 0);
+  {$ELSE}
+  var cache_limit: IntPtr := (64 * (if (span_count = 1) then (_memory_span_release_count) else (_memory_span_release_count_large))); readonly;
+  _memory_cache_insert(@_memory_span_cache[(span_count - 1)], span, cache_limit);
+  {$ENDIF}
+end;
+
+// ! Extract a number of memory page spans from the global cache for large blocks
+method _memory_global_cache_extract(span_count: IntPtr): ^span_t; private;
+begin
+  var span: ^span_t := _memory_cache_extract(@_memory_span_cache[(span_count - 1)]);
+
+  exit span;
+end;
+
 // ! Insert a single span into thread heap cache, releasing to global cache if overflow
 method _memory_heap_cache_insert(heap: ^heap_t; span: ^span_t); private;
 begin
-  {$IF ENABLE_THREAD_CACHE}
-  var span_count: IntPtr := (1 + (((span)^.flags shr 9) and 127));
+  var span_count: IntPtr := (span)^.span_count;
   var idx: IntPtr := (span_count - 1);
-  if (_memory_span_list_push(@(heap)^.span_cache[idx], span) ≤ (heap)^.span_counter[idx].cache_limit) then begin
+  {$IF ENABLE_UNLIMITED_THREAD_CACHE}
+  _memory_span_list_push(@(heap)^.span_cache[idx], span);
+  {$ELSE}
+  var release_count: IntPtr := (if not Boolean(idx) then (_memory_span_release_count) else (_memory_span_release_count_large)); readonly;
+  if (_memory_span_list_push(@(heap)^.span_cache[idx], span) ≤ (release_count * 16)) then begin
     exit;
   end;
-  (heap)^.span_cache[idx] := _memory_span_list_split(span, (heap)^.span_counter[idx].cache_limit);
+  (heap)^.span_cache[idx] := _memory_span_list_split(span, release_count);
 
   {$IF ENABLE_STATISTICS}
   (() -> begin
@@ -580,32 +458,23 @@ begin
     exit _tmp0;
   end)();
   {$ENDIF}
-  _memory_unmap_span_list(heap, span);
-  {$ELSE}
-  _memory_unmap_span(heap, span);
+  _memory_global_cache_insert(span);
   {$ENDIF}
 end;
 
 // ! Extract the given number of spans from the different cache levels
 method _memory_heap_cache_extract(heap: ^heap_t; span_count: IntPtr): ^span_t; private;
 begin
-  {$IF ENABLE_THREAD_CACHE}
   var idx: IntPtr := (span_count - 1);
   // Step 1: check thread cache
   if (heap)^.span_cache[idx] then begin
     exit _memory_span_list_pop(@(heap)^.span_cache[idx]);
   end;
-  {$ENDIF}
   // Step 2: Check reserved spans
   if ((heap)^.spans_reserved ≥ span_count) then begin
     exit _memory_map_spans(heap, span_count);
   end;
-  // Step 3: Try processing deferred unmappings
-  var span: ^span_t := _memory_unmap_deferred(heap, span_count);
-  if span then begin
-    exit span;
-  end;
-  {$IF ENABLE_THREAD_CACHE}
+  var span: ^span_t := 0;
   begin
     // for loop: initializer
     idx := idx + 1;
@@ -621,7 +490,7 @@ begin
     begin
       if (heap)^.span_cache[idx] then begin
         span := _memory_span_list_pop(@(heap)^.span_cache[idx]);
-        _breaklabel0:;
+        goto _breaklabel0;
       end;
     end;
     _continuelabel0:;
@@ -633,25 +502,36 @@ begin
   end;
   if span then begin
     // Mark the span as owned by this heap before splitting
-    var got_count: IntPtr := (1 + (((span)^.flags shr 9) and 127));
+    var got_count: IntPtr := (span)^.span_count;
 
     atomic_store32(@(span)^.heap_id, (heap)^.id);
-
+    atomic_thread_fence(memory_order_release);
     // Split the span and store as reserved if no previously reserved spans, or in thread cache otherwise
-    var subspan: ^span_t := _memory_span_split(heap, span, span_count);
+    var subspan: ^span_t := _memory_span_split(span, span_count);
 
 
     if not Boolean((heap)^.spans_reserved) then begin
       (heap)^.spans_reserved := (got_count - span_count);
       (heap)^.span_reserve := subspan;
-      (heap)^.span_reserve_master := ^Void((^AnsiChar(subspan) + IntPtr((-Int32((1 + (((subspan)^.flags shr 2) and 127))) * Int32(_memory_span_size)))));
+      (heap)^.span_reserve_master := ^Void((^AnsiChar(subspan) + IntPtr(-Int32(((subspan)^.total_spans_or_distance * _memory_span_size)))));
     end
     else begin
       _memory_heap_cache_insert(heap, subspan);
     end;
     exit span;
   end;
-  {$ENDIF}
+  idx := (span_count - 1);
+  (heap)^.span_cache[idx] := _memory_global_cache_extract(span_count);
+  if (heap)^.span_cache[idx] then begin
+    {$IF ENABLE_STATISTICS}
+    (() -> begin
+      var _tmp1 := (heap)^.global_to_thread + ((IntPtr(((heap)^.span_cache[idx])^.data.list.size) * span_count) * _memory_span_size);
+      (heap)^.global_to_thread := _tmp1;
+      exit _tmp1;
+    end)();
+    {$ENDIF}
+    exit _memory_span_list_pop(@(heap)^.span_cache[idx]);
+  end;
   exit 0;
 end;
 
@@ -670,49 +550,45 @@ begin
     // Happy path, we have a span with at least one free block
     var span: ^span_t := (heap)^.active_span[class_idx];
     var offset: count_t := (class_size * (active_block)^.free_list);
-    var &block: ^UInt32 := ^Void((^AnsiChar(span) + IntPtr((32 + offset))));
+    var &block: ^UInt32 := ^Void((^AnsiChar(span) + IntPtr((64 + offset))));
 
-    (active_block)^.free_count := (active_block)^.free_count - 1;
-    if not Boolean((active_block)^.free_count) then begin
+    if ((active_block)^.free_count = 1) then begin
       // Span is now completely allocated, set the bookkeeping data in the
       // span itself and reset the active span pointer in the heap
-      (span)^.data.block.free_count := 0;
-      (span)^.data.block.first_autolink := UInt16((size_class)^.block_count);
+      (span)^.data.block.free_count := (() -> begin
+        var _tmp0 := 0;
+        (active_block)^.free_count := _tmp0;
+        exit _tmp0;
+      end)();
+      (span)^.data.block.first_autolink := 65535;
       (heap)^.active_span[class_idx] := 0;
     end
     else begin
       // Get the next free block, either from linked list or from auto link
-      if ((active_block)^.free_list < (active_block)^.first_autolink) then begin
+      (active_block)^.free_list := (active_block)^.free_list + 1;
+      if ((active_block)^.free_list ≤ (active_block)^.first_autolink) then begin
         (active_block)^.free_list := UInt16((&block)^);
-      end
-      else begin
-        (active_block)^.free_list := (active_block)^.free_list + 1;
-        (active_block)^.first_autolink := (active_block)^.first_autolink + 1;
       end;
 
+      (active_block)^.free_count := (active_block)^.free_count - 1;
     end;
     exit &block;
   end;
   // Step 2: No active span, try executing deferred deallocations and try again if there
   //         was at least one of the requested size class
-  if _memory_deallocate_deferred(heap, class_idx) then begin
-    if (active_block)^.free_count then begin
-      goto use_active;
-    end;
-
-  end;
+  _memory_deallocate_deferred(heap);
   // Step 3: Check if there is a semi-used span of the requested size class available
   if (heap)^.size_cache[class_idx] then begin
     // Promote a pending semi-used span to be active, storing bookkeeping data in
     // the heap structure for faster access
     var span: ^span_t := (heap)^.size_cache[class_idx];
+    // Mark span as owned by this heap
+    atomic_store32(@(span)^.heap_id, (heap)^.id);
+    atomic_thread_fence(memory_order_release);
     (active_block)^ := (span)^.data.block;
 
     (heap)^.size_cache[class_idx] := (span)^.next_span;
     (heap)^.active_span[class_idx] := span;
-    // Mark span as owned by this heap
-    atomic_store32(@(span)^.heap_id, (heap)^.id);
-
     goto use_active;
 
   end;
@@ -726,7 +602,7 @@ begin
 
   (span)^.size_class := UInt16(class_idx);
   atomic_store32(@(span)^.heap_id, (heap)^.id);
-
+  atomic_thread_fence(memory_order_release);
   // If we only have one block we will grab it, otherwise
   // set span as new span to use for next allocation
   if ((size_class)^.block_count > 1) then begin
@@ -738,12 +614,10 @@ begin
   end
   else begin
     (span)^.data.block.free_count := 0;
-    (span)^.data.block.first_autolink := UInt16((size_class)^.block_count);
+    (span)^.data.block.first_autolink := 65535;
   end;
-  // Track counters
-
   // Return first block if memory page span
-  exit ^Void((^AnsiChar(span) + IntPtr(32)));
+  exit ^Void((^AnsiChar(span) + IntPtr(64)));
 end;
 
 // ! Allocate a large sized memory block from the given heap
@@ -753,7 +627,7 @@ begin
   // Since this function is never called if size > LARGE_SIZE_LIMIT
   // the span_count is guaranteed to be <= LARGE_CLASS_COUNT
   (() -> begin
-    var _tmp0 := size + 32;
+    var _tmp0 := size + 64;
     size := _tmp0;
     exit _tmp0;
   end)();
@@ -762,13 +636,6 @@ begin
     span_count := span_count + 1;
   end;
   var idx: IntPtr := (span_count - 1);
-  {$IF ENABLE_THREAD_CACHE}
-  if not Boolean((heap)^.span_cache[idx]) then begin
-    _memory_deallocate_deferred(heap, ((63 + 60) + idx));
-  end;
-  {$ELSE}
-  _memory_deallocate_deferred(heap, ((63 + 60) + idx));
-  {$ENDIF}
   // Step 1: Find span in one of the cache levels
   var span: ^span_t := _memory_heap_cache_extract(heap, span_count);
   if not Boolean(span) then begin
@@ -779,10 +646,8 @@ begin
 
   (span)^.size_class := UInt16(((63 + 60) + idx));
   atomic_store32(@(span)^.heap_id, (heap)^.id);
-
-  // Increase counter
-
-  exit ^Void((^AnsiChar(span) + IntPtr(32)));
+  atomic_thread_fence(memory_order_release);
+  exit ^Void((^AnsiChar(span) + IntPtr(64)));
 end;
 
 // ! Allocate a new heap
@@ -794,16 +659,16 @@ begin
   var heap: ^heap_t;
   var next_heap: ^heap_t;
   // Try getting an orphaned heap
-
+  atomic_thread_fence(memory_order_acquire);
   repeat
     raw_heap := atomic_load_ptr(@_memory_orphan_heaps);
-    heap := ^Void((UIntPtr(raw_heap) and _memory_page_mask));
+    heap := ^Void((UIntPtr(raw_heap) and not UIntPtr(255)));
     if not Boolean(heap) then begin
       break;
     end;
     next_heap := (heap)^.next_orphan;
     orphan_counter := UIntPtr(atomic_incr32(@_memory_orphan_counter));
-    next_raw_heap := ^Void((UIntPtr(next_heap) or (orphan_counter and not _memory_page_mask)));
+    next_raw_heap := ^Void((UIntPtr(next_heap) or (orphan_counter and UIntPtr(255))));
   until Boolean(atomic_cas_ptr(@_memory_orphan_heaps, next_raw_heap, raw_heap));
   if not Boolean(heap) then begin
     // Map in pages for a new heap
@@ -819,38 +684,14 @@ begin
       end;
     until Boolean((heap)^.id);
     // Link in heap in heap ID map
-    var list_idx: IntPtr := ((heap)^.id mod 79);
+    var list_idx: IntPtr := ((heap)^.id mod 47);
     repeat
       next_heap := atomic_load_ptr(@_memory_heaps[list_idx]);
       (heap)^.next_heap := next_heap;
     until Boolean(atomic_cas_ptr(@_memory_heaps[list_idx], heap, next_heap));
   end;
-  {$IF ENABLE_THREAD_CACHE}
-  (heap)^.span_counter[0].cache_limit := (MIN_SPAN_CACHE_RELEASE + MIN_SPAN_CACHE_SIZE);
-  begin
-    // for loop: initializer
-    var idx: IntPtr := 1;
-    // for loop: compare
-    _looplabel0:;
-    if (idx < 32) then begin
-
-    end
-    else begin
-      goto _breaklabel0;
-    end;
-    // for loop: body
-    (heap)^.span_counter[idx].cache_limit := (MIN_LARGE_SPAN_CACHE_RELEASE + MIN_LARGE_SPAN_CACHE_SIZE);
-    _continuelabel0:;
-    // for loop: increment/continue
-    idx := idx + 1;
-    goto _looplabel0;
-    // for loop: break
-    _breaklabel0:;
-  end;
-  {$ENDIF}
   // Clean up any deferred operations
-  _memory_unmap_deferred(heap, 0);
-  _memory_deallocate_deferred(heap, 0);
+  _memory_deallocate_deferred(heap);
   exit heap;
 end;
 
@@ -866,12 +707,6 @@ begin
   var block_data: ^span_block_t := (if is_active then (((heap)^.active_block + class_idx)) else (@(span)^.data.block));
   // Check if the span will become completely free
   if ((block_data)^.free_count = (count_t((size_class)^.block_count) - 1)) then begin
-    {$IF ENABLE_THREAD_CACHE}
-
-    if (heap)^.span_counter[0].current_allocations then begin
-      (heap)^.span_counter[0].current_allocations := (heap)^.span_counter[0].current_allocations - 1;
-    end;
-    {$ENDIF}
     // If it was active, reset counter. Otherwise, if not active, remove from
     // partial free list if we had a previous free block (guard for classes with only 1 block)
     if is_active then begin
@@ -890,80 +725,66 @@ begin
   if ((block_data)^.free_count = 0) then begin
     // add to free list and disable autolink
     _memory_span_list_doublelink_add(@(heap)^.size_cache[class_idx], span);
-    (block_data)^.first_autolink := UInt16((size_class)^.block_count);
+    (block_data)^.first_autolink := 65535;
   end;
   (block_data)^.free_count := (block_data)^.free_count + 1;
   // Span is not yet completely free, so add block to the linked list of free blocks
-  var blocks_start: ^Void := ^Void((^AnsiChar(span) + IntPtr(32)));
+  var blocks_start: ^Void := ^Void((^AnsiChar(span) + IntPtr(64)));
   var block_offset: count_t := count_t(IntPtr((^AnsiChar(p) - ^AnsiChar(blocks_start))));
   var block_idx: count_t := (block_offset / count_t((size_class)^.size));
   var &block: ^UInt32 := ^Void((^AnsiChar(blocks_start) + IntPtr((block_idx * (size_class)^.size))));
   (&block)^ := (block_data)^.free_list;
+  if ((block_data)^.free_list > (block_data)^.first_autolink) then begin
+    (block_data)^.first_autolink := (block_data)^.free_list;
+  end;
   (block_data)^.free_list := UInt16(block_idx);
 end;
 
-// ! Deallocate the given large memory block from the given heap
+// ! Deallocate the given large memory block to the given heap
 method _memory_deallocate_large_to_heap(heap: ^heap_t; span: ^span_t); private;
 begin
   // Decrease counter
-  var idx: IntPtr := (IntPtr((span)^.size_class) - (63 + 60));
-  var span_count: IntPtr := (idx + 1);
 
 
 
-  {$IF ENABLE_THREAD_CACHE}
 
-  if (heap)^.span_counter[idx].current_allocations then begin
-    (heap)^.span_counter[idx].current_allocations := (heap)^.span_counter[idx].current_allocations - 1;
+
+  if (Boolean(((span)^.span_count > 1)) and Boolean(not Boolean((heap)^.spans_reserved))) then begin
+    (heap)^.span_reserve := span;
+    (heap)^.spans_reserved := (span)^.span_count;
+    if ((span)^.flags and 1) then begin
+      (heap)^.span_reserve_master := span;
+    end
+    else begin
+      // SPAN_FLAG_SUBSPAN
+      var distance: UInt32 := (span)^.total_spans_or_distance;
+      var master: ^span_t := ^Void((^AnsiChar(span) + IntPtr(-Int32((distance * _memory_span_size)))));
+      (heap)^.span_reserve_master := master;
+
+
+    end;
+  end
+  else begin
+    // Insert into cache list
+    _memory_heap_cache_insert(heap, span);
   end;
-  {$ENDIF}
-  if (Boolean(not Boolean((heap)^.spans_reserved)) and Boolean((span_count > 1))) then begin
-    // Split the span and store remainder as reserved spans
-    // Must split to a dummy 1-span master since we cannot have master spans as reserved
-    _memory_set_span_remainder_as_reserved(heap, span, 1);
-    span_count := 1;
-  end;
-  // Insert into cache list
-  _memory_heap_cache_insert(heap, span);
 end;
 
 // ! Process pending deferred cross-thread deallocations
-method _memory_deallocate_deferred(heap: ^heap_t; size_class: IntPtr): Int32; private;
+method _memory_deallocate_deferred(heap: ^heap_t); private;
 begin
   // Grab the current list of deferred deallocations
-
+  atomic_thread_fence(memory_order_acquire);
   var p: ^Void := atomic_load_ptr(@(heap)^.defer_deallocate);
   if (Boolean(not Boolean(p)) or Boolean(not Boolean(atomic_cas_ptr(@(heap)^.defer_deallocate, 0, p)))) then begin
-    exit 0;
+    exit;
   end;
-  // Keep track if we deallocate in the given size class
-  var got_class: Int32 := 0;
   repeat
     var next: ^Void := (^^Void(p))^;
-    // Get span and check which type of block
     var span: ^span_t := ^Void((UIntPtr(p) and _memory_span_mask));
-    if ((span)^.size_class < (63 + 60)) then begin
-      // Small/medium block
-      (() -> begin
-        var _tmp0 := got_class or ((span)^.size_class = size_class);
-        got_class := _tmp0;
-        exit _tmp0;
-      end)();
-      _memory_deallocate_to_heap(heap, span, p);
-    end
-    else begin
-      // Large block
-      (() -> begin
-        var _tmp1 := got_class or (Boolean(((span)^.size_class ≥ size_class)) and Boolean(((span)^.size_class ≤ (size_class + 2))));
-        got_class := _tmp1;
-        exit _tmp1;
-      end)();
-      _memory_deallocate_large_to_heap(heap, span);
-    end;
-    // Loop until all pending operations in list are processed
+    _memory_deallocate_to_heap(heap, span, p);
     p := next;
   until not p;
-  exit got_class;
 end;
 
 // ! Defer deallocation of the given block to the given heap
@@ -988,13 +809,13 @@ begin
     exit _memory_allocate_from_heap(get_thread_heap(), size);
   end
   else begin
-    if (size ≤ ((32 * _memory_span_size) - 32)) then begin
+    if (size ≤ ((32 * _memory_span_size) - 64)) then begin
       exit _memory_allocate_large_from_heap(get_thread_heap(), size);
     end;
   end;
   // Oversized, allocate pages directly
   (() -> begin
-    var _tmp0 := size + 32;
+    var _tmp0 := size + 64;
     size := _tmp0;
     exit _tmp0;
   end)();
@@ -1005,10 +826,10 @@ begin
   var align_offset: IntPtr := 0;
   var span: ^span_t := _memory_map((num_pages * _memory_page_size), @align_offset);
   atomic_store32(@(span)^.heap_id, 0);
-  // Store page count in next_span
-  (span)^.next_span := ^span_t(UIntPtr(num_pages));
-  (span)^.data.list.align_offset := UInt16(align_offset);
-  exit ^Void((^AnsiChar(span) + IntPtr(32)));
+  // Store page count in span_count
+  (span)^.span_count := UInt32(num_pages);
+  (span)^.align_offset := UInt32(align_offset);
+  exit ^Void((^AnsiChar(span) + IntPtr(64)));
 end;
 
 // ! Deallocate the given block
@@ -1017,28 +838,29 @@ begin
   if not Boolean(p) then begin
     exit;
   end;
-  // Grab the span (always at start of span, using 64KiB alignment)
+  // Grab the span (always at start of span, using span alignment)
   var span: ^span_t := ^Void((UIntPtr(p) and _memory_span_mask));
   var heap_id: Int32 := atomic_load32(@(span)^.heap_id);
-  var heap: ^heap_t := get_thread_heap();
-  // Check if block belongs to this heap or if deallocation should be deferred
-  if (heap_id = (heap)^.id) then begin
+  if heap_id then begin
+    var heap: ^heap_t := get_thread_heap();
     if ((span)^.size_class < (63 + 60)) then begin
-      _memory_deallocate_to_heap(heap, span, p);
+      // Check if block belongs to this heap or if deallocation should be deferred
+      if ((heap)^.id = heap_id) then begin
+        _memory_deallocate_to_heap(heap, span, p);
+      end
+      else begin
+        _memory_deallocate_defer(heap_id, p);
+      end;
     end
     else begin
+      // Large blocks can always be deallocated and transferred between heaps
       _memory_deallocate_large_to_heap(heap, span);
     end;
   end
   else begin
-    if (heap_id > 0) then begin
-      _memory_deallocate_defer(heap_id, p);
-    end
-    else begin
-      // Oversized allocation, page count is stored in next_span
-      var num_pages: IntPtr := IntPtr((span)^.next_span);
-      _memory_unmap(span, (num_pages * _memory_page_size), (span)^.data.list.align_offset, 1);
-    end;
+    // Oversized allocation, page count is stored in span_count
+    var num_pages: IntPtr := (span)^.span_count;
+    _memory_unmap(span, (num_pages * _memory_page_size), (span)^.align_offset, (num_pages * _memory_page_size));
   end;
 end;
 
@@ -1052,6 +874,7 @@ begin
     if heap_id then begin
       if ((span)^.size_class < (63 + 60)) then begin
         // Small/medium sized block
+
         var size_class: ^size_class_t := (_memory_size_class + (span)^.size_class);
         if (IntPtr((size_class)^.size) ≥ size) then begin
           exit p;
@@ -1063,36 +886,37 @@ begin
       end
       else begin
         // Large block
-        var total_size: IntPtr := (size + 32);
+        var total_size: IntPtr := (size + 64);
         var num_spans: IntPtr := (total_size shr _memory_span_size_shift);
         if (total_size and (_memory_span_mask - 1)) then begin
           num_spans := num_spans + 1;
         end;
         var current_spans: IntPtr := (((span)^.size_class - (63 + 60)) + 1);
+
         if (Boolean((current_spans ≥ num_spans)) and Boolean((num_spans ≥ (current_spans / 2)))) then begin
           exit p;
         end;
         // Still fits and less than half of memory would be freed
         if not Boolean(oldsize) then begin
-          oldsize := ((current_spans * _memory_span_size) - 32);
+          oldsize := ((current_spans * _memory_span_size) - 64);
         end;
       end;
     end
     else begin
       // Oversized block
-      var total_size: IntPtr := (size + 32);
+      var total_size: IntPtr := (size + 64);
       var num_pages: IntPtr := (total_size shr _memory_page_size_shift);
       if (total_size and (_memory_page_size - 1)) then begin
         num_pages := num_pages + 1;
       end;
-      // Page count is stored in next_span
-      var current_pages: IntPtr := IntPtr((span)^.next_span);
+      // Page count is stored in span_count
+      var current_pages: IntPtr := (span)^.span_count;
       if (Boolean((current_pages ≥ num_pages)) and Boolean((num_pages ≥ (current_pages / 2)))) then begin
         exit p;
       end;
       // Still fits and less than half of memory would be freed
       if not Boolean(oldsize) then begin
-        oldsize := ((current_pages * _memory_page_size) - 32);
+        oldsize := ((current_pages * _memory_page_size) - 64);
       end;
     end;
   end;
@@ -1122,18 +946,18 @@ begin
     end;
     // Large block
     var current_spans: IntPtr := (((span)^.size_class - (63 + 60)) + 1);
-    exit ((current_spans * _memory_span_size) - 32);
+    exit ((current_spans * _memory_span_size) - 64);
   end;
-  // Oversized block, page count is stored in next_span
-  var current_pages: IntPtr := IntPtr((span)^.next_span);
-  exit ((current_pages * _memory_page_size) - 32);
+  // Oversized block, page count is stored in span_count
+  var current_pages: IntPtr := (span)^.span_count;
+  exit ((current_pages * _memory_page_size) - 64);
 end;
 
 // ! Adjust and optimize the size class properties for the given class
 method _memory_adjust_size_class(iclass: IntPtr); private;
 begin
   var block_size: IntPtr := _memory_size_class[iclass].size;
-  var block_count: IntPtr := ((_memory_span_size - 32) / block_size);
+  var block_count: IntPtr := ((_memory_span_size - 64) / block_size);
   _memory_size_class[iclass].block_count := UInt16(block_count);
   _memory_size_class[iclass].class_idx := UInt16(iclass);
   // Check if previous size classes can be merged
@@ -1162,13 +986,13 @@ begin
   if config then begin
     memcpy(@_memory_config, config, sizeOf(rpmalloc_config_t));
   end;
-  var default_mapper: Int32 := 0;
   if (Boolean(not Boolean(_memory_config.memory_map)) or Boolean(not Boolean(_memory_config.memory_unmap))) then begin
-    default_mapper := 1;
     _memory_config.memory_map := _memory_map_os;
     _memory_config.memory_unmap := _memory_unmap_os;
   end;
+  _memory_huge_pages := 0;
   _memory_page_size := _memory_config.page_size;
+  _memory_map_granularity := _memory_page_size;
   if not Boolean(_memory_page_size) then begin
     {$IF PLATFORM_WINDOWS}
     var system_info: SYSTEM_INFO;
@@ -1176,16 +1000,44 @@ begin
     GetSystemInfo(@system_info);
     _memory_page_size := system_info.dwPageSize;
     _memory_map_granularity := system_info.dwAllocationGranularity;
+    if (Boolean(config) and Boolean((config)^.enable_huge_pages)) then begin
+      var token: HANDLE := 0;
+      var large_page_minimum: IntPtr := GetLargePageMinimum();
+      if large_page_minimum then begin
+        OpenProcessToken(GetCurrentProcess(), (TOKEN_ADJUST_PRIVILEGES or TOKEN_QUERY), @token);
+      end;
+      if token then begin
+        var luid: LUID;
+        if LookupPrivilegeValue(0, SE_LOCK_MEMORY_NAME, @luid) then begin
+          var token_privileges: TOKEN_PRIVILEGES;
+          memset(@token_privileges, 0, sizeOf(token_privileges));
+          token_privileges.PrivilegeCount := 1;
+          token_privileges.Privileges[0].Luid := luid;
+          token_privileges.Privileges[0].Attributes := SE_PRIVILEGE_ENABLED;
+          if AdjustTokenPrivileges(token, &FALSE, @token_privileges, 0, 0, 0) then begin
+            var err: DWORD := GetLastError();
+            if (err = ERROR_SUCCESS) then begin
+              _memory_huge_pages := 1;
+              _memory_page_size := large_page_minimum;
+              _memory_map_granularity := large_page_minimum;
+            end;
+          end;
+        end;
+        CloseHandle(token);
+      end;
+    end;
     {$ELSE}
     _memory_page_size := IntPtr(sysconf(_SC_PAGESIZE));
     _memory_map_granularity := _memory_page_size;
+    if (Boolean(config) and Boolean((config)^.enable_huge_pages)) then begin
+    end;
     {$ENDIF}
   end;
   if (_memory_page_size < 512) then begin
     _memory_page_size := 512;
   end;
-  if (_memory_page_size > (64 * 1024)) then begin
-    _memory_page_size := (64 * 1024);
+  if (_memory_page_size > ((64 * 1024) * 1024)) then begin
+    _memory_page_size := ((64 * 1024) * 1024);
   end;
   _memory_page_size_shift := 0;
   var page_size_bit: IntPtr := _memory_page_size;
@@ -1198,7 +1050,6 @@ begin
     end)();
   end;
   _memory_page_size := (IntPtr(1) shl _memory_page_size_shift);
-  _memory_page_mask := not UIntPtr((_memory_page_size - 1));
   var span_size: IntPtr := _memory_config.span_size;
   if not Boolean(span_size) then begin
     span_size := (64 * 1024);
@@ -1207,8 +1058,9 @@ begin
     span_size := (256 * 1024);
   end;
   _memory_span_size := 4096;
+  _memory_span_size := 4096;
   _memory_span_size_shift := 12;
-  while (Boolean((_memory_span_size < span_size)) or Boolean((_memory_span_size < _memory_page_size))) do begin
+  while (_memory_span_size < span_size) do begin
     (() -> begin
       var _tmp1 := _memory_span_size shl 1;
       _memory_span_size := _tmp1;
@@ -1217,20 +1069,28 @@ begin
     _memory_span_size_shift := _memory_span_size_shift + 1;
   end;
   _memory_span_mask := not UIntPtr((_memory_span_size - 1));
+  _memory_span_map_count := (if _memory_config.span_map_count then (_memory_config.span_map_count) else (32));
+  if ((_memory_span_size * _memory_span_map_count) < _memory_page_size) then begin
+    _memory_span_map_count := (_memory_page_size / _memory_span_size);
+  end;
+  if (Boolean((_memory_page_size ≥ _memory_span_size)) and Boolean(((_memory_span_map_count * _memory_span_size) mod _memory_page_size))) then begin
+    _memory_span_map_count := (_memory_page_size / _memory_span_size);
+  end;
   _memory_config.page_size := _memory_page_size;
   _memory_config.span_size := _memory_span_size;
-  if not Boolean(_memory_config.span_map_count) then begin
-    _memory_config.span_map_count := DEFAULT_SPAN_MAP_COUNT;
-  end;
-  if ((_memory_config.span_size * _memory_config.span_map_count) < _memory_config.page_size) then begin
-    _memory_config.span_map_count := (_memory_config.page_size / _memory_config.span_size);
-  end;
-  if (_memory_config.span_map_count > 128) then begin
-    _memory_config.span_map_count := 128;
-  end;
+  _memory_config.span_map_count := _memory_span_map_count;
+  _memory_config.enable_huge_pages := _memory_huge_pages;
+  _memory_span_release_count := (if (_memory_span_map_count > 4) then ((if (_memory_span_map_count < 64) then (_memory_span_map_count) else (64))) else (4));
+  _memory_span_release_count_large := (if (_memory_span_release_count > 4) then ((_memory_span_release_count / 2)) else (2));
   atomic_store32(@_memory_heap_id, 0);
   atomic_store32(@_memory_orphan_counter, 0);
   atomic_store32(@_memory_active_heaps, 0);
+  {$IF ENABLE_STATISTICS}
+  atomic_store32(@_reserved_spans, 0);
+  atomic_store32(@_mapped_pages, 0);
+  atomic_store32(@_mapped_total, 0);
+  atomic_store32(@_unmapped_total, 0);
+  {$ENDIF}
   // Setup all small and medium size classes
   var iclass: IntPtr;
   begin
@@ -1257,9 +1117,9 @@ begin
     // for loop: break
     _breaklabel2:;
   end;
-  _memory_medium_size_limit := (_memory_span_size - 32);
-  if (_memory_medium_size_limit > ((2016 + (512 * 60)) - 32)) then begin
-    _memory_medium_size_limit := ((2016 + (512 * 60)) - 32);
+  _memory_medium_size_limit := (_memory_span_size - 64);
+  if (_memory_medium_size_limit > ((2016 + (512 * 60)) - 64)) then begin
+    _memory_medium_size_limit := ((2016 + (512 * 60)) - 64);
   end;
   begin
     // for loop: initializer
@@ -1288,6 +1148,26 @@ begin
     // for loop: break
     _breaklabel3:;
   end;
+  begin
+    // for loop: initializer
+    var list_idx: IntPtr := 0;
+    // for loop: compare
+    _looplabel4:;
+    if (list_idx < 47) then begin
+
+    end
+    else begin
+      goto _breaklabel4;
+    end;
+    // for loop: body
+    atomic_store_ptr(@_memory_heaps[list_idx], 0);
+    _continuelabel4:;
+    // for loop: increment/continue
+    list_idx := list_idx + 1;
+    goto _looplabel4;
+    // for loop: break
+    _breaklabel4:;
+  end;
   // Initialize this thread
   rpmalloc_thread_initialize();
   exit 0;
@@ -1296,7 +1176,7 @@ end;
 // ! Finalize the allocator
 method rpmalloc_finalize; public;
 begin
-
+  atomic_thread_fence(memory_order_acquire);
   rpmalloc_thread_finalize();
   // If you hit this assert, you still have active threads or forgot to finalize some thread(s)
 
@@ -1306,7 +1186,7 @@ begin
     var list_idx: IntPtr := 0;
     // for loop: compare
     _looplabel0:;
-    if (list_idx < 79) then begin
+    if (list_idx < 47) then begin
 
     end
     else begin
@@ -1316,8 +1196,11 @@ begin
     begin
       var heap: ^heap_t := atomic_load_ptr(@_memory_heaps[list_idx]);
       while heap do begin
-        _memory_deallocate_deferred(heap, 0);
-        {$IF ENABLE_THREAD_CACHE}
+        _memory_deallocate_deferred(heap);
+        if (heap)^.spans_reserved then begin
+          var span: ^span_t := _memory_map_spans(heap, (heap)^.spans_reserved);
+          _memory_unmap_span(span);
+        end;
         // Free span caches (other thread might have deferred after the thread using this heap finalized)
         begin
           // for loop: initializer
@@ -1333,7 +1216,7 @@ begin
           // for loop: body
           begin
             if (heap)^.span_cache[iclass] then begin
-              _memory_unmap_span_list(0, (heap)^.span_cache[iclass]);
+              _memory_unmap_span_list((heap)^.span_cache[iclass]);
             end;
           end;
           _continuelabel1:;
@@ -1343,8 +1226,10 @@ begin
           // for loop: break
           _breaklabel1:;
         end;
-        {$ENDIF}
-        heap := (heap)^.next_heap;
+        var next_heap: ^heap_t := (heap)^.next_heap;
+        var heap_size: IntPtr := ((1 + (sizeOf(heap_t) shr _memory_page_size_shift)) * _memory_page_size);
+        _memory_unmap(heap, heap_size, (heap)^.align_offset, heap_size);
+        heap := next_heap;
       end;
     end;
     _continuelabel0:;
@@ -1356,54 +1241,26 @@ begin
   end;
   begin
     // for loop: initializer
-    var list_idx: IntPtr := 0;
+    var iclass: IntPtr := 0;
     // for loop: compare
     _looplabel2:;
-    if (list_idx < 79) then begin
+    if (iclass < 32) then begin
 
     end
     else begin
       goto _breaklabel2;
     end;
     // for loop: body
-    begin
-      var heap: ^heap_t := atomic_load_ptr(@_memory_heaps[list_idx]);
-      atomic_store_ptr(@_memory_heaps[list_idx], 0);
-      while heap do begin
-        if (heap)^.spans_reserved then begin
-          var span: ^span_t := (heap)^.span_reserve;
-          var master: ^span_t := (heap)^.span_reserve_master;
-          var remains: UInt32 := (1 + (((master)^.flags shr 2) and 127));
-
-
-          _memory_unmap(span, ((heap)^.spans_reserved * _memory_span_size), 0, 0);
-
-          remains := (if (UInt32((heap)^.spans_reserved) ≥ remains) then (0) else ((remains - UInt32((heap)^.spans_reserved))));
-          if not Boolean(remains) then begin
-            var master_span_count: UInt32 := (1 + (((master)^.flags shr 9) and 127));
-
-            _memory_unmap(master, (master_span_count * _memory_span_size), (master)^.data.list.align_offset, 1);
-          end
-          else begin
-            (master)^.flags := UInt16((((master)^.flags and 65027) or (UInt16((remains - 1)) shl 2)));
-
-          end;
-        end;
-        _memory_unmap_deferred(heap, 0);
-        var next_heap: ^heap_t := (heap)^.next_heap;
-        _memory_unmap(heap, ((1 + (sizeOf(heap_t) shr _memory_page_size_shift)) * _memory_page_size), (heap)^.align_offset, 1);
-        heap := next_heap;
-      end;
-    end;
+    _memory_cache_finalize(@_memory_span_cache[iclass]);
     _continuelabel2:;
     // for loop: increment/continue
-    list_idx := list_idx + 1;
+    iclass := iclass + 1;
     goto _looplabel2;
     // for loop: break
     _breaklabel2:;
   end;
   atomic_store_ptr(@_memory_orphan_heaps, 0);
-
+  atomic_thread_fence(memory_order_release);
   {$IF ENABLE_STATISTICS}
 
 
@@ -1431,9 +1288,7 @@ begin
   if not Boolean(heap) then begin
     exit;
   end;
-  _memory_deallocate_deferred(heap, 0);
-  _memory_unmap_deferred(heap, 0);
-  {$IF ENABLE_THREAD_CACHE}
+  _memory_deallocate_deferred(heap);
   // Release thread cache spans back to global cache
   begin
     // for loop: initializer
@@ -1449,8 +1304,12 @@ begin
     // for loop: body
     begin
       var span: ^span_t := (heap)^.span_cache[iclass];
-      if span then begin
-        _memory_unmap_span_list(heap, span);
+      while span do begin
+
+        var release_count: IntPtr := (if not Boolean(iclass) then (_memory_span_release_count) else (_memory_span_release_count_large));
+        var next: ^span_t := _memory_span_list_split(span, UInt32(release_count));
+        _memory_global_cache_insert(span);
+        span := next;
       end;
       (heap)^.span_cache[iclass] := 0;
     end;
@@ -1461,16 +1320,15 @@ begin
     // for loop: break
     _breaklabel0:;
   end;
-  {$ENDIF}
   // Orphan the heap
   var raw_heap: ^Void;
   var orphan_counter: UIntPtr;
   var last_heap: ^heap_t;
   repeat
     last_heap := atomic_load_ptr(@_memory_orphan_heaps);
-    (heap)^.next_orphan := ^Void((UIntPtr(last_heap) and _memory_page_mask));
+    (heap)^.next_orphan := ^Void((UIntPtr(last_heap) and not UIntPtr(255)));
     orphan_counter := UIntPtr(atomic_incr32(@_memory_orphan_counter));
-    raw_heap := ^Void((UIntPtr(heap) or (orphan_counter and not _memory_page_mask)));
+    raw_heap := ^Void((UIntPtr(heap) or (orphan_counter and UIntPtr(255))));
   until Boolean(atomic_cas_ptr(@_memory_orphan_heaps, raw_heap, last_heap));
   set_thread_heap(0);
   atomic_add32(@_memory_active_heaps, -1);
@@ -1489,16 +1347,17 @@ end;
 // ! Map new pages to virtual memory
 method _memory_map_os(size: IntPtr; offset: ^IntPtr): ^Void; private;
 begin
-  // Either size is a heap (a single page) or a (multiple) span - we only need to align spans
+  // Either size is a heap (a single page) or a (multiple) span - we only need to align spans, and only if larger than map granularity
   var padding: IntPtr := (if (Boolean((size ≥ _memory_span_size)) and Boolean((_memory_span_size > _memory_map_granularity))) then (_memory_span_size) else (0));
+
   {$IF PLATFORM_WINDOWS}
-  var ptr: ^Void := VirtualAlloc(0, (size + padding), (MEM_RESERVE or MEM_COMMIT), PAGE_READWRITE);
+  var ptr: ^Void := VirtualAlloc(0, (size + padding), (((if _memory_huge_pages then (MEM_LARGE_PAGES) else (0)) or MEM_RESERVE) or MEM_COMMIT), PAGE_READWRITE);
   if not Boolean(ptr) then begin
 
     exit 0;
   end;
   {$ELSE}
-  var ptr: ^Void := mmap(0, (size + padding), (PROT_READ or PROT_WRITE), ((MAP_PRIVATE or MAP_ANONYMOUS) or 0), -1, 0);
+  var ptr: ^Void := mmap(0, (size + padding), (PROT_READ or PROT_WRITE), ((((if _memory_huge_pages then (MAP_HUGETLB) else (0)) or MAP_PRIVATE) or MAP_ANONYMOUS) or 0), -1, 0);
   if (Boolean((ptr = MAP_FAILED)) or Boolean(not Boolean(ptr))) then begin
 
     exit 0;
@@ -1506,25 +1365,31 @@ begin
   {$ENDIF}
   if padding then begin
     var final_padding: IntPtr := (padding - (UIntPtr(ptr) and not _memory_span_mask));
-    {$IF PLATFORM_POSIX}
+    var final_ptr: ^Void := ^Void((^AnsiChar(ptr) + IntPtr(final_padding)));
+    // Unmap the unused pages before/after aligned spans
+
+
     var remains: IntPtr := (padding - final_padding);
-    if remains then begin
-      munmap(^Void((^AnsiChar(ptr) + IntPtr((final_padding + size)))), remains);
+    if (remains ≥ _memory_page_size) then begin
+      {$IF PLATFORM_WINDOWS}
+      {$ELSE}
+      if munmap(^Void((^AnsiChar(ptr) + IntPtr((final_padding + size)))), remains) then begin
+
+      end;
+      {$ENDIF}
     end;
-    {$ENDIF}
-    ptr := ^Void((^AnsiChar(ptr) + IntPtr(final_padding)));
-
-
-
     (offset)^ := (final_padding shr 3);
-
+    ptr := final_ptr;
   end;
+
   exit ptr;
 end;
 
 // ! Unmap pages from virtual memory
-method _memory_unmap_os(address: ^Void; size: IntPtr; offset: IntPtr; release: Int32); private;
+method _memory_unmap_os(address: ^Void; size: IntPtr; offset: IntPtr; release: IntPtr); private;
 begin
+
+
 
   if (Boolean(release) and Boolean(offset)) then begin
     (() -> begin
@@ -1532,6 +1397,7 @@ begin
       offset := _tmp0;
       exit _tmp0;
     end)();
+    address := ^Void((^AnsiChar(address) + IntPtr(-Int32(offset))));
     {$IF PLATFORM_POSIX}
     (() -> begin
       var _tmp1 := size + offset;
@@ -1539,184 +1405,10 @@ begin
       exit _tmp1;
     end)();
     {$ENDIF}
-    address := ^Void((^AnsiChar(address) + IntPtr(-Int32(offset))));
-  end;
-  {$IF PLATFORM_WINDOWS}
-  if not Boolean(VirtualFree(address, (if release then (0) else (size)), (if release then (MEM_RELEASE) else (MEM_DECOMMIT)))) then begin
-    var err: DWORD := GetLastError();
-
-  end;
-  {$ELSE}
-  if munmap(address, size) then begin
-
-  end;
-  {$ENDIF}
-end;
-
-{$IF ENABLE_GUARDS}
-method _memory_guard_validate(p: ^Void); private;
-begin
-  if not Boolean(p) then begin
-    exit;
-  end;
-  var block_start: ^Void;
-  var block_size: IntPtr := _memory_usable_size(p);
-  var span: ^span_t := ^Void((UIntPtr(p) and _memory_span_mask));
-  var heap_id: Int32 := atomic_load32(@(span)^.heap_id);
-  if heap_id then begin
-    if ((span)^.size_class < (63 + 60)) then begin
-      var span_blocks_start: ^Void := ^Void((^AnsiChar(span) + IntPtr(32)));
-      var size_class: ^size_class_t := (_memory_size_class + (span)^.size_class);
-      var block_offset: count_t := count_t(IntPtr((^AnsiChar(p) - ^AnsiChar(span_blocks_start))));
-      var block_idx: count_t := (block_offset / count_t((size_class)^.size));
-      block_start := ^Void((^AnsiChar(span_blocks_start) + IntPtr((block_idx * (size_class)^.size))));
-    end
-    else begin
-      block_start := ^Void((^AnsiChar(span) + IntPtr(32)));
-    end;
-  end
-  else begin
-    block_start := ^Void((^AnsiChar(span) + IntPtr(32)));
-  end;
-  var deadzone: ^UInt32 := block_start;
-  // If these asserts fire, you have written to memory before the block start
-  begin
-    // for loop: initializer
-    var i: Int32 := 0;
-    // for loop: compare
-    _looplabel0:;
-    if (i < 8) then begin
-
-    end
-    else begin
-      goto _breaklabel0;
-    end;
-    // for loop: body
-    begin
-      if (deadzone[i] ≠ 3735927469) then begin
-        if _memory_config.memory_overwrite then begin
-          _memory_config.memory_overwrite(p);
-        end
-        else begin
-
-        end;
-        exit;
-      end;
-      deadzone[i] := 0;
-    end;
-    _continuelabel0:;
-    // for loop: increment/continue
-    i := i + 1;
-    goto _looplabel0;
-    // for loop: break
-    _breaklabel0:;
-  end;
-  deadzone := ^UInt32(^Void((^AnsiChar(block_start) + IntPtr((block_size - 32)))));
-  // If these asserts fire, you have written to memory after the block end
-  begin
-    // for loop: initializer
-    var i: Int32 := 0;
-    // for loop: compare
-    _looplabel1:;
-    if (i < 8) then begin
-
-    end
-    else begin
-      goto _breaklabel1;
-    end;
-    // for loop: body
-    begin
-      if (deadzone[i] ≠ 3735927469) then begin
-        if _memory_config.memory_overwrite then begin
-          _memory_config.memory_overwrite(p);
-        end
-        else begin
-
-        end;
-        exit;
-      end;
-      deadzone[i] := 0;
-    end;
-    _continuelabel1:;
-    // for loop: increment/continue
-    i := i + 1;
-    goto _looplabel1;
-    // for loop: break
-    _breaklabel1:;
   end;
 end;
-{$ENDIF}
 
-{$IF ENABLE_GUARDS}
-method _memory_guard_block(&block: ^Void); private;
-begin
-  if &block then begin
-    var block_size: IntPtr := _memory_usable_size(&block);
-    var deadzone: ^UInt32 := &block;
-    (() -> begin
-      var _tmp0 := deadzone[7];
-      (() -> begin
-        var _tmp0 := deadzone[6];
-        (() -> begin
-          var _tmp0 := deadzone[5];
-          (() -> begin
-            var _tmp0 := deadzone[4];
-            (() -> begin
-              var _tmp0 := deadzone[3];
-              (() -> begin
-                var _tmp0 := deadzone[2];
-                (() -> begin
-                  var _tmp0 := deadzone[1];
-                  deadzone[0] := _tmp0;
-                  exit _tmp0;
-                end)() := _tmp1;
-                exit _tmp1;
-              end)() := _tmp2;
-              exit _tmp2;
-            end)() := _tmp3;
-            exit _tmp3;
-          end)() := _tmp4;
-          exit _tmp4;
-        end)() := _tmp5;
-        exit _tmp5;
-      end)() := _tmp6;
-      exit _tmp6;
-    end)() := 3735927469;
-    deadzone := ^UInt32(^Void((^AnsiChar(&block) + IntPtr((block_size - 32)))));
-    (() -> begin
-      var _tmp7 := deadzone[7];
-      (() -> begin
-        var _tmp7 := deadzone[6];
-        (() -> begin
-          var _tmp7 := deadzone[5];
-          (() -> begin
-            var _tmp7 := deadzone[4];
-            (() -> begin
-              var _tmp7 := deadzone[3];
-              (() -> begin
-                var _tmp7 := deadzone[2];
-                (() -> begin
-                  var _tmp7 := deadzone[1];
-                  deadzone[0] := _tmp7;
-                  exit _tmp7;
-                end)() := _tmp8;
-                exit _tmp8;
-              end)() := _tmp9;
-              exit _tmp9;
-            end)() := _tmp10;
-            exit _tmp10;
-          end)() := _tmp11;
-          exit _tmp11;
-        end)() := _tmp12;
-        exit _tmp12;
-      end)() := _tmp13;
-      exit _tmp13;
-    end)() := 3735927469;
-  end;
-end;
-{$ENDIF}
-
-//  Extern interface
+// Extern interface
 method rpmalloc(size: IntPtr): ^Void; public;
 begin
 
@@ -1808,13 +1500,6 @@ begin
   var size: IntPtr := 0;
   if ptr then begin
     size := _memory_usable_size(ptr);
-    {$IF ENABLE_GUARDS}
-    (() -> begin
-      var _tmp0 := size - 64;
-      size := _tmp0;
-      exit _tmp0;
-    end)();
-    {$ENDIF}
   end;
   exit size;
 end;
@@ -1822,8 +1507,9 @@ end;
 method rpmalloc_thread_collect; public;
 begin
   var heap: ^heap_t := get_thread_heap();
-  _memory_unmap_deferred(heap, 0);
-  _memory_deallocate_deferred(0, 0);
+  if heap then begin
+    _memory_deallocate_deferred(heap);
+  end;
 end;
 
 method rpmalloc_thread_statistics(stats: ^rpmalloc_thread_statistics_t); public;
@@ -1874,7 +1560,6 @@ begin
     // for loop: break
     _breaklabel1:;
   end;
-  {$IF ENABLE_THREAD_CACHE}
   begin
     // for loop: initializer
     var iclass: IntPtr := 0;
@@ -1899,7 +1584,6 @@ begin
     // for loop: break
     _breaklabel3:;
   end;
-  {$ENDIF}
 end;
 
 method rpmalloc_global_statistics(stats: ^rpmalloc_global_statistics_t); public;
@@ -1910,6 +1594,32 @@ begin
   (stats)^.mapped_total := (IntPtr(atomic_load32(@_mapped_total)) * _memory_page_size);
   (stats)^.unmapped_total := (IntPtr(atomic_load32(@_unmapped_total)) * _memory_page_size);
   {$ENDIF}
+  begin
+    // for loop: initializer
+    var iclass: IntPtr := 0;
+    // for loop: compare
+    _looplabel0:;
+    if (iclass < 32) then begin
+
+    end
+    else begin
+      goto _breaklabel0;
+    end;
+    // for loop: body
+    begin
+      (() -> begin
+        var _tmp1 := (stats)^.cached + ((IntPtr(atomic_load32(@_memory_span_cache[iclass].size)) * (iclass + 1)) * _memory_span_size);
+        (stats)^.cached := _tmp1;
+        exit _tmp1;
+      end)();
+    end;
+    _continuelabel0:;
+    // for loop: increment/continue
+    iclass := iclass + 1;
+    goto _looplabel0;
+    // for loop: break
+    _breaklabel0:;
+  end;
 end;
 
 type
@@ -1976,26 +1686,32 @@ type
     //   actual start of the memory region due to this alignment. The alignment offset
     //   will be passed to the memory unmap function. The alignment offset MUST NOT be
     //   larger than 65535 (storable in an uint16_t), if it is you must use natural
-    //   alignment to shift it into 16 bits.
+    //   alignment to shift it into 16 bits. If you set a memory_map function, you
+    //   must also set a memory_unmap function or else the default implementation will
+    //   be used for both.
     var memory_map: __fnptrtype0; public;
     // ! Unmap the memory pages starting at address and spanning the given number of bytes.
-    //   If release is set to 1, the unmap is for an entire span range as returned by
-    //   a previous call to memory_map and that the entire range should be released.
-    //   If release is set to 0, the unmap is a partial decommit of a subset of the mapped
-    //   memory range.
+    //   If release is set to non-zero, the unmap is for an entire span range as returned by
+    //   a previous call to memory_map and that the entire range should be released. The
+    //   release argument holds the size of the entire span range. If release is set to 0,
+    //   the unmap is a partial decommit of a subset of the mapped memory range.
+    //   If you set a memory_unmap function, you must also set a memory_map function or
+    //   else the default implementation will be used for both.
     var memory_unmap: __fnptrtype1; public;
-    // ! Size of memory pages. The page size MUST be a power of two in [512,16384] range
-    //   (2^9 to 2^14) unless 0 - set to 0 to use system page size. All memory mapping
+    // ! Size of memory pages. The page size MUST be a power of two. All memory mapping
     //   requests to memory_map will be made with size set to a multiple of the page size.
     var page_size: IntPtr; public;
-    // ! Size of a span of memory pages. MUST be a multiple of page size, and in [4096,262144]
+    // ! Size of a span of memory blocks. MUST be a power of two, and in [4096,262144]
     //   range (unless 0 - set to 0 to use the default span size).
     var span_size: IntPtr; public;
     // ! Number of spans to map at each request to map new virtual memory blocks. This can
     //   be used to minimize the system call overhead at the cost of virtual memory address
     //   space. The extra mapped pages will not be written until actually used, so physical
-    //   committed memory should not be affected in the default implementation.
+    //   committed memory should not be affected in the default implementation. Will be
+    //   aligned to a multiple of spans that match memory page size in case of huge pages.
     var span_map_count: IntPtr; public;
+    // ! Enable use of large/huge pages
+    var enable_huge_pages: Int32; public;
     // ! Debug callback if memory guards are enabled. Called if a memory overwrite is detected
     var memory_overwrite: __fnptrtype2; public;
 
@@ -2003,39 +1719,32 @@ type
 
   __fnptrtype0 = public method(size: IntPtr; offset: ^IntPtr): ^Void;
 
-  __fnptrtype1 = public method(address: ^Void; size: IntPtr; offset: IntPtr; release: Int32);
+  __fnptrtype1 = public method(address: ^Void; size: IntPtr; offset: IntPtr; release: IntPtr);
 
   __fnptrtype2 = public method(address: ^Void);
 
+  // / Build time configurable limits
+  // ! Size of heap hashmap
+  // ! Enable per-thread cache
+  // ! Enable validation of args to public entry points
+  // ! Enable statistics collection
+  // ! Enable asserts
+  // ! Support preloading
+  // ! Enable overwrite/underwrite guards
+  // ! Unlimited cache disables any thread cache limitations
+  // ! Unlimited cache disables any global cache limitations
+  // ! Default number of spans to map in call to map more virtual memory
+  // ! Multiplier for thread cache (cache limit will be span release count multiplied by this value)
+  // ! Multiplier for global cache (cache limit will be span release count multiplied by this value)
+  // / Platform and arch specifics
   // #undef NDEBUG
   // #undef assert
   // / Atomic access abstraction
-  __struct_atomic32_t = public record
-  private
+  atomic32_t = public Int32;
 
-    var nonatomic: Int32; volatile; public;
+  atomic64_t = public Int64;
 
-  end;
-
-  atomic32_t = public __struct_atomic32_t;
-
-  __struct_atomic64_t = public record
-  private
-
-    var nonatomic: Int64; volatile; public;
-
-  end;
-
-  atomic64_t = public __struct_atomic64_t;
-
-  __struct_atomicptr_t = public record
-  private
-
-    var nonatomic: ^Void; volatile; public;
-
-  end;
-
-  atomicptr_t = public __struct_atomicptr_t;
+  atomicptr_t = public ^Void;
 
   {$IF ARCH_64BIT}
   // / Preconfigured limits and sizes
@@ -2079,9 +1788,6 @@ type
   // ! Span data union, usage depending on span state
   span_data_t = public __struct_span_data_t;
 
-  // ! Cache data
-  span_counter_t = public __struct_span_counter_t;
-
   // ! Global cache
   global_cache_t = public __struct_global_cache_t;
 
@@ -2098,8 +1804,6 @@ type
     var first_autolink: UInt16; public;
     // ! Free count
     var free_count: UInt16; public;
-    // ! Alignment offset
-    var align_offset: UInt16; public;
 
   end;
 
@@ -2108,10 +1812,6 @@ type
 
     // ! List size
     var size: UInt32; public;
-    // ! Unused in lists
-    var unused: UInt16; public;
-    // ! Alignment offset
-    var align_offset: UInt16; public;
 
   end;
 
@@ -2123,6 +1823,8 @@ type
     var &block: span_block_t; public;
     // ! Span data when used in lists
     var list: span_list_t; public;
+    // ! Dummy
+    var compound: UInt64; public;
 
   end;
 
@@ -2141,30 +1843,22 @@ type
     var heap_id: atomic32_t; public;
     // ! Size class
     var size_class: UInt16; public;
-    // TODO: If we could store remainder part of flags as an atomic counter, the entire check
-    //        if master is owned by calling heap could be simplified to an atomic dec from any thread
-    //        since remainder of a split super span only ever decreases, never increases
     // ! Flags and counters
     var &flags: UInt16; public;
-    // ! Span data
+    // ! Span data depending on use
     var data: span_data_t; public;
+    // ! Total span counter  for master spans, distance for subspans
+    var total_spans_or_distance: UInt32; public;
+    // ! Number of spans
+    var span_count: UInt32; public;
+    // ! Remaining span counter, for master spans
+    var remaining_spans: atomic32_t; public;
+    // ! Alignment offset
+    var align_offset: UInt32; public;
     // ! Next span
     var next_span: ^span_t; public;
     // ! Previous span
     var prev_span: ^span_t; public;
-
-  end;
-
-  // Adaptive cache counter of a single superspan span count
-  __struct_span_counter_t = public record
-  private
-
-    // ! Allocation high water mark
-    var max_allocations: UInt32; public;
-    // ! Current number of allocations
-    var current_allocations: UInt32; public;
-    // ! Cache limit
-    var cache_limit: UInt32; public;
 
   end;
 
@@ -2179,13 +1873,7 @@ type
     var active_span: array[0..122] of ^span_t; public;
     // ! List of semi-used spans with free blocks for each size class (double linked list)
     var size_cache: array[0..122] of ^span_t; public;
-    {$IF ENABLE_THREAD_CACHE}
     var span_cache: array[0..31] of ^span_t; public;
-    {$ENDIF}
-    {$IF ENABLE_THREAD_CACHE}
-    // ! Allocation counters
-    var span_counter: array[0..31] of span_counter_t; public;
-    {$ENDIF}
     // ! Mapped but unused spans
     var span_reserve: ^span_t; public;
     // ! Master span for mapped but unused spans
@@ -2194,8 +1882,6 @@ type
     var spans_reserved: IntPtr; public;
     // ! Deferred deallocation
     var defer_deallocate: atomicptr_t; public;
-    // ! Deferred unmaps
-    var defer_unmap: atomicptr_t; public;
     // ! Next heap in id list
     var next_heap: ^heap_t; public;
     // ! Next heap in orphan list

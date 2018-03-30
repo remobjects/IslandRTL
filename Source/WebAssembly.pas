@@ -13,7 +13,12 @@ type
       MAP_PRIVATE = $2;
       PROT_READ = 1;
       PROT_WRITE = 2;
+      MAP_HUGETLB = $40;
       MAP_FAILED: ^Void = nil;
+      // we don't need this on WASM:
+      memory_order_relaxed = 0;
+      memory_order_release = 0;
+      memory_order_acquire = 0;
     class method munmap(addr: ^Void; size: IntPtr): Integer;
     begin 
       //ExternalCalls.trap;
@@ -46,14 +51,34 @@ type
       exit -1;
     end;
 
+    class method atomic_load_explicit<T>(val: ^T; dummy: Integer): T; inline;
+    begin 
+      exit val^;
+    end;
+
+    class method atomic_store_explicit<T>(val: ^T; val2: T; dummy: Integer): T; inline;
+    begin 
+      val^ := val2;
+    end;
+
+    class method atomic_thread_fence(dummy: Integer); inline; 
+    begin 
+    end;
+
+    class method atomic_fetch_add_explicit(val: ^Integer; aAdd: Integer; dummy: Integer): Integer; inline;
+    begin 
+      result := val^;
+      val^ := aAdd;
+    end;
+
     class method __sync_add_and_fetch(val: ^Int32; &add: Int32): Int32; inline;
     begin
       exit InternalCalls.Add(var (val)^, &add) + &add;
     end;
-
-    class method __sync_bool_compare_and_swap(val: ^^Void; oldval: ^Void; newval: ^Void): Integer; inline;
+    
+    class method atomic_compare_exchange_weak_explicit(val: ^^Void; oldval: ^^Void; newval: ^Void; dummy1, dummy2: Integer): Integer; inline;
     begin
-      exit (if InternalCalls.CompareExchange(var (val)^, newval, oldval) = oldval then (1) else (0));
+      exit (if InternalCalls.CompareExchange(var (val)^, newval, oldval^) = oldval^ then (1) else (0));
     end;
 
 
@@ -535,7 +560,9 @@ type
       if aVal is Double then exit WebAssemblyCalls.CreateDouble(aVal as Double);
       if aVal is Int64 then exit WebAssemblyCalls.CreateDouble(aVal as Int64);
       if aVal is String then exit WebAssemblyCalls.CreateString(aVal as String);
-      if aVal is WebAssemblyDelegate then exit WebAssemblyCalls.CreateFunc(aVal as WebAssemblyDelegate);
+      if aVal is WebAssemblyDelegate then begin 
+        exit WebAssemblyCalls.CreateFunc(aVal as WebAssemblyDelegate);
+      end;
       var lProxy := CreateProxy(aVal);
       result := lProxy.Handle;
       lProxy.Release;

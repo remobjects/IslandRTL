@@ -5,6 +5,8 @@
 {$IFDEF WEBASSEMBLY}
 [assembly:DefaultObjectLifetimeStrategy(typeOf(SimpleGC))]
 {$ENDIF}
+{.$DEFINE DEBUGGC}
+{.$DEFINE DOUBLEFREECHECK}
 
 
 type
@@ -48,6 +50,7 @@ type
 {$ENDIF}
       class var FGCLoaded: Boolean;
       class var fRemoveList: Manual<GCList>;
+      class var fRetryList: Manual<GCList>;
       class var fWalkList: Manual<GCList>;
       class var fBlackList: Manual<GCList>;
       class var fGlobalFreeList: Manual<GCHashSet>;
@@ -55,7 +58,6 @@ type
       class var fLock: Integer;
       {$ENDIF}
       class var fRunNumber: Integer;
-      class var fLastTopBitSet: Boolean;
 
 
     
@@ -73,10 +75,14 @@ type
     // we use the bit below to set if something is "on stack", during the marking phase; if fLastTopBitSet is set, then all items in fGlobalFreeList will have the bit set, \
     // and we have to reverse, unset it for the next run to mark an item as "on stack", this bit is stored inside the reference count.
     const
-      Bit: UInt64 = {$IFDEF CPU64}1 shl 63{$ELSE}1 shl 31{$ENDIF};
-      FinalizeBit: UInt64 = {$IFDEF CPU64}1 shl 62{$ELSE}1 shl 30{$ENDIF};
-      Gray: UInt64 = {$IFDEF CPU64}1 shl 61{$ELSE}1 shl 29{$ENDIF};
-      Mask: UInt64 = Bit or FinalizeBit or Gray;
+      ColorMask: UInt64 = {$IFDEF CPU64}(1 shl 62) or (1 shl 63){$ELSE}(1 shl 30) or (1 shl 31){$ENDIF};
+      
+      Black: UInt64 = {$IFDEF CPU64}0{$ELSE}0{$ENDIF};
+      Purple: UInt64 = {$IFDEF CPU64}(1 shl 62){$ELSE}(1 shl 30){$ENDIF};
+      Gray: UInt64 = {$IFDEF CPU64}(1 shl 63){$ELSE}(1 shl 31){$ENDIF};
+      
+      
+      Mask: UInt64 = ColorMask;
     
 
 
@@ -173,8 +179,10 @@ type
       GetThreadContext(HANDLE(aThread^.ThreadHandle), @ctx);
       for i: Integer := 0 to sizeof(ctx) / sizeOf(^Void) -1 do begin
         var c := ^IntPtr(@ctx)[i];
-        if fGlobalFreeList.Contains(c) then 
-          SetBit(c);
+        if fGlobalFreeList.Contains(c) then begin
+          fRetryList.Add(c);
+          fGlobalFreeList.Remove(c);
+        end;
       end;
       var lCurrentStackTop := ^IntPtr({$IFDEF CPU64}ctx.rsp{$ELSE}ctx.esp{$ENDIF});
       if fCheckList = aThread then lCurrentStackTop := ^IntPtr(@aThread);
@@ -182,8 +190,10 @@ type
       var lEnd := ^IntPtr(aThread^.StackTop);
       while lCurrentStackTop < lEnd do begin 
         var lCurrent := lCurrentStackTop^;
-        if fGlobalFreeList.Contains(lCurrent) then 
-          SetBit(lCurrent);
+        if fGlobalFreeList.Contains(lCurrent) then begin
+          fRetryList.Add(lCurrent);
+          fGlobalFreeList.Remove(lCurrent);
+        end;
         inc(lCurrentStackTop)
       end;
     end;
@@ -199,8 +209,10 @@ type
       Debug('checkthread');
       while lCurrentStackTop < lEnd do begin 
         var lCurrent := lCurrentStackTop^;
-        if fGlobalFreeList.Contains(lCurrent) then 
-          SetBit(lCurrent);
+        if fGlobalFreeList.Contains(lCurrent) then begin
+          fRetryList.Add(lCurrent);
+          fGlobalFreeList.Remove(lCurrent);
+        end;
         inc(lCurrentStackTop)
       end;
     end;
@@ -230,27 +242,7 @@ type
       Utilities.SpinLockExit(var fLock);
     end;
 {$ENDIF}
-    
-    class method SetBit(aPtr: IntPtr); {$IFNDEF DEBUG}inline;{$ENDIF}
-    begin 
-      var lItem := @(^UIntPtr(aPtr)[-1]);
-      if fLastTopBitSet then  
-        lItem^ := lItem^ or Bit
-      else 
-        lItem^ := lItem^ and not Bit;
-    end;
 
-    class method IsSet(aRefCount: UIntPtr): Boolean; inline;
-    begin 
-      if fLastTopBitSet then 
-        exit (aRefCount and Bit) <> 0;
-      exit (aRefCount and Bit) = 0;
-    end;
-
-    class method IsGray(aRefCount: UIntPtr): Boolean; inline;
-    begin 
-      exit (aRefCount and Gray) <> 0;
-    end;
 
 {$IFNDEF WEBASSEMBLY}
     class method GCLoop(dummy: Object);
@@ -282,19 +274,11 @@ type
           Debug('MarkGray');
           Debug(el);
           Debug(lRC and not Mask);
-          if (lRC and not Mask) = 0 then begin 
-            Debug('MarkGray: rc 0');
-            continue;
+          if (lRC and ColorMask) <> Gray then begin 
+            InternalCalls.And(var ^UIntPtr(el)[-1], not ColorMask);
+            InternalCalls.Or(var ^UIntPtr(el)[-1], Gray);
+            AddChildren(el, 1); // decref and add to walklist again.
           end;
-          if IsGray(lRC) then begin 
-            Debug('MarkGray: isgray');
-            continue; // been here, done that.
-          end;
-          Debug('MarkGray: is not gray, setting gray and decref');
-          Debug(lRC);
-          InternalCalls.Add(var ^UIntPtr(el)[-1], - 1); // decrease and set gray
-          InternalCalls.Or(var ^UIntPtr(el)[-1], Gray);
-          AddChildren(el);
         end;
         fWalkList.RemoveRange(0, c);
       end;
@@ -312,16 +296,18 @@ type
           Debug('ScanRoots');
           Debug(el);
           Debug(lRC and not Mask);
-          if IsGray(lRC) then begin 
+
+          if (lRC and ColorMask) = Gray then begin 
             Debug('ScanRoots: isgray');
-            if ((lRC and not Mask) > 0) or IsSet(lRC) then begin  // mark & scan as black
-              Debug('ScanRoots: rc > 0 or on stack; making black again');
+            if ((lRC and not Mask) > 0) then begin  // mark & scan as black
+              Debug('ScanRoots: rc > 0; making black again');
               fBlackList.Add(el);
               ScanBlack;
               continue; // do not do children
             end else begin
-              fGlobalFreeList.Add(el); // mark white; white as rc = 0
+              InternalCalls.And(var ^UIntPtr(el)[-1], not ColorMask); // set to black so we don't get here anymore.
               Debug('ScanRoots: rc is 0 and not on stack, should free');
+              fRemoveList.Add(el);              
             end;
           end else begin
             Debug('ScanRoots: is not gray');
@@ -342,23 +328,14 @@ type
         if c = 0 then break;
         for i: Integer := c -1 downto 0 do begin 
           var el := fBlackList[i];
-          var lRC := ^UIntPtr(el)[-1];
-          Debug('ScanBlack');
-          Debug(el);
-          if not IsGray(lRC) then begin 
-            Debug('ScanBlack: is not gray');
-            continue;
-          end;
-
-          InternalCalls.Add(var ^UIntPtr(el)[-1], + 1); // decrease and set gray
-          InternalCalls.And(var ^UIntPtr(el)[-1], not Gray);
+          InternalCalls.And(var ^UIntPtr(el)[-1], not ColorMask); // set black
           AddChildrenBlack(el);
         end;
         fBlackList.RemoveRange(0, c);
       end;
     end;
 
-    class method AddChildren(el: IntPtr);
+    class method AddChildren(el: IntPtr; mode: Integer := 0);
     begin
       Debug('Walking children');
       var lExt := ^^IslandTypeInfo(el)^^.Ext;
@@ -372,6 +349,8 @@ type
           if p <> 0 then begin
             Debug('Value is set, adding to walk list');
             Debug(p);
+            if mode = 1 then 
+              InternalCalls.Decrement(var ^IntPtr(p)[-1]);
             fWalkList.Add(p);
           end;
         end;
@@ -390,9 +369,13 @@ type
         if (lGI[i / 8] and (1 shl (i mod 8))) <> 0 then begin
           var p := ^IntPtr(el)[i];
           if p <> 0 then begin
-            Debug('Value is set, adding to black walk list');
-            Debug(p);
-            fBlackList.Add(p);
+            Debug('Black; increasing!');
+            InternalCalls.Increment(var ^IntPtr(el)[-1]);
+            if (^UIntPtr(el)[-1] and ColorMask) = Black then begin
+              Debug('Value is set, adding to black walk list');
+              Debug(p);
+              fBlackList.Add(p);
+            end;
           end;
         end;
       end;
@@ -400,6 +383,9 @@ type
 
     class method DoGC;
     begin 
+      for i: Integer := 0 to fRetryList.Count -1 do
+        fGlobalFreeList.Add(fRetryList[i]);
+      fRetryList.Clear;
       {$IFNDEF WEBASSEMBLY}
       Utilities.SpinLockEnter(var fLock);
       for j: Integer := 0 to fThreads.Count -1 do begin 
@@ -430,8 +416,6 @@ type
         lThread^.Count := 0;
       end;
       {$ENDIF}
-      // at this point all pointers in fGlobalFreeList have the bit set to 'off' (for whatever the current meaning of off is)
-      fLastTopBitSet := not fLastTopBitSet;
       // now we check all thread stacks & registers and mark those to 'on', so we know what items are still present on the stack.
       {$IFNDEF WEBASSEMBLY}
       for j: Integer := 0 to fThreads.Count -1 do 
@@ -445,63 +429,32 @@ type
       {$ENDIF}
 
       fGlobalFreeList.AddAllItemsToList(fRemoveList);
+      fGlobalFreeList.Clear;
       for i: Integer := fRemoveList.Count -1 downto 0 do begin 
         var el := fRemoveList[i];
         Debug('removelistroot');
         Debug(el);
-        fWalkList.Add(el);
-        MarkGray;
+        var lRC := ^UIntPtr(el)[-1];
+        if (lRC and ColorMask) = Purple then begin
+          fWalkList.Add(el);
+          MarkGray;
+        end else begin 
+          Debug('removing from roots');
+          fRemoveList.RemoveAt(i);
+          if ((lRC and ColorMask) = Black) and ((lRC and not Mask) = 0) then begin 
+            Debug('RC = 0 so we can remove it');
+            FinalizeObject(el);
+          end;
+        end;
       end;
 
       for i: Integer := fRemoveList.Count -1 downto 0 do begin 
         var el := fRemoveList[i];
         fWalkList.Add(el);
-        ScanRoots;
       end;
+      fRemoveList.Clear;
+      ScanRoots;
 
-      for i: Integer := fRemoveList.Count -1 downto 0 do begin
-        var el := fRemoveList[i];
-        var lRC := ^UIntPtr(el)[-1];
-        var lRealGC := lRC and not Mask;
-        if lRealGC = 0 then begin 
-          //for "On Stack" we keep them in the list so they are checked in the next cycle, these are objects on the stack only, 
-          var lSet := IsSet(lRC);
-          Debug('realgc = 0 for ');
-          Debug(el);
-          Debug(' and lset is ');
-          Debug(if lSet then 1 else 0);
-          if lSet then begin 
-            Debug('Removing from remove-list, count: ');
-            Debug(fRemoveList.Count);
-            fRemoveList.RemoveAt(i);
-            Debug('Removing from remove-list, NEW count: ');
-            Debug(fRemoveList.Count);
-          end else begin 
-            //else we finalize this object (refcount = 0) and remove them from the list
-            Debug('Removing from global free list, count: ');
-            Debug(fGlobalFreeList.Count);
-            fGlobalFreeList.Remove(el);
-            if (lRC and FinalizeBit) = 0 then 
-              fRemoveList.RemoveAt(i);
-            Debug('Removing from global free list, NEW count: ');
-            Debug(fGlobalFreeList.Count);
-          end;
-        end else begin 
-          // these can be removed as they have a positive RC.
-          Debug('Removing from remove-list, count: ');
-          Debug(fRemoveList.Count);
-          Debug('Removing from global free list, count: ');
-          Debug(fGlobalFreeList.Count);
-          fGlobalFreeList.Remove(el);
-          fRemoveList.RemoveAt(i);
-          Debug('Removing from remove-list, NEW count: ');
-          Debug(fRemoveList.Count);
-          Debug('Removing from global free list, NEW count: ');
-          Debug(fGlobalFreeList.Count);
-        end;
-      end;
-      Debug('Elements kept in global list: ');
-      Debug(fGlobalFreeList.Count);
       {$IFNDEF WEBASSEMBLY}
       Utilities.SpinLockExit(var fLock);
       fGCWait.Set;
@@ -527,6 +480,7 @@ type
       {$ENDIF}
       fGlobalFreeList := new Manual<GCHashSet>();
       fRemoveList := new Manual<GCList>();
+      fRetryList := new Manual<GCList>();
       fWalkList := new Manual<GCList>();
       fBlackList := new Manual<GCList>();
       {$IFNDEF WEBASSEMBLY}
@@ -542,7 +496,20 @@ type
       try {$HIDE W58}
         InternalCalls.Cast<Object>(^Void(aObj)).Finalize;
         {$SHOW W58}
-        free(^Void(aObj - sizeOf(IntPtr)));
+        aObj := aObj - sizeOf(IntPtr);
+        {$IFDEF DOUBLEFREECHECK}
+        WebAssemblyCalls.ConsoleLog(aObj);
+        if not fNewData.Contains(aObj) then begin 
+          WebAssemblyCalls.ConsoleLog('objnotinl', 9);
+          var gl := new Manual<GCList>;
+          fNewData.AddAllItemsToList(gl);
+          for i: Integer := 0 to gl.Count -1 do 
+            WebAssemblyCalls.ConsoleLog(gl[i]);
+          ExternalCalls.trap;
+        end;
+        fNewData.Remove(aObj);
+        {$ENDIF}
+        free(^Void(aObj));
       except 
       end;
     end;
@@ -551,8 +518,8 @@ type
     class method AddToFreeList(aList: IntPtr);
     begin 
       var lRun := InternalCalls.VolatileRead(var fRunNumber, false);
-      Debug('Add to free list ');
-      DEbug(aList);
+      //Debug('Add to free list ');
+      //DEbug(aList);
       var lList := fCheckList;
       if lList = nil then begin 
         RegisterThread;
@@ -584,10 +551,9 @@ type
           fCounter := 0;
         end, 0);
       end;
-      Debug('AddToFreeList');
-      Debug(aList);
+      //Debug('AddToFreeList');
+      //Debug(aList);
       fGlobalFreeList.Add(aList);
-      SetBit(aList);
     end;
     {$ENDIF}
 
@@ -604,6 +570,10 @@ type
         fGCWait.Wait;
       {$ENDIF}
     end;
+
+    {$IFDEF DOUBLEFREECHECK}
+    class var fNewData: Manual<GCHashSet>; private;
+    {$ENDIF}
 
     class method &New(aTTY: ^Void; aSize: IntPtr): ^Void;
     begin 
@@ -623,15 +593,18 @@ type
         result := ^Void(malloc(aSize + sizeOf(^Void)));
         if result = nil then exit nil;
       end;
+      {$IFDEF DOUBLEFREECHECK}
+      if fNewData = nil then begin 
+        fNewData := new Manual<GCHashSet>();
+        fNewData.ToString;
+      end;
+      fNewData.Add(IntPtr(result));
+      {$ENDIF}
       ^UIntPtr(result)^ := 0;
       result := result + sizeOf(^Void);
       ^^Void(result)^ := aTTY;
       memset(^Byte(result) + sizeOf(^Void), 0, aSize - sizeOf(^Void));
       AddToFreeList(IntPtr(result)); // ensure the value gets scanned.
-
-      if ^^Void(aTTY)[Utilities.FinalizerIndex] <> fFinalizer then begin
-        SetFinalizer(result);
-      end;
     end;
 
     class method RegisterThread: Integer;
@@ -670,6 +643,7 @@ type
       if (^Void(o) < {$IFDEF WEBASSEMBLY}^Void(@StackTop){$ELSE}lList^.StackTop{$ENDIF}) and (^Void(o) >= ^Void(@o)) then exit; // on the stack, should be relatively rare
       dec(ptr, sizeOf(IntPtr));
       InternalCalls.Increment(var ^MyIntPtr(ptr)^);
+      InternalCalls.And(var ^MyIntPtr(ptr)^, not ColorMask);
     end;
 
     class method Release(o: ^IntPtr);
@@ -692,6 +666,7 @@ type
       if (^Void(o) < {$IFDEF WEBASSEMBLY}^Void(@StackTop){$ELSE}lList^.StackTop{$ENDIF}) and (^Void(o) >= ^Void(@o)) then exit; // on the stack, should be relatively rare
       dec(ptr, sizeOf(IntPtr));
       InternalCalls.Decrement(var ^MyIntPtr(ptr)^);
+      InternalCalls.Or(var ^MyIntPtr(ptr)^, Purple);
       AddToFreeList(IntPtr(InternalCalls.Cast(o^)));
     end;
 
@@ -708,8 +683,10 @@ type
       if not FGCLoaded then InitGC;   
       {$ENDIF}
       if ptr = 0 then exit;  
+      
       dec(ptr, sizeOf(IntPtr));
       InternalCalls.Increment(var ^MyIntPtr(ptr)^);
+      InternalCalls.And(var ^MyIntPtr(ptr)^, not ColorMask);
     end;
 
     [SymbolName('__island_force_release'), DllExport]
@@ -724,26 +701,12 @@ type
       {$ELSE}
       if not FGCLoaded then InitGC;   
       {$ENDIF}
-      
       if ptr = 0 then exit;
       dec(ptr, sizeOf(IntPtr));
       InternalCalls.Decrement(var ^MyIntPtr(ptr)^);
+      InternalCalls.Or(var ^MyIntPtr(ptr)^, Purple);
       inc(ptr, sizeOf(IntPtr));
       AddToFreeList(ptr);
-    end;
-
-    class method SetFinalizer(aPtr: ^Void);
-    begin 
-      if aPtr = nil then exit;
-      var lItem := @(^UIntPtr(aPtr)[-1]);
-      lItem^ := lItem^ or FinalizeBit;
-    end;
-
-    class method UnsetFinalizer(aPtr: ^Void);
-    begin 
-      if aPtr = nil then exit;
-      var lItem := @(^UIntPtr(aPtr)[-1]);
-      lItem^ := lItem^ and not FinalizeBit;
     end;
     
     class method Init(var Dest: SimpleGC);
@@ -794,9 +757,11 @@ type
       if lOld = lInst then exit;
       if lInst <> 0 then begin 
         InternalCalls.Increment(var ^IntPtr(lInst)[-1]);
+        InternalCalls.And(var ^MyIntPtr(lInst)[-1], not ColorMask);
       end;
       if lOld <> 0  then begin 
         InternalCalls.Decrement(var ^IntPtr(lOld)[-1]);
+        InternalCalls.Or(var ^MyIntPtr(lInst)[-1], not ColorMask);
         AddToFreeList(IntPtr(InternalCalls.Cast(lOld)));
       end;
     end;
@@ -953,7 +918,7 @@ type
   public
     constructor;
     begin
-      DoResize(CalcNextCapacity(4096));
+      DoResize(CalcNextCapacity(16096));
     end;
 
     method &Add(Item: IntPtr):Boolean;

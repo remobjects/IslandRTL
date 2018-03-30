@@ -232,15 +232,23 @@ var ElementsWebAssembly;
         result.instance.exports["__island_force_release"](val);
     }
     ElementsWebAssembly.ReleaseReference = ReleaseReference;
+    function destroyDelegate(val) {
+        if (val && val.__elements_instance) {
+            ReleaseReference(val.__elements_instance);
+        }
+    }
+    ElementsWebAssembly.destroyDelegate = destroyDelegate;
     function createDelegate(objectptr) {
         AddReference(objectptr);
-        return function () {
+        var res = function () {
             arguments["this"] = this;
             var h = createHandle(arguments);
             result.instance.exports["__island_call_delegate"](objectptr, h);
             releaseHandle(h);
             return arguments.result;
         };
+        res.__elements_instance = objectptr;
+        return res;
     }
     function defineElementsSystemFunctions(imp) {
         imp.env.__island_consolelogint = function (val) {

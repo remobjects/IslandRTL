@@ -14,5 +14,6 @@ declare module ElementsWebAssembly {
     function readStringFromMemory(ptr: number): string;
     function AddReference(val: number): void;
     function ReleaseReference(val: number): void;
+    function destroyDelegate(val: () => any): void;
     function fetchAndInstantiate(url: string, importObject: any, memorySize?: number, tableSize?: number): Promise<WebAssembly.ResultObject>;
 }
