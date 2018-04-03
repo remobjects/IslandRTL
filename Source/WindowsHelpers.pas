@@ -246,7 +246,6 @@ type
   end;
 {$SHOW H7}{$SHOW H6}
 
-  UserEntryPointType =public method (args: array of String): Integer;
   DllMainType = public method (aModule: rtl.HMODULE; aReason: rtl.DWORD; aReserved: ^Void): Boolean;
   ThreadRec = public class
   public
@@ -322,15 +321,13 @@ type
 
 
 
-method DefaultUserEntryPoint(args: array of String): Integer; empty;
-method DefaultDllMain(aModule: rtl.HMODULE; aReason: rtl.DWORD; aReserved: ^Void): Boolean; 
+[SymbolName('__elements_entry_point'), &Weak]
+method UserEntryPoint(args: array of String): Integer; external;
+[SymbolName('__elements_dll_main'), &Weak]
+method DllMain(aModule: rtl.HMODULE; aReason: rtl.DWORD; aReserved: ^Void): Boolean; external;
   
 // This is needed by anything msvc compiled; it's the offset in fs for the tls array
 var
-  [Alias, SymbolName('__elements_entry_point'), &Weak]
-  UserEntryPoint: UserEntryPointType := @DefaultUserEntryPoint;
-  [Alias, SymbolName('__elements_dll_main'), &Weak]
-  DllMain: DllMainType := @DefaultDllMain;
   [SymbolName('_tls_index')]
   _tls_index: Cardinal; public;
   [SectionName('.tls'), SymbolName('_tls_start')]
@@ -1115,12 +1112,11 @@ type
 method ExternalCalls.DllMainCRTStartup(aModule: rtl.HMODULE; aReason: rtl.DWORD; aReserved: ^Void): Boolean;
 begin
   fModuleHandle := aModule;
+  var lAddr: DllMainType := @DllMain;
+  if lAddr = nil then 
+    exit true;
   exit DllMain(aModule, aReason, aReserved);
 end;
 
-method DefaultDllMain(aModule: rtl.HMODULE; aReason: rtl.DWORD; aReserved: ^Void): Boolean; 
-begin 
-  exit true;
-end;
 
 end.
