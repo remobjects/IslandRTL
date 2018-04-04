@@ -30,7 +30,7 @@ type
   private
     class var atexitlist: ^atexitrec;
     class var processheap: rtl.HANDLE;
-    class var fModuleHandle: rtl.HMODULE;
+    class var fModuleHandle: rtl.HMODULE; assembly;
     class method getModuleHandle: rtl.HMODULE;
     begin
       if fModuleHandle = nil then fModuleHandle := rtl.GetModuleHandleW(nil);
@@ -133,11 +133,6 @@ type
     {$ENDIF}
     [SymbolName('ElementsRaiseException')]
     class method RaiseException(aRaiseAddress: ^Void; aRaiseFrame: ^Void; aRaiseObject: Object);
-
-    [SymbolName('mainCRTStartup')]
-    class method mainCRTStartup: Integer;
-    [SymbolName('_DllMainCRTStartup'), CallingConvention(CallingConvention.Stdcall)]
-    class method DllMainCRTStartup(aModule: rtl.HMODULE; aReason: rtl.DWORD; aReserved: ^Void): Boolean;
 
     class property ModuleHandle: rtl.HMODULE read fModuleHandle;
 
@@ -323,6 +318,7 @@ type
 
 [SymbolName('__elements_entry_point'), &Weak]
 method UserEntryPoint(args: array of String): Integer; external;
+
 [SymbolName('__elements_dll_main'), &Weak]
 method DllMain(aModule: rtl.HMODULE; aReason: rtl.DWORD; aReserved: ^Void): Boolean; external;
   
@@ -357,6 +353,11 @@ method elements_tls_callback(aHandle: ^Void; aReason: rtl.DWORD; aReserved: ^Voi
 [SymbolName('main')]
 method main: Integer;
 
+[SymbolName('mainCRTStartup')]
+method mainCRTStartup: Integer;
+
+[SymbolName('_DllMainCRTStartup'), CallingConvention(CallingConvention.Stdcall)]
+method DllMainCRTStartup(aModule: rtl.HMODULE; aReason: rtl.DWORD; aReserved: ^Void): Boolean;
 
 method ElementsThreadHelper(aParam: ^Void): rtl.DWORD;
 
@@ -379,6 +380,7 @@ method free(v: ^Void);inline;
 begin 
    ExternalCalls.Free(v);
 end;
+
 
 
 implementation
@@ -1101,21 +1103,20 @@ begin
   exit UserEntryPoint(args_s);
 end;
 
-method ExternalCalls.mainCRTStartup: Integer;
+method mainCRTStartup: Integer;
 begin
-  &exit(main);
+  ExternalCalls.exit(main);
 end;
 
 type
   VoidMethod = method;
 
-method ExternalCalls.DllMainCRTStartup(aModule: rtl.HMODULE; aReason: rtl.DWORD; aReserved: ^Void): Boolean;
+method DllMainCRTStartup(aModule: rtl.HMODULE; aReason: rtl.DWORD; aReserved: ^Void): Boolean;
 begin
-  fModuleHandle := aModule;
-  var lAddr: DllMainType := @DllMain;
-  if lAddr = nil then 
-    exit true;
-  exit DllMain(aModule, aReason, aReserved);
+  ExternalCalls.fModuleHandle := aModule;
+  var lMain: DllMainType := @DllMain;
+  if lMain = nil then exit true;
+  exit lMain(aModule, aReason, aReserved);
 end;
 
 
