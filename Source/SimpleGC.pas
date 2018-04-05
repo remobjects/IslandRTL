@@ -372,7 +372,7 @@ type
           if p <> 0 then begin
             Debug('Black; increasing!');
             InternalCalls.Increment(var ^IntPtr(el)[-1]);
-            if (^UIntPtr(el)[-1] and ColorMask) = Black then begin
+            if (^UIntPtr(el)[-1] and ColorMask) <> Black then begin
               Debug('Value is set, adding to black walk list');
               Debug(p);
               fBlackList.Add(p);
