@@ -88,6 +88,8 @@ type
     class method Atan2(x,y: Double): Double;
     [SymbolName('ceil')]
     class method Ceiling(d: Double): Double;
+    [SymbolName('ceilf')]
+    class method Ceiling(d: Single): Single;
     [SymbolName('cos')]
     class method Cos(d: Double): Double;
     [SymbolName('cosh')]
@@ -98,6 +100,9 @@ type
     [SymbolName('floor'), Used]
     {$IFDEF WebAssembly}[DLLExport]{$ENDIF}
     class method Floor(d: Double): Double;
+    [SymbolName('floorf'), Used]
+    {$IFDEF WebAssembly}[DLLExport]{$ENDIF}
+    class method Floor(d: Single): Single;
     [SymbolName('log')]
     class method Log(a: Double): Double;
     class method Log2(a: Double): Double;
@@ -122,6 +127,9 @@ type
     [SymbolName('trunc'), Used]
     {$IFDEF WebAssembly}[DLLExport]{$ENDIF}
     class method Truncate(d: Double): Double;
+    [SymbolName('truncf'), Used]
+    {$IFDEF WebAssembly}[DLLExport]{$ENDIF}
+    class method Truncate(d: Single): Single;
 
     const PI: Double = 3.141592653589793238462643383279502884197169399375105820974944592307816406286208998628034825342117067982148086513282306647093844609550582232;
     const E:  Double = 2.718281828459045235360287471352662497757247093699959574966967627724076630353547594571382178525166427427466391932;
@@ -251,6 +259,13 @@ begin
   if d < 0 then exit d-p else exit d-p+1;
 end;
 
+class method Math.Ceiling(d: Single): Single;
+begin
+  var p := d mod 1;
+  if p = 0 then exit d;
+  if d < 0 then exit d-p else exit d-p+1;
+end;
+
 class method Math.Cos(d: Double): Double;
 begin
   exit Sin(PI/2 - d);
@@ -308,6 +323,14 @@ class method Math.Exp(d: Double): Double;
 begin
   // exit 2^(x/ln(2))
   exit Exp2(d/ln2);
+end;
+
+class method Math.Floor(d: Single): Single;
+begin 
+  var xi := Integer(d);
+  if d < xi then 
+    exit xi -1;
+  exit xi;
 end;
 
 class method Math.Floor(d: Double): Double;
@@ -465,6 +488,11 @@ begin
 end;
 
 class method Math.Truncate(d: Double): Double;
+begin
+  exit if d < 0 then -Floor(-d) else Floor(d);
+end;
+
+class method Math.Truncate(d: Single): Single;
 begin
   exit if d < 0 then -Floor(-d) else Floor(d);
 end;

@@ -177,7 +177,6 @@ end;
 
 method FileStream.GetLength: Int64;
 begin
-  {$HINT implement properly}
   result := inherited Length;
 end;
 
