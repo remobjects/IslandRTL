@@ -910,8 +910,13 @@ type
     property SizeOfType: Integer read get_SizeOfType;
     property BoxedDataOffset: Integer read get_BoxedDataOffset;
     property SubType: &Type read get_SubType;
-    property IsValueType: Boolean read (fValue^.Ext^.Flags and (
-      IslandTypeFlags.Enum or IslandTypeFlags.EnumFlags or IslandTypeFlags.Struct or IslandTypeFlags.Pointer or IslandTypeFlags.Set)) <> 0;
+
+    class method TypeIsValueType(aType: ^IslandTypeInfo): Boolean;
+    begin 
+      exit (aType^.Ext^.Flags and (IslandTypeFlags.Enum or IslandTypeFlags.EnumFlags or IslandTypeFlags.Struct or IslandTypeFlags.Pointer or IslandTypeFlags.Set)) <> 0;
+    end;
+
+    property IsValueType: Boolean read TypeIsValueType(fValue);
     property BaseType: &Type read if fValue^.ParentType = nil then nil else new &Type(fValue^.ParentType);
     property Interfaces: sequence of &Type read get_Interfaces;
     property Attributes: sequence of CustomAttribute read get_Attributes;
