@@ -77,6 +77,10 @@ type
     [SymbolName('fmod'), Used]
     {$IFDEF WebAssembly}[DLLExport]{$ENDIF}
     class method fmod(x, y: Double): Double;
+    [SymbolName('fmodf'), Used]
+    {$IFDEF WebAssembly}[DLLExport]{$ENDIF}
+    class method fmodf(x,y: Single): Single;
+
     class method IEEERemainder(x, y: Double): Double;
     [SymbolName('acos')]
     class method Acos(d: Double): Double;
@@ -506,6 +510,12 @@ begin
   exit (Abs(x) - (Abs(y) *  (Floor(Abs(x) / Abs(y))))) * Sign(x);
 end;
 
+
+class method Math.fmodf(x,y: Single): Single;
+begin 
+  exit Math.fmod(x, y);
+end;
+    
 class method Math.IntPow(x: Double; y: Integer): Double;
 begin
   if y = 0 then exit 1.0;
