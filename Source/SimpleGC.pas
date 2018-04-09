@@ -336,10 +336,8 @@ type
       end;
     end;
 
-    class method AddChildren(el: IntPtr; mode: Integer := 0);
-    begin
-      Debug('Walking children');
-      var lExt := ^^IslandTypeInfo(el)^^.Ext;
+    class method AddChildrenExt(el: IntPtr; lExt: ^IslandExtTypeInfo; mode: Integer := 0);
+    begin 
       var lGI := ^Byte(lExt^.GCInfo);
       if lGI = nil then exit; // can't be right.
       for i: Integer := (lExt^.TypeSize / sizeOf(IntPtr)) -1 downto 0 do begin 
@@ -358,10 +356,41 @@ type
       end;
     end;
 
-    class method AddChildrenBlack(el: IntPtr);
+    class method AddChildren(el: IntPtr; mode: Integer := 0);
     begin
-      Debug('Walking children for blacklist');
+      Debug('Walking children');
       var lExt := ^^IslandTypeInfo(el)^^.Ext;
+      if IslandTypeFlags.Array in lExt^.Flags then begin 
+        // arrays are special; there are 3 kinds of arrays; array of Object, array of struct (with object) and array of value type; 
+        Debug('Array!');
+        if (lExt^.SubType = nil) then exit; // bad type
+        if not &Type.TypeIsValueType(lExt^.SubType) then begin 
+          var lObj := ^ArrayStruct(^Void(el));
+          for i: Integer := 0 to lObj^.fLength -1 do begin
+            var p := lObj^.fData[i];
+            if p <> 0 then begin 
+              Debug('Value is set, adding to walk list');
+              Debug(p);
+              if mode = 1 then 
+                InternalCalls.Decrement(var ^IntPtr(p)[-1]);
+              fWalkList.Add(p);
+            end;
+          end;
+          exit;
+        end;
+        if lExt^.SubType^.Ext^.GCInfo = nil then exit;
+        var lObj := ^ArrayStruct(^Void(el));
+        el := IntPtr(@lObj^.fData[0]);
+        for i: Integer := 0 to lObj^.fLength -1 do begin
+          AddChildrenExt(el, lExt^.SubType^.Ext, mode);
+          el := el + lExt^.SubType^.Ext^.TypeSize;
+        end;
+      end;
+      AddChildrenExt(el, lExt);
+    end;
+
+    class method AddChildrenBlackExt(el: IntPtr; lExt: ^IslandExtTypeInfo);
+    begin 
       var lGI := ^Byte(lExt^.GCInfo);
       if lGI = nil then exit; 
       for i: Integer := (lExt^.TypeSize / sizeOf(IntPtr)) -1 downto 0 do begin 
@@ -380,6 +409,42 @@ type
           end;
         end;
       end;
+    end;
+
+    class method AddChildrenBlack(el: IntPtr);
+    begin
+      Debug('Walking children for blacklist');
+      var lExt := ^^IslandTypeInfo(el)^^.Ext;
+      
+      if IslandTypeFlags.Array in lExt^.Flags then begin 
+        // arrays are special; there are 3 kinds of arrays; array of Object, array of struct (with object) and array of value type; 
+        Debug('Array!');
+        if (lExt^.SubType = nil) then exit; // bad type
+        if not &Type.TypeIsValueType(lExt^.SubType) then begin 
+          var lObj := ^ArrayStruct(^Void(el));
+          for i: Integer := 0 to lObj^.fLength -1 do begin
+            var p := lObj^.fData[i];
+            if p <> 0 then begin
+              Debug('Black; increasing!');
+              InternalCalls.Increment(var ^IntPtr(el)[-1]);
+              if (^UIntPtr(el)[-1] and ColorMask) <> Black then begin
+                Debug('Value is set, adding to black walk list');
+                Debug(p);
+                fBlackList.Add(p);
+              end;
+            end;
+          end;
+          exit;
+        end;
+        if lExt^.SubType^.Ext^.GCInfo = nil then exit;
+        var lObj := ^ArrayStruct(^Void(el));
+        el := IntPtr(@lObj^.fData[0]);
+        for i: Integer := 0 to lObj^.fLength -1 do begin
+          AddChildrenBlackExt(el, lExt);
+          el := el + lExt^.SubType^.Ext^.TypeSize;
+        end;
+      end;
+      AddChildrenBlackExt(el, lExt);
     end;
 
     class method DoGC;
@@ -494,7 +559,8 @@ type
 
     class method FinalizeObject(aObj: IntPtr); 
     begin 
-      try {$HIDE W58}
+      try 
+        {$HIDE W58}
         InternalCalls.Cast<Object>(^Void(aObj)).Finalize;
         {$SHOW W58}
         aObj := aObj - sizeOf(IntPtr);
