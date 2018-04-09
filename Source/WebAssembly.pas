@@ -661,6 +661,26 @@ type
       lEC.Release;
     end;
 
+    [SymbolName('fmod'), Used, DllExport]
+    class method fmod(x,y: Double): Double;
+    begin 
+      y := Math.Abs(y);
+      result := Remainder(Math.Abs(x), y);
+      if (result < 0) then result := result + y;
+      if x < 0 then 
+        result := - result;
+    end;
+    
+    [SymbolName('fmodf'), Used, DllExport]
+    class method fmodf(x,y: Single): Single;
+    begin 
+      exit fmod(x, y);
+    end;
+    
+    class method Remainder(x, y: Double): Double;
+    begin 
+      exit Math.Floor(x / y) * y;
+    end;
     [SymbolName('ElementsBeginCatch')]
     method ElementsBeginCatch(obj: ^Void): ^Void;empty;
 
