@@ -463,6 +463,7 @@ type
           if p <> 0 then begin
             Debug('Inside');
             ^IntPtr(el)[i] := nil;
+          end;
         end;
       end;
     end;
