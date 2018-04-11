@@ -1080,6 +1080,9 @@ type
       for i:Integer := 0 to length(fEntriesTable)-1 do begin
         fEntriesTable[i].Next := EMPTY_BUCKET;
       end;
+      for i: Integer := 0 to length(fbucketTable)-1 do begin
+        fbucketTable[i] := 0;
+      end;
     end;
 
     method Contains(Item: IntPtr): Boolean;
