@@ -32,8 +32,8 @@ type
     method Seek(Offset: Int64; Origin: SeekOrigin): Int64; override;
     method Flush; override;
     method Close; override;
-    method &Read(aSpan: Span<Byte>): Int32; override; 
-    method &Write(aSpan: ImmutableSpan<Byte>): Int32; override;
+    method &Read(const buf: ^Void; Count: Int32): Int32; override;
+    method &Write(const buf: ^Void; Count: Int32): Int32;override;
     property Length: Int64 read GetLength; override;
     method SetLength(value: Int64); override;
     property Name: String; readonly;
@@ -180,31 +180,33 @@ begin
   result := inherited Length;
 end;
 
-method FileStream.&Read(aSpan: Span<Byte>): Int32;
+method FileStream.Read(const buf: ^Void; Count: Int32): Int32;
 begin
   if not CanRead then raise new NotSupportedException;
-  if aSpan.Length = 0 then exit 0;
+  if buf = nil then raise new Exception("argument is null");
+  if Count = 0 then exit 0;
   {$IFDEF WINDOWS}
   var res: rtl.DWORD;
-  CheckForIOError(rtl.ReadFile(fHandle, aSpan.Pointer, aSpan.Length, @res, nil));
+  CheckForIOError(rtl.ReadFile(fHandle,buf,Count,@res,nil));
   exit res;
   {$ELSEIF POSIX}
-  exit rtl.fread(aSpan.Pointer, 1, aSpan.Length, fHandle);
+  exit rtl.fread(buf, 1, Count, fHandle);
   {$ELSE}
     {$ERROR}
   {$ENDIF}
 end;
 
-method FileStream.&Write(aSpan: ImmutableSpan<Byte>): Int32;
+method FileStream.Write(const buf: ^Void; Count: Int32): Int32;
 begin
   if not CanWrite then raise new NotSupportedException;
-  if aSpan.Length = 0 then exit 0;
+  if buf = nil then raise new Exception("argument is null");
+  if Count = 0 then exit 0;
   {$IFDEF WINDOWS}
   var res: rtl.DWORD;
-  CheckForIOError(rtl.WriteFile(fHandle, aSpan.Pointer, aSpan.Length, @res, nil));
+  CheckForIOError(rtl.WriteFile(fHandle,buf,Count,@res,nil));
   exit res;
   {$ELSEIF POSIX}
-  exit rtl.fwrite(aSpan.Pointer, 1, aSpan.Length, fHandle);
+  exit rtl.fwrite(buf, 1, Count, fHandle);
   {$ELSE}
     {$ERROR}
   {$ENDIF}

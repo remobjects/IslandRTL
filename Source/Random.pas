@@ -77,7 +77,7 @@ type
       end;
       locking fLock do begin
         loop begin
-          var lLength := fHandle.Read(new Span<Byte>(@aDest[aStart], aLength));
+          var lLength := fHandle.Read(@aDest[aStart], aLength);
           if lLength = 0 then raise new Exception('Internal error: read returned 0 from random device!');
           aLength := aLength - lLength;
           aStart := aStart + lLength;
