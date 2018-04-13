@@ -22,8 +22,8 @@ type
     property CanSeek: Boolean read IsValid; override;
     property CanWrite: Boolean read IsValid; override;
     method Seek(Offset: Int64; Origin: SeekOrigin): Int64; override;
-    method &Read(const buf: ^Void; Count: Int32): Int32; override;
-    method &Write(const buf: ^Void; Count: Int32): Int32; override;
+    method &Read(aSpan: Span<Byte>): Int32; override;
+    method &Write(aSpan: ImmutableSpan<Byte>): Int32; override;
     method ToArray: array of Byte;
     method WriteTo(Destination: Stream);
     {$IFNDEF NOFILES}
@@ -72,29 +72,27 @@ begin
   exit fPosition;
 end;
 
-method MemoryStream.Read(const buf: ^Void; Count: Int32): Int32;
+method MemoryStream.Read(aSpan: Span<Byte>): Int32;
 begin
   if not CanRead then raise new NotSupportedException;
-  if buf = nil then raise new Exception("argument is null");
-  if Count = 0 then exit 0;
+  if aSpan.Length = 0 then exit 0;
   var lres := fLength - fPosition;
   if lres <= 0 then exit 0;
-  if lres > Count then lres := Count;
-  memcpy(buf, @fbuf[fPosition], lres);
+  if lres > aSpan.Length then lres := aSpan.Length;
+  memcpy(aSpan.Pointer, @fbuf[fPosition], lres);
   fPosition := fPosition + lres;
   exit lres;
 end;
 
-method MemoryStream.Write(const buf: ^Void; Count: Int32): Int32;
+method MemoryStream.Write(aSpan: ImmutableSpan<Byte>): Int32;
 begin
   if not CanWrite then raise new NotSupportedException;
-  if buf = nil then raise new Exception("argument is null");
-  if Count = 0 then exit 0;
-  CheckCapacity(fPosition+Count);
-  memcpy(@fbuf[fPosition], buf, Count);
-  fPosition := fPosition+Count;
+  if aSpan.Length = 0 then exit 0;
+  CheckCapacity(fPosition + aSpan.Length);
+  memcpy(@fbuf[fPosition], aSpan.Pointer, aSpan.Length);
+  fPosition := fPosition + aSpan.Length;
   if fPosition > fLength then fLength := fPosition;
-  exit Count;
+  exit aSpan.Length;
 end;
 
 method MemoryStream.ToArray: array of Byte;
@@ -127,7 +125,7 @@ method MemoryStream.WriteTo(Destination: Stream);
 begin
   if Destination = nil then raise new Exception('Destination is null');
   if not Destination.CanWrite then raise new NotSupportedException;
-  Destination.Write(@fbuf[0],fLength);
+  Destination.Write(new Span<Byte>(fbuf, 0, fLength));
 end;
 
 {$IFNDEF NOFILES}
@@ -137,7 +135,7 @@ begin
   SetLength(0);
   self.Capacity := fs.Length;
   fs.Position := 0;
-  fLength := fs.Read(@fbuf[0], fs.Length);
+  fLength := fs.Read(new Span<Byte>(fbuf, 0, fLength));
   fs.Close;
 end;
 
@@ -146,7 +144,7 @@ begin
   var fs := new FileStream(FileName, FileMode.Create,FileAccess.Write, FileShare.None);
   SetLength(fLength);
   fs.Position := 0;
-  fs.Write(@fbuf[0],fLength);
+  fs.Write(new Span<Byte>(@fbuf[0], fLength));
   fs.Close;
 end;
 {$ENDIF}
