@@ -1,20 +1,17 @@
 ﻿namespace RemObjects.Elements.System;
+{$HIDE H8}{$HIDE H6}{$HIDE H7}
 
 type
   ArrayStruct = record
   public
-    {$HIDE H8}
     fRTTI: ^Void;
     fLength: NativeInt;
     fData: array[0..0] of IntPtr;
-    {$SHOW H8}
   end;
   &Array = public abstract class(IEnumerable)
   assembly
     // WARNING: Do not change without also changing the compiler! these are compiler created!
-    {$HIDE H8}
     fLength: NativeInt; readonly;
-    {$SHOW H8}
 
     constructor; empty;
 
