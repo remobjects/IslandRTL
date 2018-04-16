@@ -23,6 +23,17 @@ type
     method &Write(aSpan: ImmutableSpan<Byte>): Int32; abstract;
     method &Read(Buffer: array of Byte; Offset: Int32; Count: Int32): Int32;
     method &Write(Buffer: array of Byte; Offset: Int32; Count: Int32): Int32;
+ 
+    method &Read(const buf: ^Void; Count: Int32): Int32; 
+    begin 
+      exit &Read(new Span<Byte>(^Byte(buf), Count));
+    end;
+
+    method &Write(const buf: ^Void; Count: Int32): Int32; 
+    begin 
+      exit &Write(new ImmutableSpan<Byte>(^Byte(buf), Count));
+    end;
+
     method CopyTo(Destination: Stream);
     property Length: Int64 read GetLength; virtual;
     method SetLength(value: Int64); virtual;
