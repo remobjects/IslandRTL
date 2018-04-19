@@ -101,6 +101,12 @@ type
     begin
       exit new NullReferenceException;
     end;
+
+    [SymbolName('__newnullrefexceptionex'), SkipDebug]
+    class method CreateNullReferenceExceptionEx(s: String): Exception;
+    begin
+      exit new NullReferenceException(s);
+    end;
     
     const FinalizerIndex = 4 + {$IFDEF I386}4{$ELSE}2{$ENDIF};
 
