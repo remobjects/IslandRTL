@@ -125,7 +125,7 @@ type
     class method Eval(aVal: String): IntPtr; external;
 
     [DllImport('', EntryPoint := '__island_get_typeof')]
-    class method GetTypeOf(aHandle: IntPtr): WebassemblyType; external;
+    class method GetTypeOf(aHandle: IntPtr): WebAssemblyType; external;
 
     [DllImport('', EntryPoint := '__island_get_intvalue')]
     class method GetIntValue(aHandle: IntPtr): Int32; external;
@@ -479,7 +479,7 @@ type
     // if it's an external object it gets wrapped as EcmaScriptObject
     begin 
       if o = 0 then exit 0;
-      if WebAssemblyCalls.GetTypeOf(o) = WebassemblyType.String then begin
+      if WebAssemblyCalls.GetTypeOf(o) = WebAssemblyType.String then begin
         result := IntPtr(InternalCalls.Cast(GetStringFromHandle(o)));
         WebAssemblyCalls.FreeHandle(o);
         exit;
@@ -522,10 +522,10 @@ type
     class method GetObjectForHandle(aHandle: IntPtr): Object; // Note; takes ownership (and frees if needed)
     begin 
       case WebAssemblyCalls.GetTypeOf(aHandle) of 
-        WebassemblyType.Undefined, WebassemblyType.Null: exit nil;
-        WebassemblyType.String: result := GetStringFromHandle(aHandle);
-        WebassemblyType.Number: result := WebAssemblyCalls.GetDoubleValue(aHandle);
-        WebassemblyType.Boolean: result := WebAssemblyCalls.GetIntValue(aHandle);
+        WebAssemblyType.Undefined, WebAssemblyType.Null: exit nil;
+        WebAssemblyType.String: result := GetStringFromHandle(aHandle);
+        WebAssemblyType.Number: result := WebAssemblyCalls.GetDoubleValue(aHandle);
+        WebAssemblyType.Boolean: result := WebAssemblyCalls.GetIntValue(aHandle);
         else begin
           result := new EcmaScriptObject(aHandle);
           var val := EcmaScriptObject(result)['__elements_handle'];
@@ -637,7 +637,7 @@ type
     end;
   end;
 
-  WebassemblyType = public enum (Null, Undefined, String, Number, &Function, Symbol, Object, Boolean);
+  WebAssemblyType = public enum (Null, Undefined, String, Number, &Function, Symbol, Object, Boolean);
   ExternalCalls = public static class 
   private
   public
