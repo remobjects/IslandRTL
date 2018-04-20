@@ -1173,8 +1173,10 @@ type
       if aCount = 0 then exit;
 
       var newlength := fCount-aCount;
-      memmove(@fItems[&Index], @fItems[&Index + aCount], (newlength - &Index) * sizeOf(IntPtr));
-      memset(@fItems[newlength], 0, (fCount - newlength) * sizeOf(IntPtr));
+      if (newlength - &Index) > 0 then
+        memmove(@fItems[&Index], @fItems[&Index + aCount], (newlength - &Index) * sizeOf(IntPtr));
+      if (fCount - newlength) > 0 then
+        memset(@fItems[newlength], 0, (fCount - newlength) * sizeOf(IntPtr));
       fCount := newlength;
     end;
 

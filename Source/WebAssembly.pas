@@ -5,9 +5,9 @@
   [assembly:AssemblyDefineAttribute('NOTHREADS')]
 
 type
-  RemObjects.Elements.System.rpmalloc.__Global = public partial class 
+  RemObjects.Elements.System.rpmalloc.__Global = public partial class
   assembly
-    const 
+    const
       _SC_PAGESIZE = 1;
       MAP_ANONYMOUS = $20;
       MAP_PRIVATE = $2;
@@ -20,7 +20,7 @@ type
       memory_order_release = 0;
       memory_order_acquire = 0;
     class method munmap(addr: ^Void; size: IntPtr): Integer;
-    begin 
+    begin
       //ExternalCalls.trap;
     end;
 
@@ -29,11 +29,11 @@ type
 
     class method mmap(addr: ^Void; size: IntPtr; prot, flags: Integer; handle, offset: IntPtr): ^Void;
     begin
-      if LastPtr = nil then begin 
+      if LastPtr = nil then begin
         var lNew := ((size + 65535) / 65536);
         LastPtr := ^Byte(WebAssemblyCalls.GrowMemory(lNew)  * 65536);
         SpaceLeft := ((size + 65535) / 65536) * 65536;
-      end else if size > SpaceLeft then begin 
+      end else if size > SpaceLeft then begin
         var lNew := (size - SpaceLeft + 65535) / 65536;
         WebAssemblyCalls.GrowMemory(lNew);
         SpaceLeft := SpaceLeft + (lNew * 65536);
@@ -45,28 +45,28 @@ type
     end;
 
     class method sysconf(i: Integer): IntPtr;
-    begin 
-      if i = _SC_PAGESIZE then 
+    begin
+      if i = _SC_PAGESIZE then
         exit 4096; //65536;
       exit -1;
     end;
 
     class method atomic_load_explicit<T>(val: ^T; dummy: Integer): T; inline;
-    begin 
+    begin
       exit val^;
     end;
 
     class method atomic_store_explicit<T>(val: ^T; val2: T; dummy: Integer): T; inline;
-    begin 
+    begin
       val^ := val2;
     end;
 
-    class method atomic_thread_fence(dummy: Integer); inline; 
-    begin 
+    class method atomic_thread_fence(dummy: Integer); inline;
+    begin
     end;
 
     class method atomic_fetch_add_explicit(val: ^Integer; aAdd: Integer; dummy: Integer): Integer; inline;
-    begin 
+    begin
       result := val^;
       val^ := aAdd;
     end;
@@ -75,7 +75,7 @@ type
     begin
       exit InternalCalls.Add(var (val)^, &add) + &add;
     end;
-    
+
     class method atomic_compare_exchange_weak_explicit(val: ^^Void; oldval: ^^Void; newval: ^Void; dummy1, dummy2: Integer): Integer; inline;
     begin
       exit (if InternalCalls.CompareExchange(var (val)^, newval, oldval^) = oldval^ then (1) else (0));
@@ -168,7 +168,7 @@ type
 
     [DllImport('', EntryPoint := '__island_set')]
     class method &Set(aSelf: IntPtr; aName: String; aVal: IntPtr; aReleaseVal: Boolean): IntPtr; external;
-    
+
     [DllImport('', EntryPoint := '__island_setarray')]
     class method &Set(aSelf: IntPtr; aIdx: Integer; aVal: IntPtr; aReleaseVal: Boolean): IntPtr; external;
 
@@ -219,42 +219,42 @@ type
   end;
 
   EcmaScriptPropertyFlags = public flags (
-    Enumerable = 1, 
-    Configurable = 2, 
+    Enumerable = 1,
+    Configurable = 2,
     Writable = 4,
     All = 4 or 2 or 1);
 
   EcmaScriptObject = public class(IDisposable, IDynamicObject)
-  private 
+  private
     fHandle: IntPtr;
     method get_Items(i: Integer): Object;
-    begin 
+    begin
       exit WebAssembly.GetObjectForHandle(WebAssemblyCalls.GetArray(fHandle, i));
     end;
     method get_Items(i: String): Object;
-    begin 
+    begin
       exit WebAssembly.GetObjectForHandle(WebAssemblyCalls.Get(fHandle, i));
     end;
     method set_Items(i: Integer; aVal: Object);
-    begin 
+    begin
       WebAssemblyCalls.Set(fHandle, i, WebAssembly.CreateHandle(aVal), true);
     end;
     method set_Items(i: String; aVal: Object);
-    begin 
+    begin
       WebAssemblyCalls.Set(fHandle, i, WebAssembly.CreateHandle(aVal), true);
     end;
 
     method GetMember(aName: String; aGetFlags: Integer; aArgs: array of Object): Object;
-    begin 
-      if aArgs.Length = 1 then 
+    begin
+      if aArgs.Length = 1 then
         exit self.Items[Convert.ToInt32(aArgs[0])];
-      if aArgs.Length = 0 then 
+      if aArgs.Length = 0 then
         exit self.Items[aName];
       raise new Exception('Array accessors not allowed in EcmaScript');
     end;
 
     method SetMember(aName: String; aGetFlags: Integer; aArgs: array of Object): Object;
-    begin 
+    begin
       if aArgs.Length = 2 then begin
         self.Items[Convert.ToInt32(aArgs[0])] := aArgs[1];
         exit;
@@ -267,44 +267,44 @@ type
     end;
 
     method Invoke(aName: String; aGetFlags: Integer; aArgs: array of Object): Object;
-    begin 
-      if aName = nil then 
+    begin
+      if aName = nil then
         exit Call(aArgs);
       exit Call(aName, aArgs);
     end;
 
     method Unary(aOp: DynamicUnaryOperator; out aResult: Object): Boolean;
-    begin 
+    begin
       exit false;
     end;
 
     method Binary(aOther: Object; aSelfIsLeftSide: Boolean; aOp: DynamicBinaryOperator; out aResult: Object): Boolean;
-    begin 
+    begin
       exit false;
     end;
 
-  public 
+  public
     constructor(aValue: IntPtr);
-    begin 
+    begin
       if aValue = 0 then raise new ArgumentNullException('0 not allowed');
       fHandle := aValue;
     end;
 
     finalizer;
-    begin 
-      if fHandle <> 0 then 
+    begin
+      if fHandle <> 0 then
         WebAssemblyCalls.FreeHandle(fHandle);
     end;
 
     property Handle: IntPtr read fHandle;
 
     method Release;
-    begin 
+    begin
       fHandle := 0;
-    end;      
+    end;
 
     method Dispose;
-    begin 
+    begin
       if fHandle <> 0 then begin
         WebAssemblyCalls.FreeHandle(fHandle);
         fHandle := 0;
@@ -312,7 +312,7 @@ type
     end;
 
     class operator implicit(val: EcmaScriptObject): IntPtr;
-    begin 
+    begin
       if val = nil then exit 0;
       result := val.Handle;
       val.Release;
@@ -323,21 +323,21 @@ type
     property Items[i: Integer]: Object read get_Items write set_Items; default;
 
     method DefineProperty(aName: String; aValue: Object; aFlags: EcmaScriptPropertyFlags := EcmaScriptPropertyFlags.All);
-    begin 
+    begin
       WebAssemblyCalls.DefineValueProperty(fHandle, aName, WebAssembly.CreateHandle(aValue), aFlags);
     end;
 
     method DefineProperty(aName: String; aGet: Func<Object>; aSet: Action<Object>; aFlags: EcmaScriptPropertyFlags := EcmaScriptPropertyFlags.All);
-    begin 
+    begin
       var lGet, lSet: WebAssemblyDelegate;
-      if assigned(aGet) then 
-        lGet := a -> begin 
+      if assigned(aGet) then
+        lGet := a -> begin
           var lObj := EcmaScriptObject(a[1]);
           lObj['value'] := aGet();
           lObj.Dispose;
         end;
-      if assigned(aSet) then 
-        lSet := a -> begin 
+      if assigned(aSet) then
+        lSet := a -> begin
           var lVal := a[1];
           aSet(lVal);
           EcmaScriptObject(lVal):Dispose;
@@ -346,18 +346,18 @@ type
     end;
 
     method DefineProperty(aName: String; aGet: Func<EcmaScriptObject, Object>; aSet: Action<EcmaScriptObject, Object>; aFlags: EcmaScriptPropertyFlags := EcmaScriptPropertyFlags.All);
-    begin 
+    begin
       var lGet, lSet: WebAssemblyDelegate;
-      if assigned(aGet) then 
-        lGet := a -> begin 
+      if assigned(aGet) then
+        lGet := a -> begin
           var lObj := EcmaScriptObject(a[1]);
           var lSelf := new EcmaScriptObject(WebAssemblyCalls.GetArray(a.Handle, 0)); // this shouldn't be unwrapped.
           lObj['value'] := aGet(lSelf);
           lSelf.Dispose;
           lObj.Dispose;
         end;
-      if assigned(aSet) then 
-        lSet := a -> begin 
+      if assigned(aSet) then
+        lSet := a -> begin
           var lVal := a[1];
           var lSelf := new EcmaScriptObject(WebAssemblyCalls.GetArray(a.Handle, 0)); // this shouldn't be unwrapped.
           aSet(lSelf, lVal);
@@ -368,7 +368,7 @@ type
     end;
 
     method Call(aName: String; params args: array of Object): Object;
-    begin 
+    begin
       var lData := new IntPtr[length(args)];
       for i: Integer := 0 to length(args) -1 do
         lData[i] := WebAssembly.CreateHandle(args[i]);
@@ -377,7 +377,7 @@ type
     end;
 
     method Call(args: array of Object): Object;
-    begin 
+    begin
       exit Call(nil, args);
     end;
 
@@ -386,17 +386,17 @@ type
 
   WebAssemblyDelegate = public delegate (args: EcmaScriptObject);
 
-  WebAssembly = public static class 
-  private 
+  WebAssembly = public static class
+  private
     fProxies: Dictionary<IntPtr, EcmaScriptObject> := new Dictionary<IntPtr, EcmaScriptObject>;
 
     class method GetPtrFromObject(o: EcmaScriptObject): Object;
-    begin 
+    begin
       exit InternalCalls.Cast<Object>(^Void(Convert.ToInt32(o['__elements_handle'])));
     end;
 
     class method UnwrapIfNeeded(aType: &Type; aVal: Object): Object;
-    begin 
+    begin
       if aVal = nil then exit nil;
       if aType = nil then exit nil;
       if aType.IsValueType then exit aVal;
@@ -415,8 +415,8 @@ type
     end;
 
     class method GetProxyFor(aType: &Type): EcmaScriptObject;
-    begin 
-      if fProxies.TryGetValue(IntPtr(aType.RTTI), out result) then begin 
+    begin
+      if fProxies.TryGetValue(IntPtr(aType.RTTI), out result) then begin
         exit;
       end;
       if aType.IsValueType then raise new ArgumentException('Value types not supported!');
@@ -433,18 +433,18 @@ type
         if lRM <> nil then begin
           lGet := o -> UnwrapIfNeeded(el.Type, WebAssembly.InvokeMethod(lRM, [GetPtrFromObject(o)]));
         end;
-        if lWM <> nil then begin 
+        if lWM <> nil then begin
           lSet := (o, v) -> WebAssembly.InvokeMethod(lWM, [GetPtrFromObject(o), WrapIfNeeded(el.Type, v)]);
         end;
-        if (lGet <> nil)  or (lSet <> nil) then 
+        if (lGet <> nil)  or (lSet <> nil) then
           lBase.DefineProperty(el.Name, lGet, lSet);
       end;
-      for each el in aType.Methods do begin 
+      for each el in aType.Methods do begin
         if MethodFlags.Constructor in el.Flags then continue;
         if MethodFlags.Finalizer in el.Flags then continue;
         if MethodFlags.Operator in el.Flags then continue;
         var lMeth := el;
-        var lDel: WebAssemblyDelegate := method(args: EcmaScriptObject) begin 
+        var lDel: WebAssemblyDelegate := method(args: EcmaScriptObject) begin
           var lArr := new List<Object>;
           for each lArg in lMeth.Arguments index n do begin
             var lTmp := lArg;
@@ -457,27 +457,27 @@ type
       fProxies.Add(IntPtr(aType.RTTI), lBase);
       exit lBase;
     end;
-  public 
+  public
     property Global: dynamic := new EcmaScriptObject(-1); lazy;
     property Object: dynamic := EcmaScriptObject(&Global)['Object']; lazy;
 
     class method CreateProxy(o: Object): EcmaScriptObject;
-    begin 
+    begin
       if o = nil then exit nil;
       if o is EcmaScriptObject then exit EcmaScriptObject(o);
       var ov: EcmaScriptObject := GetProxyFor(o.GetType);
       var ptr := IntPtr(InternalCalls.Cast(o));
-      
+
       SimpleGC.ForceAddRef(ptr);
       result := EcmaScriptObject(EcmaScriptObject(Object).Call('create', new EcmaScriptObject(WebAssemblyCalls.CloneHandle(ov.Handle))));
       result['__elements_handle'] := ptr;
     end;
-    
+
     [SymbolName('__island_wrap'), Used, DllExport]
-    class method Wrap(o: IntPtr): IntPtr; 
+    class method Wrap(o: IntPtr): IntPtr;
     // o is a handle, if it points to an elements object it gets unwrapped and returned
     // if it's an external object it gets wrapped as EcmaScriptObject
-    begin 
+    begin
       if o = 0 then exit 0;
       if WebAssemblyCalls.GetTypeOf(o) = WebAssemblyType.String then begin
         result := IntPtr(InternalCalls.Cast(GetStringFromHandle(o)));
@@ -490,28 +490,28 @@ type
         lEC.Dispose;
         exit;
       end;
-      // We don't add a reference because ecmascriptobject is on the stack and the 
+      // We don't add a reference because ecmascriptobject is on the stack and the
       // gc can't run before the variable is gone.
       exit IntPtr(InternalCalls.Cast(lEC));
     end;
 
     [SymbolName('__island_unwrap'), Used, DllExport]
-    class method Unwrap(o: IntPtr): IntPtr; 
+    class method Unwrap(o: IntPtr): IntPtr;
     // o is a pointer, returns either a handle ot a proxy or the handle to an ecmascriptobject.
-    begin 
+    begin
       if o = 0 then exit 0;
       var lRes := InternalCalls.Cast<Object>(^Void(o));
-      if lRes is String then begin 
+      if lRes is String then begin
         exit WebAssemblyCalls.CreateString(String(lRes));
       end;
-      if lRes is not EcmaScriptObject then 
+      if lRes is not EcmaScriptObject then
         lRes := CreateProxy(lRes);
       result := EcmaScriptObject(lRes).Handle;
       EcmaScriptObject(lRes).Release;
     end;
-    
+
     class method ReleaseProxy(o: EcmaScriptObject);
-    begin 
+    begin
       if o = nil then exit;
       if o['__elements_handle'] = nil then exit;
       var lPtr := Convert.ToInt32(o['__elements_handle']);
@@ -520,8 +520,8 @@ type
     end;
 
     class method GetObjectForHandle(aHandle: IntPtr): Object; // Note; takes ownership (and frees if needed)
-    begin 
-      case WebAssemblyCalls.GetTypeOf(aHandle) of 
+    begin
+      case WebAssemblyCalls.GetTypeOf(aHandle) of
         WebAssemblyType.Undefined, WebAssemblyType.Null: exit nil;
         WebAssemblyType.String: result := GetStringFromHandle(aHandle);
         WebAssemblyType.Number: result := WebAssemblyCalls.GetDoubleValue(aHandle);
@@ -533,7 +533,6 @@ type
             EcmaScriptObject(result).Dispose;
             var lHandle := Convert.ToInt32(val);
             result := InternalCalls.Cast<Object>(^Void(lHandle));
-            SimpleGC.ForceRelease(lHandle);
           end;
 
           exit;
@@ -543,7 +542,7 @@ type
     end;
 
     class method InvokeMethod(aPtr: ^Void; params args: array of Object): Object;
-    begin 
+    begin
       var lData := new IntPtr[length(args)];
       for i: Integer := 0 to length(args) -1 do
         lData[i] := WebAssembly.CreateHandle(args[i]);
@@ -560,7 +559,7 @@ type
       if aVal is Double then exit WebAssemblyCalls.CreateDouble(aVal as Double);
       if aVal is Int64 then exit WebAssemblyCalls.CreateDouble(aVal as Int64);
       if aVal is String then exit WebAssemblyCalls.CreateString(aVal as String);
-      if aVal is WebAssemblyDelegate then begin 
+      if aVal is WebAssemblyDelegate then begin
         exit WebAssemblyCalls.CreateFunc(aVal as WebAssemblyDelegate);
       end;
       var lProxy := CreateProxy(aVal);
@@ -569,65 +568,65 @@ type
     end;
 
     class method Eval(s: String): Object;
-    begin 
+    begin
       exit GetObjectForHandle(WebAssemblyCalls.Eval(s));
     end;
 
     class method GetStringFromHandle(handle: Int32; aFree: Boolean := false): String;
-    begin 
+    begin
       if handle = 0 then exit nil;
       result := String.AllocString(WebAssemblyCalls.GetStringLength(handle));
       WebAssemblyCalls.GetStringData(handle, @result.fFirstChar);
-      if aFree then 
+      if aFree then
         WebAssemblyCalls.FreeHandle(handle);
     end;
 
     class method GetElementById(id: String): dynamic;
-    begin 
+    begin
       var lRes := WebAssemblyCalls.GetElementById(id);
       if lRes = 0 then exit nil;
       exit new EcmaScriptObject(lRes);
     end;
 
     class method GetElementByName(id: String): dynamic;
-    begin 
+    begin
       var lRes := WebAssemblyCalls.GetElementByName(id);
       if lRes = 0 then exit nil;
       exit new EcmaScriptObject(lRes);
     end;
 
     class method SetTimeout(aFN: WebAssemblyDelegate; aTimeOut: Integer): Integer;
-    begin 
+    begin
       exit WebAssemblyCalls.SetTimeout(aFN, aTimeOut);
     end;
 
     class method SetInterval(aFN: WebAssemblyDelegate; aTimeOut: Integer): Integer;
-    begin 
+    begin
       exit WebAssemblyCalls.SetInterval(aFN, aTimeOut);
     end;
 
     class method ClearInterval(aVal: Integer);
-    begin 
+    begin
       WebAssemblyCalls.ClearInterval(aVal);
     end;
 
     class method CreateElement(aName: String): dynamic;
-    begin 
+    begin
       exit new EcmaScriptObject(WebAssemblyCalls.CreateElement(aName));
     end;
 
     class method CreateTextNode(aName: String): dynamic;
-    begin 
+    begin
       exit new EcmaScriptObject(WebAssemblyCalls.CreateTextNode(aName));
     end;
 
     class method CreateObject: dynamic;
-    begin 
+    begin
       exit new EcmaScriptObject(WebAssemblyCalls.CreateObject);
     end;
 
     class method CreateArray: dynamic;
-    begin 
+    begin
       exit new EcmaScriptObject(WebAssemblyCalls.CreateArray);
     end;
 
@@ -638,14 +637,14 @@ type
   end;
 
   WebAssemblyType = public enum (Null, Undefined, String, Number, &Function, Symbol, Object, Boolean);
-  ExternalCalls = public static class 
+  ExternalCalls = public static class
   private
   public
     [SymbolName('llvm.trap')]
     class method trap; external;
     [SymbolName('ElementsRaiseException'), Used, DllExport]
     method RaiseException(aRaiseAddress: ^Void; aRaiseFrame: ^Void; aRaiseObject: Object);
-    begin 
+    begin
       // Not supported atm!
       var s: ^Char := 'Fatal exception in WebAssembly!';
       WebAssemblyCalls.ConsoleLog(s, wcslen(s));
@@ -655,7 +654,7 @@ type
 
     [SymbolName('__island_call_delegate'), Used, DllExport]
     method CallDelegate(inst: WebAssemblyDelegate; aArgs: IntPtr);
-    begin 
+    begin
       var lEC := new EcmaScriptObject(aArgs);
       inst(lEC);
       lEC.Release;
@@ -693,7 +692,7 @@ type
       end;
     end;
 
-    [SymbolName('memcpy')]    
+    [SymbolName('memcpy')]
     [DLLExport]
     method memcpy(destination: ^Void; source: ^Void; aNum: NativeInt): ^Void;
     begin
@@ -792,12 +791,12 @@ type
   end;
   rtl.size_t = IntPtr;
   var MAllocInitialized: Boolean; assembly;
-  
+
   [SymbolName('malloc')]
   method malloc(size: rtl.size_t): ^Void; public;
   begin
     // TODO: when threading, load the thread
-    if not MAllocInitialized then begin 
+    if not MAllocInitialized then begin
       MAllocInitialized := true;
       // this is commented out till rpmalloc supports 65k pages
       //rpmalloc._memory_config.page_size := 65536;
@@ -807,12 +806,12 @@ type
     end;
     exit rpmalloc.rpmalloc(size);
   end;
- 
+
   [SymbolName('free')]
   method free(val: ^Void); public;
   begin
     // TODO: when threading, load the thread
-    if not MAllocInitialized then begin 
+    if not MAllocInitialized then begin
       MAllocInitialized := true;
       rpmalloc.rpmalloc_initialize;
     end;
