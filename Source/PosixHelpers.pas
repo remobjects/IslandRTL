@@ -95,6 +95,10 @@ type
     //[SymbolName('__elements_entry_point'), &Weak]
     //method UserEntryPoint(args: array of String): Integer; external;
 
+    {$IFDEF ARM}
+    [Used, SymbolName('_GLOBAL_OFFSET_TABLE_')]
+    class var _GLOBAL_OFFSET_TABLE_: Integer; private;
+    {$ENDIF}
     {$IF NOT EMSCRIPTEN AND NOT ANDROID}
     [SymbolName('_start'), Naked]
     method _start;
