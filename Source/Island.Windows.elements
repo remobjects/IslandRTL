@@ -1,4 +1,4 @@
-﻿<?xml version="1.0" encoding="utf-8" standalone="yes"?>
+<?xml version="1.0" encoding="utf-8" standalone="yes"?>
 <Project xmlns="http://schemas.microsoft.com/developer/msbuild/2003" DefaultTargets="Build" ToolsVersion="4.0">
   <PropertyGroup>
     <ProductVersion>3.5</ProductVersion>
@@ -85,6 +85,9 @@
   </PropertyGroup>
   <ItemGroup>
     <Compile Include="BoehmGC.pas" />
+    <Compile Include="HString.pas">
+      <SubType>Code</SubType>
+    </Compile>
     <Compile Include="IDispatch.pas" />
     <Compile Include="OleString.pas" />
     <Compile Include="Interfaces.pas" />
@@ -96,6 +99,7 @@
   <ItemGroup>
     <Reference Include="gc" />
     <Reference Include="rtl" />
+    <Reference Include="winrt" />
   </ItemGroup>
   <Import Project="$(MSBuildExtensionsPath)\RemObjects Software\Elements\RemObjects.Elements.Island.Windows.targets" />
   <PropertyGroup>

@@ -329,4 +329,10 @@ type
   BlockPointerAttribute = public class(Attribute)
   end;
 
+  [AttributeUsage(AttributeTargets.Assembly, AllowMultiple = true)]
+  LifetimeStrategyOverrideAttribute = public class(Attribute)
+  public
+    constructor(aSource, aLifetimeType: &Type); empty;
+  end;
+  
 end.
