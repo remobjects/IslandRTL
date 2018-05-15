@@ -808,14 +808,14 @@ type
   end;
 
   [SymbolName('free')]
-  method free(val: ^Void); public;
+  method free(v: ^Void); public;
   begin
     // TODO: when threading, load the thread
     if not MAllocInitialized then begin
       MAllocInitialized := true;
       rpmalloc.rpmalloc_initialize;
     end;
-    rpmalloc.rpfree(val);
+    rpmalloc.rpfree(v);
   end;
 
 end.
