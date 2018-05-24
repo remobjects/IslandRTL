@@ -256,43 +256,43 @@ type
     property IsStatic: Boolean read FieldFlags.Static in &Flags; override;
 
     method GetValue(aInst: Object): Object;
-    begin 
+    begin
       var lPtr: ^Void;
-      if IsStatic then begin 
+      if IsStatic then begin
         if aInst <> nil then raise new Exception('Cannot provide instance for static field');
         lPtr := StaticValuePointer;
-      end else begin 
+      end else begin
         if aInst = nil then raise new Exception('Must provide instance for instance field');
         lPtr := InternalCalls.Cast(aInst);
         lPtr := ^Void(^Byte(lPtr) + InstanceOffset);
-        if self.DeclaringType.IsValueType then 
+        if self.DeclaringType.IsValueType then
           lPtr := ^Void(^Byte(lPtr) + DeclaringType.BoxedDataOffset);
       end;
-      if self.Type.IsValueType then begin 
+      if self.Type.IsValueType then begin
         var lRes := DefaultGC.New(&Type.RTTI, &Type.SizeOfType + &Type.BoxedDataOffset);
         memcpy(^Byte(lRes) +&Type.BoxedDataOffset, lPtr, &Type.SizeOfType);
         exit InternalCalls.Cast<Object>(lRes);
-      end else 
+      end else
         exit ^Object(lPtr)^;
     end;
 
     method SetValue(aInst, aValue: Object);
     begin
       var lPtr: ^Void;
-      if IsStatic then begin 
+      if IsStatic then begin
         if aInst <> nil then raise new Exception('Cannot provide instance for static field');
         lPtr := StaticValuePointer;
-      end else begin 
+      end else begin
         if aInst = nil then raise new Exception('Must provide instance for instance field');
         lPtr := InternalCalls.Cast(aInst);
         lPtr := ^Void(^Byte(lPtr) + InstanceOffset);
-        if self.DeclaringType.IsValueType then 
+        if self.DeclaringType.IsValueType then
           lPtr := ^Void(^Byte(lPtr) + DeclaringType.BoxedDataOffset);
       end;
-      if self.Type.IsValueType then begin 
+      if self.Type.IsValueType then begin
         if aValue = nil then raise new Exception('Value for struct cannot be null');
         memcpy(lPtr, ^Byte(InternalCalls.Cast(aValue)) + &Type.BoxedDataOffset, &Type.SizeOfType);
-      end else 
+      end else
         ^Object(lPtr)^ := aValue;
     end;
   end;
@@ -353,14 +353,14 @@ type
     end;
 
     method get_Read: MethodInfo;
-    begin 
+    begin
       var lRM := ReadMethod;
       if lRM = nil then exit nil;
       exit DeclaringType.Methods.FirstOrDefault(a -> a.Pointer = lRM);
     end;
 
     method get_Write: MethodInfo;
-    begin 
+    begin
       var lRM := WriteMethod;
       if lRM = nil then exit nil;
       exit DeclaringType.Methods.FirstOrDefault(a -> a.Pointer = lRM);
@@ -375,17 +375,17 @@ type
     property Arguments: sequence of ArgumentInfo read get_Arguments;
 
     method GetValue(aInst: Object; aArgs: array of Object): Object;
-    begin 
+    begin
       var lRead := &Read;
       if lRead = nil then raise new Exception('No read accessor for this property!');
       exit lRead.Invoke(aInst, aArgs);
     end;
 
     method SetValue(aInst: Object; aArgs: array of Object; aValue: Object);
-    begin 
+    begin
       var lWrite := &Write;
       if lWrite = nil then raise new Exception('No write accessor for this property!');
-      if (aArgs = nil) or (aArgs.Length = 0)then aArgs := [aValue] else begin 
+      if (aArgs = nil) or (aArgs.Length = 0)then aArgs := [aValue] else begin
         var lArgs := new Object[aArgs.Length+1];
         Array.Copy(aArgs, lArgs, aArgs.Length);
         lArgs[lArgs.Length-1] := aValue;
@@ -912,8 +912,8 @@ type
     property SubType: &Type read get_SubType;
 
     class method TypeIsValueType(aType: ^IslandTypeInfo): Boolean;
-    begin 
-      exit (aType^.Ext^.Flags and (IslandTypeFlags.Enum or IslandTypeFlags.EnumFlags or IslandTypeFlags.Struct or IslandTypeFlags.Pointer or IslandTypeFlags.Set)) <> 0;
+    begin
+      exit (aType^.Ext^.Flags and (IslandTypeFlags.TypeKindMask) in [IslandTypeFlags.Enum, IslandTypeFlags.EnumFlags, IslandTypeFlags.Struct, IslandTypeFlags.Pointer, IslandTypeFlags.Set]);
     end;
 
     property IsValueType: Boolean read TypeIsValueType(fValue);
@@ -945,7 +945,7 @@ type
     end;
 
     method IsAssignableFrom(aOrg: &Type): Boolean;
-    begin 
+    begin
       if aOrg = nil then exit false;
       exit aOrg.IsSubclassOf(self);
     end;
@@ -980,7 +980,7 @@ type
     MemberInfoData: ^Byte;
     MemberInfoList: ^^Void;
     GCInfo: ^Void; // this has 1 bit per sizeof(pointer) denoting if the value at this point IS a gc-able pointer.
-    TypeSize: Integer;  
+    TypeSize: Integer;
   end;
 
   IslandTypeInfo = public record
