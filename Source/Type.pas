@@ -1,5 +1,14 @@
 ﻿namespace RemObjects.Elements.System;
 
+{$IFDEF WINDOWS}
+
+var 
+  [SymbolName('__elements_RTTIStart'), SectionName('ELRTTLRR$a')]
+  fStart: ^IslandTypeInfo := nil; readonly;
+  [SymbolName('__elements_RTTIEnd'), SectionName('ELRTTLRR$z')]
+  fEnd: ^IslandTypeInfo := nil; readonly;
+{$ENDIF}
+
 type
   CustomAttribute = public class
   private
@@ -597,10 +606,6 @@ type
        end;
      end;
     {$IFDEF WINDOWS}
-    [SymbolName('__elements_RTTIStart'), SectionName('ELRTTLRR$a')]
-    class var fStart: ^IslandTypeInfo;
-    [SymbolName('__elements_RTTIEnd'), SectionName('ELRTTLRR$z')]
-    class var fEnd: ^IslandTypeInfo;
 
      class method get_AllTypes: sequence of &Type; iterator;
      begin
