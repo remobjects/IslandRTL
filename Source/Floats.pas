@@ -40,7 +40,7 @@ type
       exit other = self;
     end;
 
-    method CompareTo(a: Object): Object;
+    method CompareTo(a: Object): Integer;
     begin 
       if a is Single then 
         exit CompareTo(Single(a));
@@ -107,7 +107,7 @@ type
       exit other = self;
     end;
 
-    method CompareTo(a: Object): Object;
+    method CompareTo(a: Object): Integer;
     begin 
       if a is Double then 
         exit CompareTo(Double(a));

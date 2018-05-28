@@ -52,7 +52,7 @@ type
       exit self = other;
     end;
     
-    method CompareTo(a: Object): Object;
+    method CompareTo(a: Object): Integer;
     begin 
       if a is SByte then 
         exit CompareTo(SByte(a));
@@ -109,7 +109,7 @@ type
       exit self = other;
     end;
     
-    method CompareTo(a: Object): Object;
+    method CompareTo(a: Object): Integer;
     begin 
       if a is Byte then 
         exit CompareTo(Byte(a));
@@ -172,7 +172,7 @@ type
       exit self = other;
     end;
     
-    method CompareTo(a: Object): Object;
+    method CompareTo(a: Object): Integer;
     begin 
       if a is Int16 then 
         exit CompareTo(Int16(a));
@@ -229,7 +229,7 @@ type
       exit self = other;
     end;
     
-    method CompareTo(a: Object): Object;
+    method CompareTo(a: Object): Integer;
     begin 
       if a is UInt16 then 
         exit CompareTo(UInt16(a));
@@ -292,7 +292,7 @@ type
       exit self = other;
     end;
     
-    method CompareTo(a: Object): Object;
+    method CompareTo(a: Object): Integer;
     begin 
       if a is Int32 then 
         exit CompareTo(Int32(a));
@@ -350,7 +350,7 @@ type
       exit self = other;
     end;
     
-    method CompareTo(a: Object): Object;
+    method CompareTo(a: Object): Integer;
     begin 
       if a is UInt32 then 
         exit CompareTo(UInt32(a));
@@ -404,7 +404,7 @@ type
       exit self = other;
     end;
     
-    method CompareTo(a: Object): Object;
+    method CompareTo(a: Object): Integer;
     begin 
       if a is Int64 then 
         exit CompareTo(Int64(a));
@@ -457,7 +457,7 @@ type
       exit self = other;
     end;
     
-    method CompareTo(a: Object): Object;
+    method CompareTo(a: Object): Integer;
     begin 
       if a is UInt64 then 
         exit CompareTo(UInt64(a));
@@ -529,7 +529,7 @@ type
       exit self = other;
     end;
     
-    method CompareTo(a: Object): Object;
+    method CompareTo(a: Object): Integer;
     begin 
       if a is NativeInt then 
         exit CompareTo(NativeInt(a));
@@ -595,7 +595,7 @@ type
       exit self = other;
     end;
     
-    method CompareTo(a: Object): Object;
+    method CompareTo(a: Object): Integer;
     begin 
       if a is NativeUInt then 
         exit CompareTo(NativeUInt(a));

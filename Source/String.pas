@@ -5,7 +5,7 @@ interface
 type
   LCMapStringTransformMode = assembly enum (None, Upper, Lower);
 
-  String = public class(Object,IEnumerable<Char>, IEnumerable)
+  String = public class(Object,IEnumerable<Char>, IEnumerable, IComparable, IComparable<String>)
   assembly {$HIDE H6}
     fLength: Integer;
     fFirstChar: Char;{$SHOW H6}
@@ -102,6 +102,13 @@ type
 
     method ToString: String; override;
     method GetHashCode: Integer; override;
+
+    method CompareTo(a: Object): Integer;
+    begin 
+      var lString := String(a);
+      if lString = nil then exit -1;
+      exit CompareTo(lString);
+    end;
   end;
 
   String_Constructors = public extension class(String)

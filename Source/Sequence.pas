@@ -36,7 +36,7 @@ type
   end;
 
   IComparable = public interface
-    method CompareTo(a: Object): Object;
+    method CompareTo(a: Object): Integer;
   end;
 
   INotifyPropertyChanged = public interface 

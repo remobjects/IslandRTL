@@ -26,7 +26,7 @@ type
       exit self = other;
     end;
     
-    method CompareTo(a: Object): Object;
+    method CompareTo(a: Object): Integer;
     begin 
       if a is Boolean then 
         exit CompareTo(Boolean(a));
@@ -57,7 +57,7 @@ type
       exit self = other;
     end;
     
-    method CompareTo(a: Object): Object;
+    method CompareTo(a: Object): Integer;
     begin 
       if a is Char then 
         exit CompareTo(Char(a));
@@ -84,7 +84,7 @@ type
       exit self = other;
     end;
     
-    method CompareTo(a: Object): Object;
+    method CompareTo(a: Object): Integer;
     begin 
       if a is AnsiChar then 
         exit CompareTo(AnsiChar(a));
