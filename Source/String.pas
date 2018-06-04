@@ -941,7 +941,8 @@ begin
     end;
     inc(cur_pos);
   end;
-  exit sb.ToString;
+  result := sb.ToString;
+  if String.IsNullOrEmpty(result) then exit aFormat;
 end;
 
 /*constructor String(aArray: array of Char);
