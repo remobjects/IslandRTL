@@ -41,7 +41,7 @@ type
     end;
   end;
   
-  String_HtringSupport = public extension class(String)
+  String_HStringSupport = public extension class(String)
   public
     operator Implicit(s: rtl.winrt.HSTRING): String; public;
     begin
