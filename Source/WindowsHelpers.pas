@@ -1097,9 +1097,9 @@ begin
   Utilities.Initialize;
   var cnt: Int32;
   var args := rtl.CommandLineToArgvW(rtl.GetCommandLineW(), @cnt);
-  var args_s := new String[cnt];
-  for i: Integer := 0 to cnt-1 do
-    args_s[i] := String.FromPChar(args[i]);
+  var args_s := new String[cnt-1];
+  for i: Integer := 1 to cnt-1 do
+    args_s[i-1] := String.FromPChar(args[i]);
   exit UserEntryPoint(args_s);
 end;
 
