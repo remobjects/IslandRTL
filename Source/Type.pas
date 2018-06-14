@@ -2,7 +2,7 @@
 
 {$IFDEF WINDOWS}
 
-var 
+var
   [SymbolName('__elements_RTTIStart'), SectionName('ELRTTLRR$a')]
   fStart: ^IslandTypeInfo := nil; readonly;
   [SymbolName('__elements_RTTIEnd'), SectionName('ELRTTLRR$z')]
@@ -1001,7 +1001,7 @@ type
 
   IslandInterfaceTable = public record
   public
-    HashTableSize: Integer;
+    HashTableSize: Cardinal;
     FirstEntry: ^^IslandTypeInfo; // ends with 0
   end;
 
