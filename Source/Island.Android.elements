@@ -8,7 +8,7 @@
     <AllowGlobals>True</AllowGlobals>
     <AllowLegacyOutParams>False</AllowLegacyOutParams>
     <AllowLegacyCreate>False</AllowLegacyCreate>
-    <Configuration Condition="'$(Configuration)' == ''">Debug-x86_64</Configuration>
+    <Configuration Condition="'$(Configuration)' == ''">Release</Configuration>
     <TargetFrameworkVersion>v4.0</TargetFrameworkVersion>
     <Name>Island (Android NDK)</Name>
     <ProjectGuid>{961edd39-0901-480d-97a6-c775095d5ebc}</ProjectGuid>
@@ -16,17 +16,15 @@
     <WarnOnCaseMismatch>True</WarnOnCaseMismatch>
     <Platform Condition="'$(Platform)' == ''">AnyCPU</Platform>
     <GenerateDebugInfo>True</GenerateDebugInfo>
+    <DefineConstants>ANDROID</DefineConstants>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)' == 'Debug'">
     <OutputPath>Bin\Debug</OutputPath>
-    <DefineConstants>Android</DefineConstants>
     <EnableAsserts>True</EnableAsserts>
     <Optimize>False</Optimize>
     <GeneratePDB>True</GeneratePDB>
     <GenerateMDB>False</GenerateMDB>
     <CaptureConsoleOutput>False</CaptureConsoleOutput>
-    <StartMode>Project</StartMode>
-    <CpuType>x86</CpuType>
     <RuntimeVersion>v25</RuntimeVersion>
     <XmlDoc>False</XmlDoc>
     <XmlDocWarningLevel>WarningOnPublicMembers</XmlDocWarningLevel>
@@ -35,10 +33,7 @@
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)' == 'Release'">
     <OutputPath>Bin\Release</OutputPath>
-    <DefineConstants>Android</DefineConstants>
     <EnableAsserts>False</EnableAsserts>
-    <GeneratePDB>False</GeneratePDB>
-    <GenerateMDB>False</GenerateMDB>
     <CaptureConsoleOutput>False</CaptureConsoleOutput>
     <StartMode>Project</StartMode>
     <CpuType>x86</CpuType>
@@ -57,10 +52,6 @@
     <Reference Include="gc" />
     <Reference Include="rtl" />
   </ItemGroup>
-  <PropertyGroup />
   <Import Project="$(MSBuildExtensionsPath)\RemObjects Software\Elements\RemObjects.Elements.Island.Android.targets" />
   <Import Project="Island.Shared.projitems" Label="Shared" />
-  <PropertyGroup>
-    <PreBuildEvent />
-  </PropertyGroup>
 </Project>

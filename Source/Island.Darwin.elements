@@ -10,13 +10,13 @@
     <AllowLegacyCreate>False</AllowLegacyCreate>
     <Configuration Condition="'$(Configuration)' == ''">Release</Configuration>
     <TargetFrameworkVersion>v4.0</TargetFrameworkVersion>
-    <Name>Island (Linux)</Name>
-    <ProjectGuid>{a2c670b6-db38-401a-ae00-71515c87ccc5}</ProjectGuid>
+    <Name>Island (Darwin)</Name>
+    <ProjectGuid>{617c0962-5cb7-4e31-a80b-4f07c618cb83}</ProjectGuid>
     <Mode>Island</Mode>
     <WarnOnCaseMismatch>True</WarnOnCaseMismatch>
     <Platform Condition="'$(Platform)' == ''">AnyCPU</Platform>
     <GenerateDebugInfo>True</GenerateDebugInfo>
-    <DefineConstants>LINUX</DefineConstants>
+    <DefineConstants>DARWIN;MACOS</DefineConstants>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)' == 'Debug'">
     <OutputPath>Bin\Debug</OutputPath>
@@ -51,6 +51,6 @@
     <Reference Include="gc" />
     <Reference Include="rtl" />
   </ItemGroup>
-  <Import Project="$(MSBuildExtensionsPath)\RemObjects Software\Elements\RemObjects.Elements.Island.Linux.targets" />
+  <Import Project="$(MSBuildExtensionsPath)\RemObjects Software\Elements\RemObjects.Elements.Island.Darwin.targets" />
   <Import Project="Island.Shared.projitems" Label="Shared" />
 </Project>
