@@ -14,7 +14,7 @@ type
   private
     {$IFDEF WINDOWS}
     fHandle: rtl.HANDLE := rtl.INVALID_HANDLE_VALUE;
-    {$ELSEIF ANDROID}
+    {$ELSEIF ANDROID or DARWIN}
     fHandle: ^rtl.FILE;
     {$ELSEIF POSIX}
     fHandle: ^rtl._IO_FILE;
@@ -78,7 +78,7 @@ begin
                                 FileMode.OpenOrCreate: 'a';
                                 FileMode.Truncate: 'w';
                               end);
-  {$IFDEF ANDROID}
+  {$IFDEF ANDROID or DARWIN}
   fHandle := rtl.fopen(FileName.ToFileName(),@s);
   {$ELSE}
   fHandle := rtl.fopen64(FileName.ToFileName(),@s);
@@ -130,7 +130,7 @@ begin
                           SeekOrigin.Current: rtl.SEEK_CUR;
                           SeekOrigin.End:  rtl.SEEK_END;
                         end;
-  {$IFDEF ANDROID}
+  {$IFDEF ANDROID or DARWIN}
   result := rtl.fseek(fHandle, Offset, lOrigin);
   CheckForIOError(result);
   {$ELSE}
@@ -166,6 +166,10 @@ begin
   Seek(value, SeekOrigin.Begin);
   {$IFDEF WINDOWS}
   CheckForIOError(rtl.SetEndOfFile(fHandle));
+  {$ELSEIF DARWIN}
+  {$HINT POSIX FileStream.SetLength. it may not work correctly, because _IO_FILE could be no updated }
+  var fd := rtl.fileno(fHandle);
+  CheckForIOError(rtl.ftruncate(fd, value));
   {$ELSEIF POSIX}
   {$HINT POSIX FileStream.SetLength. it may not work correctly, because _IO_FILE could be no updated }
   var fd := rtl.fileno(fHandle);

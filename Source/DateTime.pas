@@ -98,9 +98,9 @@ type
       var temp: rtl.SYSTEMTIME;
       rtl.GetSystemTime(@temp);
       exit DateTime.FromSystemTime(temp);
-      {$ELSEIF ANDROID}
+      {$ELSEIF ANDROID or DARWIN}
       var ts: rtl.__struct_timespec;
-      rtl.clock_gettime(rtl.CLOCK_REALTIME, @ts);
+      rtl.clock_gettime({$IFDEF DARWIN}rtl.clockid_t._CLOCK_REALTIME{$ELSE}rtl.CLOCK_REALTIME{$ENDIF}, @ts);
       exit new DateTime(UnixDateOffset + (ts.tv_sec * TicksPerMillisecond) + (ts.tv_nsec / 100000));
       {$ELSEIF POSIX}
       var ts: rtl.__struct_timespec;
@@ -120,9 +120,9 @@ type
       var temp: rtl.SYSTEMTIME;
       rtl.GetLocalTime(@temp);
       exit DateTime.FromSystemTime(temp);
-      {$ELSEIF ANDROID}
+      {$ELSEIF ANDROID or DARWIN}
       var ts: rtl.__struct_timespec;
-      rtl.clock_gettime(rtl.CLOCK_REALTIME, @ts);
+      rtl.clock_gettime({$IFDEF DARWIN}rtl.clockid_t._CLOCK_REALTIME{$ELSE}rtl.CLOCK_REALTIME{$ENDIF}, @ts);
       exit new DateTime(UnixDateOffset + (ts.tv_sec * TicksPerMillisecond) + (ts.tv_nsec / 100000));
       {$ELSEIF POSIX}
       var ts: rtl.__struct_timespec;

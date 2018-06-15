@@ -152,7 +152,7 @@ begin
   var pol: Int32;
   var sched: rtl.__struct_sched_param;
   rtl. pthread_getschedparam(fthread, @pol, @sched);
-  var pri := {$IFDEF EMSCRIPTEN}sched.sched_priority{$ELSE}sched.__sched_priority{$ENDIF};
+  var pri := {$IFDEF EMSCRIPTEN or DARWIN}sched.sched_priority{$ELSE}sched.__sched_priority{$ENDIF};
   if pri < -1 then exit ThreadPriority.Lowest
   else if pri = -1 then exit ThreadPriority.BelowNormal
   else if pri =  0 then exit ThreadPriority.Normal
@@ -326,7 +326,9 @@ begin
     end;
     {$ELSE}
     {$IFNDEF EMSCRIPTEN}
+    {$IFNDEF DARWIN}
     rtl.pthread_setname_np(fthread, @Name.ToAnsiChars[0])
+    {$ENDIF}
     {$ENDIF}
     {$ENDIF}
   end;
@@ -416,11 +418,22 @@ end;
 
 method Mutex.DoWait(aTimeMS: Integer): Boolean;
 begin
-  var ts: rtl.__struct_timespec;
-  rtl.clock_gettime(rtl.CLOCK_REALTIME , @ts);
+  var ts, ts2, tswait: rtl.__struct_timespec;
+  rtl.clock_gettime({$IFDEF DARWIN}rtl.clockid_t._CLOCK_REALTIME{$ELSE}rtl.CLOCK_REALTIME{$ENDIF}, @ts);
   ts.tv_nsec := ts.tv_nsec + ((aTimeMS mod 1000)  *1000);
   ts.tv_sec := ts.tv_sec + (aTimeMS /1000);
+  tswait.tv_nsec := 10000000;
+  {$IFDEF DARWIN}
+  loop begin 
+    if rtl.pthread_mutex_trylock(@fMutex) = 0 then exit true;
+    rtl.nanosleep(@ts, @ts);
+    rtl.clock_gettime(
+    {$IFDEF DARWIN}rtl.clockid_t._CLOCK_REALTIME{$ELSE}rtl.CLOCK_REALTIME{$ENDIF}, @ts2);
+    if (ts2.tv_sec > ts.tv_sec) or (ts2.tv_nsec > ts.tv_nsec) then exit false;
+  end;
+  {$ELSE}
   exit rtl.pthread_mutex_timedlock(@fMutex, @ts) = 0;
+  {$ENDIF}
 end;
 
 method Mutex.DoWait;
@@ -470,7 +483,7 @@ end;
 method EventWaitHandle.DoWait(aTimeMS: Integer): Boolean;
 begin
   var ts, ts2: rtl.__struct_timespec;
-  rtl.clock_gettime(rtl.CLOCK_REALTIME , @ts);
+  rtl.clock_gettime({$IFDEF DARWIN}rtl.clockid_t._CLOCK_REALTIME{$ELSE}rtl.CLOCK_REALTIME{$ENDIF}, @ts);
   ts.tv_nsec := ts.tv_nsec + ((aTimeMS mod 1000)  *1000);
   ts.tv_sec := ts.tv_sec + (aTimeMS /1000);
   rtl.pthread_mutex_lock(@fMutex);
@@ -482,7 +495,7 @@ begin
       break;
     end;
 
-    rtl.clock_gettime(rtl.CLOCK_REALTIME , @ts2);
+    rtl.clock_gettime({$IFDEF DARWIN}rtl.clockid_t._CLOCK_REALTIME{$ELSE}rtl.CLOCK_REALTIME{$ENDIF}, @ts2);
     if (ts2.tv_sec > ts.tv_sec) or (ts2.tv_nsec > ts.tv_nsec) then break;
   end;
   rtl.pthread_mutex_unlock(@fMutex);

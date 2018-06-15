@@ -84,7 +84,7 @@ type
       CheckForLastError;
       {$ELSEIF WEBASSEMBLY} 
       exit nil;
-      {$ELSEIF ANDROID}
+      {$ELSEIF ANDROID or DARWIN}
       var len := 1024;
       loop begin
         var buf := new AnsiChar[len];

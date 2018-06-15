@@ -14,7 +14,9 @@ type
     next: ^atexitrec;
   end;
   UserEntryPointType =public method (args: array of String): Integer;
+  {$IFNDEF DARWIN}
   dliteratecb = function (info :^__struct_dl_phdr_info; size: size_t; data: ^Void): Integer;
+  {$ENDIF}
   {$IFDEF ARM}rtl.__struct__Unwind_Exception = rtl.__struct__Unwind_Control_Block;{$ENDIF}
   ExternalCalls = public static class
   private
@@ -126,7 +128,7 @@ type
       [SymbolName('__init_array_end')]
       __init_array_end: Integer; external;
 
-{$IFNDEF ANDROID}
+{$IF not ANDROID and not DARWIN}
     [SymbolName('stat64')]
     class method stat64(file: ^AnsiChar; var buf: rtl.__struct_stat64): Integer;
     begin 

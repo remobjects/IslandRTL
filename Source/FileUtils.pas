@@ -19,6 +19,15 @@ type
       if Attr = rtl.INVALID_FILE_ATTRIBUTES then exit false;
       exit (Attr and rtl.FILE_ATTRIBUTE_DIRECTORY) <> rtl.FILE_ATTRIBUTE_DIRECTORY;
     end;  
+{$ELSEIF DARWIN}
+    class method IsFolder(Attr: rtl.mode_t): Boolean; inline;
+    begin
+      exit (Attr and rtl.S_IFMT) = rtl.S_IFDIR;
+    end;
+    class method IsFile(Attr: rtl.mode_t): Boolean; inline;
+    begin
+      exit (Attr and rtl.S_IFMT) = rtl.S_IFREG;
+    end;    
   {$ELSEIF POSIX}
     class method IsFolder(Attr: rtl.__mode_t): Boolean; inline;
     begin
@@ -61,7 +70,7 @@ type
     end;
     {$ENDIF}
 
-    {$IFDEF POSIX AND NOT ANDROID}
+    {$IFDEF POSIX AND NOT ANDROID and not DARWIN}
     [SymbolName('stat')]
     method stat(file: ^AnsiChar; buf: ^rtl.__struct_stat): Int32;
     begin
