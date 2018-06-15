@@ -359,6 +359,57 @@ type
     class method &Xor(var address: NativeInt; value: NativeInt): NativeInt; external;
     class method &Xor(var address: NativeUInt; value: NativeUInt): NativeUInt; external;
   end;
+  
+method interlockedInc(var x: Integer; increment: Integer := 1): Integer;  inline; public;
+begin 
+  exit InternalCalls.Add(var x, increment);
+end;
+
+
+method interlockedInc(var x: Int64; increment: Int64 := 1): Int64;  inline; public;
+begin 
+  exit InternalCalls.Add(var x, increment);
+end;
+
+method interlockedInc(var x: IntPtr; increment: IntPtr := 1): IntPtr;  inline; public;
+begin 
+  exit InternalCalls.Add(var x, increment);
+end;
+
+
+  
+method interlockedDec(var x: Integer; increment: Integer := 1): Integer;  inline; public;
+begin 
+  exit InternalCalls.Add(var x, - increment);
+end;
+
+
+method interlockedDec(var x: Int64; increment: Int64 := 1): Int64;  inline; public;
+begin 
+  exit InternalCalls.Add(var x, - increment);
+end;
+
+method interlockedDec(var x: IntPtr; increment: IntPtr := 1): IntPtr;  inline; public;
+begin 
+  exit InternalCalls.Add(var x, 0 - increment);
+end;
+
+
+method interlockedCompareExchange(var x: Integer; compareTo, newValue: Integer): Integer; inline; public;
+begin 
+  exit InternalCalls.CompareExchange(var x, newValue, compareTo);
+end;
+
+method interlockedCompareExchange(var x: Integer; compareTo, newValue: Int64): Int64; inline; public;
+begin 
+  exit InternalCalls.CompareExchange(var x, newValue, compareTo);
+end;
+
+method interlockedCompareExchange(var x: Integer; compareTo, newValue: IntPtr): IntPtr; inline; public;
+begin 
+  exit InternalCalls.CompareExchange(var x, newValue, compareTo);
+end;
+
 
 {$G+}
 method GC_finalizer(obj, d: ^Void); assembly;
