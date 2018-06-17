@@ -13,8 +13,8 @@ type
     fThousandsSeparator: Char;
     fDecimalSeparator: Char;
     fIsReadOnly: Boolean;
-    method SetCurrency(value: String);    
-    method SetThousandsSeparator(value: Char);      
+    method SetCurrency(value: String);
+    method SetThousandsSeparator(value: Char);
     method SetDecimalSeparator(value: Char);
     method CheckReadOnly;
   public
@@ -82,7 +82,7 @@ type
     property IsReadOnly: Boolean read fIsReadOnly;
   end;
 
-  PlatformLocale = {$IF WINDOWS}rtl.LCID{$ELSEIF (LINUX AND NOT ANDROID) or DARWIN}rtl.locale_t{$ELSEIF ICU_LOCALE OR WEBASSEMBLY}String{$ENDIF};
+  PlatformLocale = {$IF WINDOWS}rtl.LCID{$ELSEIF LINUX AND NOT ANDROID}rtl.locale_t{$ELSEIF DARWIN}CoreFoundation.CFLocaleRef{$ELSEIF ICU_LOCALE OR WEBASSEMBLY}String{$ENDIF};
 
   Locale = public class
   private
@@ -226,6 +226,8 @@ begin
     if lTempString.Length > 1 then
       lCurrency := lTempString.SubString(1);
   end;
+  {$ELSEIF DARWIN}
+  //TODO
   {$ELSEIF ICU_LOCALE}
   var lParseError: UParseError;
   var lStatus: UErrorCode;
@@ -268,6 +270,8 @@ begin
   if lName = nil then
     raise new Exception("Error getting locale name");
   result := String.FromPAnsiChars(lName) as not nullable;
+  {$ELSEIF DARWIN}
+  result := '';
   {$ELSEIF ICU_LOCALE}
   var lErr: UErrorCode;
   var lName := new Char[80];
@@ -286,6 +290,8 @@ begin
     {$ELSEIF LINUX AND NOT ANDROID}
     var lInvariant := 'en_US.utf8'.ToAnsiChars(true);
     fInvariant := new Locale(rtl.newLocale(rtl.LC_ALL_MASK, @lInvariant[0], nil), true);
+    {$ELSEIF DARWIN}
+    //TODO
     {$ELSEIF ICU_LOCALE OR WEBASSEMBLY}
     fInvariant := new Locale('en-US', true);
     {$ENDIF}
@@ -306,6 +312,8 @@ begin
     var lName := lDefaultName.ToAnsiChars(true);
     var lLocale := rtl.newlocale(rtl.LC_ALL_MASK, @lName[0], nil);
     fCurrent := new Locale(lLocale, true);
+    {$ELSEIF DARWIN}
+    //TODO
     {$ELSEIF ICU_LOCALE}
     var lName: ^Char := ICUHelper.ULocGetDefault();
     var lDefaultName := String.FromPChar(lName);
@@ -336,12 +344,12 @@ end;
 constructor DateTimeFormatInfo(aLocale: PlatformLocale; aIsReadonly: Boolean := false);
 begin
   fIsReadOnly := aIsReadonly;
-  {$IF WINDOWS}  
+  {$IF WINDOWS}
   for i: Integer := 0 to 6 do begin
     fShortDayNames[i] := GetStringFromLocale(aLocale, rtl.LOCALE_SABBREVDAYNAME1 + i);
     fLongDayNames[i] := GetStringFromLocale(aLocale, rtl.LOCALE_SDAYNAME1 + i);
   end;
-  
+
   for i: Integer := 0 to 11 do begin
     fShortMonthNames[i] := GetStringFromLocale(aLocale, rtl.LOCALE_SABBREVMONTHNAME1 + i);
     fLongMonthNames[i] := GetStringFromLocale(aLocale, rtl.LOCALE_SMONTHNAME1 + i);
@@ -367,13 +375,15 @@ begin
   end;
 
   fAMString := GetStringFromLocale(aLocale, rtl.AM_STR);
-  fPMString := GetStringFromLocale(aLocale, rtl.PM_STR);  
-  fShortDatePattern := AdjustPattern(GetStringFromLocale(aLocale, rtl.D_FMT)); 
+  fPMString := GetStringFromLocale(aLocale, rtl.PM_STR);
+  fShortDatePattern := AdjustPattern(GetStringFromLocale(aLocale, rtl.D_FMT));
   fLongDatePattern := AdjustPattern(GetStringFromLocale(aLocale, rtl.D_T_FMT));
   fShortTimePattern := AdjustPattern(GetStringFromLocale(aLocale, rtl.T_FMT));
   fLongTimePattern := AdjustPattern(GetStringFromLocale(aLocale, rtl.T_FMT_AMPM));
   fDateSeparator := GetDateSeparator(fShortDatePattern);
   fTimeSeparator := GetTimeSeparator(fShortTimePattern);
+  {$ELSEIF DARWIN}
+  //TODO
   {$ELSEIF ICU_LOCALE}
   var lErr: UErrorCode;
   var lData := ICUHelper.UDatOpen(UDateFormatStyle.UDAT_FULL, UDateFormatStyle.UDAT_FULL, aLocale, nil, 0, nil, 0, @lErr);
@@ -460,7 +470,7 @@ begin
   var lPos := aShortDatePattern.IndexOfAny(['/', '.', '\', '-']);
   if lPos >= 0 then
     lSeparator := aShortDatePattern[lPos];
-  
+
   result := lSeparator;
 end;
 
@@ -484,7 +494,7 @@ begin
   var lPos := aShortTimePattern.IndexOfAny([':', '.']);
   if lPos >= 0 then
     lSeparator := aShortTimePattern[lPos];
-  
+
   result := lSeparator;
 end;
 
