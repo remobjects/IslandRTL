@@ -126,11 +126,13 @@ type
     class var nargs: Integer;
     class var args: ^^AnsiChar;
     class var envp: ^^AnsiChar;
+    {$IFNDEF DARWIN}
     class var
       [SymbolName('__init_array_start')]
       __init_array_start: Integer; external;
       [SymbolName('__init_array_end')]
       __init_array_end: Integer; external;
+    {$ENDIF}
 
 {$IF not ANDROID and not DARWIN}
     [SymbolName('stat64')]
@@ -192,6 +194,7 @@ type
     exit InternalCalls.CompareExchange(var mem, val, exp);
    end;
 
+   {$IFNDEF DARWIN}
     [SymbolName('__stack_chk_fail')]
     method __stack_chk_fail(); external;
     {$IFNDEF i386}
@@ -200,6 +203,7 @@ type
     begin 
       __stack_chk_fail();
     end;
+    {$ENDIF}
     {$ENDIF}
   {$ENDIF}
   end;
@@ -500,10 +504,12 @@ begin
   ExternalCalls.nargs := _nargs;
   ExternalCalls.args := _args;
   ExternalCalls.envp := _envp;
+  {$IFNDEF DARWIN}
   var n := (@__init_array_end) - (@__init_array_start);
   for i: Integer := 0 to (n) -1 do begin
     ^LibCEntryHelper(@__init_array_start)[i](nargs, args, envp);
   end;
+  {$ENDIF}
   exit 0;
 end;
 {$SHOW W27}

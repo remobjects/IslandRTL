@@ -617,6 +617,22 @@ type
          yield new &Type(lWork^);
        end;
      end;
+    {$ELSEIF DARWIN}
+    
+     class method get_AllTypes: sequence of &Type; iterator;
+     begin
+       var lSize: UInt64;
+       var lStart := rtl.getsectdata("__TEXT", "__text", @lSize);
+       var lWork := ^^IslandTypeInfo(lStart);
+       var lEnd := ^IslandTypeInfo(^Byte(lStart) + lSize);
+       loop begin
+         if lWork^ <> nil then begin
+           yield new &Type(lWork^);
+         end;
+         inc(lWork);
+         if lWork > @lEnd then break;
+       end;
+     end;
     {$ELSE}
     [SymbolName('__start_ELRTTLRR')]
     class var fStart: ^IslandTypeInfo; external;
