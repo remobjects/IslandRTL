@@ -101,11 +101,15 @@ type
     [Used, SymbolName('_GLOBAL_OFFSET_TABLE_')]
     class var _GLOBAL_OFFSET_TABLE_: Integer; private;
     {$ENDIF}
-    {$IF NOT EMSCRIPTEN AND NOT ANDROID}
+    {$IF NOT EMSCRIPTEN AND NOT ANDROID and not DARWIN}
     [SymbolName('_start'), Naked]
     method _start;
     [SymbolName('__libc_start_main', 'libc.so.6'), &weak]
     method libc_main(main: LibCEntryHelper; argc: Integer; argv: ^^Char; aInit: LibCEntryHelper; aFini: LibCFinalizerHelper); external;
+    {$ENDIF}
+    {$IFDEF DARWIN}
+    [SymbolName('main')]
+    method main(argc: Integer; argv: ^^AnsiChar; env: ^^AnsiChar): Integer;
     {$ENDIF}
     [SymbolName('__elements_init'), Used]
     method init(_nargs: Integer; _args: ^^AnsiChar; _envp: ^^AnsiChar): Integer;
@@ -406,7 +410,14 @@ begin
   // FAIL
 end;
 
-{$IF NOT EMSCRIPTEN AND NOT ANDROID}
+{$IFDEF DARWIN}
+method ExternalCalls.main(argc: Integer; argv: ^^AnsiChar; env: ^^AnsiChar): Integer;
+begin
+  exit Entrypoint(argc, argv, env);
+end;
+{$ENDIF}
+
+{$IF NOT EMSCRIPTEN AND NOT ANDROID and not DARWIN}
 method ExternalCalls._start;
 begin
 {$IFDEF ARM}
@@ -477,7 +488,7 @@ begin
   ExternalCalls.envp := _envp;
   Utilities.Initialize;
   exit UserEntryPoint([]);
-  {$IF NOT EMSCRIPTEN AND NOT ANDROID}
+  {$IF NOT EMSCRIPTEN AND NOT ANDROID and not DARWIN}
   {$HIDE H14}
   ExternalCalls.libc_main(nil, 0, nil, nil, nil); // do not remove, this is there to ensure it's linked in.
   {$SHOW H14}
