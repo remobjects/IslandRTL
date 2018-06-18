@@ -258,11 +258,9 @@ begin
 end;
 
 
-method DefaultUserEntryPoint(aArgs: array of String): Integer; empty;
+[SymbolName('__elements_entry_point')]
+method UserEntryPoint(aArgs: array of String): Integer; external;
   
-var
-[Alias, SymbolName('__elements_entry_point'), &Weak]
-UserEntryPoint: UserEntryPointType := @DefaultUserEntryPoint;
 
 [SymbolName({$IF EMSCRIPTEN OR ANDROID}'_start'{$ELSE}'__elements_entry_point_helper'{$ENDIF}), Used]
 method Entrypoint(argc: Integer; argv: ^^AnsiChar; _envp: ^^AnsiChar): Integer;
