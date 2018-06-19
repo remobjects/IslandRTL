@@ -1,8 +1,9 @@
 ﻿namespace RemObjects.Elements.System;
 
-  [assembly:AssemblyDefineAttribute('WebAssembly')]
-  [assembly:AssemblyDefineAttribute('CPU32')]
-  [assembly:AssemblyDefineAttribute('NOTHREADS')]
+[assembly:AssemblyDefineAttribute('WEBASSEMBLY')]
+[assembly:AssemblyDefineAttribute('WASM')]
+[assembly:AssemblyDefineAttribute('CPU32')]
+[assembly:AssemblyDefineAttribute('NOTHREADS')]
 
 type
   RemObjects.Elements.System.rpmalloc.__Global = public partial class
