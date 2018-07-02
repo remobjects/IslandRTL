@@ -13,6 +13,7 @@ type
   04000000-7FFFFFFF   6   31   1111110x 10xxxxxx 10xxxxxx 10xxxxxx 10xxxxxx 10xxxxxx
   }
 
+  [Obsolete("Use Encoding")]
   TextConvert = static public class
   private
     {$IFDEF DEBUG_UTF8}
@@ -396,7 +397,7 @@ type
     end;
 
     class method UTF32ToString(aValue: array of Byte; aOffset: Integer; len: Integer): not nullable String; inline;
-    begin      
+    begin
       exit UTF32LEToString(aValue, aOffset, len);
     end;
 
