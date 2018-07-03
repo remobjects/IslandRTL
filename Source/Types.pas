@@ -3,6 +3,10 @@
 interface
 
 type
+  {$IFDEF DARWIN}
+  RemObjects.Elements.System.id = public ^Void;
+  {$ENDIF}
+  
   ValueType = public abstract class
   end;
 
