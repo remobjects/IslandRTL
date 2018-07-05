@@ -169,7 +169,7 @@ type
 {$IFDEF WINDOWS}
     class method FromFileTime(aFileTime: rtl.FILETIME): DateTime;
     begin
-      var lFileTime: Int64 := (aFileTime.dwHighDateTime shl 32 + aFileTime.dwLowDateTime);
+      var lFileTime: Int64 := Int64(aFileTime.dwHighDateTime) shl 32 + aFileTime.dwLowDateTime;
       if (lFileTime < 0) or (lFileTime > 2650467743999999999) then raise new Exception("Argument Out Of Range");
       var ticks := lFileTime + FileTimeOffset;
       exit new DateTime(ticks);
