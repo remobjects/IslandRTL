@@ -633,7 +633,7 @@ end;
 
 method ExternalCalls.DwarfEHReadPointer(var aData: ^Byte; aEncoding: DwarfEHEncodingType): rtl.uintptr_t;
 begin
-  var lStart := @aData;
+  var lStart := aData;
   case DwarfEHEncodingType(aEncoding and $f) of
     (DwarfEHEncodingType.DW_EH_PE_omit and $f): exit 0;
     DwarfEHEncodingType.DW_EH_PE_absptr: begin

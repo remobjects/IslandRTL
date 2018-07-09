@@ -2,11 +2,6 @@
 
 interface
 
-[assembly: InlineAsm(".globl _tls_array
-_tls_array = 44
-.globl __tls_array
-__tls_array = 44")]
-
 type
   VersionResourceAttribute = public class(Attribute)
   public
