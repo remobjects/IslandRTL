@@ -217,6 +217,9 @@ type
 
     [DllImport('', EntryPoint := '__island_getWindow')]
     class method GetWindowObject: IntPtr; external;
+
+    [DllImport('', EntryPoint := '__island_ajaxRequest')]
+    class method AjaxRequest(url: ^Char; urlLength: Int32): Int32; external;
   end;
 
   EcmaScriptPropertyFlags = public flags (
@@ -634,6 +637,11 @@ type
     class method GetWindowObject: dynamic;
     begin
       exit new EcmaScriptObject(WebAssemblyCalls.GetWindowObject);
+    end;
+
+    class method AjaxRequest(url: String): String;
+    begin
+      exit GetStringFromHandle(WebAssemblyCalls.AjaxRequest(@url.fFirstChar, url.Length));
     end;
   end;
 
