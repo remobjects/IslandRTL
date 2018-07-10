@@ -22,6 +22,7 @@
     <Compile Include="$(MSBuildThisFileDirectory)Locale.pas" />
     <Compile Include="$(MSBuildThisFileDirectory)Nullable.pas" />
     <Compile Include="$(MSBuildThisFileDirectory)ObjectPool.pas" />
+    <Compile Include="$(MSBuildThisFileDirectory)Parallel.pas" />
     <Compile Include="$(MSBuildThisFileDirectory)Queue.pas" />
     <Compile Include="$(MSBuildThisFileDirectory)Random.pas" />
     <Compile Include="$(MSBuildThisFileDirectory)Stack.pas" />
