@@ -54,7 +54,7 @@ type
         var len := rtl.GetEnvironmentVariableW(Name.ToLPCWSTR ,rtl.LPWSTR(@buf[0]), 32767);
         if len > 0 then
           result := String.FromPChar(@buf[0], len);
-        {$ELSEIF WEBASSEMBLY} 
+        {$ELSEIF WEBASSEMBLY}
         exit nil;
         {$ELSEIF POSIX}
         var lName := Name.ToAnsiChars;
@@ -82,7 +82,7 @@ type
         end;
       end;
       CheckForLastError;
-      {$ELSEIF WEBASSEMBLY} 
+      {$ELSEIF WEBASSEMBLY}
       exit nil;
       {$ELSEIF ANDROID or DARWIN}
       var len := 1024;
@@ -116,6 +116,17 @@ type
       exit new Folder(fn);
     end;
     {$endif}
+
+    method ProcessorCount:Integer;
+    begin
+      {$IFDEF WINDOWS}
+      var si: rtl.SYSTEM_INFO;
+      rtl.GetSystemInfo(@si);
+      exit si.dwNumberOfProcessors;
+      {$ELSEIF POSIX}
+      exit rtl.sysconf(rtl._SC_NPROCESSORS_ONLN);
+      {$ENDIF}
+    end;
   end;
 
 end.
