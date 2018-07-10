@@ -473,6 +473,13 @@ var ElementsWebAssembly;
         imp.env.__island_getWindow = function () {
             return createHandle(window);
         };
+        imp.env.__island_ajaxRequest = function (url, urlLength) {
+            var lurl = readCharsFromMemory(url, urlLength);
+            var xhttp = new XMLHttpRequest();
+            xhttp.open('GET', lurl, false);
+            xhttp.send();
+            return createHandle(xhttp.responseText);
+        };
     }
     function fetchAndInstantiate(url, importObject, memorySize, tableSize) {
         if (memorySize === void 0) { memorySize = 64; }

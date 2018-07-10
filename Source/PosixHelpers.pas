@@ -25,8 +25,8 @@ type
 //[SymbolName('__executable_start')]
 //var __executable_start: ^Void; external;
     [SymbolName("dl_iterate_phdr"), &Weak]
-    method dl_iterate_phdr(info: dliteratecb; data: ^Void): Integer;  
-    begin 
+    method dl_iterate_phdr(info: dliteratecb; data: ^Void): Integer;
+    begin
       exit; (*
       var ehdr := @__executable_start;
       if ^Byte(ehdr)[0] <> $7f then exit;
@@ -40,11 +40,11 @@ type
       ^IntPtr(@exe_info.dlpi_phdr)^ := (IntPtr(ehdr) + {$IFDEF CPU64}^Elf64_Ehdr(ehdr)^.e_phoff{$ELSE} ^Elf32_Ehdr(ehdr)^.e_phoff{$ENDIF});
       exe_info.dlpi_phnum := {$IFDEF CPU64}^Elf64_Ehdr(ehdr)^.e_phnum{$ELSE} ^Elf32_Ehdr(ehdr)^.e_phnum{$ENDIF};
       result := info(@exe_info, sizeof(exe_info), data);
-      if result <> 0 then 
+      if result <> 0 then
         exit;
       {$IFNDEF ARM}
       var ehdr_vdso := getauxval(AT_SYSINFO_EHDR);
-      if ehdr_vdso = 0 then begin 
+      if ehdr_vdso = 0 then begin
         exit;
       end;
       var vdso_info: __struct_dl_phdr_info;
@@ -65,15 +65,22 @@ type
     {$ENDIF}
   public
 
-    
-    {$IFDEF ARM}
-    [SymbolName('_elements_posix_exception_handler')] // 32bits windows only!!
-    {$ENDIF}
+
+    {$IFDEF ARM OR DARWIN}
+    [SymbolName('_elements_posix_exception_handler')]
     method ExceptionHandler(aVersion: Integer; aState: rtl._Unwind_Action; aClass: UInt64; aEx: ^rtl.__struct__Unwind_Exception; aCtx: ^Void): rtl._Unwind_Reason_Code;
-    {$IFNDEF ARM}
-    [SymbolName('_elements_posix_exception_handler')] // 32bits windows only!!
-    {$ENDIF}
+    begin
+      exit IntExceptionHandler(aVersion, aState, aClass, aEx, aCtx);
+    end;
+    {$ELSE}
+    [SymbolName('_elements_posix_exception_handler')]
     method ExceptionHandler(aState: rtl._Unwind_Action; aClass: UInt64; aEx: ^rtl.__struct__Unwind_Exception; aCtx: ^Void): rtl._Unwind_Reason_Code;
+    begin
+      exit IntExceptionHandler(1, aState, aClass, aEx, aCtx);
+    end;
+    {$ENDIF}
+
+    method IntExceptionHandler(aVersion: Integer; aState: rtl._Unwind_Action; aClass: UInt64; aEx: ^rtl.__struct__Unwind_Exception; aCtx: ^Void): rtl._Unwind_Reason_Code;
     [SymbolName('ElementsRaiseException')]
     method RaiseException(aRaiseAddress: ^Void; aRaiseFrame: ^Void; aRaiseObject: Object);
 
@@ -137,17 +144,17 @@ type
 {$IF not ANDROID and not DARWIN}
     [SymbolName('stat64')]
     class method stat64(file: ^AnsiChar; var buf: rtl.__struct_stat64): Integer;
-    begin 
+    begin
       exit rtl.__xstat64(0, file, var buf);
     end;
     [SymbolName('fstat64')]
     class method fstat64(fd: Integer; var buf: rtl.__struct_stat64): Integer;
-    begin 
+    begin
       exit rtl.__fxstat64(0, fd, var buf);
     end;
     [SymbolName('lstat64')]
     class method lstat64(file: ^AnsiChar; var buf: rtl.__struct_stat64): Integer;
-    begin 
+    begin
       exit rtl.__lxstat64(0, file, var buf);
     end;
 
@@ -167,14 +174,14 @@ type
      exit InternalCalls.Add(var mem, val);
    end;
 
- 
+
    [SymbolName("__atomic_compare_exchange_4")]
    class method __atomic_compare_exchange_4(var mem: Int32; exp: Int32; val: Int32): Int32;
    begin
      exit InternalCalls.CompareExchange(var mem, val, exp);
    end;
 
-    
+
     [SymbolName("__atomic_store_8")]
     class method __atomic_store_8(var mem: Int64; val: Int64);
     begin
@@ -187,7 +194,7 @@ type
      exit InternalCalls.Add(var mem, val);
    end;
 
- 
+
    [SymbolName("__atomic_compare_exchange_8")]
    class method __atomic_compare_exchange_8(var mem: Int64; exp: Int64; val: Int64): Int64;
    begin
@@ -199,8 +206,8 @@ type
     method __stack_chk_fail(); external;
     {$IFNDEF i386}
     [SymbolName('__stack_chk_fail_local')]
-    method __stack_chk_fail_local(); 
-    begin 
+    method __stack_chk_fail_local();
+    begin
       __stack_chk_fail();
     end;
     {$ENDIF}
@@ -243,24 +250,24 @@ method CheckForLastError(aMessage: String := '');
 method CheckForIOError(value: Integer);
 
 method malloc(size: NativeInt): ^Void; inline;
-begin 
+begin
   exit rtl.malloc(size);
 end;
- 
+
 method realloc(ptr: ^Void; size: NativeInt): ^Void;inline;
-begin 
+begin
   exit rtl.realloc(ptr, size);
 end;
 
 method free(v: ^Void);inline;
-begin 
+begin
    rtl.Free(v);
 end;
 
 
 [SymbolName('__elements_entry_point')]
 method UserEntryPoint(aArgs: array of String): Integer; external;
-  
+
 
 [SymbolName({$IF EMSCRIPTEN OR ANDROID}'_start'{$ELSE}'__elements_entry_point_helper'{$ENDIF}), Used]
 method Entrypoint(argc: Integer; argv: ^^AnsiChar; _envp: ^^AnsiChar): Integer;
@@ -304,12 +311,7 @@ begin
   exit InternalCalls.Cast(^ElementsException(val)^.Object);
 end;
 
-method ExternalCalls.ExceptionHandler(aState: rtl._Unwind_Action; aClass: UInt64; aEx: ^rtl.__struct__Unwind_Exception; aCtx: ^Void): rtl._Unwind_Reason_Code;
-begin 
-  exit ExceptionHandler(1, aState, aClass, aEx, aCtx);
-end;
-
-method ExternalCalls.ExceptionHandler(aVersion: Integer; aState: rtl._Unwind_Action; aClass: UInt64; aEx: ^rtl.__struct__Unwind_Exception; aCtx: ^Void): rtl._Unwind_Reason_Code;
+method ExternalCalls.IntExceptionHandler(aVersion: Integer; aState: rtl._Unwind_Action; aClass: UInt64; aEx: ^rtl.__struct__Unwind_Exception; aCtx: ^Void): rtl._Unwind_Reason_Code;
 begin
   if (aVersion <> 1) or (aEx = nil) or (aCtx = nil) then exit {$IFNDEF ARM}rtl._Unwind_Reason_Code._URC_FATAL_PHASE1_ERROR{$ELSE}rtl._Unwind_Reason_Code._URC_FAILURE{$ENDIF};
   var lMine := aClass = ElementsExceptionCode;
@@ -462,7 +464,7 @@ begin
     .long __elements_fini(GOT)
 .l4:
     .long   _GLOBAL_OFFSET_TABLE_-(.l4a+8)
-    
+
   ", "", false, false);
 {$ELSE}
   InternalCalls.VoidAsm(
@@ -631,7 +633,7 @@ end;
 
 method ExternalCalls.DwarfEHReadPointer(var aData: ^Byte; aEncoding: DwarfEHEncodingType): rtl.uintptr_t;
 begin
-  var lStart := @aData;
+  var lStart := aData;
   case DwarfEHEncodingType(aEncoding and $f) of
     (DwarfEHEncodingType.DW_EH_PE_omit and $f): exit 0;
     DwarfEHEncodingType.DW_EH_PE_absptr: begin

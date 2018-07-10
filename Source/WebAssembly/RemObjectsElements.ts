@@ -1,4 +1,4 @@
-﻿///<reference path="webassembly.es6.d.ts" />
+///<reference path="webassembly.es6.d.ts" />
 // __elements_debug_wasm_loaded; Keep this on line 3 for debugging purposes
 function __elements_debug_wasm_loaded(url: string, bytes: ArrayBuffer, data: WebAssembly.ResultObject, importObject: any, memory: WebAssembly.Memory) {
 }
@@ -435,6 +435,13 @@ module ElementsWebAssembly {
         };
         imp.env.__island_getWindow = function (): number {
             return createHandle(window);
+        };
+        imp.env.__island_ajaxRequest = function (url: number, urlLength: number): number {
+            var lurl = readCharsFromMemory(url, urlLength);
+            var xhttp = new XMLHttpRequest();
+            xhttp.open('GET', lurl, false);
+            xhttp.send();
+            return createHandle(xhttp.responseText);
         };
     }
 
