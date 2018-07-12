@@ -17,7 +17,7 @@ type
     class method &For(fromInclusive: Integer; toExclusive: Integer; body: Action<Integer,ParallelLoopState>);
     begin
       var list := new List<Integer>;
-      for i: Integer := toExclusive to fromInclusive-1 do
+      for i: Integer :=  fromInclusive to toExclusive - 1 do
         list.Add(i);
       ForEach<Integer>(list,body);      
     end;
@@ -26,7 +26,7 @@ type
     class method &For(fromInclusive: Int64; toExclusive: Int64; body: Action<Int64,ParallelLoopState>);
     begin
       var list := new List<Int64>;
-      for i: Int64 := toExclusive to fromInclusive-1 do
+      for i: Integer :=  fromInclusive to toExclusive - 1 do
         list.Add(i);
       ForEach<Int64>(list,body);      
     end;
