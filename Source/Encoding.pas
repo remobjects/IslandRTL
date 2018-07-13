@@ -41,13 +41,13 @@ type
       end;
     end;
 
-    property UTF8: Encoding := new Encoding("UTF8"); lazy;
-    property UTF16: Encoding := new Encoding("UTF16"); lazy;
-    property UTF16LE: Encoding := new Encoding("UTF16LE"); lazy;
-    property UTF16BE: Encoding := new Encoding("UTF16BE"); lazy;
-    property UTF32: Encoding := new Encoding("UTF32"); lazy;
-    property UTF32LE: Encoding := new Encoding("UTF32LE"); lazy;
-    property UTF32BE: Encoding := new Encoding("UTF32BE"); lazy;
+    property UTF8: Encoding := new Encoding("UTF8"); lazy; static;
+    property UTF16: Encoding := new Encoding("UTF16"); lazy; static;
+    property UTF16LE: Encoding := new Encoding("UTF16LE"); lazy; static;
+    property UTF16BE: Encoding := new Encoding("UTF16BE"); lazy; static;
+    property UTF32: Encoding := new Encoding("UTF32"); lazy; static;
+    property UTF32LE: Encoding := new Encoding("UTF32LE"); lazy; static;
+    property UTF32BE: Encoding := new Encoding("UTF32BE"); lazy; static;
   end;
 
 end.
