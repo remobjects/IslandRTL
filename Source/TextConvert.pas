@@ -523,7 +523,7 @@ type
       result := ASCIIToString(aValue, 0, length(aValue));
     end;
 
-    class method ASCIIToString(aValue: array of Byte; aOffset: Integer; aCount: Integer): String;
+    class method ASCIIToString(aValue: array of Byte; aOffset: Integer; aCount: Integer): not nullable String;
     begin
       if aValue = nil then exit nil;
       if aCount = 0 then exit '';
