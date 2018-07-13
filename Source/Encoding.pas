@@ -1,5 +1,7 @@
 ﻿namespace RemObjects.Elements.System;
 
+{$HIDE W37}
+
 type
   Encoding = public class
   private
@@ -23,6 +25,7 @@ type
         "UTF32": result := TextConvert.StringToUTF32(aValue, aGenerateBOM);
         "UTF32LE": result := TextConvert.StringToUTF32LE(aValue, aGenerateBOM);
         "UTF32BE": result := TextConvert.StringToUTF32BE(aValue, aGenerateBOM);
+        "ASCII": result := TextConvert.StringToASCII(aValue);
         else raise new Exception($"Unknown encoding {Name}");
       end;
     end;
@@ -37,6 +40,7 @@ type
         "UTF32": result := TextConvert.UTF32ToString(aValue);
         "UTF32LE": result := TextConvert.UTF32LEToString(aValue);
         "UTF32BE": result := TextConvert.UTF32BEToString(aValue);
+        "ASCII": result := TextConvert.ASCIIToString(aValue);
         else raise new Exception($"Unknown encoding {Name}");
       end;
     end;
@@ -48,6 +52,7 @@ type
     property UTF32: Encoding := new Encoding("UTF32"); lazy; static;
     property UTF32LE: Encoding := new Encoding("UTF32LE"); lazy; static;
     property UTF32BE: Encoding := new Encoding("UTF32BE"); lazy; static;
+    property ASCII: Encoding := new Encoding("ASCII"); lazy; static;
   end;
 
 end.

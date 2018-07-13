@@ -1,11 +1,15 @@
 ﻿namespace RemObjects.Elements.System;
+
 {$HIDE W46}
+{$HIDE W37}
+
 {.$DEFINE DEBUG_UTF8}
+
 type
 
   {
   UTF8:
-  00000000-0000007F   1   7   0xxxxxxx
+  00000000-0000007F   1   7    0xxxxxxx
   00000080-000007FF   2   11   110xxxxx 10xxxxxx
   00000800-0000FFFF   3   16   1110xxxx 10xxxxxx 10xxxxxx
   00010000-001FFFFF   4   21   11110xxx 10xxxxxx 10xxxxxx 10xxxxxx
@@ -485,7 +489,7 @@ type
       exit str.ToString;
     end;
 
-    class method StringToASCII(aValue: String): array of Byte;
+    class method StringToASCII(aValue: String): not nullable array of Byte;
     begin
       {$IFDEF WINDOWS}
       var len := rtl.WideCharToMultiByte(rtl.CP_ACP, 0, aValue.FirstChar, aValue.Length, nil, 0, nil, nil);
@@ -503,15 +507,18 @@ type
       var lNewData: ^AnsiChar := nil;
       var lNewLen: rtl.size_t := iconv_helper(TextConvert.fUTF16ToCurrent, ^AnsiChar(aValue.FirstChar), aValue.Length * 2, aValue.Length + 5, out lNewData);
 
-      if lNewLen <> -1  then begin
+      if lNewLen <> -1 then begin
         result := new Byte[lNewLen];
         rtl.memcpy(@result[0], lNewData, lNewLen);
         rtl.free(lNewData);
+      end
+      else begin
+        result := new Byte[0];
       end;
       {$ENDIF}
     end;
 
-    class method ASCIIToString(aValue: array of Byte): String; inline;
+    class method ASCIIToString(aValue: array of Byte): not nullable String; inline;
     begin
       result := ASCIIToString(aValue, 0, length(aValue));
     end;
