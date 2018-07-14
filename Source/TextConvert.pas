@@ -540,6 +540,9 @@ type
       if lNewLen <> -1  then begin
         result := String.FromPChar(^Char(lNewData), lNewLen / 2);
         rtl.free(lNewData);
+      end
+      else begin
+        result := "";
       end;
       {$ENDIF}
     end;
