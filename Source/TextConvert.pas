@@ -525,8 +525,8 @@ type
 
     class method ASCIIToString(aValue: array of Byte; aOffset: Integer; aCount: Integer): not nullable String;
     begin
-      if aValue = nil then exit nil;
-      if aCount = 0 then exit '';
+      if aValue = nil then exit "";
+      if aCount = 0 then exit "";
       {$IFDEF WINDOWS}
       var len := rtl.MultiByteToWideChar(rtl.CP_ACP, 0, rtl.LPCCH(@aValue[aOffset]), aCount, nil, 0);
       result := String.AllocString(len);
