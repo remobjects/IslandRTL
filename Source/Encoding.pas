@@ -1,5 +1,7 @@
 ﻿namespace RemObjects.Elements.System;
 
+{$HIDE W37}
+
 type
   Encoding = public class
   private
@@ -23,6 +25,7 @@ type
         "UTF32": result := TextConvert.StringToUTF32(aValue, aGenerateBOM);
         "UTF32LE": result := TextConvert.StringToUTF32LE(aValue, aGenerateBOM);
         "UTF32BE": result := TextConvert.StringToUTF32BE(aValue, aGenerateBOM);
+        "ASCII": result := TextConvert.StringToASCII(aValue);
         else raise new Exception($"Unknown encoding {Name}");
       end;
     end;
@@ -37,17 +40,19 @@ type
         "UTF32": result := TextConvert.UTF32ToString(aValue);
         "UTF32LE": result := TextConvert.UTF32LEToString(aValue);
         "UTF32BE": result := TextConvert.UTF32BEToString(aValue);
+        "ASCII": result := TextConvert.ASCIIToString(aValue);
         else raise new Exception($"Unknown encoding {Name}");
       end;
     end;
 
-    property UTF8: Encoding := new Encoding("UTF8"); lazy;
-    property UTF16: Encoding := new Encoding("UTF16"); lazy;
-    property UTF16LE: Encoding := new Encoding("UTF16LE"); lazy;
-    property UTF16BE: Encoding := new Encoding("UTF16BE"); lazy;
-    property UTF32: Encoding := new Encoding("UTF32"); lazy;
-    property UTF32LE: Encoding := new Encoding("UTF32LE"); lazy;
-    property UTF32BE: Encoding := new Encoding("UTF32BE"); lazy;
+    property UTF8: Encoding := new Encoding("UTF8"); lazy; static;
+    property UTF16: Encoding := new Encoding("UTF16"); lazy; static;
+    property UTF16LE: Encoding := new Encoding("UTF16LE"); lazy; static;
+    property UTF16BE: Encoding := new Encoding("UTF16BE"); lazy; static;
+    property UTF32: Encoding := new Encoding("UTF32"); lazy; static;
+    property UTF32LE: Encoding := new Encoding("UTF32LE"); lazy; static;
+    property UTF32BE: Encoding := new Encoding("UTF32BE"); lazy; static;
+    property ASCII: Encoding := new Encoding("ASCII"); lazy; static;
   end;
 
 end.
