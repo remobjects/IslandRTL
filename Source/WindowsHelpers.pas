@@ -319,8 +319,8 @@ method DllMain(aModule: rtl.HMODULE; aReason: rtl.DWORD; aReserved: ^Void): Bool
   
 // This is needed by anything msvc compiled; it's the offset in fs for the tls array
 var
-  [SymbolName('_tls_index')]
-  _tls_index: Cardinal; public;
+  [SymbolName('_tls_index'), Used]
+  _tls_index: Cardinal; public; 
   [SectionName('.tls'), SymbolName('_tls_start')]
   _tls_start: NativeInt := 0;public;
   [SectionName('.tls$ZZZ'), SymbolName('_tls_end')]
