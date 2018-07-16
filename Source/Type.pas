@@ -570,7 +570,7 @@ type
         raise new NotImplementedException();
         {$ENDIF}
       {$ELSEIF WEBASSEMBLY}
-      result := WebAssembly.InvokeMethod(Pointer, lParams);
+      result := WebAssembly.UnwrapCall(&Type, WebAssembly.InvokeMethod(Pointer, lParams));
       {$ELSE}{$ERROR}{$ENDIF}
       for k in Arguments index i do
         if lModes[i+dx] in [ArgumentMode.Var,ArgumentMode.Out] then
@@ -618,7 +618,7 @@ type
        end;
      end;
     {$ELSEIF DARWIN}
-    
+
      class method get_AllTypes: sequence of &Type; iterator;
      begin
        var lSize: UInt64;

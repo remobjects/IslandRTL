@@ -545,6 +545,16 @@ type
        WebAssemblyCalls.FreeHandle(aHandle);
     end;
 
+    class method UnwrapCall(aType: &Type; aVal: Object): Object;
+    begin
+      if aVal = nil then exit nil;
+      if aType = nil then exit nil;
+      if aType.IsValueType then exit aVal;
+      var lVal := InternalCalls.Cast<Object>(^Void(Convert.ToUInt32(aVal)));
+      if lVal = 0 then exit nil;
+      exit lVal;
+    end;
+
     class method InvokeMethod(aPtr: ^Void; params args: array of Object): Object;
     begin
       var lData := new IntPtr[length(args)];
