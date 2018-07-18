@@ -27,9 +27,10 @@ type
         end;
         if ls.IsStopped then Break;
         InternalCalls.Add(var lcurrTasks, 1);
+        var temp := m;
         new Task(->
           begin
-            body(m, ls);
+            body(temp, ls);
             InternalCalls.Add(var lcurrTasks, -1);
             levent.Set;
           end).Start;
@@ -51,9 +52,10 @@ type
         end;
         if ls.IsStopped then Break;
         InternalCalls.Add(var lcurrTasks, 1);
+        var temp := m;
         new Task(->
           begin
-            body(m, ls);
+            body(temp, ls);
             InternalCalls.Add(var lcurrTasks, -1);
             levent.Set;
           end).Start;
@@ -74,9 +76,10 @@ type
         end;
         if ls.IsStopped then Break;
         InternalCalls.Add(var lcurrTasks, 1);
+        var temp := m;
         new Task(->
           begin
-            body(m, ls);
+            body(temp, ls);
             InternalCalls.Add(var lcurrTasks, -1);
             levent.Set;
           end).Start;
