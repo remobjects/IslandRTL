@@ -220,6 +220,12 @@ type
 
     [DllImport('', EntryPoint := '__island_ajaxRequest')]
     class method AjaxRequest(url: ^Char; urlLength: Int32): Int32; external;
+
+    [DllImport('', EntryPoint := '__island_ajaxRequestBinary')]
+    class method AjaxRequestBinary(url: ^Char; urlLength: Int32): Int32; external;
+
+    [DllImport('', EntryPoint := '__island_responseBinaryTextToArray')]
+    class method ResponseBinaryTextToArray(aSource: IntPtr; aTarget: ^Byte): Int32; external;
   end;
 
   EcmaScriptPropertyFlags = public flags (
@@ -567,7 +573,7 @@ type
     class method CreateHandle(aVal: Object): IntPtr;
     begin
       if aVal = nil then exit 0;
-      if aVal is EcmaScriptObject then begin var lPtr := InternalCalls.Cast(aVal); var lObject := EcmaScriptObject(aVal); lObject['__elements_handle'] := NativeInt(lPtr); exit WebAssemblyCalls.CloneHandle(lObject.Handle); end;
+      if aVal is EcmaScriptObject then begin var lPtr := InternalCalls.Cast(aVal); var lObject := EcmaScriptObject(aVal); {lObject['__elements_handle'] := NativeInt(lPtr);} exit WebAssemblyCalls.CloneHandle(lObject.Handle); end;
       if aVal is Integer then exit WebAssemblyCalls.CreateInteger(aVal as Integer);
       if aVal is Boolean then exit WebAssemblyCalls.CreateBoolean(aVal as Boolean);
       if aVal is Double then exit WebAssemblyCalls.CreateDouble(aVal as Double);
@@ -652,6 +658,14 @@ type
     class method AjaxRequest(url: String): String;
     begin
       exit GetStringFromHandle(WebAssemblyCalls.AjaxRequest(@url.fFirstChar, url.Length));
+    end;
+
+    class method AjaxRequestBinary(url: String): array of Byte;
+    begin
+      var lArray := WebAssemblyCalls.AjaxRequestBinary(@url.fFirstChar, url.Length);
+      var lTotal := WebAssemblyCalls.GetStringLength(lArray);
+      result := new Byte[lTotal];
+      WebAssemblyCalls.ResponseBinaryTextToArray(lArray, @result[0]);
     end;
   end;
 

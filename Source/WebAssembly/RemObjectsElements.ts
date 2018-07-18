@@ -443,6 +443,22 @@ module ElementsWebAssembly {
             xhttp.send();
             return createHandle(xhttp.responseText);
         };
+        imp.env.__island_ajaxRequestBinary = function (url: number, urlLength: number): number {
+            var lurl = readCharsFromMemory(url, urlLength);
+            var xhttp = new XMLHttpRequest();
+            xhttp.open('GET', lurl, false);
+            xhttp.overrideMimeType('text/plain; charset=x-user-defined');
+            xhttp.send(null);
+            return createHandle(xhttp.responseText);
+        };
+        imp.env.__island_responseBinaryTextToArray = function (val: number, tar: number): number {
+            var stream = handletable[val] as string;
+            var dest = new Uint8Array(imp.env.memory.buffer, tar, stream.length);            
+            for (var i = 0; i < stream.length; i++) {
+              dest[i] = stream.charCodeAt(i) & 0xff;
+            }
+            return stream.length;                    
+        };                      
     }
 
 
