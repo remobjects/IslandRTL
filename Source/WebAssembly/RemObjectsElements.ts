@@ -190,7 +190,6 @@ module ElementsWebAssembly {
             (arguments as any).this = this;
             var h = createHandle(arguments);
             result.instance.exports["__island_call_delegate"](objectptr, h);
-            releaseHandle(h);
             return (arguments as any).result;
         };
 

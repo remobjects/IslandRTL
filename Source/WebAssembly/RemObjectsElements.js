@@ -244,7 +244,6 @@ var ElementsWebAssembly;
             arguments["this"] = this;
             var h = createHandle(arguments);
             result.instance.exports["__island_call_delegate"](objectptr, h);
-            releaseHandle(h);
             return arguments.result;
         };
         res.__elements_instance = objectptr;
