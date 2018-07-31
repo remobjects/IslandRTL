@@ -1,4 +1,4 @@
-namespace RemObjects.Elements.System;
+﻿namespace RemObjects.Elements.System;
 [assembly:AssemblyDefine('SIMPLEGC')]
 [assembly:AssemblyDefine('TRACINGGC')]
 [assembly:AssemblyDefine('REFCOUNTINGGC')]
@@ -417,7 +417,7 @@ type
       Debug('Walking children for blacklist');
       var lExt := ^^IslandTypeInfo(el)^^.Ext;
 
-      if IslandTypeFlags.Array in lExt^.Flags then begin
+      if IslandTypeFlags.Array = (lExt^.Flags and IslandTypeFlags.TypeKindMask) then begin
         // arrays are special; there are 3 kinds of arrays; array of Object, array of struct (with object) and array of value type;
         Debug('Array!');
         if (lExt^.SubType = nil) then exit; // bad type
@@ -472,7 +472,7 @@ type
     begin
       Debug('Collect children');
       var lExt := ^^IslandTypeInfo(el)^^.Ext;
-      if IslandTypeFlags.Array in lExt^.Flags then begin
+      if IslandTypeFlags.Array = (lExt^.Flags and IslandTypeFlags.TypeKindMask) then begin
         // arrays are special; there are 3 kinds of arrays; array of Object, array of struct (with object) and array of value type;
         Debug('Array!');
         if (lExt^.SubType = nil) then exit; // bad type
