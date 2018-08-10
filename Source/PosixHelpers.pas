@@ -66,7 +66,7 @@ type
   public
 
 
-    {$IFDEF ARM OR DARWIN}
+    {$IFDEF ARM OR DARWIN OR LINUX}
     [SymbolName('_elements_posix_exception_handler')]
     method ExceptionHandler(aVersion: Integer; aState: rtl._Unwind_Action; aClass: UInt64; aEx: ^rtl.__struct__Unwind_Exception; aCtx: ^Void): rtl._Unwind_Reason_Code;
     begin
