@@ -1076,7 +1076,6 @@ end;
 {$ELSE}
  method ExternalCalls.ExceptionHandler(inmsvcinfo: ^MSVCExceptionInfo; arec: ^rtl.EXCEPTION_RECORD; aOrgregFrame: ^ElementsRegistrationFrame; context: rtl.PCONTEXT; dispatcher: ^Void): Integer;
 begin
-  writeln('ineh');
   var msvcinfo := inmsvcinfo;
   var regFrame := ^ElementsRegistrationFrame(@^NativeInt(aOrgregFrame)[-1]);
 
