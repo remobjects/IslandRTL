@@ -342,6 +342,63 @@ var
       AddressOfCallbacks := NativeInt(^NativeInt(@__xl_a)+1),
       SizeOfZeroFill := 0
     ); readonly;public;
+{$IFDEF _WIN64}
+  [Used, SymbolName('_load_config_used')]
+  _load_config_used: rtl.IMAGE_LOAD_CONFIG_DIRECTORY := 
+  new rtl.IMAGE_LOAD_CONFIG_DIRECTORY(
+    size := sizeof(rtl.IMAGE_LOAD_CONFIG_DIRECTORY),
+    SecurityCookie := UIntPtr(^UIntPtr(@__security_cookie)),
+    SEHandlerTable := UIntPtr(^UIntPtr(@__safe_se_handler_table)),
+    SEHandlerCount := UIntPtr(^UIntPtr(@__safe_se_handler_count)),
+    //GuardCFCheckFunctionPointer := UIntPtr(^UIntPtr(@__guard_check_icall_fptr)),
+    //GuardCFDispatchFunctionPointer := UIntPtr(^UIntPtr(@__guard_dispatch_icall_fptr)),
+    GuardCFFunctionTable := UIntPtr(^UIntPtr(@__guard_fids_table)),
+    GuardCFFunctionCount := UIntPtr(^UIntPtr(@__guard_fids_count)),
+    GuardFlags := UIntPtr(^UIntPtr(@__guard_flags)),
+    GuardAddressTakenIatEntryTable := UIntPtr(^UIntPtr(@__guard_iat_table)),
+    GuardAddressTakenIatEntryCount := UIntPtr(^UIntPtr(@__guard_iat_count)),
+    GuardLongJumpTargetTable := UIntPtr(^UIntPtr(@__guard_longjmp_table)),
+    GuardLongJumpTargetCount := UIntPtr(^UIntPtr(@__guard_longjmp_count))
+  );readonly;public;
+{$else}
+  [Used, SymbolName('_load_config_used')]
+  _load_config_used: rtl.IMAGE_LOAD_CONFIG_DIRECTORY := 
+  new rtl.IMAGE_LOAD_CONFIG_DIRECTORY(
+    size := sizeOf(rtl.IMAGE_LOAD_CONFIG_DIRECTORY),
+    SecurityCookie := UIntPtr(^UIntPtr(@__security_cookie)),
+    SEHandlerTable := UIntPtr(^UIntPtr(@__safe_se_handler_table)),
+    SEHandlerCount := UIntPtr(^UIntPtr(@__safe_se_handler_count)),
+    //GuardCFCheckFunctionPointer := UIntPtr(^UIntPtr(@__guard_check_icall_fptr)),
+    GuardCFDispatchFunctionPointer := 0, // amd64: __guard_dispatch_icall_fptr
+    GuardCFFunctionTable := UIntPtr(^UIntPtr(@__guard_fids_table)),
+    GuardCFFunctionCount := UIntPtr(^UIntPtr(@__guard_fids_count)),
+    GuardFlags := UIntPtr(^UIntPtr(@__guard_flags)),
+    GuardAddressTakenIatEntryTable := UIntPtr(^UIntPtr(@__guard_iat_table)),
+    GuardAddressTakenIatEntryCount := UIntPtr(^UIntPtr(@__guard_iat_count)),
+    GuardLongJumpTargetTable := UIntPtr(^UIntPtr(@__guard_longjmp_table)),
+    GuardLongJumpTargetCount := UIntPtr(^UIntPtr(@__guard_longjmp_count))
+  ); readonly;public;
+{$ENDIF}
+
+[SymbolName('__security_cookie')] var __security_cookie: Integer := $12345678; 
+//[SymbolName('__guard_check_icall_fptr')] var __guard_check_icall_fptr: Integer; external;
+{$IFDEF WIN64}
+//[SymbolName('__guard_dispatch_icall_fptr')] var __guard_dispatch_icall_fptr: Integer; external;
+{$ELSE}
+[SymbolName('__safe_se_handler_table')] var __safe_se_handler_table: Integer; external;
+[SymbolName('__safe_se_handler_count')] var __safe_se_handler_count: Integer; external;
+{$ENDIF}
+
+
+[SymbolName('__guard_fids_table')] var __guard_fids_table: Integer; external;
+[SymbolName('__guard_fids_count')] var __guard_fids_count: Integer; external;
+[SymbolName('__guard_flags')] var __guard_flags: Integer; external;
+[SymbolName('__guard_iat_table')] var __guard_iat_table: Integer; external;
+[SymbolName('__guard_iat_count')] var __guard_iat_count: Integer; external;
+[SymbolName('__guard_longjmp_table')] var __guard_longjmp_table: Integer; external;
+[SymbolName('__guard_longjmp_count')] var __guard_longjmp_count: Integer; external;
+
+
 
 [SymbolName('__elements_tls_callback_method'), Used, CallingConvention(CallingConvention.Stdcall)]
 method elements_tls_callback(aHandle: ^Void; aReason: rtl.DWORD; aReserved: ^Void);public;
@@ -1019,6 +1076,7 @@ end;
 {$ELSE}
  method ExternalCalls.ExceptionHandler(inmsvcinfo: ^MSVCExceptionInfo; arec: ^rtl.EXCEPTION_RECORD; aOrgregFrame: ^ElementsRegistrationFrame; context: rtl.PCONTEXT; dispatcher: ^Void): Integer;
 begin
+  writeln('ineh');
   var msvcinfo := inmsvcinfo;
   var regFrame := ^ElementsRegistrationFrame(@^NativeInt(aOrgregFrame)[-1]);
 
