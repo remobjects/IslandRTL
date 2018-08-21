@@ -354,7 +354,7 @@ var
     //GuardCFDispatchFunctionPointer := UIntPtr(^UIntPtr(@__guard_dispatch_icall_fptr)),
     GuardCFFunctionTable := UIntPtr(^UIntPtr(@__guard_fids_table)),
     GuardCFFunctionCount := UIntPtr(^UIntPtr(@__guard_fids_count)),
-    GuardFlags := UIntPtr(^UIntPtr(@__guard_flags)),
+    //GuardFlags := UIntPtr(^UIntPtr(@__guard_flags)),
     GuardAddressTakenIatEntryTable := UIntPtr(^UIntPtr(@__guard_iat_table)),
     GuardAddressTakenIatEntryCount := UIntPtr(^UIntPtr(@__guard_iat_count)),
     GuardLongJumpTargetTable := UIntPtr(^UIntPtr(@__guard_longjmp_table)),
@@ -372,7 +372,7 @@ var
     GuardCFDispatchFunctionPointer := 0, // amd64: __guard_dispatch_icall_fptr
     GuardCFFunctionTable := UIntPtr(^UIntPtr(@__guard_fids_table)),
     GuardCFFunctionCount := UIntPtr(^UIntPtr(@__guard_fids_count)),
-    GuardFlags := UIntPtr(^UIntPtr(@__guard_flags)),
+    //GuardFlags := UIntPtr(^UIntPtr(@__guard_flags)),
     GuardAddressTakenIatEntryTable := UIntPtr(^UIntPtr(@__guard_iat_table)),
     GuardAddressTakenIatEntryCount := UIntPtr(^UIntPtr(@__guard_iat_count)),
     GuardLongJumpTargetTable := UIntPtr(^UIntPtr(@__guard_longjmp_table)),
@@ -392,7 +392,7 @@ var
 
 [SymbolName('__guard_fids_table')] var __guard_fids_table: Integer; external;
 [SymbolName('__guard_fids_count')] var __guard_fids_count: Integer; external;
-[SymbolName('__guard_flags')] var __guard_flags: Integer; external;
+//[SymbolName('__guard_flags')] var __guard_flags: Integer; external;
 [SymbolName('__guard_iat_table')] var __guard_iat_table: Integer; external;
 [SymbolName('__guard_iat_count')] var __guard_iat_count: Integer; external;
 [SymbolName('__guard_longjmp_table')] var __guard_longjmp_table: Integer; external;
