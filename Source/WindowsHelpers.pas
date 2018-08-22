@@ -348,8 +348,6 @@ var
   new rtl.IMAGE_LOAD_CONFIG_DIRECTORY(
     size := sizeof(rtl.IMAGE_LOAD_CONFIG_DIRECTORY),
     SecurityCookie := UIntPtr(^UIntPtr(@__security_cookie)),
-    SEHandlerTable := UIntPtr(^UIntPtr(@__safe_se_handler_table)),
-    SEHandlerCount := UIntPtr(^UIntPtr(@__safe_se_handler_count)),
     //GuardCFCheckFunctionPointer := UIntPtr(^UIntPtr(@__guard_check_icall_fptr)),
     //GuardCFDispatchFunctionPointer := UIntPtr(^UIntPtr(@__guard_dispatch_icall_fptr)),
     GuardCFFunctionTable := UIntPtr(^UIntPtr(@__guard_fids_table)),
