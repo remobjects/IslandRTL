@@ -382,7 +382,7 @@ var
 
 [SymbolName('__security_cookie')] var __security_cookie: Integer := $12345678; 
 //[SymbolName('__guard_check_icall_fptr')] var __guard_check_icall_fptr: Integer; external;
-{$IFDEF WIN64}
+{$IFDEF _WIN64}
 //[SymbolName('__guard_dispatch_icall_fptr')] var __guard_dispatch_icall_fptr: Integer; external;
 {$ELSE}
 [SymbolName('__safe_se_handler_table')] var __safe_se_handler_table: Integer; external;
