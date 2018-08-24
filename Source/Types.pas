@@ -2,11 +2,7 @@
 
 interface
 
-type
-  {$IFDEF DARWIN}
-  RemObjects.Elements.System.id = public ^Void;
-  {$ENDIF}
-  
+type  
   ValueType = public abstract class
   end;
 
