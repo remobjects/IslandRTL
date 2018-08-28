@@ -62,5 +62,6 @@
     <Compile Include="Dynamic.pas" />
     <Compile Include="Span.pas" />
     <Compile Include="$(MSBuildThisFileDirectory)Encoding.pas" />
+    <Compile Include="$(MSBuildThisFileDirectory)GenericNullable.pas" />
   </ItemGroup>
 </Project>
