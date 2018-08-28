@@ -230,6 +230,19 @@ type
       constructor(aCapacity);
     end;
 
+    constructor(aDictionary: Dictionary<T,U>);
+    begin
+      constructor(aDictionary.Keys.Count);
+      for each k in aDictionary.Keys do
+        self[k] := aDictionary[k];
+    end;
+
+    constructor(aDictionary: Dictionary<T,U>; aComparer : IEqualityComparer<T>);
+    begin
+      fComparer := aComparer;
+      constructor(aDictionary);
+    end;
+
     method GetSequence: sequence of KeyValuePair<T,U>;
     begin
       var r := new array of KeyValuePair<T,U>(fCount);
