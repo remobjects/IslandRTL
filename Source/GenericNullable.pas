@@ -10,8 +10,8 @@ type
       if fHasValue then exit fValue;
       raise new NullReferenceException('Nullable value is nil');
     end;
-    fValue: T;
     fHasValue: Boolean;
+    fValue: T;
   public
     constructor(aValue: T);
     begin
