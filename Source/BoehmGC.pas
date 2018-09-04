@@ -6,6 +6,104 @@ uses gc;
 type
   GC<T> = public lifetimestrategy (BoehmGC) T;
   DefaultGC = public BoehmGC;
+
+  // Same as boehm gc, but works in foreign object models
+  ForeignBoehmGC = public record(ILifetimeStrategy<ForeignBoehmGC>)
+  private
+    {$HIDE h6} // DO NOT REMOVE!!
+    fInst: IntPtr;
+    {$SHOW h6} // DO NOT REMOVE!!
+
+    class var fGC: Dictionary<Object, Integer> := new Dictionary<Object, Integer>(new ObjectReferenceComparer<Object>);
+    class var fLock: Monitor := new Monitor;
+  public
+    class method Release(var Dest: ForeignBoehmGC);
+    begin
+      var lValue := InternalCalls.Exchange(var Dest.fInst, 0);
+      Release(lValue);
+    end;
+
+    class method Init(var Dest: ForeignBoehmGC);
+    begin
+      dEST.fInst := 0;
+    end;
+
+    class method Copy(var aDest: ForeignBoehmGC; var aSource: ForeignBoehmGC);
+    begin
+      aDest.fInst := aSource.fInst;
+      AddRef(aDest.fInst);
+    end;
+
+    class method Assign(var aDest: ForeignBoehmGC; var aSource: ForeignBoehmGC);
+    begin
+      if (@aDest) = (@aSource) then exit;
+      var lSrc := aSource.fInst;
+      var lOld := InternalCalls.Exchange(var aDest.fInst, lSrc);
+      if lSrc = lOld then exit;
+      AddRef(lSrc);
+      Release(lOld);
+    end;
+
+    constructor;
+    begin 
+      fInst := 0;
+    end;
+
+    class method &New(aTTY: ^Void; aSize: IntPtr): ^Void;
+    begin 
+      exit BoehmGC.New(aTTY, aSize);
+    end;
+
+    [GCSkipIfOnStack]
+    constructor Copy(var aValue: ForeignBoehmGC);
+    begin
+      fInst := aValue.fInst;
+      AddRef(fInst);
+    end;
+
+    [GCSkipIfOnStack]
+    class operator Assign(var aDest: ForeignBoehmGC; var aSource: ForeignBoehmGC);
+    begin
+      if (@aDest) = (@aSource) then exit;
+      var lSrc := aSource.fInst;
+      var lOld := InternalCalls.Exchange(var aDest.fInst, lSrc);
+      if lSrc = lOld then exit;
+      AddRef(lSrc);
+      Release(lOld);
+    end;
+
+
+    [GCSkipIfOnStack]
+    finalizer;
+    begin 
+      var lValue := InternalCalls.Exchange(var fInst, 0);
+      Release(lValue);
+    end;
+
+    class method AddRef(aVal: Object);
+    begin 
+      if aVal = nil then exit;
+      locking fLock do begin 
+        var i:  Integer;
+        if fGC.TryGetValue(aVal, out i) then inc(i) else i := 1;
+        fGC[aVal] := i;
+      end;
+    end;
+
+    class method Release(aVal: Object);
+    begin 
+      if aVal = nil then exit;
+      locking fLock do begin 
+        var i:  Integer;
+        if fGC.TryGetValue(aVal, out i) then begin 
+          dec(i);
+          if i = 0 then fGC.Remove(aVal) else fGC[aVal] := i;
+        end;
+      end;
+    end;
+
+  end;
+
   BoehmGC = public record(ILifetimeStrategy<BoehmGC>)
   assembly
     {$HIDE h6} // DO NOT REMOVE!!

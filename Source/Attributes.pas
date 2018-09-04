@@ -311,7 +311,17 @@ type
   [AttributeUsage(AttributeTargets.Assembly)]
   RemObjects.Elements.System.DefaultObjectLifetimeStrategyAttribute = public class(Attribute)
   public
+    /// <summary>
+    /// Sets the default lifetime strategy.
+    /// </summary>
+    /// <param name="aType">lifetime type</param>
     constructor(aType: &Type); empty;
+    /// <summary>
+    /// Sets the default lifetime strategy.
+    /// </summary>
+    /// <param name="aType">lifetime type</param>
+    /// <param name="aForeign">The lifetime type used when a type is stored in a foreign class model</param>
+    constructor(aType, aForeign: &Type); empty;
   end;
 
 
