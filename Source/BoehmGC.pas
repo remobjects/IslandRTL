@@ -25,7 +25,7 @@ type
 
     class method Init(var Dest: ForeignBoehmGC);
     begin
-      dEST.fInst := 0;
+      Dest.fInst := 0;
     end;
 
     class method Copy(var aDest: ForeignBoehmGC; var aSource: ForeignBoehmGC);

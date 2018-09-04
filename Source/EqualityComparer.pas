@@ -77,4 +77,25 @@ type
     end;
   end;
 
+  
+  ObjectReferenceComparer<T> = assembly class(IEqualityComparer<T>)
+  private
+    fComparator: block(a, b: T): Integer;
+  public
+
+    constructor();
+    begin
+    end;
+
+    method Equals(x: T; y: T): Boolean;
+    begin
+      exit Object(x) = Object(y);
+    end;
+
+    method GetHashCode(obj: T):Integer;
+    begin
+      exit Integer(InternalCalls.Cast(Object(obj)));
+    end;
+  end;
+
 end.
