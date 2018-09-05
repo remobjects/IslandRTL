@@ -15,6 +15,9 @@ type
     method doLCMapString(aInvariant: Boolean := false; aMode:LCMapStringTransformMode := LCMapStringTransformMode.None):String;
     method doLCMapString(aLocale: Locale; aMode:LCMapStringTransformMode := LCMapStringTransformMode.None): String;
     {$ENDIF}
+    {$IF DARWIN}
+    fNSString: Foundation.NSString;
+    {$ENDIF}
     method TestChar(c: Char; Arr : array of Char): Boolean;
     class method RaiseError(aMessage: String);
     method CheckIndex(aIndex: Integer);
@@ -100,11 +103,35 @@ type
     class operator Equal(Value1, Value2: String): Boolean;
     class operator NotEqual(Value1, Value2: String): Boolean;
 
+    {$IF DARWIN}
+    class operator Implicit(aValue: nullable String): nullable Foundation.NSString;
+    begin
+      if assigned(aValue) then begin
+        if not assigned(aValue.fNSString) then
+          aValue.fNSString := new Foundation.NSString withCharacters/*NoCopy*/(@aValue.fFirstChar) length(aValue.Length)/* freeWhenDone(false)*/;
+        result := aValue.fNSString;
+      end;
+    end;
+
+    class operator Implicit(aValue: nullable Foundation.NSString): nullable String;
+    begin
+      if assigned(aValue) then begin
+        var lUsedLength: Foundation.NSUInteger;
+        var lRemainingRange: Foundation.NSRange;
+        var lLength := aValue.length;
+        result := AllocString(lLength);
+        if not aValue.getBytes(@result.fFirstChar) maxLength(lLength*2) usedLength(@lUsedLength) encoding(Foundation.NSStringEncoding.UTF16LittleEndianStringEncoding) options(0) range(Foundation.NSMakeRange(0, lLength) )remainingRange(@lRemainingRange) then
+          raise new InvalidCastException("Could not convert NSString to String");
+        result.fNSString := aValue;
+      end;
+    end;
+    {$ENDIF}
+
     method ToString: String; override;
     method GetHashCode: Integer; override;
 
     method CompareTo(a: Object): Integer;
-    begin 
+    begin
       var lString := String(a);
       if lString = nil then exit -1;
       exit CompareTo(lString);
