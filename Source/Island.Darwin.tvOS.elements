@@ -1,0 +1,59 @@
+﻿<?xml version="1.0" encoding="utf-8" standalone="yes"?>
+<Project xmlns="http://schemas.microsoft.com/developer/msbuild/2003" DefaultTargets="Build" ToolsVersion="4.0">
+  <PropertyGroup>
+    <ProductVersion>3.5</ProductVersion>
+    <RootNamespace>RemObjects.Elements.System</RootNamespace>
+    <OutputType>StaticLibrary</OutputType>
+    <AssemblyName>Island</AssemblyName>
+    <AllowGlobals>True</AllowGlobals>
+    <AllowLegacyOutParams>False</AllowLegacyOutParams>
+    <AllowLegacyCreate>False</AllowLegacyCreate>
+    <Configuration Condition="'$(Configuration)' == ''">Release</Configuration>
+    <TargetFrameworkVersion>v4.0</TargetFrameworkVersion>
+    <Name>Island (Darwin tvOS)</Name>
+    <ProjectGuid>{80e79a08-e879-4706-af50-311343cb8de1}</ProjectGuid>
+    <Mode>Island</Mode>
+    <WarnOnCaseMismatch>True</WarnOnCaseMismatch>
+    <Platform Condition="'$(Platform)' == ''">AnyCPU</Platform>
+    <GenerateDebugInfo>True</GenerateDebugInfo>
+    <DefineConstants>POSIX;DARWIN;MACOS;x86_64</DefineConstants>
+    <SDK>tvOS</SDK>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)' == 'Debug'">
+    <OutputPath>Bin\Debug</OutputPath>
+    <EnableAsserts>True</EnableAsserts>
+    <Optimize>False</Optimize>
+    <CaptureConsoleOutput>False</CaptureConsoleOutput>
+    <RuntimeVersion>v25</RuntimeVersion>
+    <XmlDoc>False</XmlDoc>
+    <XmlDocWarningLevel>WarningOnPublicMembers</XmlDocWarningLevel>
+    <EnableUnmanagedDebugging>False</EnableUnmanagedDebugging>
+    <GenerateDebugInfo>True</GenerateDebugInfo>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)' == 'Release'">
+    <OutputPath>Bin\Release</OutputPath>
+    <EnableAsserts>False</EnableAsserts>
+    <CaptureConsoleOutput>False</CaptureConsoleOutput>
+    <StartMode>Project</StartMode>
+    <CpuType>x86</CpuType>
+    <RuntimeVersion>v25</RuntimeVersion>
+    <XmlDoc>False</XmlDoc>
+    <XmlDocWarningLevel>WarningOnPublicMembers</XmlDocWarningLevel>
+    <EnableUnmanagedDebugging>False</EnableUnmanagedDebugging>
+    <GenerateDebugInfo>True</GenerateDebugInfo>
+  </PropertyGroup>
+  <ItemGroup>
+    <Compile Include="BoehmGC.pas" />
+    <Compile Include="Posix_FFI_x64.pas" />
+    <Compile Include="ManagedThreadPool.pas" />
+    <Compile Include="PosixHelpers.pas" />
+    <Compile Include="Darwin.pas" />
+    <Compile Include="CocoaGC.pas" />
+  </ItemGroup>
+  <ItemGroup>
+    <Reference Include="gc" />
+    <Reference Include="rtl" />
+  </ItemGroup>
+  <Import Project="$(MSBuildExtensionsPath)\RemObjects Software\Elements\RemObjects.Elements.Island.Darwin.targets" />
+  <Import Project="Island.Shared.projitems" Label="Shared" />
+</Project>
