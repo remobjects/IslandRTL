@@ -10,13 +10,14 @@
     <AllowLegacyCreate>False</AllowLegacyCreate>
     <Configuration Condition="'$(Configuration)' == ''">Release</Configuration>
     <TargetFrameworkVersion>v4.0</TargetFrameworkVersion>
-    <Name>Island (Darwin)</Name>
-    <ProjectGuid>{617c0962-5cb7-4e31-a80b-4f07c618cb83}</ProjectGuid>
+    <Name>Island (Darwin macOS)</Name>
+    <ProjectGuid>{f918a14e-26a5-449e-8f22-dc24ee904ce0}</ProjectGuid>
     <Mode>Island</Mode>
     <WarnOnCaseMismatch>True</WarnOnCaseMismatch>
     <Platform Condition="'$(Platform)' == ''">AnyCPU</Platform>
     <GenerateDebugInfo>True</GenerateDebugInfo>
     <DefineConstants>POSIX;DARWIN;MACOS;x86_64</DefineConstants>
+    <SDK>macOS</SDK>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)' == 'Debug'">
     <OutputPath>Bin\Debug</OutputPath>
