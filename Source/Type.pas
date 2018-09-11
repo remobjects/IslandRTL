@@ -1120,7 +1120,7 @@ begin
   var lLen := ProtoReadVarInt(var aSelf);
   var lData := new Byte[lLen];
   Array.Copy(aSelf, lData, 0, lLen);
-  result := TextConvert.UTF8ToString(lData);
+  result := Encoding.UTF8.GetString(lData);
   aSelf := aSelf + lLen;
 end;
 

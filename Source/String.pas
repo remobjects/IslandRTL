@@ -210,7 +210,7 @@ begin
   {$ELSEIF ANDROID or WEBASSEMBLY}
   var b := new Byte[aCharCount];
   Array.Copy(^Byte(c), b, 0, aCharCount);
-  exit TextConvert.UTF8ToString(b);
+  exit Encoding.UTF8.GetString(b);
   {$ELSE}
   var lNewData: ^AnsiChar := nil;
   var lNewLen: rtl.size_t := iconv_helper(TextConvert.fCurrentToUtf16, c, aCharCount, aCharCount * 2 + 5, out lNewData);
@@ -230,7 +230,7 @@ begin
   if len <> 0 then
     rtl.WideCharToMultiByte(rtl.CP_ACP, 0, @self.fFirstChar, Length, rtl.LPSTR(@result[0]), len, nil, nil);
   {$ELSEIF ANDROID or WEBASSEMBLY}
-  var b := TextConvert.StringToUtf8(self, false);
+  var b := Encoding.UTF8.GetBytes(self, false);
   result := new AnsiChar[b.Length + if aNullTerminate then 1 else 0];
   if b.Length <> 0 then
     memcpy(@result[0], @b[0], b.Length);
@@ -1101,7 +1101,7 @@ begin
   // JavaScript standard does not have lowerCase function with a locale as parameter yet
   exit WebAssembly.GetStringFromHandle(WebAssemblyCalls.ToLower(@fFirstChar, Length, false), true);
   {$ELSEIF POSIX AND NOT ANDROID}
-  var b := TextConvert.StringToUTF32LE(self);
+  var b := Encoding.UTF32LE.GetBytes(self);
   for i: Int32 := 0 to RemObjects.Elements.System.length(b)-1 step 4 do begin
     var ch := b[i] + (Int32(b[i+1]) shl 8) + (Int32(b[i+2]) shl 16) + (Int32(b[i+3]) shl 24);
     var u := rtl.towlower_l(ch, aLocale.PlatformLocale);
@@ -1110,7 +1110,7 @@ begin
     b[i+2] := (u shr 16) and $ff;
     b[i+3] := (u shr 24) and $ff;
   end;
-  result := TextConvert.UTF32LEToString(b);
+  result := Encoding.UTF32LE.GetString(b);
   {$ELSEIF ANDROID}
   result := AllocString(self.Length);
   var lErr: UErrorCode;
@@ -1132,7 +1132,7 @@ begin
   // JavaScript standard does not have upperCase function with a locale as parameter yet
   exit WebAssembly.GetStringFromHandle(WebAssemblyCalls.Toupper(@fFirstChar, Length, false), true);
   {$ELSEIF POSIX AND NOT ANDROID}
-  var b := TextConvert.StringToUTF32LE(self);
+  var b := Encoding.UTF32LE.GetBytes(self);
   for i: Int32 := 0 to RemObjects.Elements.System.length(b)-1 step 4 do begin
     var ch := b[i] + (Int32(b[i+1]) shl 8) + (Int32(b[i+2]) shl 16) + (Int32(b[i+3]) shl 24);
     var u := rtl.towupper_l(ch, aLocale.PlatformLocale);
@@ -1141,7 +1141,7 @@ begin
     b[i+2] := (u shr 16) and $ff;
     b[i+3] := (u shr 24) and $ff;
   end;
-  result := TextConvert.UTF32LEToString(b);
+  result := Encoding.UTF32LE.GetString(b);
   {$ELSEIF ANDROID}
   result := AllocString(self.Length);
   var lErr: UErrorCode;
