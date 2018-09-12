@@ -134,11 +134,8 @@ type
     class var args: ^^AnsiChar;
     class var envp: ^^AnsiChar;
     {$IFNDEF DARWIN}
-    class var
-      [SymbolName('__init_array_start')]
-      __init_array_start: Integer; external;
-      [SymbolName('__init_array_end')]
-      __init_array_end: Integer; external;
+    [SymbolName('__init_array_start')] class var __init_array_start: Integer; external;
+    [SymbolName('__init_array_end')] class var __init_array_end: Integer; external;
     {$ENDIF}
 
 {$IF not ANDROID and not DARWIN}

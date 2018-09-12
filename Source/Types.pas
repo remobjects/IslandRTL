@@ -2,7 +2,7 @@
 
 interface
 
-type  
+type
   ValueType = public abstract class
   end;
 
@@ -22,19 +22,19 @@ type
     method &Equals(obj: Object): Boolean; override;
 
     method &Equals(other: Boolean): Boolean;
-    begin 
+    begin
       exit self = other;
     end;
-    
+
     method CompareTo(a: Object): Integer;
-    begin 
-      if a is Boolean then 
+    begin
+      if a is Boolean then
         exit CompareTo(Boolean(a));
       exit CompareTo(a);
     end;
 
     method CompareTo(a: Boolean): Integer;
-    begin 
+    begin
       if self = a then exit 0;
       if self then exit 1;
       exit -1;
@@ -51,21 +51,21 @@ type
     method ToLower(aInvariant: Boolean := false): Char;
     method ToUpper(aInvariant: Boolean := false): Char;
 
-    
+
     method &Equals(other: Char): Boolean;
-    begin 
+    begin
       exit self = other;
     end;
-    
+
     method CompareTo(a: Object): Integer;
-    begin 
-      if a is Char then 
+    begin
+      if a is Char then
         exit CompareTo(Char(a));
       exit CompareTo(a);
     end;
 
     method CompareTo(a: Char): Integer;
-    begin 
+    begin
       if self < a then exit -1;
       if self > a then exit 1;
       exit 0;
@@ -78,21 +78,21 @@ type
     method GetHashCode: Integer; override;
     method &Equals(obj: Object): Boolean; override;
 
-    
+
     method &Equals(other: AnsiChar): Boolean;
-    begin 
+    begin
       exit self = other;
     end;
-    
+
     method CompareTo(a: Object): Integer;
-    begin 
-      if a is AnsiChar then 
+    begin
+      if a is AnsiChar then
         exit CompareTo(AnsiChar(a));
       exit CompareTo(a);
     end;
 
     method CompareTo(a: AnsiChar): Integer;
-    begin 
+    begin
       if self < a then exit -1;
       if self > a then exit 1;
       exit 0;
@@ -176,14 +176,14 @@ begin
   temp := NativeInt(rtl.CharLower(rtl.LPWSTR(temp)));
   result := chr(temp);
   {$ELSEIF POSIX OR WINDOWS}
-  var b := TextConvert.StringToUTF32LE(self);
+  var b := Encoding.UTF32LE.GetBytes(self);
   var ch := b[0] + (Int32(b[1]) shl 8) + (Int32(b[2]) shl 16) + (Int32(b[3]) shl 24);
   var u := rtl.towlower(ch);
   b[0] := u and $ff;
   b[1] := (u shr 8) and $ff;
   b[2] := (u shr 16) and $ff;
   b[3] := (u shr 24) and $ff;
-  result := TextConvert.UTF32LEToString(b)[0];
+  result := Encoding.UTF32LE.GetString(b)[0];
   {$ELSE}
   var str := String.FromChar(Self).ToLower(aInvariant);
   if length(str) > 0 then exit str.Item[0];
@@ -200,14 +200,14 @@ begin
   temp := NativeInt(rtl.CharUpper(rtl.LPWSTR(temp)));
   result := chr(temp);
   {$ELSEIF POSIX OR WINDOWS}
-  var b := TextConvert.StringToUTF32LE(self);
+  var b := Encoding.UTF32LE.GetBytes(self);
   var ch := b[0] + (Int32(b[1]) shl 8) + (Int32(b[2]) shl 16) + (Int32(b[3]) shl 24);
   var u := rtl.towupper(ch);
   b[0] := u and $ff;
   b[1] := (u shr 8) and $ff;
   b[2] := (u shr 16) and $ff;
   b[3] := (u shr 24) and $ff;
-  result := TextConvert.UTF32LEToString(b)[0];
+  result := Encoding.UTF32LE.GetString(b)[0];
   {$ELSE}
   var str := String.FromChar(Self).ToUpper(aInvariant);
   if length(str) > 0 then exit str.Item[0];
