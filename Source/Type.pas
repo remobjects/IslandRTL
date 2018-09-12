@@ -1024,7 +1024,7 @@ type
   // Keep in sync with compiler.
   IslandTypeFlags = public flags (
     // First 3 bits reserved for type kind
-    TypeKindMask  = (1 shl 0) or (1 shl 1) or (1 shl 2) ,
+  TypeKindMask  = (1 shl 0) or (1 shl 1) or (1 shl 2) or (1 shl 3),
     &Class = 0,
     &Enum = 1,
     EnumFlags = 2,
