@@ -1,4 +1,6 @@
 ﻿namespace RemObjects.Elements.System;
+uses 
+  Foundation;
 type
   ObjcStrong<T> = public lifetimestrategy (ObjcStrong) T;
   ObjcStrong = public record(ILifetimeStrategy<ObjcStrong>)
@@ -22,7 +24,9 @@ type
 
     class method &New(aTTY: ^Void; aSize: NativeInt): ^Void;
     begin
-      raise new Exception('Cocoa types should be allocated through alloc');
+      var lTmp: unretained NSObject;
+      lTmp := ^RemObjects.Oxygene.System.Class(@aTTY)^.alloc;
+      exit ^^Void(@lTmp)^;
     end;
 
 
@@ -109,7 +113,9 @@ type
 
     class method &New(aTTY: ^Void; aSize: NativeInt): ^Void;
     begin
-      raise new Exception('Cocoa types should be allocated through alloc');
+      var lTmp: unretained NSObject;
+      lTmp := ^RemObjects.Oxygene.System.Class(@aTTY)^.alloc;
+      exit ^^Void(@lTmp)^;
     end;
 
     class method Init(var Dest: ObjcWeak);
