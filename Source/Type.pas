@@ -202,7 +202,7 @@ type
       var lKey: Integer;
       var lTy: ProtoReadType;
       while (lPtr < fEnd) and ProtoReadHeader(var lPtr, out lKey, out lTy) do begin
-        if (lKey = 3) and (lTy = ProtoReadType.startgroup) then begin
+        if (lKey = 4) and (lTy = ProtoReadType.startgroup) then begin
           exit &Type.ReadAttributeValue(var lPtr).Value
         end else
           ProtoSkipValue(var lPtr, lTy);
