@@ -202,7 +202,7 @@ type
       var lKey: Integer;
       var lTy: ProtoReadType;
       while (lPtr < fEnd) and ProtoReadHeader(var lPtr, out lKey, out lTy) do begin
-        if (lKey = 3) and (lTy = ProtoReadType.startgroup) then begin
+        if (lKey = 4) and (lTy = ProtoReadType.startgroup) then begin
           exit &Type.ReadAttributeValue(var lPtr).Value
         end else
           ProtoSkipValue(var lPtr, lTy);
@@ -1024,7 +1024,7 @@ type
   // Keep in sync with compiler.
   IslandTypeFlags = public flags (
     // First 3 bits reserved for type kind
-    TypeKindMask  = (1 shl 0) or (1 shl 1) or (1 shl 2) ,
+  TypeKindMask  = (1 shl 0) or (1 shl 1) or (1 shl 2) or (1 shl 3),
     &Class = 0,
     &Enum = 1,
     EnumFlags = 2,
