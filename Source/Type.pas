@@ -621,7 +621,7 @@ type
 
      class method get_AllTypes: sequence of &Type; iterator;
      begin
-       var lSize: UInt64;
+       var lSize: {$IF __LP64__}UInt64{$ELSE}UInt32{$ENDIF};
        var lStart := rtl.getsectdata("__TEXT", "__text", @lSize);
        var lWork := ^^IslandTypeInfo(lStart);
        var lEnd := ^IslandTypeInfo(^Byte(lStart) + lSize);
