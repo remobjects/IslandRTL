@@ -203,7 +203,10 @@ type
           TypeCodes.IntPtr:   StoreReg(UInt64(NativeInt(aParam)));
           TypeCodes.UIntPtr:  StoreReg(UInt64(NativeUInt(aParam)));
         else
-          StoreReg(UInt64(InternalCalls.Cast(aParam)));
+          if aParamType.IsEnum then
+            StoreReg(UInt64(Int64(aParam)))
+          else
+            StoreReg(UInt64(InternalCalls.Cast(aParam)));
     //        // records
     //        // https://msdn.microsoft.com/en-us/library/zthk2dkh.aspx :
     //        // Structs/unions of size 8, 16, 32, or 64 bits and __m64 are passed as if they were integers of the same size.

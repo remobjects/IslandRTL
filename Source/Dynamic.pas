@@ -2,37 +2,37 @@
 
 type
   DynamicGetFlags = public flags (None = 0, FollowedByCall = 1, CaseSensitive = 2, CallDefault = 4, NilSafe = 8, NilOnBindingFailure = 16) of Integer;
-  DynamicBinaryOperator = public enum (  
+  DynamicBinaryOperator = public enum (
     None,
     &Add,
-    Sub, 
-    Mul, 
+    Sub,
+    Mul,
     IntDiv,
     &Div,
     &Mod,
     &Shl,
     &Shr,
     &UShr,
-    &And, 
-    &Or, 
+    &And,
+    &Or,
     &Xor,
-    GreaterEqual, 
-    LessEqual, 
-    Greater, 
-    Less, 
-    Equal, 
+    GreaterEqual,
+    LessEqual,
+    Greater,
+    Less,
+    Equal,
     NotEqual,
     &Implies = 25,
     extended = 28,
     Pow = 29,
-    BoolOr =   10000, 
+    BoolOr =   10000,
     BoolAnd =  10001);
   DynamicUnaryOperator = public enum (
     &Not = 0,
-    Neg = 1, 
-    Plus = 5, 
-    Increment = 6, 
-    Decrement = 7, 
+    Neg = 1,
+    Plus = 5,
+    Increment = 6,
+    Decrement = 7,
     DecrementPost = 13,
     ExtendedPrefix = 14,
     ExtendedPostfix = 15
@@ -44,7 +44,7 @@ type
     begin
       if length(aArgs) = 0 then exit aInstance;
       with matching lInst :=  &Array(aInstance) do begin
-        if aSet then begin 
+        if aSet then begin
           if (length(aArgs) <> 2) then
             raise new DynamicInvokeException('Cannot access indexer with more than 1 parameter');
           lInst.Set(Convert.ToInt32(aArgs[0]), aArgs[1]);
@@ -56,9 +56,9 @@ type
         end;
       end;
       var lName := aInstance.GetType.Properties.FirstOrDefault(a -> PropertyFlags.Default in a.Flags):Name;
-      if aSet then 
+      if aSet then
         SetMember(aInstance, coalesce(lName, 'Item'), 0, aArgs)
-      else 
+      else
         exit GetMember(aInstance, coalesce(lName, 'Item'), 0, aArgs);
     end;
 
@@ -74,20 +74,21 @@ type
               lPars := nil;
               break;
             end;
-          end else 
+          end else
           if not lPars[j].Type.isAssignableFrom(aArgs[j].GetType)  then begin
-            if lPars[j].Type.IsFloat and aArgs[j].GetType.IsIntegerOrFloat then begin 
-            end else if lPars[j].Type.IsInteger and aArgs[j].GetType.IsInteger then begin 
-            end else begin 
+            if lPars[j].Type.IsFloat and aArgs[j].GetType.IsIntegerOrFloat then begin
+            end else if lPars[j].Type.IsInteger and aArgs[j].GetType.IsInteger then begin
+            end else if lPars[j].Type.IsEnum and aArgs[j].GetType.IsInteger then begin
+            end else begin
               lPars := nil;
               break;
             end;
           end;
         end;
-        if lPars <> nil then begin 
+        if lPars <> nil then begin
           for j: Integer := 0 to lPars.Length -1 do begin
             if not lPars[j].Type.isAssignableFrom(aArgs[j].GetType)  then begin
-              case lPars[j].Type.Code of 
+              case lPars[j].Type.Code of
                 TypeCodes.SByte: aArgs[j] := Convert.ToSByte(aArgs[j]);
                 TypeCodes.Byte: aArgs[j] := Convert.ToByte(aArgs[j]);
                 TypeCodes.Int16: aArgs[j] := Convert.ToInt16(aArgs[j]);
@@ -114,7 +115,7 @@ type
         raise new NullReferenceException;
       end;
       var lDyn := IDynamicObject(aInstance);
-      if lDyn <> nil then begin 
+      if lDyn <> nil then begin
         exit lDyn.GetMember(aName, aGetFlags, aArgs);
       end;
 
@@ -124,8 +125,8 @@ type
       var lCL := &Type(aInstance);
       var lStatic := lCL <> nil;
       if not lStatic then lCL := aInstance.GetType;
-                      
-      while lCL <> nil do begin      
+
+      while lCL <> nil do begin
         if length(aArgs) = 0 then begin
           for each el in lCL.Fields do begin
             if (not lStatic or el.IsStatic)
@@ -133,11 +134,11 @@ type
                exit el.GetValue(aInstance);
             end;
           end;
-          if (DynamicGetFlags.CallDefault in DynamicGetFlags(aGetFlags)) and (DynamicGetFlags.FollowedByCall not in DynamicGetFlags(aGetFlags))  then 
+          if (DynamicGetFlags.CallDefault in DynamicGetFlags(aGetFlags)) and (DynamicGetFlags.FollowedByCall not in DynamicGetFlags(aGetFlags))  then
           for each el in lCL.Methods do begin
             if (not lStatic or el.IsStatic)
               and (el.Arguments.Count = 0)
-              and (el.Type <> nil) 
+              and (el.Type <> nil)
               and if DynamicGetFlags.CaseSensitive in DynamicGetFlags(aGetFlags) then el.Name = aName else el.Name.EqualsIgnoreCase(aName) then begin
                exit el.Invoke(aInstance, []);
             end;
@@ -155,15 +156,15 @@ type
         var lProps := lCL.Properties.Where(el ->(not lStatic or el.IsStatic)
             and (el.Arguments.Count = length(aArgs))
             and if DynamicGetFlags.CaseSensitive in DynamicGetFlags(aGetFlags) then el.Name = aName else el.Name.EqualsIgnoreCase(aName)).Select(a -> a.Read).Where(a -> a <> nil).ToList;
-        if lProps.Count > 0 then begin 
+        if lProps.Count > 0 then begin
           var lMethod := FindBestMatch(new DynamicMethodGroup(aInstance, lProps), aArgs);
-          if lMethod <> nil then begin 
+          if lMethod <> nil then begin
             exit lMethod.Invoke(aInstance, aArgs);
           end;
         end;
         lCL := if lCL.fValue^.ParentType <> nil then new &Type(lCL.fValue^.ParentType) else nil;
       end;
-    
+
       if DynamicGetFlags.NilOnBindingFailure in DynamicGetFlags(aGetFlags) then exit nil;
       raise new DynamicInvokeException('No element with this name: '+aName);
     end;
@@ -175,7 +176,7 @@ type
         raise new NullReferenceException;
       end;
       var lDyn := IDynamicObject(aInstance);
-      if lDyn <> nil then begin 
+      if lDyn <> nil then begin
         lDyn.SetMember(aName, aGetFlags, aArgs);
         exit;
       end;
@@ -188,8 +189,8 @@ type
       var lStatic := lCL <> nil;
       if not lStatic then lCL := aInstance.GetType;
       if aArgs.Length = 0 then raise new Exception('No value provided for SetMember');
-      
-      while lCL <> nil do begin      
+
+      while lCL <> nil do begin
         if length(aArgs) = 1 then begin
           for each el in lCL.Fields do begin
             if (not lStatic or el.IsStatic)
@@ -202,9 +203,9 @@ type
         var lProps := lCL.Properties.Where(el ->(not lStatic or el.IsStatic)
             and (el.Arguments.Count = length(aArgs)-1)
             and if DynamicGetFlags.CaseSensitive in DynamicGetFlags(aGetFlags) then el.Name = aName else el.Name.EqualsIgnoreCase(aName)).Select(a -> a.Write).Where(a -> a <> nil).ToList;
-        if lProps.Count > 0 then begin 
+        if lProps.Count > 0 then begin
           var lMethod := FindBestMatch(new DynamicMethodGroup(aInstance, lProps), aArgs);
-          if lMethod <> nil then begin 
+          if lMethod <> nil then begin
             lMethod.Invoke(aInstance, aArgs);
             exit;
           end;
@@ -225,7 +226,7 @@ type
     end;
 
     method Invoke(aInstance: Object;  aGetFlags: Integer; aArgs: array of Object): Object;
-    begin 
+    begin
       if aInstance = nil then begin
         if DynamicGetFlags.NilSafe in DynamicGetFlags(aGetFlags) then exit nil;
         if DynamicGetFlags.NilOnBindingFailure in DynamicGetFlags(aGetFlags) then exit nil;
@@ -244,7 +245,7 @@ type
       var lMethod: &MethodInfo := FindBestMatch(lGroup, aArgs);
       if lMethod = nil then
         raise new DynamicInvokeException('No overload with these parameters');
-      if MethodFlags.Constructor in lMethod.Flags then begin 
+      if MethodFlags.Constructor in lMethod.Flags then begin
         result := InternalCalls.Cast<Object>(DefaultGC.New(lMethod.DeclaringType.RTTI, lMethod.DeclaringType.SizeOfType));
         lMethod.invoke(result, aArgs);
         exit;
@@ -253,248 +254,248 @@ type
     end;
 
     method Binary(aLeft, aRight: Object; aOp: Integer): Object;
-    begin 
+    begin
       var lVal := IDynamicObject(aLeft);
       if assigned(lVal) and lVal.Binary(aRight, true, DynamicBinaryOperator(aOp), out result) then exit;
       lVal := IDynamicObject(aRight);
       if assigned(lVal) and lVal.Binary(aLeft, false, DynamicBinaryOperator(aOp), out result) then exit;
-      
-      case DynamicBinaryOperator(aOp) of 
-        DynamicBinaryOperator.Add: 
-          begin 
+
+      case DynamicBinaryOperator(aOp) of
+        DynamicBinaryOperator.Add:
+          begin
             if (aLeft = nil) or (aRight = nil) then exit nil;
             var lL := aLeft.GetType;
             var lR := aRight.GetType;
-            if lL.IsInteger and lR.IsInteger then 
-              if lL.IsSigned and lR.IsSigned then 
+            if lL.IsInteger and lR.IsInteger then
+              if lL.IsSigned and lR.IsSigned then
                 exit Convert.Toint64(aLeft) + Convert.ToInt64(aRight)
               else
                 exit Convert.ToUint64(aLeft) + Convert.ToUInt64(aRight);
-            if lL.IsIntegerOrFloat and lR.IsIntegerOrFloat then 
+            if lL.IsIntegerOrFloat and lR.IsIntegerOrFloat then
               exit Convert.ToDouble(aLeft) + Convert.ToDouble(aRight);
-            if (lL.Code = TypeCodes.String) or (lR.Code = TypeCodes.String) then 
+            if (lL.Code = TypeCodes.String) or (lR.Code = TypeCodes.String) then
               exit aLeft.ToString + aRight.ToString;
           end;
-        DynamicBinaryOperator.Sub: 
-          begin 
+        DynamicBinaryOperator.Sub:
+          begin
             if (aLeft = nil) or (aRight = nil) then exit nil;
             var lL := aLeft.GetType;
             var lR := aRight.GetType;
-            if lL.IsInteger and lR.IsInteger then 
-              if lL.IsSigned and lR.IsSigned then 
+            if lL.IsInteger and lR.IsInteger then
+              if lL.IsSigned and lR.IsSigned then
                 exit Convert.Toint64(aLeft) - Convert.ToInt64(aRight)
               else
                 exit Convert.ToUint64(aLeft) - Convert.ToUInt64(aRight);
-            if lL.IsIntegerOrFloat and lR.IsIntegerOrFloat then 
+            if lL.IsIntegerOrFloat and lR.IsIntegerOrFloat then
               exit Convert.ToDouble(aLeft) - Convert.ToDouble(aRight);
         end;
 
-        DynamicBinaryOperator.Mul: 
-          begin 
+        DynamicBinaryOperator.Mul:
+          begin
             if (aLeft = nil) or (aRight = nil) then exit nil;
             var lL := aLeft.GetType;
             var lR := aRight.GetType;
-            if lL.IsInteger and lR.IsInteger then 
-              if lL.IsSigned and lR.IsSigned then 
+            if lL.IsInteger and lR.IsInteger then
+              if lL.IsSigned and lR.IsSigned then
                 exit Convert.Toint64(aLeft) * Convert.ToInt64(aRight)
               else
                 exit Convert.ToUint64(aLeft) * Convert.ToUInt64(aRight);
-            if lL.IsIntegerOrFloat and lR.IsIntegerOrFloat then 
+            if lL.IsIntegerOrFloat and lR.IsIntegerOrFloat then
               exit Convert.ToDouble(aLeft) * Convert.ToDouble(aRight);
           end;
 
         DynamicBinaryOperator.IntDiv,
-        DynamicBinaryOperator.Div: 
-          begin 
+        DynamicBinaryOperator.Div:
+          begin
             if (aLeft = nil) or (aRight = nil) then exit nil;
             var lL := aLeft.GetType;
             var lR := aRight.GetType;
-            if lL.IsInteger and lR.IsInteger then 
-              if lL.IsSigned and lR.IsSigned then 
+            if lL.IsInteger and lR.IsInteger then
+              if lL.IsSigned and lR.IsSigned then
                 exit Convert.Toint64(aLeft) / Convert.ToInt64(aRight)
               else
                 exit Convert.ToUint64(aLeft) / Convert.ToUInt64(aRight);
-            if lL.IsIntegerOrFloat and lR.IsIntegerOrFloat then 
+            if lL.IsIntegerOrFloat and lR.IsIntegerOrFloat then
               exit Convert.ToDouble(aLeft) / Convert.ToDouble(aRight);
           end;
 
-        DynamicBinaryOperator.Mod:           
-        begin 
+        DynamicBinaryOperator.Mod:
+        begin
             if (aLeft = nil) or (aRight = nil) then exit nil;
             var lL := aLeft.GetType;
             var lR := aRight.GetType;
-            if lL.IsInteger and lR.IsInteger then 
-              if lL.IsSigned and lR.IsSigned then 
+            if lL.IsInteger and lR.IsInteger then
+              if lL.IsSigned and lR.IsSigned then
                 exit Convert.Toint64(aLeft) mod Convert.ToInt64(aRight)
               else
                 exit Convert.ToUint64(aLeft) mod Convert.ToUInt64(aRight);
-            if lL.IsIntegerOrFloat and lR.IsIntegerOrFloat then 
+            if lL.IsIntegerOrFloat and lR.IsIntegerOrFloat then
               exit Convert.ToDouble(aLeft) mod Convert.ToDouble(aRight);
           end;
 
-        DynamicBinaryOperator.Shl: 
-        begin 
+        DynamicBinaryOperator.Shl:
+        begin
             if (aLeft = nil) or (aRight = nil) then exit nil;
             var lL := aLeft.GetType;
             var lR := aRight.GetType;
-            if lL.IsInteger and lR.IsInteger then 
-              if lL.IsSigned and lR.IsSigned then 
+            if lL.IsInteger and lR.IsInteger then
+              if lL.IsSigned and lR.IsSigned then
                 exit Convert.Toint64(aLeft) shl Convert.ToInt64(aRight)
               else
                 exit Convert.ToUint64(aLeft) shl Convert.ToUInt64(aRight);
           end;
-        DynamicBinaryOperator.Shr: 
-        begin 
+        DynamicBinaryOperator.Shr:
+        begin
             if (aLeft = nil) or (aRight = nil) then exit nil;
             var lL := aLeft.GetType;
             var lR := aRight.GetType;
-            if lL.IsInteger and lR.IsInteger then 
-              if lL.IsSigned and lR.IsSigned then 
+            if lL.IsInteger and lR.IsInteger then
+              if lL.IsSigned and lR.IsSigned then
                 exit Convert.Toint64(aLeft) shr Convert.ToInt64(aRight)
               else
                 exit Convert.ToUint64(aLeft) shr Convert.ToUInt64(aRight);
           end;
-        DynamicBinaryOperator.And: 
-        begin 
+        DynamicBinaryOperator.And:
+        begin
             if (aLeft = nil) or (aRight = nil) then exit nil;
             var lL := aLeft.GetType;
             var lR := aRight.GetType;
-            if (lL.Code = TypeCodes.Boolean) and (lR.Code = TypeCodes.Boolean) then 
+            if (lL.Code = TypeCodes.Boolean) and (lR.Code = TypeCodes.Boolean) then
               exit Boolean(aLeft) and Boolean(aRight);
-            if lL.IsInteger and lR.IsInteger then 
-              if lL.IsSigned and lR.IsSigned then 
+            if lL.IsInteger and lR.IsInteger then
+              if lL.IsSigned and lR.IsSigned then
                 exit Convert.ToInt64(aLeft) and Convert.ToInt64(aRight)
               else
                 exit Convert.ToUInt64(aLeft) and Convert.ToUInt64(aRight);
           end;
-        DynamicBinaryOperator.Or: 
-        begin 
+        DynamicBinaryOperator.Or:
+        begin
             if (aLeft = nil) or (aRight = nil) then exit nil;
             var lL := aLeft.GetType;
             var lR := aRight.GetType;
-            if (lL.Code = TypeCodes.Boolean) and (lR.Code = TypeCodes.Boolean) then 
+            if (lL.Code = TypeCodes.Boolean) and (lR.Code = TypeCodes.Boolean) then
               exit Boolean(aLeft) or Boolean(aRight);
-            if lL.IsInteger and lR.IsInteger then 
-              if lL.IsSigned and lR.IsSigned then 
+            if lL.IsInteger and lR.IsInteger then
+              if lL.IsSigned and lR.IsSigned then
                 exit Convert.ToInt64(aLeft) or Convert.ToInt64(aRight)
               else
                 exit Convert.ToUInt64(aLeft) or Convert.ToUInt64(aRight);
           end;
-        DynamicBinaryOperator.Xor: 
-        begin 
+        DynamicBinaryOperator.Xor:
+        begin
             if (aLeft = nil) or (aRight = nil) then exit nil;
             var lL := aLeft.GetType;
             var lR := aRight.GetType;
-            if (lL.Code = TypeCodes.Boolean) and (lR.Code = TypeCodes.Boolean) then 
+            if (lL.Code = TypeCodes.Boolean) and (lR.Code = TypeCodes.Boolean) then
               exit Boolean(aLeft) xor Boolean(aRight);
-            if lL.IsInteger and lR.IsInteger then 
-              if lL.IsSigned and lR.IsSigned then 
+            if lL.IsInteger and lR.IsInteger then
+              if lL.IsSigned and lR.IsSigned then
                 exit Convert.ToInt64(aLeft) xor Convert.ToInt64(aRight)
               else
                 exit Convert.ToUInt64(aLeft) xor Convert.ToUInt64(aRight);
           end;
-        DynamicBinaryOperator.Less: begin 
+        DynamicBinaryOperator.Less: begin
             if (aLeft = nil) or (aRight = nil) then exit nil;
             var lL := aLeft.GetType;
             var lR := aRight.GetType;
-            if lL.IsInteger and lR.IsInteger then 
-              if lL.IsSigned and lR.IsSigned then 
+            if lL.IsInteger and lR.IsInteger then
+              if lL.IsSigned and lR.IsSigned then
                 exit Convert.Toint64(aLeft) < Convert.ToInt64(aRight)
               else
                 exit Convert.ToUint64(aLeft) < Convert.ToUInt64(aRight);
-            if lL.IsIntegerOrFloat and lR.IsIntegerOrFloat then 
+            if lL.IsIntegerOrFloat and lR.IsIntegerOrFloat then
               exit Convert.ToDouble(aLeft) < Convert.ToDouble(aRight);
-            if (lL.Code = TypeCodes.String) or (lR.Code = TypeCodes.String) then 
+            if (lL.Code = TypeCodes.String) or (lR.Code = TypeCodes.String) then
               exit aLeft.ToString < aRight.ToString;
         end;
-        DynamicBinaryOperator.GreaterEqual: begin 
+        DynamicBinaryOperator.GreaterEqual: begin
             if (aLeft = nil) or (aRight = nil) then exit nil;
             var lL := aLeft.GetType;
             var lR := aRight.GetType;
-            if lL.IsInteger and lR.IsInteger then 
-              if lL.IsSigned and lR.IsSigned then 
+            if lL.IsInteger and lR.IsInteger then
+              if lL.IsSigned and lR.IsSigned then
                 exit Convert.Toint64(aLeft) >= Convert.ToInt64(aRight)
               else
                 exit Convert.ToUint64(aLeft) >= Convert.ToUInt64(aRight);
-            if lL.IsIntegerOrFloat and lR.IsIntegerOrFloat then 
+            if lL.IsIntegerOrFloat and lR.IsIntegerOrFloat then
               exit Convert.ToDouble(aLeft) >= Convert.ToDouble(aRight);
-            if (lL.Code = TypeCodes.String) or (lR.Code = TypeCodes.String) then 
+            if (lL.Code = TypeCodes.String) or (lR.Code = TypeCodes.String) then
               exit aLeft.ToString >= aRight.ToString;
         end;
-        DynamicBinaryOperator.LessEqual: begin 
+        DynamicBinaryOperator.LessEqual: begin
             if (aLeft = nil) or (aRight = nil) then exit nil;
             var lL := aLeft.GetType;
             var lR := aRight.GetType;
-            if lL.IsInteger and lR.IsInteger then 
-              if lL.IsSigned and lR.IsSigned then 
+            if lL.IsInteger and lR.IsInteger then
+              if lL.IsSigned and lR.IsSigned then
                 exit Convert.Toint64(aLeft) <= Convert.ToInt64(aRight)
               else
                 exit Convert.ToUint64(aLeft) <= Convert.ToUInt64(aRight);
-            if lL.IsIntegerOrFloat and lR.IsIntegerOrFloat then 
+            if lL.IsIntegerOrFloat and lR.IsIntegerOrFloat then
               exit Convert.ToDouble(aLeft) <= Convert.ToDouble(aRight);
-            if (lL.Code = TypeCodes.String) or (lR.Code = TypeCodes.String) then 
+            if (lL.Code = TypeCodes.String) or (lR.Code = TypeCodes.String) then
               exit aLeft.ToString <= aRight.ToString;
         end;
-        DynamicBinaryOperator.Greater: begin 
+        DynamicBinaryOperator.Greater: begin
             if (aLeft = nil) or (aRight = nil) then exit nil;
             var lL := aLeft.GetType;
             var lR := aRight.GetType;
-            if lL.IsInteger and lR.IsInteger then 
-              if lL.IsSigned and lR.IsSigned then 
+            if lL.IsInteger and lR.IsInteger then
+              if lL.IsSigned and lR.IsSigned then
                 exit Convert.Toint64(aLeft) < Convert.ToInt64(aRight)
               else
                 exit Convert.ToUint64(aLeft) > Convert.ToUInt64(aRight);
-            if lL.IsIntegerOrFloat and lR.IsIntegerOrFloat then 
+            if lL.IsIntegerOrFloat and lR.IsIntegerOrFloat then
               exit Convert.ToDouble(aLeft) > Convert.ToDouble(aRight);
-            if (lL.Code = TypeCodes.String) or (lR.Code = TypeCodes.String) then 
+            if (lL.Code = TypeCodes.String) or (lR.Code = TypeCodes.String) then
               exit aLeft.ToString > aRight.ToString;
         end;
-        DynamicBinaryOperator.Equal: begin 
+        DynamicBinaryOperator.Equal: begin
             if (aLeft = nil) or (aRight = nil) then exit (aLeft = nil) and (aRight = nil);
             var lL := aLeft.GetType;
             var lR := aRight.GetType;
-            if lL.IsInteger and lR.IsInteger then 
-              if lL.IsSigned and lR.IsSigned then 
+            if lL.IsInteger and lR.IsInteger then
+              if lL.IsSigned and lR.IsSigned then
                 exit Convert.Toint64(aLeft) = Convert.ToInt64(aRight)
               else
                 exit Convert.ToUint64(aLeft) = Convert.ToUInt64(aRight);
-            if lL.IsIntegerOrFloat and lR.IsIntegerOrFloat then 
+            if lL.IsIntegerOrFloat and lR.IsIntegerOrFloat then
               exit Convert.ToDouble(aLeft) = Convert.ToDouble(aRight);
-            if (lL.Code in [TypeCodes.Char, TypeCodes.String]) or (lR.Code in [TypeCodes.Char, TypeCodes.String]) then 
+            if (lL.Code in [TypeCodes.Char, TypeCodes.String]) or (lR.Code in [TypeCodes.Char, TypeCodes.String]) then
               exit aLeft.ToString = aRight.ToString;
-            if (lL.Code = TypeCodes.Boolean) or (lR.Code = TypeCodes.Boolean) then 
+            if (lL.Code = TypeCodes.Boolean) or (lR.Code = TypeCodes.Boolean) then
               exit Boolean(aLeft) = Boolean(aRight);
         end;
-        DynamicBinaryOperator.NotEqual: begin 
+        DynamicBinaryOperator.NotEqual: begin
             if (aLeft = nil) or (aRight = nil) then exit not ((aLeft = nil) and (aRight = nil));
             var lL := aLeft.GetType;
             var lR := aRight.GetType;
-            if lL.IsInteger and lR.IsInteger then 
-              if lL.IsSigned and lR.IsSigned then 
+            if lL.IsInteger and lR.IsInteger then
+              if lL.IsSigned and lR.IsSigned then
                 exit Convert.Toint64(aLeft) <> Convert.ToInt64(aRight)
               else
                 exit Convert.ToUint64(aLeft) <> Convert.ToUInt64(aRight);
-            if lL.IsIntegerOrFloat and lR.IsIntegerOrFloat then 
+            if lL.IsIntegerOrFloat and lR.IsIntegerOrFloat then
               exit Convert.ToDouble(aLeft) <> Convert.ToDouble(aRight);
-            if (lL.Code in [TypeCodes.Char, TypeCodes.String]) or (lR.Code in [TypeCodes.Char, TypeCodes.String]) then 
+            if (lL.Code in [TypeCodes.Char, TypeCodes.String]) or (lR.Code in [TypeCodes.Char, TypeCodes.String]) then
               exit aLeft.ToString <> aRight.ToString;
-            if (lL.Code = TypeCodes.Boolean) or (lR.Code = TypeCodes.Boolean) then 
+            if (lL.Code = TypeCodes.Boolean) or (lR.Code = TypeCodes.Boolean) then
               exit Boolean(aLeft) <> Boolean(aRight);
         end;
 
       end;
-      
+
       raise new Exception('Binary operator '+aOp+' not supported on these type');
     end;
 
     method Unary(aLeft: Object; aOp: Integer): Object;
-    begin 
+    begin
       var lVal := IDynamicObject(aLeft);
       if assigned(lVal) and lVal.Unary(DynamicUnaryOperator(aOp), out result) then exit;
-      case DynamicUnaryOperator(aOp) of 
-        DynamicUnaryOperator.Not: begin 
+      case DynamicUnaryOperator(aOp) of
+        DynamicUnaryOperator.Not: begin
           if aLeft = nil then exit nil;
-          case TypeCodes(aLeft.GetType.Code) of 
+          case TypeCodes(aLeft.GetType.Code) of
             TypeCodes.Boolean: exit not Boolean(aLeft);
             TypeCodes.SByte: exit not SByte(aLeft);
             TypeCodes.Byte: exit not Byte(aLeft);
@@ -508,9 +509,9 @@ type
             TypeCodes.UIntPtr: exit not UIntPtr(aLeft);
           end;
         end;
-        DynamicUnaryOperator.Neg: begin 
+        DynamicUnaryOperator.Neg: begin
           if aLeft = nil then exit nil;
-          case TypeCodes(aLeft.GetType.Code) of 
+          case TypeCodes(aLeft.GetType.Code) of
             TypeCodes.SByte: exit - SByte(aLeft);
             TypeCodes.Int16: exit - Int16(aLeft);
             TypeCodes.Int32: exit - Int32(aLeft);
@@ -519,14 +520,14 @@ type
             TypeCodes.Double: exit - Double(aLeft);
           end;
         end;
-        DynamicUnaryOperator.Plus: 
+        DynamicUnaryOperator.Plus:
           exit aLeft;
       end;
       raise new Exception('Unary operator '+aOp+' not supported on this type');
     end;
   end;
 
-  IDynamicObject = public interface 
+  IDynamicObject = public interface
     method GetMember(aName: String; aGetFlags: Integer; aArgs: array of Object): Object;
     method SetMember(aName: String; aGetFlags: Integer; aArgs: array of Object): Object;
     method Invoke(aName: String; aGetFlags: Integer; aArgs: array of Object): Object;

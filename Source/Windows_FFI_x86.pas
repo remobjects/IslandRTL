@@ -113,7 +113,11 @@ type
           TypeCodes.Double: PushDouble(Double(aVal));
           TypeCodes.IntPtr: PushU32(NativeInt(aVal));
           TypeCodes.UIntPtr: PushU32(NativeUInt(aVal));
-        else begin
+        else
+          if aParamType.IsEnum then
+            PushU64(UInt64(Int64(aVal)))
+            //PushU32(UInt32(Int64(aVal)))
+          else begin
           // TODO: add record support
             assert(not aParamType.IsValueType);
             PushU32(UInt32(InternalCalls.Cast(aVal)));
