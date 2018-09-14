@@ -17,7 +17,7 @@ type
   {$IFNDEF DARWIN}
   dliteratecb = function (info :^__struct_dl_phdr_info; size: size_t; data: ^Void): Integer;
   {$ENDIF}
-  {$IFDEF ARM}rtl.__struct__Unwind_Exception = rtl.__struct__Unwind_Control_Block;{$ENDIF}
+  {$IFDEF ARM and not DARWIN}rtl.__struct__Unwind_Exception = rtl.__struct__Unwind_Control_Block;{$ENDIF}
   ExternalCalls = public static class
   private
     class var atexitlist: ^atexitrec;
@@ -310,9 +310,9 @@ end;
 
 method ExternalCalls.IntExceptionHandler(aVersion: Integer; aState: rtl._Unwind_Action; aClass: UInt64; aEx: ^rtl.__struct__Unwind_Exception; aCtx: ^Void): rtl._Unwind_Reason_Code;
 begin
-  if (aVersion <> 1) or (aEx = nil) or (aCtx = nil) then exit {$IFNDEF ARM}rtl._Unwind_Reason_Code._URC_FATAL_PHASE1_ERROR{$ELSE}rtl._Unwind_Reason_Code._URC_FAILURE{$ENDIF};
+  if (aVersion <> 1) or (aEx = nil) or (aCtx = nil) then exit {$IFNDEF ARM and not DARWIN}rtl._Unwind_Reason_Code._URC_FATAL_PHASE1_ERROR{$ELSE}rtl._Unwind_Reason_Code._URC_FAILURE{$ENDIF};
   var lMine := aClass = ElementsExceptionCode;
-  {$IFDEF ARM}
+  {$IFDEF ARM and not DARWIN}
   if (aState  and rtl._Unwind_State._US_ACTION_MASK) <> rtl._Unwind_State._US_UNWIND_FRAME_STARTING then begin
      if rtl.__gnu_unwind_frame (aEx, aCtx) <> rtl._Unwind_Reason_Code._URC_OK  then
       exit rtl._Unwind_Reason_Code._URC_FAILURE;
@@ -333,7 +333,7 @@ begin
       end;
       exit rtl._Unwind_Reason_Code._URC_HANDLER_FOUND;
     end;
-    {$IFDEF ARM}
+    {$IFDEF ARM and not DARWIN}
      if rtl.__gnu_unwind_frame (aEx, aCtx) <> rtl._Unwind_Reason_Code._URC_OK  then
       exit rtl._Unwind_Reason_Code._URC_FAILURE;
     {$ENDIF}
@@ -355,7 +355,7 @@ begin
         exit rtl._Unwind_Reason_Code._URC_INSTALL_CONTEXT;
       end;
 
-      {$IFDEF ARM}
+      {$IFDEF ARM and not DARWIN}
        if rtl.__gnu_unwind_frame (aEx, aCtx) <> rtl._Unwind_Reason_Code._URC_OK  then
         exit rtl._Unwind_Reason_Code._URC_FAILURE;
       {$ENDIF}
@@ -374,7 +374,7 @@ begin
         exit rtl._Unwind_Reason_Code._URC_INSTALL_CONTEXT;
       end;
       // we can't parse the LSDA table and the exception isn't ours, touble.
-      exit {$IFNDEF ARM}rtl._Unwind_Reason_Code._URC_FATAL_PHASE1_ERROR{$ELSE}rtl._Unwind_Reason_Code._URC_FAILURE{$ENDIF};
+      exit {$IFNDEF ARM and not DARWIN}rtl._Unwind_Reason_Code._URC_FATAL_PHASE1_ERROR{$ELSE}rtl._Unwind_Reason_Code._URC_FAILURE{$ENDIF};
     end;
     var lRecord := ^ElementsException(aEx);
     lRecord := ^ElementsException(@^Byte(lRecord)[-Int32((^Byte(@lRecord^.Unwind) - ^Byte(lRecord)))]);
@@ -388,7 +388,7 @@ begin
     free(lRecord);
     exit rtl._Unwind_Reason_Code._URC_INSTALL_CONTEXT;
   end;
-  exit {$IFNDEF ARM}rtl._Unwind_Reason_Code._URC_FATAL_PHASE1_ERROR{$ELSE}rtl._Unwind_Reason_Code._URC_FAILURE{$ENDIF};
+  exit {$IFNDEF ARM and not DARWIN}rtl._Unwind_Reason_Code._URC_FATAL_PHASE1_ERROR{$ELSE}rtl._Unwind_Reason_Code._URC_FAILURE{$ENDIF};
 end;
 
 method ExternalCalls.ElementsBeginCatch(obj: ^Void): ^Void;
