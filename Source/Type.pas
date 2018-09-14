@@ -562,7 +562,7 @@ type
       {$ELSEIF ANDROID}
       raise new NotImplementedException();
       {$ELSEIF POSIX}
-        {$IFDEF cpu64}
+        {$IFDEF cpu64 and not ARM}
         // only x64 is supported
         result := FFI.Call(Pointer, cc, var lParams, lModes, lTypes, &Type);
         {$ELSE}

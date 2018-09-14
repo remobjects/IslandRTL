@@ -1,6 +1,6 @@
 ﻿namespace RemObjects.Elements.System;
 {$HIDE H7}
-{$IFDEF cpu64}
+{$IFDEF cpu64 and not arm}
 type
   X64CallData = record
     _RDI,               //  0
