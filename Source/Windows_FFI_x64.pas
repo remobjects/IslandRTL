@@ -203,8 +203,12 @@ type
           TypeCodes.IntPtr:   StoreReg(UInt64(NativeInt(aParam)));
           TypeCodes.UIntPtr:  StoreReg(UInt64(NativeUInt(aParam)));
         else
-          if aParamType.IsEnum then
-            StoreReg(UInt64(Int64(aParam)))
+          if aParamType.IsEnum then begin
+            if aParamType.Constants.FirstOrDefault().Type.Code = TypeCodes.Int32 then
+              StoreReg(UInt64(Int32(aParam)))
+            else
+              StoreReg(UInt64(Int64(aParam)));
+          end
           else
             StoreReg(UInt64(InternalCalls.Cast(aParam)));
     //        // records
