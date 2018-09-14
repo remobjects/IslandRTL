@@ -214,7 +214,7 @@ type
   ExportAttribute = public DllExportAttribute;
   ImportAttribute = public DllImportAttribute;
 
-  [AttributeUsage(AttributeTargets.Method)]
+  [AttributeUsage(AttributeTargets.Method or AttributeTargets.Assembly, AllowMultiple := true)]
   DllImportAttribute = public class(Attribute)
   private
     fDllName: String;
