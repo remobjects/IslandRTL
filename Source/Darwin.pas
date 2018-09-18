@@ -24,4 +24,15 @@
 
 [assembly:DllImport('/System/Library/Frameworks/CoreFoundation.framework/Versions/A/CoreFoundation', EntryPoint := '___CFConstantStringClassReference')]
 
+type
+  [AttributeUsage(AttributeTargets.Method)]
+  ReturnsNotRetainedAttribute = public class(Attribute)
+  public
+  end;
+  
+  [AttributeUsage(AttributeTargets.Method)]
+  ReturnsRetainedAttribute = public class(Attribute)
+  public
+  end;
+
 end.
