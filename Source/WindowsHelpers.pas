@@ -319,6 +319,7 @@ method DllMain(aModule: rtl.HMODULE; aReason: rtl.DWORD; aReserved: ^Void): Bool
   
 // This is needed by anything msvc compiled; it's the offset in fs for the tls array
 var
+  _dllmain: DllMainType := @DllMain;public;
   [SymbolName('_tls_index'), Used]
   _tls_index: Cardinal; public; 
   [SectionName('.tls'), SymbolName('_tls_start')]
@@ -346,7 +347,7 @@ var
   [Used, SymbolName('_load_config_used')]
   _load_config_used: rtl.IMAGE_LOAD_CONFIG_DIRECTORY := 
   new rtl.IMAGE_LOAD_CONFIG_DIRECTORY(
-    size := sizeof(rtl.IMAGE_LOAD_CONFIG_DIRECTORY),
+    size := sizeOf(rtl.IMAGE_LOAD_CONFIG_DIRECTORY),
     SecurityCookie := UIntPtr(^UIntPtr(@__security_cookie)),
     //GuardCFCheckFunctionPointer := UIntPtr(^UIntPtr(@__guard_check_icall_fptr)),
     //GuardCFDispatchFunctionPointer := UIntPtr(^UIntPtr(@__guard_dispatch_icall_fptr)),
@@ -1164,7 +1165,7 @@ type
 method DllMainCRTStartup(aModule: rtl.HMODULE; aReason: rtl.DWORD; aReserved: ^Void): Boolean;
 begin
   ExternalCalls.fModuleHandle := aModule;
-  var lMain: DllMainType := @DllMain;
+  var lMain: DllMainType := _dllmain;
   if lMain = nil then exit true;
   exit lMain(aModule, aReason, aReserved);
 end;
