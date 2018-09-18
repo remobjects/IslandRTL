@@ -407,7 +407,7 @@ method main: Integer;
 [SymbolName('mainCRTStartup')]
 method mainCRTStartup: Integer;
 
-[SymbolName('_DllMainCRTStartup'), CallingConvention(CallingConvention.Stdcall)]
+[SymbolName('_DllMainCRTStartup'), CallingConvention(CallingConvention.Stdcall), DisableOptimizations, DisableInlining]
 method DllMainCRTStartup(aModule: rtl.HMODULE; aReason: rtl.DWORD; aReserved: ^Void): Boolean;
 
 method ElementsThreadHelper(aParam: ^Void): rtl.DWORD;
@@ -1164,10 +1164,10 @@ type
 
 method DllMainCRTStartup(aModule: rtl.HMODULE; aReason: rtl.DWORD; aReserved: ^Void): Boolean;
 begin
+  var lMain: ^DllMainType := @_dllmain;
   ExternalCalls.fModuleHandle := aModule;
-  var lMain: DllMainType := _dllmain;
-  if lMain = nil then exit true;
-  exit lMain(aModule, aReason, aReserved);
+  if lMain^ = nil then exit true;
+  exit lMain^(aModule, aReason, aReserved);
 end;
 
 
