@@ -109,4 +109,15 @@ type
     end;
   end;
 
+
+  operator implicit(aValue: Object): Foundation.NSObject;
+  begin
+    exit IslandToCocoaBridge.FromValue(aValue);
+  end;
+
+  operator implicit(aValue: Foundation.NSObject): Object;
+  begin
+    exit CocoaToIslandBridge.FromValue(aValue);
+  end;
+
 end.
