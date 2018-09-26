@@ -2,7 +2,7 @@
 
 [assembly:AssemblyDefineAttribute('DARWIN')]
 
-// These are "required" dllimports; pretty much all projects use this. 
+// These are "required" dllimports; pretty much all projects use this.
 [assembly:DllImport('/usr/lib/libobjc.A.dylib', EntryPoint := '__objc_empty_cache')]
 [assembly:DllImport('/usr/lib/libobjc.A.dylib', EntryPoint := '__objc_empty_vtable')]
 [assembly:DllImport('/usr/lib/libobjc.A.dylib', EntryPoint := '_objc_release')]
@@ -31,7 +31,7 @@ type
   ReturnsNotRetainedAttribute = public class(Attribute)
   public
   end;
-  
+
   [AttributeUsage(AttributeTargets.Method)]
   ReturnsRetainedAttribute = public class(Attribute)
   public
@@ -40,32 +40,33 @@ type
   IslandToCocoaBridge = public class(Foundation.NSObject)
   private
     constructor(aValue: Object);
-    begin 
+    begin
       Value := aValue;
     end;
   public
-    class method FromValue(aValue: Object): IslandToCocoaBridge;
-    begin 
+    class method FromValue(aValue: Object): Foundation.NSObject;
+    begin
       if aValue = nil then exit nil;
+      if aValue is CocoaToIslandBridge then exit CocoaToIslandBridge(aValue).Value;
       exit new IslandToCocoaBridge(aValue);
     end;
 
     property Value: Object; readonly;
 
     method description: String;
-    begin 
+    begin
       var lValue := Value.ToString.ToAnsiChars(true);
 
       exit Foundation.NSString.stringWithCString(lValue);
     end;
 
     method hash: Foundation.NSUInteger;
-    begin 
+    begin
       exit Value.GetHashCode;
     end;
 
     method isEqual(aTar: id): Boolean;
-    begin 
+    begin
       var lOther := IslandToCocoaBridge(aTar);
       if lOther = nil then exit false;
 
@@ -74,15 +75,16 @@ type
   end;
 
   CocoaToIslandBridge = public class
-  private 
+  private
     constructor(aValue: Foundation.NSObject);
-    begin 
+    begin
       Value := aValue;
     end;
   public
-    class method FromValue(aValue: Foundation.NSObject): CocoaToIslandBridge;
-    begin 
+    class method FromValue(aValue: Foundation.NSObject): Object;
+    begin
       if aValue = nil then exit nil;
+      if aValue is IslandToCocoaBridge then exit IslandToCocoaBridge(aValue).Value;
       exit new CocoaToIslandBridge(aValue);
     end;
 
@@ -94,14 +96,14 @@ type
     end;
 
     method &Equals(obj: Object): Boolean; override;
-    begin 
+    begin
       var lOther := CocoaToIslandBridge(obj);
       if lOther = nil then exit false;
       exit lOther.Value.isEqual(Value);
     end;
 
     method ToString: String; override;
-    begin 
+    begin
       var s := Value.Description;
       exit String.FromPAnsiChars(s.UTF8String);
     end;
