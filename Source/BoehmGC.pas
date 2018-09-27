@@ -1,7 +1,7 @@
 ﻿namespace RemObjects.Elements.System;
 uses gc;
 
-[assembly:DefaultObjectLifetimeStrategy(typeOf(BoehmGC))]
+[assembly:DefaultObjectLifetimeStrategy(typeOf(BoehmGC), typeof(ForeignBoehmGC))]
 
 type
   GC<T> = public lifetimestrategy (BoehmGC) T;
