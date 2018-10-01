@@ -67,7 +67,7 @@ type
     method LastIndexOfAny(anyOf: array of Char): Integer;
     method Substring(StartIndex: Integer): not nullable String;
     method Substring(StartIndex: Integer; aLength: Integer): not nullable String;
-    method Split(Separator: String; aRemoveEmptyEntries: Boolean := false): array of String;
+    method Split(Separator: String; aRemoveEmptyEntries: Boolean := false; aMax: Integer := -1): array of String;
     method Replace(OldValue, NewValue: String): not nullable String;
     method PadStart(TotalWidth: Integer): String; inline;
     method PadStart(TotalWidth: Integer; PaddingChar: Char): String;
@@ -648,58 +648,28 @@ begin
   exit String.Compare(self:ToLower(), Value:ToLower());
 end;
 
-method String.Split(Separator: String; aRemoveEmptyEntries: Boolean := false): array of String;
+method String.Split(Separator: String; aRemoveEmptyEntries: Boolean := false; aMax: Integer := -1): array of String;
 begin
-  if (Separator = nil) or (Separator = '') then begin
+  if (Separator = nil) or (Separator = '') or (aMax in [0, 1]) then begin
     result := new String[1];
     result[0] := self;
     exit result;
   end;
-  // detect array dimension
-  var Sep_len := Separator.Length;
-  var self_len := Self.Length;
-  var len := 0;
-  var i := 0;
-  var last := 0;
-  repeat
-    i := self.IndexOf(Separator, i);
-    if i ≠ -1 then begin
-      if ((i ≠ last) and (i + Sep_len < self_len - 1)) or not aRemoveEmptyEntries then
-        len := len+1;
-      i := i + Sep_len;
-      last := i;
-      if i >= self_len then break;
-    end;
-  until i = -1;
-
-  result := new String[len+1];
-  if len = 0 then begin
-    result[0] := self;
-    exit result;
+  var lRes := new List<String>;
+  var lIdx := 0;
+  while lIdx < Length do begin
+    var lSplitIndex := IndexOf(Separator, lIdx);
+    if lSplitIndex = -1 then break;
+    if not aRemoveEmptyEntries or (lSplitIndex - lIdx > 0) then
+      lRes.Add(Substring(lIdx, lSplitIndex - lIdx));
+    lIdx := lSplitIndex + Separator.Length;
+    if lRes.Count + 1 = aMax then break;
+  end;
+  if not aRemoveEmptyEntries or (Length - lIdx > 0) then begin
+    lRes.Add(Substring(lIdx, Length - lIdx));
   end;
 
-  // fill array
-  i := 0;
-  var old_i:=0;
-  len:=0;
-  repeat
-    i := self.IndexOf(Separator, old_i);
-    if i <> -1 then begin
-      if (not aRemoveEmptyEntries) or (i-old_i > 0) then begin
-        result[len]:= self.Substring(old_i, i-old_i);
-        len := len+1;
-      end;
-      i := i + Sep_len;
-      old_i:=i;
-    end;
-  until i = -1;
-
-  if old_i < self_len then begin
-    if (not aRemoveEmptyEntries) or (self_len-old_i > 0) then
-      result[len] := self.Substring(old_i, self_len-old_i)
-  end
-  else if (not aRemoveEmptyEntries) and (old_i = self_len) then
-    result[len] := '';
+  exit lRes.ToArray;
 end;
 
 {$IFDEF WINDOWS}
