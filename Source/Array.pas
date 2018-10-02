@@ -19,7 +19,6 @@ type
   public
     property Length: Integer read fLength;
 
-
     class method Copy<T>(aSource: ^T; aDest: Array of T; aDestOffset: Integer; aCount: Integer);
     begin
       if aCount = 0 then exit;
@@ -43,7 +42,7 @@ type
     method &Set(i: Integer; v: Object); abstract;
   end;
 
-  &Array<T> = public class(&Array, IEnumerable<T>, IEnumerable)
+  &Array<T> = public class(&Array, IEnumerable<T>, IEnumerable, IList<T>, IList)
   assembly
     fFirstItem: T;
 
@@ -54,15 +53,60 @@ type
       exit GetEnumerator;
     end;
 
+    property Count: Integer read Length;
+    method set_IntItem(aIndex: Integer; aVal: Object);
+    begin
+      Item[aIndex] := T(aVal);
+    end;
+    property IntItem[i: Integer]: Object read Item[i] write set_IntItem; implements IList.Item;
+
+    method &Add(val: Object);
+    begin
+      raise new NotSupportedException;
+    end;
+
+    method &Add(val: T);
+    begin
+      raise new NotSupportedException;
+    end;
+
+    method &Remove(val: Object): Boolean;
+    begin
+      raise new NotSupportedException;
+    end;
+
+    method &Remove(val: T): Boolean;
+    begin
+      raise new NotSupportedException;
+    end;
+
+    method Clear;
+    begin
+      raise new NotSupportedException;
+    end;
+
+    method Contains(val: Object): Boolean;
+    begin
+      if val is T then
+        exit Contains(T(val));
+      exit false;
+    end;
+
+    method Contains(val: T): Boolean;
+    begin
+      for i: Integer := 0 to Length -1 do
+        if EqualityComparer.Equals(Item[i], val) then exit true;
+      exit false;
+    end;
   public
     property Item[I: Integer]: T read (@fFirstItem)[I] write (@fFirstItem)[I];
     method Get(i: Integer): Object; override;
-    begin 
+    begin
       exit Item[i];
     end;
 
     method &Set(i: Integer; v: Object); override;
-    begin 
+    begin
       Item[i] := T(v);
     end;
 

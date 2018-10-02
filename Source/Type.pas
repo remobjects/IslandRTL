@@ -749,6 +749,7 @@ type
            ProtoSkipValue(var lPtr, lTy);
       end;
     end;
+
     method get_NestedTypes: sequence of &Type; iterator;
     begin
       var lPtr := fValue^.Ext^.MemberInfoData;
@@ -761,6 +762,20 @@ type
           ProtoSkipValue(var lPtr, lTy);
       end;
     end;
+
+    method get_GenericArguments: sequence of &Type; iterator;
+    begin
+      var lPtr := fValue^.Ext^.MemberInfoData;
+      var lKey: Integer;
+      var lTy: ProtoReadType;
+      while ProtoReadHeader(var lPtr, out lKey, out lTy) do begin
+        if (lKey = 7) and (lTy = ProtoReadType.varint) then begin
+          yield new &Type(^IslandTypeInfo(fValue^.Ext^.MemberInfoList[ProtoReadVarInt(var lPtr)]))
+        end else
+          ProtoSkipValue(var lPtr, lTy);
+      end;
+    end;
+
     class method ReadAttribute(fValue: ^IslandTypeInfo; var lPtr: ^Byte): CustomAttribute; assembly;
     begin
       var lKey: Integer;
@@ -950,6 +965,7 @@ type
     property Constants: sequence of ConstantInfo read get_Constants;
     property Properties: sequence of PropertyInfo read get_Properties;
     property Events: sequence of EventInfo read get_Events;
+    property GenericArguments: sequence of &Type read get_GenericArguments;
 
     method Instantiate<T>: Object; where T is ILifetimeStrategy<T>; // Creates a new instance of this type and calls the default constructor, fails if none is present!
     begin
@@ -970,7 +986,19 @@ type
     method IsAssignableFrom(aOrg: &Type): Boolean;
     begin
       if aOrg = nil then exit false;
-      exit aOrg.IsSubclassOf(self);
+      if (self.Flags and IslandTypeFlags.TypeKindMask) = IslandTypeFlags.Interface then begin
+        var b := aOrg;
+        while b <> nil do begin
+          if b = self then exit true;
+          for each el in b.Interfaces do begin
+            writeLn(el.Name);
+            if IsAssignableFrom(el) then exit true;
+          end;
+          b := b.BaseType;
+        end;
+        exit false;
+      end else
+        exit aOrg.IsSubclassOf(self);
     end;
   end;
 
@@ -1040,9 +1068,10 @@ type
     MemberInfoPresent = 16,
     Generic = 32) of UInt64;
 
-    ProtoReadType = assembly (varint = 0, b64 = 1, length = 2, message = 3, b32 = 5, startgroup = 4, endgroup = 6);
+  ProtoReadType = assembly (varint = 0, b64 = 1, length = 2, message = 3, b32 = 5, startgroup = 4, endgroup = 6);
 
-  TypeCodes = public flags(
+  TypeCodes = public enum(
+    None = -1,
     Void = 0,
     Boolean = 1,
     Char = 2,

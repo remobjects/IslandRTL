@@ -63,5 +63,6 @@
     <Compile Include="Span.pas" />
     <Compile Include="$(MSBuildThisFileDirectory)Encoding.pas" />
     <Compile Include="$(MSBuildThisFileDirectory)GenericNullable.pas" />
+    <Compile Include="$(MSBuildThisFileDirectory)Serializable.pas" />
   </ItemGroup>
 </Project>

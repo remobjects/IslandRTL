@@ -19,10 +19,15 @@ type
     method Dispose;
   end;
 
-  List<T> = public class(IEnumerable<T>, ICollection<T>)
+  List<T> = public class(IEnumerable<T>, ICollection<T>, IList, IList<T>)
   private
     fItems: array of T;
     fCount: Integer := 0;
+    method set_IntItem(i: Integer; value: Object);
+    begin
+      SetItem(i, T(value));
+    end;
+
     method SetItem(&Index: Integer; Value: T);
     method GetItem(&Index: Integer): T;
     method Grow(aCapacity: Integer);
@@ -36,6 +41,23 @@ type
     begin
       exit GetEnumerator;
     end;
+
+    method &Add(val: Object);
+    begin
+      Add(T(val));
+    end;
+
+    method &Remove(val: Object): Boolean;
+    begin
+      exit Remove(T(val));
+    end;
+
+    method Contains(val: Object): Boolean;
+    begin
+      exit Contains(T(val));
+    end;
+
+    property IntItem[i: Integer]: Object read Item[i] write set_IntItem; implements IList.Item;
   public
     constructor;
     constructor(aItems: List<T>);
@@ -86,9 +108,9 @@ type
   end;
 
   LinkedListNode<T> = public class
-  public 
+  public
     constructor(aValue: T; aPrev: LinkedListNode<T>);
-    begin 
+    begin
       Previous := aPrev;
       Value := aValue;
     end;

@@ -31,6 +31,22 @@ type
     method Remove(val: T): Boolean;
   end;
 
+  IList = public interface(ICollection)
+    method Add(val: Object);
+    method Clear;
+    method Contains(val: Object): Boolean;
+    method Remove(val: Object): Boolean;
+    property Item[i: Integer]: Object read write; default;
+  end;
+
+  IList<T> = public interface(ICollection<T>, IList)
+    method Add(val: T);
+    method Clear;
+    method Contains(val: T): Boolean;
+    method Remove(val: T): Boolean;
+    property Item[i: Integer]: T read write; default;
+  end;
+
   IComparable<T> = public interface
     method CompareTo(a: T): Integer;
   end;
@@ -39,11 +55,11 @@ type
     method CompareTo(a: Object): Integer;
   end;
 
-  INotifyPropertyChanged = public interface 
+  INotifyPropertyChanged = public interface
     event PropertyChanged: Action<Object, String>;
   end;
 
-  INotifyPropertyChanging = public interface 
+  INotifyPropertyChanging = public interface
     event PropertyChanging: Action<Object, String>;
   end;
 
