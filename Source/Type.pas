@@ -970,7 +970,7 @@ type
     method Instantiate<T>: Object; where T is ILifetimeStrategy<T>; // Creates a new instance of this type and calls the default constructor, fails if none is present!
     begin
       var lCtor: MethodInfo := Methods.FirstOrDefault(a -> (MethodFlags.Constructor in a.Flags) and not a.Arguments.Any);
-      if lCtor = nil then raise new Exception('No default constructor could be found!');
+      if lCtor = nil then raise new Exception('No default constructor could be found on type '+Name);
       var lRealCtor := CtorHelper(lCtor.Pointer);
       if lRealCtor = nil then raise new Exception('No default constructor could be found!');
       result := InternalCalls.Cast<Object>(T.New(fValue, SizeOfType));
@@ -991,7 +991,6 @@ type
         while b <> nil do begin
           if b = self then exit true;
           for each el in b.Interfaces do begin
-            writeLn(el.Name);
             if IsAssignableFrom(el) then exit true;
           end;
           b := b.BaseType;

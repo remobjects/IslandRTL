@@ -83,15 +83,18 @@ type
     /// <summary>Read the current value as a simple value</summary>
     method ReadValue: Object; abstract;
     /// <summary>Returns true if this is the end of a list, and ends the list. False if there's more stuff to read</summary>
-    method EndList: Boolean; abstract;
+    method EndList; abstract;
     /// <summary>Ends an object</summary>
     method EndObject; abstract;
+    /// <summary>Select a list element by index</summary>
+    method SelectListElement(aIndex: Integer; out aHint: &Type): DeserializerType; abstract;
 
     method Read(aType: &Type; aDT: DeserializerType; aDest: Object): Object;
     begin
       if aDT = DeserializerType.None then exit nil;
-      if typeOf(IDeserializable).IsAssignableFrom(aType) then begin
+      if aDT <> DeserializerType.Simple then
         result := coalesce(aDest, aType.Instantiate);
+      if result is IDeserializable then begin
         IDeserializable(result).Deserialize(aDT, self);
         exit;
       end;
@@ -127,11 +130,16 @@ type
       if typeOf(IList).IsAssignableFrom(aType) then begin
         if aDT <> DeserializerType.List then raise new SerializationException('List serialization type expected');
         result := coalesce(aDest, aType.Instantiate());
+
+        writeLn(aType.Name);
         var lSubType := aType.GenericArguments.FirstOrDefault;
-        while not EndList do begin
-          var lItem := SelectProperty(nil, out var lHint);
+        var lIndex := 0;
+        loop begin
+          var lItem := SelectListElement(lIndex, out var lHint);
+          if lItem = DeserializerType.None then break;
           var lVal: Object := Read(coalesce(lHint, lSubType), lItem, nil);
           IList(result).Add(lVal);
+          inc(lIndex);
         end;
         EndList;
         exit;
@@ -150,10 +158,10 @@ type
         var lDT := SelectProperty(el, out lHint);
         if lDT = DeserializerType.None then continue;
         if (lDT <> DeserializerType.List) and (el.WriteMethod = nil) then continue;
-        var lValue := Read(coalesce(lHint, el.Type), lDT, if (lDT <> DeserializerType.List) and (el.WriteMethod = nil) then el.GetValue(result, []));
+        var lValue := Read(coalesce(lHint, el.Type), lDT, if (lDT = DeserializerType.List) and ((el.WriteMethod = nil) or (el.Write.Access = MemberAccess.Private)) then el.GetValue(result, []));
         if lValue = nil then continue;
 
-        if (lDT <> DeserializerType.List) and (el.WriteMethod = nil) then  begin
+        if (lDT =  DeserializerType.List) and ((el.WriteMethod = nil) or (el.Write.Access = MemberAccess.Private)) then  begin
           continue;
         end;
         el.SetValue(result, [], lValue);
