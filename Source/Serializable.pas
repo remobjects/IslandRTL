@@ -131,7 +131,6 @@ type
         if aDT <> DeserializerType.List then raise new SerializationException('List serialization type expected');
         result := coalesce(aDest, aType.Instantiate());
 
-        writeLn(aType.Name);
         var lSubType := aType.GenericArguments.FirstOrDefault;
         var lIndex := 0;
         loop begin
@@ -146,7 +145,6 @@ type
       end;
 
       if aDT <> DeserializerType.Object then  raise new SerializationException('Object serialization type expected');
-      result := aType.Instantiate();
 
       for each el in aType.Properties do begin
         if el.IsStatic then continue;
