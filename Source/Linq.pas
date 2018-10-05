@@ -148,6 +148,19 @@ begin
     exit  el;
 end;
 
+extension method ISequence<T>.Contains(aItem: T): Boolean; where T is IComparable<T>; public;
+begin
+  for each el in self do begin
+    if not assigned(el) then begin
+      if not assigned(aItem) then
+        exit true;
+    end;
+    if el.CompareTo(aItem) = 0 then
+      exit true;
+  end;
+  exit false;
+end;
+
 extension method ISequence<T>.Any(): Boolean; public;
 begin
   for each el in self do
