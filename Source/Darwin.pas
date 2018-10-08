@@ -109,4 +109,20 @@ type
     end;
   end;
 
+  [AttributeUsage(AttributeTargets.Field or AttributeTargets.Property)]
+  IBOutlet = public class(Attribute)
+
+  end;
+  [AttributeUsage(AttributeTargets.Method)]
+  IBAction = public class(Attribute)
+  public
+    constructor; empty;
+    constructor(aName: String); empty;
+  end;
+
+  [AttributeUsage(AttributeTargets.Class)]
+  IBObject = public class(Attribute)
+
+  end;
+
 end.
