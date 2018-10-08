@@ -22,7 +22,6 @@ extension method ISequence<T>.Any(aBlock: not nullable block(aItem: not nullable
 begin
   for each el in self do
     if aBlock(el) then exit true;
-  exit false;
 end;
 
 extension method ISequence<T>.Take(aCount: Integer): /*not nullable*/ ISequence<T>; public; iterator;
@@ -64,7 +63,6 @@ extension method ISequence<T>.OrderBy<C>(aBlock: not nullable block(aItem: not n
 begin
   var lList := ToList();
   lList.Sort((a, b) -> aBlock(a).CompareTo(aBlock(b)));
-
   exit lList;
 end;
 
@@ -72,7 +70,6 @@ extension method ISequence<T>.OrderByDescending<C>(aBlock: not nullable block(aI
 begin
   var lList := ToList();
   lList.Sort((a, b) -> aBlock(b).CompareTo(aBlock(a)));
-
   exit lList;
 end;
 
@@ -148,11 +145,22 @@ begin
     exit  el;
 end;
 
+extension method ISequence<T>.Contains(aItem: T): Boolean; where T is IComparable<T>; public;
+begin
+  for each el in self do begin
+    if not assigned(el) then begin
+      if not assigned(aItem) then
+        exit true;
+    end
+    else if el.CompareTo(aItem) = 0 then
+      exit true;
+  end;
+end;
+
 extension method ISequence<T>.Any(): Boolean; public;
 begin
   for each el in self do
     exit true;
-  exit false;
 end;
 
 extension method ISequence<T>.ToArray(): array of T; public;
