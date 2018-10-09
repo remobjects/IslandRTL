@@ -6,9 +6,22 @@ type
     method GetHashCode(obj: T):Integer;
   end;
 
+  IEquatable = public interface
+    method Equals(a: Object): Boolean;
+    method GetHashCode: Integer;
+  end;
+
   IEquatable<T> = public interface
     method Equals(other: T): Boolean;
     method GetHashCode: Integer;
+  end;
+
+  IComparable<T> = public interface
+    method CompareTo(a: T): Integer;
+  end;
+
+  IComparable = public interface
+    method CompareTo(a: Object): Integer;
   end;
 
   INumber = public interface(IComparable)
@@ -16,16 +29,16 @@ type
 
   IIntegerNumber = public interface(INumber)
   end;
-  
-  EqualityComparer = public static class 
-  public 
+
+  EqualityComparer = public static class
+  public
     method Equals<T>(a, b: T): Boolean;
-    begin 
+    begin
       exit DefaultEqualityComparer<T>.Instance.Equals(a, b);
     end;
 
     method GetHashCode<T>(a: T): Integer;
-    begin 
+    begin
       exit DefaultEqualityComparer<T>.Instance.GetHashCode(a);
     end;
   end;
@@ -77,7 +90,7 @@ type
     end;
   end;
 
-  
+
   ObjectReferenceComparer<T> = assembly class(IEqualityComparer<T>)
   private
     fComparator: block(a, b: T): Integer;

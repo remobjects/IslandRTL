@@ -59,17 +59,17 @@ begin
   end;
 end;
 
-extension method ISequence<T>.OrderBy<C>(aBlock: not nullable block(aItem: not nullable T): C): /*not nullable*/ ISequence<T>; public;  where C is IComparable<C>;
+extension method ISequence<T>.OrderBy<C>(aBlock: not nullable block(aItem: not nullable T): C): /*not nullable*/ ISequence<T>; public;
 begin
   var lList := ToList();
-  lList.Sort((a, b) -> aBlock(a).CompareTo(aBlock(b)));
+  lList.Sort((a, b) -> (aBlock(a) as IComparable).CompareTo(aBlock(b)));
   exit lList;
 end;
 
-extension method ISequence<T>.OrderByDescending<C>(aBlock: not nullable block(aItem: not nullable T): C): /*not nullable*/ ISequence<T>; public; where C is IComparable<C>;
+extension method ISequence<T>.OrderByDescending<C>(aBlock: not nullable block(aItem: not nullable T): C): /*not nullable*/ ISequence<T>; public;
 begin
   var lList := ToList();
-  lList.Sort((a, b) -> aBlock(b).CompareTo(aBlock(a)));
+  lList.Sort((a, b) -> (aBlock(b) as IComparable).CompareTo(aBlock(a)));
   exit lList;
 end;
 
@@ -132,27 +132,59 @@ begin
     if not list.Contains(el) then yield el;
 end;
 
-extension method ISequence<T>.FirstOrDefault: {nullable} T; public;
+extension method ISequence<T>.FirstOrDefault: nullable T; public;
 begin
   for each el in self do
     exit el;
 end;
 
-extension method ISequence<T>.FirstOrDefault(aBlock: not nullable block(aItem: not nullable T): Boolean): /*nullable*/ T; public;
+extension method ISequence<T>.FirstOrDefault(aBlock: not nullable block(aItem: not nullable T): Boolean): nullable T; public;
 begin
   for each el in self do
   if aBlock(el) then
     exit  el;
 end;
 
-extension method ISequence<T>.Contains(aItem: T): Boolean; where T is IComparable<T>; public;
+extension method ISequence<T>.Min: nullable T; public;
+begin
+  for each i in self do
+    if not assigned(result) or (assigned(i) and ((result as IComparable).CompareTo(i) < 0)) then
+      result := i;
+end;
+
+extension method ISequence<T>.Min<T,U>(aBlock: not nullable block(aItem: not nullable T): U): nullable U; public;
+begin
+  for each i in self do begin
+    var i2 := aBlock(i);
+    if not assigned(result) or (assigned(i2) and ((i2 as IComparable).CompareTo(i) < 0)) then
+      result := i2;
+  end;
+end;
+
+extension method ISequence<T>.Max: nullable T; public;
+begin
+  for each i in self do
+    if not assigned(result) or (assigned(i) and ((result as IComparable).CompareTo(i) > 0)) then
+      result := i;
+end;
+
+extension method ISequence<T>.Max<T,U>(aBlock: not nullable block(aItem: not nullable T): U): nullable U; public;
+begin
+  for each i in self do begin
+    var i2 := aBlock(i);
+    if not assigned(result) or (assigned(i2) and ((i2 as IComparable).CompareTo(i) > 0)) then
+      result := i2;
+  end;
+end;
+
+extension method ISequence<T>.Contains(aItem: T): Boolean; public;
 begin
   for each el in self do begin
     if not assigned(el) then begin
       if not assigned(aItem) then
         exit true;
     end
-    else if el.CompareTo(aItem) = 0 then
+    else if (el as IComparable).CompareTo(aItem) = 0 then
       exit true;
   end;
 end;
@@ -163,18 +195,17 @@ begin
     exit true;
 end;
 
-extension method ISequence<T>.ToArray(): array of T; public;
+extension method ISequence<T>.ToArray(): not nullable array of T; public;
 begin
   if self is array of T then exit self as array of T;
   if self is List<T> then exit (self as List<T>).ToArray();
   exit self.ToList().ToArray;
 end;
 
-extension method ISequence<T>.ToList(): List<T>; public;
+extension method ISequence<T>.ToList(): not nullable List<T>; public;
 begin
   if self is List<T> then exit self as List<T>;
   if self is array of T then exit new List<T>(self as array of T);
-
   result := new List<T>(self);
 end;
 

@@ -67,41 +67,59 @@ type
       exit Value.GetHashCode;
     end;
 
-    method isEqual(aTar: id): Boolean;
+    method isEqual(aOther: id): Boolean;
     begin
-      var lOther := IslandToCocoaBridge(aTar);
-      if lOther = nil then exit false;
+      if aOther is IslandToCocoaBridge then
+        result := Value.Equals(IslandToCocoaBridge(aOther).Value);
+    end;
 
-      exit lOther.Value.Equals(Value);
+    method compareTo(aOther: Foundation.NSObject): Foundation.NSComparisonResult;
+    begin
+      if aOther is IslandToCocoaBridge then
+        exit (Value as IComparable).CompareTo(IslandToCocoaBridge(aOther).Value) as Foundation.NSComparisonResult
+      else
+        result := Foundation.NSComparisonResult.OrderedAscending /* -1, Cocoa before wrapped Island */
     end;
   end;
 
-  CocoaToIslandBridge = public class
+  CocoaToIslandBridge = public class(IComparable, IEquatable)
   private
     constructor(aValue: Foundation.NSObject);
     begin
       Value := aValue;
     end;
   public
+
     class method FromValue(aValue: Foundation.NSObject): Object;
     begin
       if aValue = nil then exit nil;
       if aValue is IslandToCocoaBridge then exit IslandToCocoaBridge(aValue).Value;
-      exit new CocoaToIslandBridge(aValue);
+      result := new CocoaToIslandBridge(aValue);
     end;
 
     property Value: Foundation.NSObject; readonly;
 
     method GetHashCode: Integer; override;
     begin
-      exit Value.hash;
+      result := Value.hash;
     end;
 
-    method &Equals(obj: Object): Boolean; override;
+    method &Equals(aOther: Object): Boolean; override;
     begin
-      var lOther := CocoaToIslandBridge(obj);
-      if lOther = nil then exit false;
-      exit lOther.Value.isEqual(Value);
+      if aOther is CocoaToIslandBridge then
+        result := Value.isEqual(CocoaToIslandBridge(aOther).Value);
+    end;
+
+    method CompareTo(aOther: Object): Integer;
+    begin
+      if aOther is CocoaToIslandBridge then begin
+        //81174: Darwin: selector support
+        //if not Value.respondsToSelector(selector(compareTo:)) then
+          //raise new Exception("Object does not implement compareTo:");
+        //81175: Darwin: cannot call compareTo: after casting to id
+        //exit id(Value).compareTo(CocoaToIslandBridge(aOther).Value);
+      end;
+      exit -1; /* Island before wrapped Cocoa */
     end;
 
     method ToString: String; override;
