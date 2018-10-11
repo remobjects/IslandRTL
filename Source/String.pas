@@ -5,7 +5,7 @@ interface
 type
   LCMapStringTransformMode = assembly enum (None, Upper, Lower);
 
-  String = public class(Object,IEnumerable<Char>, IEnumerable, IComparable, IComparable<String>)
+  String = public partial class(Object,IEnumerable<Char>, IEnumerable, IComparable, IComparable<String>)
   assembly {$HIDE H6}
     fLength: Integer;
     fFirstChar: Char;{$SHOW H6}
@@ -14,9 +14,6 @@ type
     {$IFDEF WINDOWS}
     method doLCMapString(aInvariant: Boolean := false; aMode:LCMapStringTransformMode := LCMapStringTransformMode.None):String;
     method doLCMapString(aLocale: Locale; aMode:LCMapStringTransformMode := LCMapStringTransformMode.None): String;
-    {$ENDIF}
-    {$IF DARWIN}
-    fNSString: Foundation.NSString;
     {$ENDIF}
     method TestChar(c: Char; Arr : array of Char): Boolean;
     class method RaiseError(aMessage: String);
@@ -49,10 +46,10 @@ type
     method &Remove(StartIndex: Integer; Count: Integer): String;
     method CompareTo(Value: String): Integer;
     method CompareToIgnoreCase(Value: String): Integer;
-    method &Equals(Value: String): Boolean;
-    method &Equals(obj: Object): Boolean; override;
-    method EqualsIgnoreCase(Value: String): Boolean;
-    method EqualsIgnoreCaseInvariant(Value: String): Boolean;
+    method &Equals(aOther: String): Boolean;
+    method &Equals(aOther: Object): Boolean; override;
+    method EqualsIgnoreCase(aOther: String): Boolean;
+    method EqualsIgnoreCaseInvariant(aOther: String): Boolean;
     class method &Join(Separator: String; Value: array of String): String;
     class method &Join(Separator: String; Value: IEnumerable<String>): String;
     class method &Join<T>(Separator: String; Value: IEnumerable<T>): String;
@@ -100,32 +97,8 @@ type
     class operator Less(Value1, Value2: String): Boolean;
     class operator GreaterOrEqual(Value1, Value2: String): Boolean;
     class operator LessOrEqual(Value1, Value2: String): Boolean;
-    class operator Equal(Value1, Value2: String): Boolean;
-    class operator NotEqual(Value1, Value2: String): Boolean;
-
-    {$IF DARWIN}
-    class operator Implicit(aValue: nullable String): nullable Foundation.NSString;
-    begin
-      if assigned(aValue) then begin
-        if not assigned(aValue.fNSString) then
-          aValue.fNSString := new Foundation.NSString withCharacters/*NoCopy*/(@aValue.fFirstChar) length(aValue.Length)/* freeWhenDone(false)*/;
-        result := aValue.fNSString;
-      end;
-    end;
-
-    class operator Implicit(aValue: nullable Foundation.NSString): nullable String;
-    begin
-      if assigned(aValue) then begin
-        var lUsedLength: Foundation.NSUInteger;
-        var lRemainingRange: Foundation.NSRange;
-        var lLength := aValue.length;
-        result := AllocString(lLength);
-        if not aValue.getBytes(@result.fFirstChar) maxLength(lLength*2) usedLength(@lUsedLength) encoding(Foundation.NSStringEncoding.UTF16LittleEndianStringEncoding) options(0) range(Foundation.NSMakeRange(0, lLength) )remainingRange(@lRemainingRange) then
-          raise new InvalidCastException("Could not convert NSString to String");
-        result.fNSString := aValue;
-      end;
-    end;
-    {$ENDIF}
+    class operator Equal(aValue1: String; aValue2: String): Boolean;
+    class operator NotEqual(aValue1: String; aValue2: String): Boolean;
 
     method ToString: String; override;
     method GetHashCode: Integer; override;
@@ -410,45 +383,109 @@ begin
   {$SHOW W46}
 end;
 
-method String.&Equals(Value: String): Boolean;
+//
+// Equality
+//
+
+method String.&Equals(aOther: String): Boolean;
 begin
-  exit self = Value;
+  exit &Equals(Object(aOther));
 end;
 
-method String.Equals(obj: Object): Boolean;
+method String.Equals(aOther: Object): Boolean;
 begin
- if assigned(obj) and (obj is String) then
-   exit self = String(obj)
- else
-   exit false;
+  var lOther := String(aOther); // this will also handle anyting castabkle to Stting
+  if assigned(lOther) then begin
+    if self.Length <> lOther.Length then
+      exit false;
+    for i: Integer := 0 to self.Length-1 do
+      if self[i] <> lOther[i] then
+        exit false;
+    exit true;
+  end;
 end;
 
-method String.EqualsIgnoreCase(Value: String): Boolean;
+method String.EqualsIgnoreCase(aOther: String): Boolean;
 begin
-  exit self:ToLower() = Value:ToLower();
+  exit ToLower().Equals(aOther:ToLower());
 end;
 
-method String.EqualsIgnoreCaseInvariant(Value: String): Boolean;
+method String.EqualsIgnoreCaseInvariant(aOther: String): Boolean;
 begin
-  exit self:ToLowerInvariant() = Value:ToLowerInvariant();
+  exit ToLowerInvariant().Equals(aOther:ToLowerInvariant());
 end;
 
-class operator String.Equal(Value1, Value2: String): Boolean;
+class operator String.Equal(aValue1: String; aValue2: String): Boolean;
 begin
-  // (value1 = value2) = true
-  if (Object(Value1) = nil) and (Object(Value2) = nil) then exit true;
-  if ((Object(Value1) = nil) and (Object(Value2) <> nil)) or
-     ((Object(Value1) <> nil) and (Object(Value2) = nil)) then exit false;
-  if Value1.Length <> Value2.Length then exit false;
-  for i: Integer :=0 to Value1.Length-1 do
-    if Value1.Item[i] <> Value2.Item[i] then exit false;
-  exit true;
+  if not assigned(aValue1) then
+    result := not assigned(aValue2)
+  else
+    result := aValue1:&Equals(aValue2);
 end;
 
-class operator String.NotEqual(Value1, Value2: String): Boolean;
+class operator String.NotEqual(aValue1: String; aValue2: String): Boolean;
 begin
-  exit not Value1.Equals(Value2);
+  if not assigned(aValue1) then
+    result := assigned(aValue2)
+  else
+    result := not aValue1.Equals(aValue2);
 end;
+
+class operator String.Greater(Value1, Value2: String): Boolean;
+begin
+  // Value1 > Value2 = true
+  if (Object(Value1) = nil) then exit false;    // nil > ????
+  if (Object(Value2) = nil) then exit true;     // not nil > nil
+  var min_length := iif(Value1.Length > Value2.Length, Value2.Length, Value1.Length);
+
+  for i: Integer := 0 to min_length-1 do
+    if Value1.Item[i] <= Value2.Item[i] then exit false; //  a <= b
+
+  exit Value1.Length > Value2.Length;  // xxxy > xxx
+end;
+
+class operator String.Less(Value1, Value2: String): Boolean;
+begin
+  // Value1 < Value2 = true
+  if (Object(Value2) = nil) then exit false;    // ???? < nil
+  if (Object(Value1) = nil) then exit true;     // nil < not nil
+  var min_length := iif(Value1.Length > Value2.Length, Value2.Length, Value1.Length);
+
+  for i: Integer :=0 to min_length-1 do
+    if Value1.Item[i] >= Value2.Item[i] then exit false;  // b >= a
+
+  exit Value1.Length < Value2.Length; // xxx < xxxy
+end;
+
+class operator String.GreaterOrEqual(Value1, Value2: String): Boolean;
+begin
+  // Value1 >= Value2 = true
+  if (Object(Value2) = nil) then exit true;     // ???? >= nil
+  if (Object(Value1) = nil) then exit false;    // nil >= ????
+  var min_length := iif(Value1.Length > Value2.Length, Value2.Length, Value1.Length);
+
+  for i: Integer :=0 to min_length-1 do
+    if Value1.Item[i] < Value2.Item[i] then exit false; //  a <= b
+
+  exit Value1.Length >= Value2.Length;  // xxxy > xxx
+end;
+
+class operator String.LessOrEqual(Value1, Value2: String): Boolean;
+begin
+  // Value1 <= Value2 = true
+  if (Object(Value1) = nil) then exit true;     // nil <= ????
+  if (Object(Value2) = nil) then exit false;    // ???? <= nil
+  var min_length := iif(Value1.Length > Value2.Length, Value2.Length, Value1.Length);
+
+  for i: Integer :=0 to min_length-1 do
+    if Value1.Item[i] > Value2.Item[i] then exit false;  // b > a
+
+  exit Value1.Length <= Value2.Length; // xxx <= xxxy
+end;
+
+//
+//
+//
 
 method String.Contains(Value: String): Boolean;
 begin
@@ -516,58 +553,6 @@ begin
       inc(lstart, newValue_Length);
   end;
   until lstart = -1;
-end;
-
-class operator String.Greater(Value1, Value2: String): Boolean;
-begin
-  // Value1 > Value2 = true
-  if (Object(Value1) = nil) then exit false;    // nil > ????
-  if (Object(Value2) = nil) then exit true;     // not nil > nil
-  var min_length := iif(Value1.Length > Value2.Length, Value2.Length, Value1.Length);
-
-  for i: Integer := 0 to min_length-1 do
-    if Value1.Item[i] <= Value2.Item[i] then exit false; //  a <= b
-
-  exit Value1.Length > Value2.Length;  // xxxy > xxx
-end;
-
-class operator String.Less(Value1, Value2: String): Boolean;
-begin
-  // Value1 < Value2 = true
-  if (Object(Value2) = nil) then exit false;    // ???? < nil
-  if (Object(Value1) = nil) then exit true;     // nil < not nil
-  var min_length := iif(Value1.Length > Value2.Length, Value2.Length, Value1.Length);
-
-  for i: Integer :=0 to min_length-1 do
-    if Value1.Item[i] >= Value2.Item[i] then exit false;  // b >= a
-
-  exit Value1.Length < Value2.Length; // xxx < xxxy
-end;
-
-class operator String.GreaterOrEqual(Value1, Value2: String): Boolean;
-begin
-  // Value1 >= Value2 = true
-  if (Object(Value2) = nil) then exit true;     // ???? >= nil
-  if (Object(Value1) = nil) then exit false;    // nil >= ????
-  var min_length := iif(Value1.Length > Value2.Length, Value2.Length, Value1.Length);
-
-  for i: Integer :=0 to min_length-1 do
-    if Value1.Item[i] < Value2.Item[i] then exit false; //  a <= b
-
-  exit Value1.Length >= Value2.Length;  // xxxy > xxx
-end;
-
-class operator String.LessOrEqual(Value1, Value2: String): Boolean;
-begin
-  // Value1 <= Value2 = true
-  if (Object(Value1) = nil) then exit true;     // nil <= ????
-  if (Object(Value2) = nil) then exit false;    // ???? <= nil
-  var min_length := iif(Value1.Length > Value2.Length, Value2.Length, Value1.Length);
-
-  for i: Integer :=0 to min_length-1 do
-    if Value1.Item[i] > Value2.Item[i] then exit false;  // b > a
-
-  exit Value1.Length <= Value2.Length; // xxx <= xxxy
 end;
 
 method String.TestChar(c: Char; Arr : array of Char): Boolean;

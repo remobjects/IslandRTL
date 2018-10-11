@@ -66,5 +66,6 @@
     <Compile Include="$(MSBuildThisFileDirectory)Serializable.pas" />
     <Compile Include="$(MSBuildThisFileDirectory)Bridges.pas" />
     <Compile Include="$(MSBuildThisFileDirectory)Bridges.Darwin.pas" />
+    <Compile Include="$(MSBuildThisFileDirectory)String.Bridge.Darwin.pas" />
   </ItemGroup>
 </Project>
