@@ -70,8 +70,7 @@ type
     begin
       constructor(aArray.count);
       for i: Integer := 0 to aArray.count-1 do
-        &Add(aArray.objectAtIndex(i));
-        //81193: Darwin: cant access indexer for NSDictionary
+        &Add(aArray[i]);
     end;
     {$ENDIF}
 
