@@ -41,18 +41,21 @@ type
     end;
   end;
   
-  String_HStringSupport = public extension class(String)
-  public
-    operator Implicit(s: rtl.winrt.HSTRING): String; public;
-    begin
-      if s = nil then exit nil;
-      var len: UInt32;
-      exit String.FromPChar(rtl.winrt.WindowsGetStringRawBuffer(s, @len), len);
-    end;
+operator Implicit(s: rtl.winrt.HSTRING): String; public;
+begin
+  if s = nil then exit nil;
+  var len: UInt32;
+  exit String.FromPChar(rtl.winrt.WindowsGetStringRawBuffer(s, @len), len);
+end;
 
-    operator Implicit(s: String): rtl.winrt.HSTRING; public;
-    begin
-      rtl.winrt.WindowsCreateString(@s.fFirstChar, s.Length, @result);
-    end;
-  end;
+operator Implicit(s: String): rtl.winrt.HSTRING; public;
+begin
+  rtl.winrt.WindowsCreateString(@s.fFirstChar, s.Length, @result);
+end;
+
+operator Implicit(s: ^Char): rtl.winrt.HSTRING; public;
+begin
+  rtl.winrt.WindowsCreateString(s, ExternalCalls.wcslen(s), @result);
+end;
+  
 end.
