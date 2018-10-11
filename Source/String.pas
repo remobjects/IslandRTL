@@ -84,7 +84,7 @@ type
     method TrimEnd(aChars: array of Char): String;
     method StartsWith(Value: String; aInvariant: Boolean := false): Boolean;
     method EndsWith(Value: String; aInvariant: Boolean := false): Boolean;
-    class method Format(aFormat: String; params aArguments: array of Object): String;
+    class method Format(aFormat: not nullable String; params aArguments: not nullable array of Object): String;
 
     class method Compare(aLeft, aRight: String): Integer;
     class operator Add(aLeft, aRight: String): String;
@@ -800,10 +800,8 @@ begin
   exit FromPAnsiChars(c, {$IFDEF WINDOWS OR WEBASSEMBLY}ExternalCalls.strlen(c){$ELSEIF POSIX}rtl.strlen(c){$ELSE}{$ERROR Not Implemented}{$ENDIF});
 end;
 
-class method String.Format(aFormat: String; params aArguments: array of Object): String;
+class method String.Format(aFormat: not nullable String; params aArguments: not nullable array of Object): String;
 begin
-  if aFormat = nil then raise new ArgumentNullException('aFormat is nil');
-  if aArguments = nil then raise new ArgumentNullException('aArguments is nil');
   var arg_count := aArguments.Length;
   var sb := new StringBuilder(aFormat.Length + aArguments.Length*8);
   var cur_pos := 0;
@@ -902,11 +900,13 @@ begin
         end;
         if aFormat[cur_pos] <> '}' then RaiseError('format error');
 
-        var arg_format := aArguments[n].ToString;
+        var arg_format := coalesce(aArguments[n].ToString, "");
         var t := width - arg_format.Length;
-        if not sign and (t>0) then sb.Append(' ',t);
+        if not sign and (t > 0) then
+          sb.Append(' ', t);
         sb.Append(arg_format);
-        if sign and (t>0) then sb.Append(' ',t);
+        if sign and (t > 0) then
+          sb.Append(' ', t);
         old_pos := cur_pos+1;
       end;
       '}': begin
