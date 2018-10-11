@@ -64,5 +64,7 @@
     <Compile Include="$(MSBuildThisFileDirectory)Encoding.pas" />
     <Compile Include="$(MSBuildThisFileDirectory)GenericNullable.pas" />
     <Compile Include="$(MSBuildThisFileDirectory)Serializable.pas" />
+    <Compile Include="$(MSBuildThisFileDirectory)Bridges.pas" />
+    <Compile Include="$(MSBuildThisFileDirectory)Bridges.Darwin.pas" />
   </ItemGroup>
 </Project>
