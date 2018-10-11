@@ -387,6 +387,29 @@ type
     begin
       exit (Value1.fTicks = Value2.fTicks);
     end;
+
+    {$IF DARWIN}
+    operator Implicit(aDateTime: Foundation.NSDate): DateTime;
+    begin
+      result := new DateTime(Int64((aDateTime.timeIntervalSince1970*10000000)+621355968000000000));
+    end;
+
+    operator Implicit(aDateTime: DateTime): Foundation.NSDate;
+    begin
+      result := new Foundation.NSDate withTimeIntervalSince1970((aDateTime.fTicks-621355968000000000)/10000000.0);
+    end;
+
+    operator Explicit(aDateTime: Foundation.NSDate): DateTime; // code duped for efficiency
+    begin
+      result := new DateTime(Int64((aDateTime.timeIntervalSince1970*10000000)+621355968000000000));
+    end;
+
+    operator Explicit(aDateTime: DateTime): Foundation.NSDate; // code duped for efficiency
+    begin
+      result := new Foundation.NSDate withTimeIntervalSince1970((aDateTime.fTicks-621355968000000000)/10000000.0);
+    end;
+    {$ENDIF}
+
   end;
 
 
