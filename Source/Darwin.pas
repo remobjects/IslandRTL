@@ -1,5 +1,8 @@
 ﻿namespace RemObjects.Elements.System;
 
+uses
+  Foundation;
+
 [assembly:AssemblyDefineAttribute('DARWIN')]
 
 // These are "required" dllimports; pretty much all projects use this.
@@ -39,14 +42,14 @@ type
   public
   end;
 
-  IslandToCocoaBridge = public class(Foundation.NSObject)
+  IslandToCocoaBridge = public class(NSObject)
   private
     constructor(aValue: Object);
     begin
       Value := aValue;
     end;
   public
-    class method FromValue(aValue: Object): Foundation.NSObject;
+    class method FromValue(aValue: Object): NSObject;
     begin
       if aValue = nil then exit nil;
       if aValue is CocoaToIslandBridge then exit CocoaToIslandBridge(aValue).Value;
@@ -57,12 +60,10 @@ type
 
     method description: String;
     begin
-      var lValue := Value.ToString.ToAnsiChars(true);
-
-      exit Foundation.NSString.stringWithCString(lValue);
+      var lValue := Value.ToString as NSString;
     end;
 
-    method hash: Foundation.NSUInteger;
+    method hash: NSUInteger;
     begin
       exit Value.GetHashCode;
     end;
@@ -73,31 +74,31 @@ type
         result := Value.Equals(IslandToCocoaBridge(aOther).Value);
     end;
 
-    method compareTo(aOther: Foundation.NSObject): Foundation.NSComparisonResult;
+    method compareTo(aOther: NSObject): NSComparisonResult;
     begin
       if aOther is IslandToCocoaBridge then
-        exit (Value as IComparable).CompareTo(IslandToCocoaBridge(aOther).Value) as Foundation.NSComparisonResult
+        exit (Value as IComparable).CompareTo(IslandToCocoaBridge(aOther).Value) as NSComparisonResult
       else
-        result := Foundation.NSComparisonResult.OrderedAscending /* -1, Cocoa before wrapped Island */
+        result := NSComparisonResult.OrderedAscending /* -1, Cocoa before wrapped Island */
     end;
   end;
 
   CocoaToIslandBridge = public class(IComparable, IEquatable)
   private
-    constructor(aValue: Foundation.NSObject);
+    constructor(aValue: NSObject);
     begin
       Value := aValue;
     end;
   public
 
-    class method FromValue(aValue: Foundation.NSObject): Object;
+    class method FromValue(aValue: NSObject): Object;
     begin
       if aValue = nil then exit nil;
       if aValue is IslandToCocoaBridge then exit IslandToCocoaBridge(aValue).Value;
       result := new CocoaToIslandBridge(aValue);
     end;
 
-    property Value: Foundation.NSObject; readonly;
+    property Value: NSObject; readonly;
 
     method GetHashCode: Integer; override;
     begin
@@ -124,9 +125,9 @@ type
 
     method ToString: String; override;
     begin
-      var s := Value.Description;
-      exit String.FromPAnsiChars(s.UTF8String);
+      var s := Value.description as String;
     end;
+
   end;
 
   [AttributeUsage(AttributeTargets.Field or AttributeTargets.Property)]

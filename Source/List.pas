@@ -65,6 +65,16 @@ type
     constructor(aSequence: ISequence<T>);
     constructor(aCapacity: Integer);
 
+    {$IF DARWIN}
+    constructor(aArray: Foundation.NSArray<T>);
+    begin
+      constructor(aArray.count);
+      for i: Integer := 0 to aArray.count-1 do
+        &Add(aArray.objectAtIndex(i));
+        //81193: Darwin: cant access indexer for NSDictionary
+    end;
+    {$ENDIF}
+
     method GetEnumerator: IEnumerator<T>;
     method &Add(anItem: T);
     method AddRange(Items: List<T>);
