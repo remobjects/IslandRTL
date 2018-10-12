@@ -11,7 +11,7 @@ type
 
     method ToString: String; virtual;
     begin
-      exit '<'+GetHashCode.ToString()+'>';
+      exit $"<{GetType().Name} {Integer(InternalCalls.Cast(self)).ToString.PadStart(if defined("CPU64") then 16 else 8, '0')}>";
     end;
 
     method GetHashCode: Integer; virtual;
@@ -34,27 +34,6 @@ type
       exit a = b;
     end;
 
-    {$IF DARWIN}
-    class operator Implicit(aValue: nullable Object): nullable Foundation.NSObject;
-    begin
-      result := IslandToCocoaBridge.FromValue(aValue);
-    end;
-
-    class operator Explicit(aValue: nullable Object): nullable Foundation.NSObject;
-    begin
-      result := IslandToCocoaBridge.FromValue(aValue);
-    end;
-
-    class operator Implicit(aValue: nullable Foundation.NSObject): nullable Object;
-    begin
-      result := CocoaToIslandBridge.FromValue(aValue);
-    end;
-
-    class operator Explicit(aValue: nullable Foundation.NSObject): nullable Object;
-    begin
-      result := CocoaToIslandBridge.FromValue(aValue);
-    end;
-    {$ENDIF}
   end;
 
 end.
