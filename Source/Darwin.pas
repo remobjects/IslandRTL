@@ -58,4 +58,7 @@ type
 
   end;
 
+  INSFastEnumeration<T> = public interface mapped to Foundation.INSFastEnumeration
+    method countByEnumeratingWithState(aState: ^NSFastEnumerationState) objects(stackbuf: ^T) count(len: NSUInteger): NSUInteger; mapped to countByEnumeratingWithState(aState) objects(^id(stackbuf)) count(len);
+  end;
 end.
