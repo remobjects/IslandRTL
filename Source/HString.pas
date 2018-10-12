@@ -53,7 +53,7 @@ begin
   rtl.winrt.WindowsCreateString(@s.fFirstChar, s.Length, @result);
 end;
 
-operator Implicit(s: ^Char): rtl.winrt.HSTRING; public;
+operator Implicit(s: ^rtl.WCHAR): rtl.winrt.HSTRING; public;
 begin
   rtl.winrt.WindowsCreateString(s, ExternalCalls.wcslen(s), @result);
 end;
