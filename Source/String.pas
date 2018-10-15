@@ -6,12 +6,15 @@ type
   LCMapStringTransformMode = assembly enum (None, Upper, Lower);
 
   String = public partial class(Object,IEnumerable<Char>, IEnumerable, IComparable, IComparable<String>)
-  assembly {$HIDE H6}
-  {$IFDEF DARWIN}
+  assembly
+    {$HIDE H6}
+    // WARNING: Do not change the field structure w/o also changing the compiler! these are compiler created!
+    {$IFDEF DARWIN}
     fCachedNSString: Foundation.NSString;
-  {$ENDIF}  
+    {$ENDIF}
     fLength: Integer;
-    fFirstChar: Char;{$SHOW H6}
+    fFirstChar: Char;
+    {$SHOW H6}
     method get_Item(i: Integer): Char;
     constructor; empty; // not callable
     {$IFDEF WINDOWS}
