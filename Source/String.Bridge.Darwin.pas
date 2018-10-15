@@ -8,9 +8,6 @@ uses
 type
   String = public partial class
   private
-
-    fCachedNSString: Foundation.NSString;
-
   public
 
     //

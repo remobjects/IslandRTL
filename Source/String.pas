@@ -7,6 +7,9 @@ type
 
   String = public partial class(Object,IEnumerable<Char>, IEnumerable, IComparable, IComparable<String>)
   assembly {$HIDE H6}
+  {$IFDEF DARWIN}
+    fCachedNSString: Foundation.NSString;
+  {$ENDIF}  
     fLength: Integer;
     fFirstChar: Char;{$SHOW H6}
     method get_Item(i: Integer): Char;
@@ -211,7 +214,7 @@ begin
   var lNewData: ^AnsiChar := nil;
   var lNewLen: rtl.size_t := iconv_helper(TextConvert.fUTF16ToCurrent, ^AnsiChar(@fFirstChar), Length * 2, Length + 5, out lNewData);
 
-  if lNewLen <> -1  then begin
+  if lNewLen <> rtl.size_t(-1)  then begin
     result := new AnsiChar[lNewLen+ if aNullTerminate then 1 else 0];
     if lNewLen <> 0 then
       rtl.memcpy(@result[0], lNewData, lNewLen);
