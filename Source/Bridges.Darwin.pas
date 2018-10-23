@@ -6,7 +6,7 @@ uses
   Foundation;
 
 type
-  IslandToCocoaBridge = public class(NSObject)
+  CocoaWrappedIslandObject = public class(NSObject)
   private
 
     constructor(aValue: Object);
@@ -21,36 +21,36 @@ type
     class method FromValue(aValue: Object): NSObject;
     begin
       if aValue = nil then exit nil;
-      if aValue is CocoaToIslandBridge then exit CocoaToIslandBridge(aValue).Value;
-      exit new IslandToCocoaBridge(aValue);
+      if aValue is IslandWrappedCocoaObject then exit IslandWrappedCocoaObject(aValue).Value;
+      exit new CocoaWrappedIslandObject(aValue);
     end;
 
-    method description: NSString; //override;
+    method description: NSString; override;
     begin
       result := Value.ToString() as NSString;
     end;
 
-    method hash: NSUInteger; //override;
+    method hash: NSUInteger; override;
     begin
       exit Value.GetHashCode;
     end;
 
-    method isEqual(aOther: id): Boolean; //override;
+    method isEqual(aOther: id): Boolean; override;
     begin
-      if aOther is IslandToCocoaBridge then
-        result := Value.Equals(IslandToCocoaBridge(aOther).Value);
+      if aOther is CocoaWrappedIslandObject then
+        result := Value.Equals(CocoaWrappedIslandObject(aOther).Value);
     end;
 
     method compareTo(aOther: NSObject): NSComparisonResult; //override;
     begin
-      if aOther is IslandToCocoaBridge then
-        exit (Value as IComparable).CompareTo(IslandToCocoaBridge(aOther).Value) as NSComparisonResult
+      if aOther is CocoaWrappedIslandObject then
+        exit (Value as IComparable).CompareTo(CocoaWrappedIslandObject(aOther).Value) as NSComparisonResult
       else
         result := NSComparisonResult.OrderedAscending /* -1, Cocoa before wrapped Island */
     end;
   end;
 
-  CocoaToIslandBridge = public class(BridgedObject, IComparable, IEquatable)
+  IslandWrappedCocoaObject = public class(WrappedObject, IComparable, IEquatable)
   private
 
     constructor(aValue: NSObject);
@@ -65,8 +65,8 @@ type
     class method FromValue(aValue: NSObject): Object;
     begin
       if aValue = nil then exit nil;
-      if aValue is IslandToCocoaBridge then exit IslandToCocoaBridge(aValue).Value;
-      result := new CocoaToIslandBridge(aValue);
+      if aValue is CocoaWrappedIslandObject then exit CocoaWrappedIslandObject(aValue).Value;
+      result := new IslandWrappedCocoaObject(aValue);
     end;
 
     method GetHashCode: Integer; override;
@@ -76,25 +76,25 @@ type
 
     method &Equals(aOther: Object): Boolean; override;
     begin
-      if aOther is CocoaToIslandBridge then
-        result := Value.isEqual(CocoaToIslandBridge(aOther).Value);
+      if aOther is IslandWrappedCocoaObject then
+        result := Value.isEqual(IslandWrappedCocoaObject(aOther).Value);
     end;
 
     method CompareTo(aOther: Object): Integer;
     begin
-      if aOther is CocoaToIslandBridge then begin
+      if aOther is IslandWrappedCocoaObject then begin
         //81174: Darwin: selector support
         //if not Value.respondsToSelector(selector(compareTo:)) then
           //raise new Exception("Object does not implement compareTo:");
         //81175: Darwin: cannot call compareTo: after casting to id
-        //exit id(Value).compareTo(CocoaToIslandBridge(aOther).Value);
+        //exit id(Value).compareTo(IslandWrappedCocoaObject(aOther).Value);
       end;
       exit -1; /* Island before wrapped Cocoa */
     end;
 
     method ToString: String; override;
     begin
-      var s := Value.description as String;
+      result := Value.description as String;
     end;
 
   end;

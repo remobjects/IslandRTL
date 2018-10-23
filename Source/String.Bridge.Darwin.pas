@@ -38,7 +38,7 @@ type
 
     class operator Implicit(aValue: nullable id): nullable String;
     begin
-      var lWrappedNativeObject := IslandToCocoaBridge(aValue);
+      var lWrappedNativeObject := CocoaWrappedIslandObject(aValue);
       result := coalesce(String(lWrappedNativeObject:Value), lWrappedNativeObject:Value:ToString, aValue:description);
     end;
 
@@ -61,15 +61,15 @@ type
     // Equality
     //
 
-    class operator Equal(aValue1: String; aValue2: BridgedObject): Boolean;
+    class operator Equal(aValue1: String; aValue2: WrappedObject): Boolean;
     begin
       if not assigned(aValue1) then
         result := not assigned(aValue2)
-      else if aValue2 is CocoaToIslandBridge then
-        result := aValue1.Equals(CocoaToIslandBridge(aValue2).Value);
+      else if aValue2 is IslandWrappedCocoaObject then
+        result := aValue1.Equals(IslandWrappedCocoaObject(aValue2).Value);
     end;
 
-    class operator Equal(aValue1: BridgedObject; aValue2: String): Boolean;
+    class operator Equal(aValue1: WrappedObject; aValue2: String): Boolean;
     begin
       result := (aValue2 = aValue1);
     end;
@@ -91,15 +91,15 @@ type
     // Inequality
     //
 
-    class operator NotEqual(aValue1: String; aValue2: BridgedObject): Boolean;
+    class operator NotEqual(aValue1: String; aValue2: WrappedObject): Boolean;
     begin
       if not assigned(aValue1) then
         result := assigned(aValue2)
-      else if aValue2 is CocoaToIslandBridge then
-        result := not aValue1.Equals(CocoaToIslandBridge(aValue2).Value);
+      else if aValue2 is IslandWrappedCocoaObject then
+        result := not aValue1.Equals(IslandWrappedCocoaObject(aValue2).Value);
     end;
 
-    class operator NotEqual(aValue1: BridgedObject; aValue2: String): Boolean;
+    class operator NotEqual(aValue1: WrappedObject; aValue2: String): Boolean;
     begin
       result := (aValue2 ≠ aValue1);
     end;
