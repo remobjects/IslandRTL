@@ -36,12 +36,23 @@ type
       end;
     end;
 
+    class operator Implicit(aValue: nullable id): nullable String;
+    begin
+      var lWrappedNativeObject := IslandToCocoaBridge(aValue);
+      result := coalesce(String(lWrappedNativeObject:Value), lWrappedNativeObject:Value:ToString, aValue:description);
+    end;
+
     class operator Explicit(aValue: nullable String): nullable NSString;
     begin
       result := aValue;
     end;
 
     class operator Explicit(aValue: nullable NSString): nullable String;
+    begin
+      result := aValue;
+    end;
+
+    class operator Explicit(aValue: nullable id): nullable String;
     begin
       result := aValue;
     end;
