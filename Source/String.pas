@@ -400,7 +400,10 @@ end;
 
 method String.Equals(aOther: Object): Boolean;
 begin
-  var lOther := String(aOther); // this will also handle anyting castabkle to Stting
+  var lOther := String(aOther);
+  if not assigned(lOther) then
+    lOther := String(Foundation.NSString(IslandWrappedCocoaObject(aOther):Value));
+
   if assigned(lOther) then begin
     if self.Length <> lOther.Length then
       exit false;
