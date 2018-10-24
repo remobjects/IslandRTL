@@ -659,9 +659,11 @@ begin
     lIdx := lSplitIndex + Separator.Length;
     if lRes.Count + 1 = aMax then break;
   end;
-  if not aRemoveEmptyEntries or (Length - lIdx > 0) then begin
-    lRes.Add(Substring(lIdx, Length - lIdx));
-  end;
+  if (Length - lIdx > 0) then
+    lRes.Add(Substring(lIdx, Length - lIdx))
+  else
+    if not aRemoveEmptyEntries then
+      lRes.Add('');
 
   exit lRes.ToArray;
 end;
