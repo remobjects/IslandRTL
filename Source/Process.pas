@@ -106,18 +106,24 @@ method Process.GetStandardOutput: String;
 begin
   {$IF WINDOWS}
   var lRes: Boolean;
+  var lPipeRes: Boolean;
   var lBytesRead: rtl.DWORD;
+  var lBytesTotal: rtl.DWORD;
   result := '';
   var lBuffer := new AnsiChar[256];
 
   repeat
+    lPipeRes := rtl.PeekNamedPipe(fOutputReadHandle, nil, 0, nil, @lBytesTotal, nil);
+    if (not lPipeRes) or (lBytesTotal = 0) then
+      break;
     lRes := rtl.ReadFile(fOutputReadHandle, lBuffer, 255, @lBytesRead, nil);
+
     if lBytesRead > 0 then
     begin
       lBuffer[lBytesRead] := #0;
       result := result + String.FromPAnsiChars(@lBuffer[0]);
     end;
-  until not lRes or (lBytesRead = 0);
+  until (not lRes) or (lBytesRead = 0);
   {$ENDIF}
 end;
 
@@ -125,12 +131,18 @@ method Process.GetStandardError: String;
 begin
   {$IF WINDOWS}
   var lRes: Boolean;
+  var lPipeRes: Boolean;
   var lBytesRead: rtl.DWORD;
+  var lBytesTotal: rtl.DWORD;
   var lBuffer := new AnsiChar[256];
   result := '';
 
   repeat
+    lPipeRes := rtl.PeekNamedPipe(fErrorHandle, nil, 0, nil, @lBytesTotal, nil);
+    if (not lPipeRes) or (lBytesTotal = 0) then
+      break;
     lRes := rtl.ReadFile(fErrorHandle, lBuffer, 255, @lBytesRead, nil);
+
     if lBytesRead > 0 then
     begin
       lBuffer[lBytesRead] := #0;
