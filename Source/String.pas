@@ -401,7 +401,7 @@ end;
 method String.Equals(aOther: Object): Boolean;
 begin
   var lOther := String(aOther);
-  if not assigned(lOther) then
+  if defined("DARWIN") and not assigned(lOther) then
     lOther := String(Foundation.NSString(IslandWrappedCocoaObject(aOther):Value));
 
   if assigned(lOther) then begin
