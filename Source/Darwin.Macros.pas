@@ -1,6 +1,8 @@
 ﻿namespace RemObjects.Elements.System;
 
 interface
+uses
+  rtl;
 
 {$GLOBALS ON}
 

@@ -50,8 +50,8 @@
     <Compile Include="Darwin.pas" />
     <Compile Include="CocoaGC.pas" />
     <Compile Include="NSException.pas" />
-    <Compile Includë="Darwin.Macros.pas"/>
-    <Compile Includë="Darwin.Macros.Foundation.pas"/>
+    <Compile Include="Darwin.Macros.pas"/>
+    <Compile Include="Darwin.Macros.Foundation.pas"/>
   </ItemGroup>
   <ItemGroup>
     <Reference Include="gc" />

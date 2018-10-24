@@ -61,19 +61,6 @@ type
     // Equality
     //
 
-    class operator Equal(aValue1: String; aValue2: WrappedObject): Boolean;
-    begin
-      if not assigned(aValue1) then
-        result := not assigned(aValue2)
-      else if aValue2 is IslandWrappedCocoaObject then
-        result := aValue1.Equals(IslandWrappedCocoaObject(aValue2).Value);
-    end;
-
-    class operator Equal(aValue1: WrappedObject; aValue2: String): Boolean;
-    begin
-      result := (aValue2 = aValue1);
-    end;
-
     class operator Equal(aValue1: String; aValue2: NSString): Boolean;
     begin
       if not assigned(aValue1) then
@@ -91,19 +78,6 @@ type
     // Inequality
     //
 
-    class operator NotEqual(aValue1: String; aValue2: WrappedObject): Boolean;
-    begin
-      if not assigned(aValue1) then
-        result := assigned(aValue2)
-      else if aValue2 is IslandWrappedCocoaObject then
-        result := not aValue1.Equals(IslandWrappedCocoaObject(aValue2).Value);
-    end;
-
-    class operator NotEqual(aValue1: WrappedObject; aValue2: String): Boolean;
-    begin
-      result := (aValue2 ≠ aValue1);
-    end;
-
     class operator NotEqual(aValue1: String; aValue2: NSString): Boolean;
     begin
       if not assigned(aValue1) then
@@ -116,6 +90,51 @@ type
     begin
       result := (aValue2 ≠ aValue1);
     end;
+
+    //
+    // Comparisons
+    //
+
+    class operator Greater(aValue1: String; aValue2: NSString): Boolean;
+    begin
+      result := aValue1 > String(aValue2);
+    end;
+
+    class operator Greater(aValue1: NSString; aValue2: String): Boolean;
+    begin
+      result := String(aValue2) > aValue1;
+    end;
+
+    class operator Less(aValue1: String; aValue2: NSString): Boolean;
+    begin
+        result := aValue1 < String(aValue2);
+    end;
+
+    class operator Less(aValue1: NSString; aValue2: String): Boolean;
+    begin
+      result := String(aValue2) < aValue1;
+    end;
+
+    class operator GreaterOrEqual(aValue1: String; aValue2: NSString): Boolean;
+    begin
+      result := aValue1 ≥ String(aValue2);
+    end;
+
+    class operator GreaterOrEqual(aValue1: NSString; aValue2: String): Boolean;
+    begin
+      result := String(aValue2) ≥ aValue1;
+    end;
+
+    class operator LessOrEqual(aValue1: String; aValue2: NSString): Boolean;
+    begin
+      result := aValue1 ≤ String(aValue2);
+    end;
+
+    class operator LessOrEqual(aValue1: NSString; aValue2: String): Boolean;
+    begin
+      result := String(aValue2) ≤ aValue1;
+    end;
+
   end;
 
 {$ENDIF}
