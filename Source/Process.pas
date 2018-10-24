@@ -6,6 +6,9 @@ type
   Process = public class
   private
     fWorkingDirectory: String;
+    fFinishedBlock: block(aExitCode: Integer);
+    fOutputDataBlock: block(aLine: String);
+    fErrorDataBlock: block(aLine: String);
     {$IF WINDOWS}
     fStartUpInfo: rtl.STARTUPINFO;
     fProcessInfo: rtl.PROCESS_INFORMATION;
@@ -13,15 +16,20 @@ type
     fOutputReadHandle: rtl.HANDLE;
     fErrorHandle: rtl.HANDLE;
     fErrorReadHandle: rtl.HANDLE;
-    fWaitHandle: rtl.HANDLE;
-    method StartAsync(completionHandler: block);
-    method AsyncWaitHandler(TimerOrEnd: Boolean);
+    fWaitHandle: rtl.HANDLE := rtl.HANDLE(-1);
+    fLastIncompleteOutputLog: String := '';
+    fLastIncompleteErrorLog: String := '';
+    method StartAsync(aStdOutCallback: block(aLine: String); aErrorCallback: block(aLine: String); aFinishedCallback: block(ExitCode: Integer));
+    method GetCurrentOutput(StdOutput: Boolean): String;
+    class method WaitHandler(aObject: ^Void; TimerOrEnd: Byte); static;
+    method ProcessStdOutData(rawString: String; aOutput: Boolean; callback: block(aLine: String));
     {$ENDIF}
     method Prepare;
     method GetIsRunning: Boolean;
     method GetStandardOutput: String;
     method GetStandardError: String;
     method GetExitCode: Integer;
+    method CleanUp;
   public
     constructor;
     constructor(aCommand: String; aArguments: List<String>; aEnvironment: Dictionary<String, String>; aWorkingDirectory: String);
@@ -39,6 +47,10 @@ type
     property StandardOutput: String read GetStandardOutput;
     property StandardError: String read GetStandardError;
     property RedirectOutput: Boolean := false;
+    // for RunAsync
+    property OnFinished: block(ExitCode: Integer) read fFinishedBlock;
+    property OnOutputData: block(aLine: String) read fOutputDataBlock;
+    property OnErrorData: block(aLine: String) read fErrorDataBlock;
   end;
 
 implementation
@@ -95,13 +107,15 @@ begin
   {$IF WINDOWS}
   var lRes: Boolean;
   var lBytesRead: rtl.DWORD;
-  var lBuffer := new AnsiChar[255];
+  result := '';
+  var lBuffer := new AnsiChar[256];
+
   repeat
-    lRes := rtl.ReadFile(fOutputHandle, lBuffer, 255, @lBytesRead, nil);
+    lRes := rtl.ReadFile(fOutputReadHandle, lBuffer, 255, @lBytesRead, nil);
     if lBytesRead > 0 then
     begin
       lBuffer[lBytesRead] := #0;
-      result := result + lBuffer;
+      result := result + String.FromPAnsiChars(@lBuffer[0]);
     end;
   until not lRes or (lBytesRead = 0);
   {$ENDIF}
@@ -112,13 +126,15 @@ begin
   {$IF WINDOWS}
   var lRes: Boolean;
   var lBytesRead: rtl.DWORD;
-  var lBuffer := new AnsiChar[255];
+  var lBuffer := new AnsiChar[256];
+  result := '';
+
   repeat
     lRes := rtl.ReadFile(fErrorHandle, lBuffer, 255, @lBytesRead, nil);
     if lBytesRead > 0 then
     begin
       lBuffer[lBytesRead] := #0;
-      result := result + lBuffer;
+      result := result + String.FromPAnsiChars(@lBuffer[0]);
     end;
   until not lRes or (lBytesRead = 0);
   {$ENDIF}
@@ -142,15 +158,16 @@ begin
   lProcess.WaitFor;
   aStdOut := lProcess.StandardOutput;
   aStdErr := lProcess.StandardError;
+  lProcess.CleanUp;
 end;
 
 class method Process.RunAsync(aCommand: not nullable String; aArguments: List<String> := nil; aEnvironment: nullable Dictionary<String, String> := nil; aWorkingDirectory: nullable String := nil; aStdOutCallback: block(aLine: String); aStdErrCallback: block(aLine: String) := nil; aFinishedCallback: block(aExitCode: Integer) := nil): Process;
 begin
-  var lProcess := new Process(aCommand, aArguments, aEnvironment, aWorkingDirectory);
-  lProcess.RedirectOutput := True;
-  lProcess.Prepare;
+  result := new Process(aCommand, aArguments, aEnvironment, aWorkingDirectory);
+  result.RedirectOutput := True;
+  result.Prepare;
   {$IFDEF WINDOWS}
-
+  result.StartAsync(aStdOutCallback, aStdErrCallback, aFinishedCallback);
   {$ENDIF}
 end;
 
@@ -183,11 +200,8 @@ begin
   else
     lWorkingDirPointer := nil;
 
+  fWaitHandle := rtl.HANDLE(-1);
   result := rtl.CreateProcess(@lCommand[0], lArgsPointer, nil, nil, true, 0, nil, lWorkingDirPointer, @fStartUpInfo, @fProcessInfo);
-  if RedirectOutput then begin
-    rtl.CloseHandle(fOutputReadHandle);
-    rtl.CloseHandle(fErrorReadHandle);
-  end;
   {$ENDIF}
 end;
 
@@ -198,16 +212,94 @@ begin
   {$ENDIF}
 end;
 
-{$IF WINDOWS}
-method Process.StartAsync(completionHandler: block);
+method Process.CleanUp;
 begin
-  Start;
-  rtl.RegisterWaitForSingleObject(@fWaitHandle, fProcessInfo.hProcess, (o, b)-> begin var lObject := InternalCalls.Cast<Process>(o); lObject.AsyncWaitHandler(Boolean(b)); end, InternalCalls.Cast(self), 100, 0);
+  {$IF WINDOWS}
+  if fWaitHandle ≠ rtl.HANDLE(-1) then
+    rtl.UnregisterWait(fWaitHandle);
+  rtl.CloseHandle(fProcessInfo.hProcess);
+  rtl.CloseHandle(fProcessInfo.hThread);
+  if RedirectOutput then begin
+    rtl.CloseHandle(fOutputHandle);
+    rtl.CloseHandle(fOutputReadHandle);
+    rtl.CloseHandle(fErrorHandle);
+    rtl.CloseHandle(fErrorReadHandle);
+  end;
+  {$ENDIF}
 end;
 
-method Process.AsyncWaitHandler(TimerOrEnd: Boolean);
-begin
 
+{$IF WINDOWS}
+method Process.StartAsync(aStdOutCallback: block(aLine: String); aErrorCallback: block(aLine: String); aFinishedCallback: block(ExitCode: Integer));
+begin
+  fFinishedBlock := aFinishedCallback;
+  fOutputDataBlock := aStdOutCallback;
+  fErrorDataBlock := aErrorCallback;
+  Start;
+  rtl.RegisterWaitForSingleObject(@fWaitHandle, fProcessInfo.hProcess, @WaitHandler, InternalCalls.Cast(self), 333, 0);
+end;
+
+method Process.GetCurrentOutput(StdOutput: Boolean): String;
+begin
+  var lHandle := if StdOutput then fOutputReadHandle else fErrorReadHandle;
+  var lBytesRead: rtl.DWORD;
+  var lBytesTotal: rtl.DWORD;
+  result := '';
+
+  rtl.PeekNamedPipe(lHandle, nil, 0, nil, @lBytesTotal, nil);
+  if lBytesTotal > 0 then begin
+    var lBuffer := new AnsiChar[lBytesTotal + 1];
+    lBuffer[lBytesTotal] := #0;
+    if rtl.ReadFile(fOutputReadHandle, lBuffer, lBytesTotal, @lBytesRead, nil) then
+      result := result + String.FromPAnsiChars(@lBuffer[0]);
+  end;
+end;
+
+method Process.ProcessStdOutData(rawString: String; aOutput: Boolean; callback: block(aLine: string));
+begin
+  var lString: String;
+  if aOutput then begin
+    lString := fLastIncompleteOutputLog + rawString;
+    fLastIncompleteOutputLog := '';
+  end
+  else begin
+    lString := fLastIncompleteErrorLog + rawString;
+    fLastIncompleteErrorLog := '';
+  end;
+
+  var lLines := lString.Split(RemObjects.Elements.System.Environment.NewLine);
+  for i: Int32 := 0 to lLines.Count - 1 do begin
+    var s := lLines[i];
+    if (i = lLines.Count - 1) and not s.EndsWith(RemObjects.Elements.System.Environment.NewLine) then begin
+      if length(s) > 0 then begin
+        if aOutput then
+          fLastIncompleteOutputLog := s
+        else
+          fLastIncompleteErrorLog := s
+      end
+      else
+        break;
+    end;
+    if callback ≠ nil then
+      callback(s);
+  end;
+end;
+
+[CallingConvention(CallingConvention.Stdcall)]
+class method Process.WaitHandler(aObject: ^Void; TimerOrEnd: Byte);
+begin
+  var lProcess := InternalCalls.Cast<Process>(aObject);
+  var lOutput := lProcess.GetCurrentOutput(true);
+  lProcess.ProcessStdOutData(lOutput, true, lProcess.OnOutputData);
+
+  lOutput := lProcess.GetCurrentOutput(false);
+  lProcess.ProcessStdOutData(lOutput, false, lProcess.OnErrorData);
+
+  if not Boolean(TimerOrEnd) then begin
+    if lProcess.OnFinished ≠ nil then
+      lProcess.OnFinished(lProcess.ExitCode);
+    lProcess.CleanUp;
+  end;
 end;
 {$ENDIF}
 
