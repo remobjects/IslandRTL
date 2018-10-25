@@ -13,6 +13,9 @@ type
   SwiftObject = public NSObject; // hack for now
   SwiftString = public NSString; // hack for now
 
+  Swift.Comparable = public interface
+  end;
+
   //
   // Island <-> Cocoa
   //
@@ -20,16 +23,16 @@ type
   CocoaWrappedIslandObject = public class(CocoaObject)
   private
 
-    constructor(aValue: Object);
+    constructor(aValue: IslandObject);
     begin
       Value := aValue;
     end;
 
   public
 
-    property Value: Object; readonly;
+    property Value: IslandObject; readonly;
 
-    class method FromValue(aValue: Object): CocoaObject;
+    class method FromValue(aValue: IslandObject): CocoaObject;
     begin
       if aValue = nil then exit nil;
       if aValue is IslandWrappedCocoaObject then exit IslandWrappedCocoaObject(aValue).Value;
@@ -56,12 +59,13 @@ type
 
     method compareTo(aOther: CocoaObject): NSComparisonResult;
     begin
-      if aOther is CocoaWrappedIslandObject then
-        result := (Value as IComparable).CompareTo(CocoaWrappedIslandObject(aOther).Value) as NSComparisonResult
-      else if aOther is CocoaWrappedSwiftObject then
-        result := (Value as IComparable).CompareTo(CocoaWrappedSwiftObject(aOther).Value) as NSComparisonResult
-      else
-        result := NSComparisonResult.OrderedAscending /* -1, Cocoa before wrapped Island */
+      if Value is not IComparable then
+        raise new Exception("Island Object does not implement IComparable");
+      case aOther type of
+        CocoaWrappedIslandObject: result := (Value as IComparable).CompareTo(CocoaWrappedIslandObject(aOther).Value) as NSComparisonResult;
+        CocoaWrappedSwiftObject: result := (Value as IComparable).CompareTo(CocoaWrappedSwiftObject(aOther).Value) as NSComparisonResult;
+        else result := (Value as IComparable).CompareTo(aOther) as NSComparisonResult;
+      end;
     end;
   end;
 
@@ -77,7 +81,7 @@ type
 
     property Value: CocoaObject; readonly;
 
-    class method FromValue(aValue: CocoaObject): Object;
+    class method FromValue(aValue: CocoaObject): IslandObject;
     begin
       if aValue = nil then exit nil;
       if aValue is CocoaWrappedIslandObject then exit CocoaWrappedIslandObject(aValue).Value;
@@ -85,27 +89,27 @@ type
       result := new IslandWrappedCocoaObject(aValue);
     end;
 
-    method ToString: String; override;
+    method ToString: IslandString; override;
     begin
-      //result := Value.description as String;  // E0 Internal error: Unknown element 95
+      result := Value.description as IslandString;
     end;
 
     method GetHashCode: Integer; override;
     begin
-      //result := Value.hash; // E0 Internal error: Unknown element 95
+      result := Value.hash;
     end;
 
-    method &Equals(aOther: Object): Boolean; override;
+    method &Equals(aOther: IslandObject): Boolean; override;
     begin
       result := Value.isEqual(coalesce(IslandWrappedCocoaObject(aOther):Value,
                                        IslandWrappedSwiftObject(aOther):Value,
                                        aOther));
     end;
 
-    method CompareTo(aOther: Object): Integer;
+    method CompareTo(aOther: IslandObject): Integer;
     begin
       if not Value.respondsToSelector(selector(compareTo:)) then
-        raise new Exception("Object does not implement compareTo:");
+        raise new Exception("Cocoa Object does not implement compareTo:");
       case aOther type of
         IslandWrappedCocoaObject: begin
             //81175: Darwin: cannot call compareTo: after casting to id
@@ -124,25 +128,23 @@ type
 
   end;
 
-  /* == COMPARE IS FGOOD RTIL HERE */
-
   //
   // Island <-> Swift
   //
 
-  SwiftWrappedIslandObject = public class(SwiftObject)
+  SwiftWrappedIslandObject = public class(SwiftObject/*, Swift.Comparable*/)
   private
 
-    constructor(aValue: Object);
+    constructor(aValue: IslandObject);
     begin
       Value := aValue;
     end;
 
   public
 
-    property Value: Object; readonly;
+    property Value: IslandObject; readonly;
 
-    class method FromValue(aValue: Object): SwiftObject;
+    class method FromValue(aValue: IslandObject): SwiftObject;
     begin
       if aValue = nil then exit nil;
       if aValue is IslandWrappedSwiftObject then exit IslandWrappedSwiftObject(aValue).Value;
@@ -169,12 +171,13 @@ type
 
     method compareTo(aOther: SwiftObject): NSComparisonResult; //override;
     begin
-      if aOther is SwiftWrappedIslandObject then
-        result := (Value as IComparable).CompareTo(SwiftWrappedIslandObject(aOther).Value) as NSComparisonResult
-      else if aOther is SwiftWrappedCocoaObject then
-        result := (Value as IComparable).CompareTo(SwiftWrappedCocoaObject(aOther).Value) as NSComparisonResult
-      else
-        result := NSComparisonResult.OrderedAscending /* -1, Cocoa before wrapped Island */
+      if Value is not IComparable then
+        raise new Exception("Island Object does not implement IComparable");
+      case aOther type of
+        SwiftWrappedIslandObject: result := (Value as IComparable).CompareTo(SwiftWrappedIslandObject(aOther).Value) as NSComparisonResult;
+        SwiftWrappedCocoaObject: result := (Value as IComparable).CompareTo(SwiftWrappedCocoaObject(aOther).Value) as NSComparisonResult;
+        else result := (Value as IComparable).CompareTo(aOther) as NSComparisonResult;
+      end;
     end;
   end;
 
@@ -190,7 +193,7 @@ type
 
     property Value: SwiftObject; readonly;
 
-    class method FromValue(aValue: SwiftObject): Object;
+    class method FromValue(aValue: SwiftObject): IslandObject;
     begin
       if aValue = nil then exit nil;
       if aValue is SwiftWrappedIslandObject then exit SwiftWrappedIslandObject(aValue).Value;
@@ -198,38 +201,38 @@ type
       result := new IslandWrappedSwiftObject(aValue);
     end;
 
-    method ToString: String; override;
+    method ToString: IslandString; override;
     begin
-      //result := Value.description as String; // E0 Internal error: Unknown element 95
+      result := Value.description as IslandString;
     end;
 
     method GetHashCode: Integer; override;
     begin
-      //result := Value.hash; // E0 Internal error: Unknown element 95
+      result := Value.hash;
     end;
 
-    method &Equals(aOther: Object): Boolean; override;
+    method &Equals(aOther: IslandObject): Boolean; override;
     begin
       result := Value.isEqual(coalesce(IslandWrappedSwiftObject(aOther):Value,
                                        IslandWrappedCocoaObject(aOther):Value,
                                        aOther));
     end;
 
-    method CompareTo(aOther: Object): Integer;
+    method CompareTo(aOther: IslandObject): Integer;
     begin
+      if Value is not Swift.Comparable then
+        raise new Exception("Swift Object does not implement Comparable");
+
+      raise new Exception("Can not compare Swift objects yet.");
       //case type aOther of
         //IslandWrappedSwiftObject: begin
             ////todo: need to figure out how this will work opn Swift objects
-            //raise new Exception("Can not compare Island to Swift objects yet/");
           //end;
         //IslandWrappedCocoaObject: begin
-            //if not Value.respondsToSelector(selector(compareTo:)) then
-              //raise new Exception("Object does not implement compareTo:");
-            ////81175: Darwin: cannot call compareTo: after casting to id
-            ////exit id(Value).compareTo(IslandWrappedCocoaObject(aOther).Value);
-          //end;
+            ////todo: need to figure out how this will work opn Swift objects
         //else begin
-          //exit -100; /* todo: find best value */
+            ////todo: need to figure out how this will work opn Swift objects
+          //end;
       //end;
     end;
 
@@ -239,7 +242,7 @@ type
   // Cocoa <-> Swift
   //
 
-  SwiftWrappedCocoaObject = public class(SwiftObject)
+  SwiftWrappedCocoaObject = public class(SwiftObject/*, Swift.Comparable*/)
   private
 
     constructor(aValue: CocoaObject);
@@ -261,12 +264,12 @@ type
 
     method description: SwiftString; override;
     begin
-      //result := Value.description() as SwiftString; // E0 Internal error: Unknown element 95
+      result := Value.description() as SwiftString;
     end;
 
     method hash: NSUInteger; override;
     begin
-      //exit Value.hash; // E0 Internal error: Unknown element 95
+      exit Value.hash;
     end;
 
     method isEqual(aOther: SwiftObject): Boolean; override;
@@ -278,7 +281,23 @@ type
 
     method compareTo(aOther: SwiftObject): NSComparisonResult; //override;
     begin
-      //...
+      if not Value.respondsToSelector(selector(compareTo:)) then
+        raise new Exception("Cocoa Object does not implement compareTo:");
+
+      case aOther type of
+        SwiftWrappedCocoaObject: begin
+            //81175: Darwin: cannot call compareTo: after casting to id
+            //exit id(Value).compareTo(IslandWrappedSwiftObject(aOther).Value);
+          end;
+        SwiftWrappedIslandObject: begin
+            //81175: Darwin: cannot call compareTo: after casting to id
+            //exit id(Value).compareTo(IslandWrappedSwiftObject(aOther).Value);
+          end;
+        else begin
+            //81175: Darwin: cannot call compareTo: after casting to id
+            //exit id(Value).compareTo(IslandWrappedSwiftObject(aOther).Value);
+          end;
+      end;
     end;
   end;
 
@@ -294,7 +313,7 @@ type
 
     property Value: SwiftObject; readonly;
 
-    class method FromValue(aValue: SwiftObject): Object;
+    class method FromValue(aValue: SwiftObject): IslandObject;
     begin
       if aValue = nil then exit nil;
       if aValue is SwiftWrappedCocoaObject then exit SwiftWrappedCocoaObject(aValue).Value;
@@ -304,12 +323,12 @@ type
 
     method description: SwiftString; override;
     begin
-      //result := Value.description() as SwiftString; // E0 Internal error: Unknown element 95
+      result := Value.description() as SwiftString;
     end;
 
     method hash: NSUInteger; override;
     begin
-      //exit Value.hash; // E0 Internal error: Unknown element 95
+      //exit Value.hash;
     end;
 
     method isEqual(aOther: CocoaObject): Boolean; override;
@@ -319,12 +338,22 @@ type
                                        aOther));
     end;
 
-    method compareTo(aOther: SwiftObject): NSComparisonResult; //override;
+    method compareTo(aOther: CocoaObject): NSComparisonResult; //override;
     begin
-      //if aOther is CocoaWrappedIslandObject then
-        //exit (Value as IComparable).CompareTo(CocoaWrappedIslandObject(aOther).Value) as NSComparisonResult
-      //else
-        //result := NSComparisonResult.OrderedAscending /* -1, Cocoa before wrapped Island */
+      if Value is not Swift.Comparable then
+        raise new Exception("Swift Object does not implement Comparable");
+
+      raise new Exception("Can not compare Swift objects yet.");
+      //case type aOther of
+        //CocoaWrappedSwiftObject: begin
+            ////todo: need to figure out how this will work opn Swift objects
+          //end;
+        //CocoaWrappedIslandObject: begin
+            ////todo: need to figure out how this will work opn Swift objects
+        //else begin
+            ////todo: need to figure out how this will work opn Swift objects
+          //end;
+      //end;
     end;
 
   end;
