@@ -284,20 +284,20 @@ type
       if not Value.respondsToSelector(selector(compareTo:)) then
         raise new Exception("Cocoa Object does not implement compareTo:");
 
-      case aOther type of
-        SwiftWrappedCocoaObject: begin
-            //81175: Darwin: cannot call compareTo: after casting to id
-            //exit id(Value).compareTo(IslandWrappedSwiftObject(aOther).Value);
-          end;
-        SwiftWrappedIslandObject: begin
-            //81175: Darwin: cannot call compareTo: after casting to id
-            //exit id(Value).compareTo(IslandWrappedSwiftObject(aOther).Value);
-          end;
-        else begin
-            //81175: Darwin: cannot call compareTo: after casting to id
-            //exit id(Value).compareTo(IslandWrappedSwiftObject(aOther).Value);
-          end;
-      end;
+      //case aOther type of
+        //SwiftWrappedCocoaObject: begin
+            ////81175: Darwin: cannot call compareTo: after casting to id
+            ////exit id(Value).compareTo(IslandWrappedSwiftObject(aOther).Value);
+          //end;
+        //SwiftWrappedIslandObject: begin
+            ////81175: Darwin: cannot call compareTo: after casting to id
+            ////exit id(Value).compareTo(IslandWrappedSwiftObject(aOther).Value);
+          //end;
+        //else begin
+            ////81175: Darwin: cannot call compareTo: after casting to id
+            ////exit id(Value).compareTo(IslandWrappedSwiftObject(aOther).Value);
+          //end;
+      //end;
     end;
   end;
 
