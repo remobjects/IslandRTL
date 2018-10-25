@@ -31,12 +31,12 @@ type
 
   public
     const CurrentUser = 'HKEY_CURRENT_USER';
-    const  LocalMachine = 'HKEY_LOCAL_MACHINE';
-    const  ClassesRoot = 'HKEY_CLASSES_ROOT';
-    const  Users = 'HKEY_USERS';
-    const  PerformanceData = 'HKEY_PERFORMANCE_DATA';
-    const  CurrentConfig = 'HKEY_CURRENT_CONFIG';
-    const  DynData = 'HKEY_DYN_DATA';
+    const LocalMachine = 'HKEY_LOCAL_MACHINE';
+    const ClassesRoot = 'HKEY_CLASSES_ROOT';
+    const Users = 'HKEY_USERS';
+    const PerformanceData = 'HKEY_PERFORMANCE_DATA';
+    const CurrentConfig = 'HKEY_CURRENT_CONFIG';
+    const DynData = 'HKEY_DYN_DATA';
 
     method GetValue(KeyName: String; ValueName: String;  defaultValue: Object): Object;
     begin
@@ -85,7 +85,7 @@ type
 
     method SetValue(KeyName: String; ValueName: String;  Value: Object);
     begin
-      SetValue(KeyName,ValueName,Value,RegistryValueKind.Unknown);
+      SetValue(KeyName,ValueName, Value, RegistryValueKind.Unknown);
     end;
 
     method SetValue(KeyName: String; ValueName: String; Value: Object; ValueKind: RegistryValueKind);
