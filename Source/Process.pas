@@ -196,9 +196,10 @@ begin
   Prepare;
   var lCommand := Command.ToCharArray(true);
   var lArgsPointer: rtl.LPWSTR;
+  var lArguments: array of Char;
 
   if Arguments.Count > 0 then begin
-    var lArguments := String.Join(' ', Arguments).ToCharArray(true);
+    lArguments := (Command + ' ' + String.Join(' ', Arguments)).ToCharArray(true);
     lArgsPointer := @lArguments[0];
   end
   else
