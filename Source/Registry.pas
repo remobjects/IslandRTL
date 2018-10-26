@@ -38,13 +38,13 @@ type
     const CurrentConfig = 'HKEY_CURRENT_CONFIG';
     const DynData = 'HKEY_DYN_DATA';
 
-    method GetValue(KeyName: String; ValueName: String;  defaultValue: Object): Object;
+    method GetValueWithFlags(KeyName: String; ValueName: String; defaultValue: Object; ViewFlags: rtl.DWORD): Object;
     begin
       var subKeyName: String;
       var lrootkey := ParseKeyName(KeyName, out subKeyName);
       var lsubKey := subKeyName.ToLPCWSTR;
       var lvaluename := ValueName.ToLPCWSTR;
-      var &flags := rtl.RRF_RT_ANY;
+      var &flags := rtl.RRF_RT_ANY or ViewFlags;
       var dwtype : rtl.DWORD;
       var pcbData: rtl.DWORD;
       var res := rtl.RegGetValueW(lrootkey, lsubKey, lvaluename,&flags,@dwtype,nil, @pcbData);
@@ -81,6 +81,16 @@ type
       end;
       if res <> rtl.ERROR_SUCCESS then
         raise new Exception('error code is '+res.ToString);
+    end;
+
+    method GetValue(KeyName: String; ValueName: String; defaultValue: Object): Object;
+    begin
+      result := GetValueWithFlags(KeyName, ValueName, defaultValue, 0);
+    end;
+
+    method GetValue64(KeyName: String; ValueName: String; defaultValue: Object): Object;
+    begin
+      result := GetValueWithFlags(KeyName, ValueName, defaultValue, rtl.RRF_SUBKEY_WOW6464KEY);
     end;
 
     method SetValue(KeyName: String; ValueName: String;  Value: Object);
@@ -175,6 +185,34 @@ type
       var res :=  rtl.RegSetKeyValueW(lrootkey, lsubKey, ValueName.ToLPCWSTR,cbDatatype,cbData, cbDataSize);
       if res <> rtl.ERROR_SUCCESS then
         raise new Exception('error code is '+res.ToString);
+    end;
+
+    method GetSubKeyNames(KeyName: String): nullable List<String>;
+    begin
+      var subKeyName: String;
+      var lrootkey := ParseKeyName(KeyName, out subKeyName);
+      var lsubKey := subKeyName.ToLPCWSTR;
+      var lNewKey: rtl.HKEY;
+      result := new List<String>;
+
+      var lRes := rtl.RegOpenKeyEx(lrootkey, lsubKey, 0, rtl.KEY_ALL_ACCESS, @lNewKey);
+      if lRes ≠ rtl.ERROR_SUCCESS then
+        raise new Exception ('Can not open ' + KeyName + ' registry key.');
+
+      var lNumSubKeys: rtl.DWORD;
+      var lMaxSubKeyLen: rtl.DWORD;
+      lRes := rtl.RegQueryInfoKey(lNewKey, nil, nil, nil, @lNumSubKeys, @lMaxSubKeyLen, nil, nil, nil, nil, nil, nil);
+      if lRes ≠ rtl.ERROR_SUCCESS then
+        raise new Exception ('Can not check ' + KeyName + ' registry key.');
+
+      var lWritten: rtl.DWORD;
+      var lBuffer := new Char[lMaxSubKeyLen * 2];
+      for i: Integer := 0 to lNumSubKeys - 1 do begin
+        lWritten := lBuffer.Length;
+        if rtl.RegEnumKeyEx(lNewKey, i, @lBuffer[0], @lWritten, nil, nil, nil, nil) ≠ rtl.ERROR_SUCCESS then
+          raise new Exception("Can not get registry subkeys");
+        result.Add(String.FromPChar(@lBuffer[0]));
+      end;
     end;
   end;
 
