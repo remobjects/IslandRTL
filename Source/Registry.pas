@@ -88,6 +88,11 @@ type
       result := GetValueWithFlags(KeyName, ValueName, defaultValue, 0);
     end;
 
+    method GetValue32(KeyName: String; ValueName: String; defaultValue: Object): Object;
+    begin
+      result := GetValueWithFlags(KeyName, ValueName, defaultValue, rtl.RRF_SUBKEY_WOW6432KEY);
+    end;
+
     method GetValue64(KeyName: String; ValueName: String; defaultValue: Object): Object;
     begin
       result := GetValueWithFlags(KeyName, ValueName, defaultValue, rtl.RRF_SUBKEY_WOW6464KEY);
