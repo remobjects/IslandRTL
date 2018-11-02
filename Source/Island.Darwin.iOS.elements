@@ -18,7 +18,6 @@
     <GenerateDebugInfo>True</GenerateDebugInfo>
     <DefineConstants>POSIX;DARWIN;MACOS;x86_64</DefineConstants>
     <SDK>iOS</SDK>
-    <Architecture>arm64</Architecture>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)' == 'Debug'">
     <OutputPath>Bin\Debug</OutputPath>
