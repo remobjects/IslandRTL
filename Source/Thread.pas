@@ -64,7 +64,7 @@ type
   );
 
 
-  ReadWriteLock = public class
+  ReadWriteLock = public class(IDisposable)
   private
   {$IFDEF WINDOWS}
     fLock: rtl.SRWLOCK;
@@ -82,6 +82,14 @@ type
     end;
 
     finalizer;
+    begin
+      {$IFDEF WINDOWS}
+      {$ELSE}
+      rtl.pthread_rwlock_destroy(@fLock);
+      {$ENDIF}
+    end;
+
+    method Dispose;
     begin
       {$IFDEF WINDOWS}
       {$ELSE}
@@ -112,7 +120,7 @@ type
       {$IFDEF WINDOWS}
       rtl.ReleaseSRWLockShared(@fLock);
       {$ELSE}
-      if rtl.pthread_rwlock_unlock(@fLock) <> 0 then raise new ArgumentException('Unable to acquire read lock');
+      if rtl.pthread_rwlock_unlock(@fLock) <> 0 then raise new ArgumentException('Unable to release read lock');
       {$ENDIF}
     end;
 
@@ -121,7 +129,7 @@ type
       {$IFDEF WINDOWS}
       rtl.AcquireSRWLockExclusive(@fLock);
       {$ELSE}
-      if rtl.pthread_rwlock_wrlock(@fLock) <> 0 then raise new ArgumentException('Unable to acquire read lock');
+      if rtl.pthread_rwlock_wrlock(@fLock) <> 0 then raise new ArgumentException('Unable to acquire write lock');
       {$ENDIF}
     end;
 
@@ -139,13 +147,13 @@ type
       {$IFDEF WINDOWS}
       rtl.ReleaseSRWLockExclusive(@fLock);
       {$ELSE}
-      if rtl.pthread_rwlock_unlock(@fLock) <> 0 then raise new ArgumentException('Unable to acquire write lock');
+      if rtl.pthread_rwlock_unlock(@fLock) <> 0 then raise new ArgumentException('Unable to release write lock');
       {$ENDIF}
     end;
 
   end;
 
-  ConditionalVariable = public class
+  ConditionalVariable = public class(IDisposable)
   private
   {$IFDEF WINDOWS}
     fCond: rtl.CONDITION_VARIABLE;
@@ -165,6 +173,14 @@ type
     end;
 
     finalizer;
+    begin
+      {$IFDEF WINDOWS}
+      {$ELSEIF POSIX}
+      rtl.pthread_cond_destroy(@fCond);
+      {$ENDIF}
+    end;
+
+    method Dispose;
     begin
       {$IFDEF WINDOWS}
       {$ELSEIF POSIX}
