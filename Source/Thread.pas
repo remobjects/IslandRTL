@@ -63,7 +63,89 @@ type
     Highest
   );
 
+
+  ReadWriteLock = public class
+  private
   {$IFDEF WINDOWS}
+    fLock: rtl.SRWLOCK;
+  {$ELSE}
+    fLock: rtl.pthread_rwlock_t;
+  {$ENDIF}
+  public
+    constructor;
+    begin
+      {$IFDEF WINDOWS}
+      rtl.InitializeSRWLock(@fLock);
+      {$ELSE}
+      rtl.pthread_rwlock_init(@fLock, nil);
+      {$ENDIF}
+    end;
+
+    finalizer;
+    begin
+      {$IFDEF WINDOWS}
+      {$ELSE}
+      rtl.pthread_rwlock_destroy(@fLock);
+      {$ENDIF}
+    end;
+
+    method EnterReadLock;
+    begin
+      {$IFDEF WINDOWS}
+      rtl.AcquireSRWLockShared(@fLock);
+      {$ELSE}
+      if rtl.pthread_rwlock_rdlock(@fLock) <> 0 then raise new ArgumentException('Unable to acquire read lock');
+      {$ENDIF}
+    end;
+
+    method TryEnterReadLock: Boolean;
+    begin
+      {$IFDEF WINDOWS}
+      exit rtl.TryAcquireSRWLockShared(@fLock) <> 0;
+      {$ELSE}
+      exit rtl.pthread_rwlock_tryrdlock(@fLock) = 0;
+      {$ENDIF}
+    end;
+
+    method ExitReadLock;
+    begin
+      {$IFDEF WINDOWS}
+      rtl.ReleaseSRWLockShared(@fLock);
+      {$ELSE}
+      if rtl.pthread_rwlock_unlock(@fLock) <> 0 then raise new ArgumentException('Unable to acquire read lock');
+      {$ENDIF}
+    end;
+
+    method EnterWriteLock;
+    begin
+      {$IFDEF WINDOWS}
+      rtl.AcquireSRWLockExclusive(@fLock);
+      {$ELSE}
+      if rtl.pthread_rwlock_wrlock(@fLock) <> 0 then raise new ArgumentException('Unable to acquire read lock');
+      {$ENDIF}
+    end;
+
+    method TryEnterWriteLock: Boolean;
+    begin
+      {$IFDEF WINDOWS}
+      exit rtl.TryAcquireSRWLockExclusive(@fLock) <> 0;
+      {$ELSE}
+      exit rtl.pthread_rwlock_trywrlock(@fLock) = 0;
+      {$ENDIF}
+    end;
+
+    method ExitwriteLock;
+    begin
+      {$IFDEF WINDOWS}
+      rtl.ReleaseSRWLockExclusive(@fLock);
+      {$ELSE}
+      if rtl.pthread_rwlock_unlock(@fLock) <> 0 then raise new ArgumentException('Unable to acquire write lock');
+      {$ENDIF}
+    end;
+
+  end;
+  {$IFDEF WINDOWS}
+
   WaitHandle = public abstract class(IDisposable)
   protected
     fHandle: rtl.HANDLE;
@@ -112,7 +194,7 @@ type
   public
     constructor(aInitialValue: Boolean);
     method Release;
-    finalizer;    
+    finalizer;
   end;
 
   EventWaitHandle = public class(WaitHandle)
@@ -424,7 +506,7 @@ begin
   ts.tv_sec := ts.tv_sec + (aTimeMS /1000);
   tswait.tv_nsec := 10000000;
   {$IFDEF DARWIN}
-  loop begin 
+  loop begin
     if rtl.pthread_mutex_trylock(@fMutex) = 0 then exit true;
     rtl.nanosleep(@ts, @ts);
     rtl.clock_gettime(
