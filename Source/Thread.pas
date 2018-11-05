@@ -144,6 +144,75 @@ type
     end;
 
   end;
+
+  ConditionalVariable = public class
+  private
+  {$IFDEF WINDOWS}
+    fCond: rtl.CONDITION_VARIABLE;
+  {$ELSEIF POSIX}
+    fCond: rtl.pthread_cond_t;
+  {$ELSE}
+  {$ERROR NOT IMPLEMENTED}
+  {$ENDIF}
+  public
+    constructor;
+    begin
+      {$IFDEF WINDOWS}
+      rtl.InitializeConditionVariable(@fCond);
+      {$ELSEIF POSIX}
+      rtl.pthread_cond_init(@fCond, nil);
+      {$ENDIF}
+    end;
+
+    finalizer;
+    begin
+      {$IFDEF WINDOWS}
+      {$ELSEIF POSIX}
+      rtl.pthread_cond_destroy(@fCond);
+      {$ENDIF}
+    end;
+
+    method Signal;
+    begin
+      {$IFDEF WINDOWS}
+      rtl.WakeConditionVariable(@fCond);
+      {$ELSEIF POSIX}
+      rtl.pthread_cond_signal(@fCond);
+      {$ENDIF}
+    end;
+
+    method Broadast;
+    begin
+      {$IFDEF WINDOWS}
+      rtl.WakeAllConditionVariable(@fCond);
+      {$ELSEIF POSIX}
+      rtl.pthread_cond_broadcast(@fCond);
+      {$ENDIF}
+    end;
+
+    method Wait(cs: Monitor);
+    begin
+      {$IFDEF WINDOWS}
+      rtl.SleepConditionVariableCS(@fCond, @cs.fCS, rtl.INFINITE);
+      {$ELSEIF POSIX}
+      rtl.pthread_cond_wait(@fCond, @cs.fCS);
+      {$ENDIF}
+    end;
+
+    method Wait(cs: Monitor; aTimeMS: Integer): Boolean;
+    begin
+      {$IFDEF WINDOWS}
+      exit rtl.SleepConditionVariableCS(@fCond, @cs.fCS, aTimeMS);
+      {$ELSEIF POSIX}
+      var ts: rtl.__struct_timespec;
+      rtl.clock_gettime({$IFDEF DARWIN}rtl.clockid_t._CLOCK_REALTIME{$ELSE}rtl.CLOCK_REALTIME{$ENDIF}, @ts);
+      ts.tv_nsec := ts.tv_nsec + ((aTimeMS mod 1000)  *1000);
+      ts.tv_sec := ts.tv_sec + (aTimeMS /1000);
+      exit rtl.pthread_cond_timedwait(@fCond, @cs.fCS, @ts) = 0;
+      {$ENDIF}
+    end;
+  end;
+
   {$IFDEF WINDOWS}
 
   WaitHandle = public abstract class(IDisposable)
