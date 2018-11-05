@@ -197,7 +197,7 @@ type
       {$ENDIF}
     end;
 
-    method Broadast;
+    method Broadcast;
     begin
       {$IFDEF WINDOWS}
       rtl.WakeAllConditionVariable(@fCond);
