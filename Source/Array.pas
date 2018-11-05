@@ -37,6 +37,36 @@ type
     begin
       &Copy(aSource, 0, aDest, 0, aCount);
     end;
+    class method Sort<T>(aVal: array of T; Comparison: Comparison<T>);
+    begin
+      Sort(aVal, 0, aVal.Length -1, Comparison);
+    end;
+
+    class method Sort<T>(aVal: array of T; L, R: Integer; Comparison: Comparison<T>);
+    begin
+      var I, J: Integer;
+      var P: T;
+      var temp: T;
+      //if aCount < 2 then Exit;
+      repeat
+        I := L;
+        J := R;
+        P := aVal[(L + R) shr 1];
+        repeat
+          while Comparison(aVal[I], P) < 0 do inc(I);
+          while Comparison(aVal[J], P) > 0 do dec(J);
+          if I <= J then begin
+            temp := aVal[I];
+            aVal[I]:= aVal[J];
+            aVal[J]:= temp;
+            inc(I);
+            dec(J);
+          end;
+        until I > J;
+        if L < J then Sort(aVal, L, J, Comparison);
+        L := I;
+      until I >= R;
+    end;
 
     method Get(i: Integer): Object; abstract;
     method &Set(i: Integer; v: Object); abstract;
