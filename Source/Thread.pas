@@ -142,7 +142,7 @@ type
       {$ENDIF}
     end;
 
-    method ExitwriteLock;
+    method ExitWriteLock;
     begin
       {$IFDEF WINDOWS}
       rtl.ReleaseSRWLockExclusive(@fLock);
