@@ -934,8 +934,11 @@ begin
     end;
     inc(cur_pos);
   end;
+
+  if sb.Length = 0 then exit aFormat;
+
+  sb.Append(aFormat, old_pos, cur_pos - old_pos);
   result := sb.ToString;
-  if String.IsNullOrEmpty(result) then exit aFormat;
 end;
 
 /*constructor String(aArray: array of Char);
