@@ -197,6 +197,13 @@ type
    begin
     exit InternalCalls.CompareExchange(var mem, val, exp);
    end;
+   {$IFDEF LINUX AND not ANDROID}
+   [SymbolNameAttribute('mknod')]
+   class method mknod(path: ^AnsiChar; mode: mode_t; dev: dev_t): Integer;
+   begin
+     exit __xmknod (0, path, mode, @dev);
+   end;
+   {$ENDIF}
 
    {$IFNDEF DARWIN}
     [SymbolName('__stack_chk_fail')]
