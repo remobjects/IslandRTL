@@ -26,12 +26,14 @@ type
     class operator Implicit(aValue: nullable Foundation.NSString): nullable String;
     begin
       if assigned(aValue) then begin
-        var lUsedLength: Foundation.NSUInteger;
+        //var lUsedLength: Foundation.NSUInteger;
         var lRemainingRange: Foundation.NSRange;
+        lRemainingRange.location := 0;
         var lLength := aValue.length;
+        lRemainingRange.length := lLength;
+        //NSLog('got string %@', aValue);
         result := AllocString(lLength);
-        if not aValue.getBytes(@result.fFirstChar) maxLength(lLength*2) usedLength(@lUsedLength) encoding(Foundation.NSStringEncoding.UTF16LittleEndianStringEncoding) options(0) range(Foundation.NSMakeRange(0, lLength) )remainingRange(@lRemainingRange) then
-          raise new InvalidCastException("Could not convert NSString to String");
+        aValue.getCharacters(@result.fFirstChar) range(lRemainingRange);
         result.fCachedNSString := aValue;
       end;
     end;
@@ -40,21 +42,6 @@ type
     begin
       var lWrappedNativeObject := CocoaWrappedIslandObject(aValue);
       result := coalesce(String(lWrappedNativeObject:Value), lWrappedNativeObject:Value:ToString, aValue:description);
-    end;
-
-    class operator Explicit(aValue: nullable String): nullable NSString;
-    begin
-      result := aValue;
-    end;
-
-    class operator Explicit(aValue: nullable NSString): nullable String;
-    begin
-      result := aValue;
-    end;
-
-    class operator Explicit(aValue: nullable id): nullable String;
-    begin
-      result := aValue;
     end;
 
     //
