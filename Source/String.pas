@@ -911,7 +911,7 @@ begin
         end;
         if aFormat[cur_pos] <> '}' then RaiseError('format error');
 
-        var arg_format := coalesce(aArguments[n].ToString, "");
+        var arg_format := coalesce(aArguments[n]:ToString, "");
         var t := width - arg_format.Length;
         if not sign and (t > 0) then
           sb.Append(' ', t);
