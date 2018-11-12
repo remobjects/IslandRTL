@@ -106,7 +106,7 @@ type
 
     {$IFDEF ARM}
     [Used, SymbolName('_GLOBAL_OFFSET_TABLE_')]
-    class var _GLOBAL_OFFSET_TABLE_: Integer; private;
+    class var _GLOBAL_OFFSET_TABLE_: Integer; private; external;
     {$ENDIF}
     {$IF NOT EMSCRIPTEN AND NOT ANDROID and not DARWIN}
     [SymbolName('_start'), Naked]
