@@ -15,6 +15,7 @@ type
     method GetFullPath(RelativePath: not nullable String): not nullable String;
 
     property DirectorySeparatorChar: Char read Folder.Separator;
+    property ListSeparator: Char read {$IFDEF WINDOWS}';'{$ELSEIF POSIX}':'{$ELSE}{$ERROR}{$ENDIF};
   end;
 {$ENDIF}
 implementation
