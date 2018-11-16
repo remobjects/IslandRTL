@@ -65,6 +65,19 @@ type
       end;
     end;
 
+    method SetEnvironmentVariable(Name: String; Value: String): Boolean;
+    begin
+      {$IFDEF WINDOWS}
+        exit rtl.SetEnvironmentVariable(Name.ToLPCWSTR, Value.ToLPCWSTR);
+      {$ELSEIF WEBASSEMBLY}
+      exit false;
+      {$ELSEIF POSIX}
+      var lName := Name.ToAnsiChars(true);
+      var lValue := Name.ToAnsiChars(true);
+      exit rtl.setenv(@lName[0], @lValue[0], 1) = 0;
+      {$ENDIF}
+    end;
+
     method CurrentDirectory: String;
     begin
       {$IFDEF WINDOWS}
