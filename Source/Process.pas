@@ -23,6 +23,12 @@ type
     method GetCurrentOutput(StdOutput: Boolean): String;
     class method WaitHandler(aObject: ^Void; TimerOrEnd: Byte); static;
     method ProcessStdOutData(rawString: String; aOutput: Boolean; callback: block(aLine: String));
+    {$ELSEIF POSIX AND NOT IOS}
+    {$IF MACOS}
+    fProcessId: rtl.pid_t;
+    {$ELSE}
+    fProcessId: rtl.__pid_t;
+    {$ENDIF}
     {$ENDIF}
     method Prepare;
     method GetIsRunning: Boolean;
@@ -187,6 +193,9 @@ method Process.WaitFor;
 begin
   {$IF WINDOWS}
   rtl.WaitForSingleObject(fProcessInfo.hProcess, rtl.INFINITE);
+  {$ELSEIF POSIX AND NOT IOS}
+  var lStatus: Int32;
+  rtl.waitpid(fProcessId, @lStatus, 0);
   {$ENDIF}
 end;
 
@@ -215,6 +224,32 @@ begin
 
   fWaitHandle := rtl.HANDLE(-1);
   result := rtl.CreateProcess(@lCommand[0], lArgsPointer, nil, nil, true, 0, nil, lWorkingDirPointer, @fStartUpInfo, @fProcessInfo);
+  {$ELSEIF POSIX AND NOT IOS}
+  Prepare;
+  var lCommand := Command.ToAnsiChars(true);
+
+  var lArgs := new ^AnsiChar[Arguments.Count + 2];
+  lArgs[0] := @lCommand[0];
+  for i: Integer := 0 to Arguments.Count - 1 do
+    lArgs[i+1] := @Arguments[i].ToAnsiChars(true)[0];
+  lArgs[Arguments.Count] := nil;
+
+  var lEnvp := new ^AnsiChar[Environment.Count + 1];
+  var i: Integer := 0;
+  for each lItem in Environment do begin
+    lEnvp[i] := @(lItem.Key + '=' + lItem.Value).ToAnsiChars(true)[0];
+    inc(i);
+  end;
+  lEnvp[Arguments.Count] := nil;
+
+  fProcessId := rtl.fork();
+  if fProcessId = 0 then begin
+    rtl.execve(lCommand, @lArgs[0], @lEnvp[0]);
+    rtl.exit(-1);
+  end
+  else begin
+    // nothing now...
+  end;
   {$ENDIF}
 end;
 
