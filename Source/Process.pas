@@ -24,11 +24,8 @@ type
     class method WaitHandler(aObject: ^Void; TimerOrEnd: Byte); static;
     method ProcessStdOutData(rawString: String; aOutput: Boolean; callback: block(aLine: String));
     {$ELSEIF POSIX AND NOT IOS}
-    {$IF MACOS}
-    fProcessId: rtl.pid_t;
-    {$ELSE}
-    fProcessId: rtl.__pid_t;
-    {$ENDIF}
+    fProcessId: {$IF MACOS}rtl.pid_t{$ELSE}rtl.__pid_t{$ENDIF};
+    fPipe: array[0..1] of Int32;
     {$ENDIF}
     method Prepare;
     method GetIsRunning: Boolean;
@@ -98,6 +95,9 @@ begin
     fOutputHandle := rtl.HANDLE(-1);
     fErrorHandle := rtl.HANDLE(-1);
   end;
+  {$ELSEIF POSIX AND NOT IOS}
+  //if rtl.pipe(fPipe) = -1 then
+    //raise new Exception('Can not create handles to redirect output');
   {$ENDIF}
 end;
 
@@ -105,6 +105,8 @@ method Process.GetIsRunning: Boolean;
 begin
   {$IF WINDOWS}
   result := rtl.WaitForSingleObject(fProcessInfo.hProcess, 0) = rtl.WAIT_TIMEOUT;
+  {$ELSEIF POSIX AND NOT IOS}
+  result := rtl.kill(fProcessId, 0) = 0;
   {$ENDIF}
 end;
 
@@ -164,6 +166,7 @@ begin
   var lExitCode: rtl.DWORD;
   rtl.GetExitCodeProcess(fProcessInfo.hProcess, @lExitCode);
   result := lExitCode;
+  {$ELSEIF POSIX AND NOT IOS}
   {$ENDIF}
 end;
 
@@ -245,7 +248,7 @@ begin
   fProcessId := rtl.fork();
   if fProcessId = 0 then begin
     rtl.execve(lCommand, @lArgs[0], @lEnvp[0]);
-    rtl.exit(-1);
+    rtl.exit(rtl.EXIT_FAILURE);
   end
   else begin
     // nothing now...
@@ -257,6 +260,8 @@ method Process.Stop;
 begin
   {$IF WINDOWS}
   rtl.TerminateProcess(fProcessInfo.hProcess, -1);
+  {$ELSEIF POSIX AND NOT IOS}
+  rtl.kill(fProcessId, rtl.SIGKILL);
   {$ENDIF}
 end;
 
