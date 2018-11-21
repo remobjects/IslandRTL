@@ -17,15 +17,22 @@ type
     fErrorHandle: rtl.HANDLE;
     fErrorReadHandle: rtl.HANDLE;
     fWaitHandle: rtl.HANDLE := rtl.HANDLE(-1);
-    fLastIncompleteOutputLog: String := '';
-    fLastIncompleteErrorLog: String := '';
     method StartAsync(aStdOutCallback: block(aLine: String); aErrorCallback: block(aLine: String); aFinishedCallback: block(ExitCode: Integer));
     method GetCurrentOutput(StdOutput: Boolean): String;
     class method WaitHandler(aObject: ^Void; TimerOrEnd: Byte); static;
-    method ProcessStdOutData(rawString: String; aOutput: Boolean; callback: block(aLine: String));
     {$ELSEIF POSIX AND NOT IOS}
+    fOutput: String := '';
+    fErr: String := '';
     fProcessId: {$IF MACOS}rtl.pid_t{$ELSE}rtl.__pid_t{$ENDIF};
-    fPipe: array[0..1] of Int32;
+    fOutPipe: array[0..1] of Int32;
+    fErrPipe: array[0..1] of Int32;
+    method StartAsync(aStdOutCallback: block(aLine: String); aErrorCallback: block(aLine: String); aFinishedCallback: block(ExitCode: Integer));
+    method WaitForAsync;
+    {$ENDIF}
+    {$IF WINDOWS OR (POSIX AND NOT IOS)}
+    fLastIncompleteOutputLog: String := '';
+    fLastIncompleteErrorLog: String := '';
+    method ProcessStdOutData(rawString: String; aOutput: Boolean; callback: block(aLine: String));
     {$ENDIF}
     method Prepare;
     method GetIsRunning: Boolean;
@@ -96,8 +103,10 @@ begin
     fErrorHandle := rtl.HANDLE(-1);
   end;
   {$ELSEIF POSIX AND NOT IOS}
-  //if rtl.pipe(fPipe) = -1 then
-    //raise new Exception('Can not create handles to redirect output');
+  if RedirectOutput then begin
+    if rtl.pipe(fOutPipe) = -1 then
+      raise new Exception('Can not create handles to redirect output');
+  end;
   {$ENDIF}
 end;
 
@@ -132,6 +141,18 @@ begin
       result := result + String.FromPAnsiChars(@lBuffer[0]);
     end;
   until (not lRes) or (lBytesRead = 0);
+  {$ELSEIF POSIX AND NOT IOS}
+  if fOutput = '' then begin
+    var lBuffer := new AnsiChar[1024];
+    while(true) do begin
+      var lCount := rtl.read(fOutPipe[0], @lBuffer[0], sizeOf(lBuffer));
+      if lCount = 0 then
+        break;
+      if lCount > 0 then
+        fOutput := fOutput + String.FromPAnsiChars(@lBuffer[0], lCount);
+    end;
+  end;
+  result := fOutput;
   {$ENDIF}
 end;
 
@@ -157,6 +178,18 @@ begin
       result := result + String.FromPAnsiChars(@lBuffer[0]);
     end;
   until not lRes or (lBytesRead = 0);
+  {$ELSEIF POSIX AND NOT IOS}
+  if fErr = '' then begin
+    var lBuffer := new AnsiChar[1024];
+    while(true) do begin
+      var lCount := rtl.read(fErrPipe[0], @lBuffer[0], sizeOf(lBuffer));
+      if lCount = 0 then
+        break;
+      if lCount > 0 then
+        fErr := fErr + String.FromPAnsiChars(@lBuffer[0], lCount);
+    end;
+  end;
+  result := fErr;
   {$ENDIF}
 end;
 
@@ -167,6 +200,12 @@ begin
   rtl.GetExitCodeProcess(fProcessInfo.hProcess, @lExitCode);
   result := lExitCode;
   {$ELSEIF POSIX AND NOT IOS}
+  var lStatus: Int32;
+  rtl.waitpid(fProcessId, @lStatus, rtl.WNOHANG);
+  if (lStatus and $0177) = 0 then
+    result := lStatus shr 8
+  else
+    result := 0;
   {$ENDIF}
 end;
 
@@ -187,7 +226,7 @@ begin
   result := new Process(aCommand, aArguments, aEnvironment, aWorkingDirectory);
   result.RedirectOutput := True;
   result.Prepare;
-  {$IFDEF WINDOWS}
+  {$IFDEF WINDOWS OR (POSIX AND NOT IOS)}
   result.StartAsync(aStdOutCallback, aStdErrCallback, aFinishedCallback);
   {$ENDIF}
 end;
@@ -197,6 +236,11 @@ begin
   {$IF WINDOWS}
   rtl.WaitForSingleObject(fProcessInfo.hProcess, rtl.INFINITE);
   {$ELSEIF POSIX AND NOT IOS}
+  if RedirectOutput then begin
+    GetStandardOutput;
+    GetStandardError;
+  end;
+
   var lStatus: Int32;
   rtl.waitpid(fProcessId, @lStatus, 0);
   {$ENDIF}
@@ -247,11 +291,21 @@ begin
 
   fProcessId := rtl.fork();
   if fProcessId = 0 then begin
+    if RedirectOutput then begin
+      rtl.dup2(fOutPipe[1], rtl.STDOUT_FILENO);
+      rtl.close(fOutPipe[0]);
+      rtl.dup2(fErrPipe[1], rtl.STDERR_FILENO);
+      rtl.close(fErrPipe[0]);
+    end;
+
     rtl.execve(lCommand, @lArgs[0], @lEnvp[0]);
     rtl.exit(rtl.EXIT_FAILURE);
   end
   else begin
-    // nothing now...
+    if RedirectOutput then begin
+      rtl.close(fOutPipe[1]);
+      rtl.close(fErrPipe[1]);
+    end;
   end;
   {$ENDIF}
 end;
@@ -278,9 +332,13 @@ begin
     rtl.CloseHandle(fErrorHandle);
     rtl.CloseHandle(fErrorReadHandle);
   end;
+  {$ELSEIF POSIX AND NOT IOS}
+  if RedirectOutput then begin
+    rtl.close(fOutPipe[0]);
+    rtl.close(fErrPipe[0]);
+  end;
   {$ENDIF}
 end;
-
 
 {$IF WINDOWS}
 method Process.StartAsync(aStdOutCallback: block(aLine: String); aErrorCallback: block(aLine: String); aFinishedCallback: block(ExitCode: Integer));
@@ -308,6 +366,64 @@ begin
   end;
 end;
 
+[CallingConvention(CallingConvention.Stdcall)]
+class method Process.WaitHandler(aObject: ^Void; TimerOrEnd: Byte);
+begin
+  var lProcess := InternalCalls.Cast<Process>(aObject);
+  var lOutput := lProcess.GetCurrentOutput(true);
+  lProcess.ProcessStdOutData(lOutput, true, lProcess.OnOutputData);
+
+  lOutput := lProcess.GetCurrentOutput(false);
+  lProcess.ProcessStdOutData(lOutput, false, lProcess.OnErrorData);
+
+  if not Boolean(TimerOrEnd) then begin
+    if lProcess.OnFinished ≠ nil then
+      lProcess.OnFinished(lProcess.ExitCode);
+    lProcess.CleanUp;
+  end;
+end;
+{$ELSEIF POSIX AND NOT IOS}
+method Process.StartAsync(aStdOutCallback: block(aLine: String); aErrorCallback: block(aLine: String); aFinishedCallback: block(ExitCode: Integer));
+begin
+  fFinishedBlock := aFinishedCallback;
+  fOutputDataBlock := aStdOutCallback;
+  fErrorDataBlock := aErrorCallback;
+  Start;
+  Task.Run(()-> begin WaitForAsync; fFinishedBlock(ExitCode); end);
+end;
+
+method Process.WaitForAsync;
+begin
+  if RedirectOutput then begin
+    var lBuffer := new AnsiChar[1024];
+    var lOutput: String := '';
+    while(true) do begin
+      var lCount := rtl.read(fOutPipe[0], @lBuffer[0], sizeOf(lBuffer));
+      if lCount = 0 then
+        break;
+      if lCount > 0 then
+        lOutput := lOutput + String.FromPAnsiChars(@lBuffer[0], lCount);
+
+      ProcessStdOutData(lOutput, true, OnOutputData);
+    end;
+
+    while(true) do begin
+      var lCount := rtl.read(fErrPipe[0], @lBuffer[0], sizeOf(lBuffer));
+      if lCount = 0 then
+        break;
+      if lCount > 0 then
+        lOutput := lOutput + String.FromPAnsiChars(@lBuffer[0], lCount);
+
+      ProcessStdOutData(lOutput, false, OnErrorData);
+    end;
+  end;
+
+  var lStatus: Int32;
+  rtl.waitpid(fProcessId, @lStatus, 0);
+end;
+{$ENDIF}
+
+{$IF WINDOWS OR (POSIX AND NOT IOS)}
 method Process.ProcessStdOutData(rawString: String; aOutput: Boolean; callback: block(aLine: string));
 begin
   var lString: String;
@@ -335,23 +451,6 @@ begin
     end;
     if callback ≠ nil then
       callback(s);
-  end;
-end;
-
-[CallingConvention(CallingConvention.Stdcall)]
-class method Process.WaitHandler(aObject: ^Void; TimerOrEnd: Byte);
-begin
-  var lProcess := InternalCalls.Cast<Process>(aObject);
-  var lOutput := lProcess.GetCurrentOutput(true);
-  lProcess.ProcessStdOutData(lOutput, true, lProcess.OnOutputData);
-
-  lOutput := lProcess.GetCurrentOutput(false);
-  lProcess.ProcessStdOutData(lOutput, false, lProcess.OnErrorData);
-
-  if not Boolean(TimerOrEnd) then begin
-    if lProcess.OnFinished ≠ nil then
-      lProcess.OnFinished(lProcess.ExitCode);
-    lProcess.CleanUp;
   end;
 end;
 {$ENDIF}
