@@ -495,9 +495,9 @@ begin
   ExternalCalls.args := argv;
   ExternalCalls.envp := _envp;
   Utilities.Initialize;
-  var lArgs := new String[argc];
-  for i: Integer := 0 to argc - 1 do
-    lArgs[i] := String.FromPAnsiChars(argv[i]);
+  var lArgs := new String[argc - 1];
+  for i: Integer := 1 to argc - 1 do
+    lArgs[i - 1] := String.FromPAnsiChars(argv[i]);
   exit UserEntryPoint(lArgs);
   {$IF NOT EMSCRIPTEN AND NOT ANDROID and not DARWIN}
   {$HIDE H14}
