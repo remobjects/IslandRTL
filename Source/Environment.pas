@@ -73,8 +73,12 @@ type
       exit false;
       {$ELSEIF POSIX}
       var lName := Name.ToAnsiChars(true);
-      var lValue := Name.ToAnsiChars(true);
-      exit rtl.setenv(@lName[0], @lValue[0], 1) = 0;
+      if Value ≠ nil then begin
+        var lValue := Value.ToAnsiChars(true);
+        exit rtl.setenv(@lName[0], @lValue[0], 1) = 0;
+      end
+      else
+        exit rtl.unsetenv(@lName[0]) = 0;
       {$ENDIF}
     end;
 
