@@ -78,6 +78,49 @@ type
       {$ENDIF}
     end;
 
+    method GetEnvironmentVariables: Dictionary<String, String>;
+    begin
+      result := new Dictionary<String,String>();
+      {$IFDEF WINDOWS}
+      var lEnvp := rtl.GetEnvironmentStringsW;
+      if lEnvp = nil then
+        exit;
+      var lStrings := lEnvp;
+      while lStrings^ ≠ ''#0 do begin
+        var lVar := lStrings;
+        var lOneVar: String := '';
+        while lVar^ ≠ #0 do begin
+          lOneVar := lOneVar + lVar^;
+          inc(lVar);
+          inc(lStrings);
+        end;
+        if lOneVar ≠ '' then begin
+          var lPos := lOneVar.LastIndexOf('=');
+          if lPos >= 0 then begin
+            var lKey := lOneVar.Substring(0, lPos);
+            var lValue := lOneVar.Substring(lPos + 1);
+            result.Add(lKey, lValue);
+          end;
+        end;
+        inc(lStrings);
+      end;
+      rtl.FreeEnvironmentStrings(lEnvp);
+      {$ELSEIF POSIX}
+      var lStrings := ExternalCalls.envp;
+      var i: Integer := 0;
+      while lStrings[i] ≠ nil do begin
+        var lVar := String.FromPAnsiChars(lStrings[i]);
+        var lPos := lVar.LastIndexOf('=');
+        if lPos >= 0 then begin
+          var lKey := lVar.Substring(0, lPos);
+          var lValue := lVar.Substring(lPos + 1);
+          result.Add(lKey, lValue);
+        end;
+        inc(i);
+      end;
+      {$ENDIF}
+    end;
+
     method CurrentDirectory: String;
     begin
       {$IFDEF WINDOWS}
