@@ -9,6 +9,7 @@ type
     fFinishedBlock: block(aExitCode: Integer);
     fOutputDataBlock: block(aLine: String);
     fErrorDataBlock: block(aLine: String);
+    fId: Integer := -1;
     {$IF WINDOWS}
     fStartUpInfo: rtl.STARTUPINFO;
     fProcessInfo: rtl.PROCESS_INFORMATION;
@@ -58,6 +59,7 @@ type
     property StandardOutput: String read GetStandardOutput;
     property StandardError: String read GetStandardError;
     property RedirectOutput: Boolean := false;
+    property Id: Integer read fId;
     // for RunAsync
     property OnFinished: block(ExitCode: Integer) read fFinishedBlock;
     property OnOutputData: block(aLine: String) read fOutputDataBlock;
@@ -281,6 +283,8 @@ begin
 
   fWaitHandle := rtl.HANDLE(-1);
   result := rtl.CreateProcess(@lCommand[0], lArgsPointer, nil, nil, true, 0, nil, lWorkingDirPointer, @fStartUpInfo, @fProcessInfo);
+  if result then
+    fId := fProcessInfo.dwProcessId;
   {$ELSEIF POSIX AND NOT IOS}
   Prepare;
   var lCommand := Command.ToAnsiChars(true);
@@ -312,6 +316,7 @@ begin
     rtl.exit(rtl.EXIT_FAILURE);
   end
   else begin
+    fId := fProcessId;
     if RedirectOutput then begin
       rtl.close(fOutPipe[1]);
       rtl.close(fErrPipe[1]);
