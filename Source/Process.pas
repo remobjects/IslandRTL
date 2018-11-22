@@ -45,6 +45,7 @@ type
     constructor(aCommand: String; aArguments: List<String>; aEnvironment: Dictionary<String, String>; aWorkingDirectory: String);
     class method Run(aCommand: not nullable String; aArguments: List<String> := nil; aEnvironment: nullable Dictionary<String, String> := nil; aWorkingDirectory: nullable String := nil; out aStdOut: String; out aStdErr: String): Integer;
     class method RunAsync(aCommand: not nullable String; aArguments: List<String> := nil; aEnvironment: nullable Dictionary<String, String> := nil; aWorkingDirectory: nullable String := nil; aStdOutCallback: block(aLine: String); aStdErrCallback: block(aLine: String) := nil; aFinishedCallback: block(aExitCode: Integer) := nil): Process;
+    class method CurrentProcessId: Integer;
     method WaitFor;
     method Start: Boolean;
     method Stop;
@@ -228,6 +229,15 @@ begin
   result.Prepare;
   {$IFDEF WINDOWS OR (POSIX AND NOT IOS)}
   result.StartAsync(aStdOutCallback, aStdErrCallback, aFinishedCallback);
+  {$ENDIF}
+end;
+
+class method Process.CurrentProcessId: Integer;
+begin
+  {$IF WINDOWS}
+  result := rtl.GetCurrentProcessId;
+  {$ELSEIF POSIX AND NOT IOS}
+  result := rtl.getpid();
   {$ENDIF}
 end;
 
