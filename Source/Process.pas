@@ -9,6 +9,7 @@ type
     fFinishedBlock: block(aExitCode: Integer);
     fOutputDataBlock: block(aLine: String);
     fErrorDataBlock: block(aLine: String);
+    fId: Integer := -1;
     {$IF WINDOWS}
     fStartUpInfo: rtl.STARTUPINFO;
     fProcessInfo: rtl.PROCESS_INFORMATION;
@@ -45,6 +46,7 @@ type
     constructor(aCommand: String; aArguments: List<String>; aEnvironment: Dictionary<String, String>; aWorkingDirectory: String);
     class method Run(aCommand: not nullable String; aArguments: List<String> := nil; aEnvironment: nullable Dictionary<String, String> := nil; aWorkingDirectory: nullable String := nil; out aStdOut: String; out aStdErr: String): Integer;
     class method RunAsync(aCommand: not nullable String; aArguments: List<String> := nil; aEnvironment: nullable Dictionary<String, String> := nil; aWorkingDirectory: nullable String := nil; aStdOutCallback: block(aLine: String); aStdErrCallback: block(aLine: String) := nil; aFinishedCallback: block(aExitCode: Integer) := nil): Process;
+    class method CurrentProcessId: Integer;
     method WaitFor;
     method Start: Boolean;
     method Stop;
@@ -57,6 +59,7 @@ type
     property StandardOutput: String read GetStandardOutput;
     property StandardError: String read GetStandardError;
     property RedirectOutput: Boolean := false;
+    property Id: Integer read fId;
     // for RunAsync
     property OnFinished: block(ExitCode: Integer) read fFinishedBlock;
     property OnOutputData: block(aLine: String) read fOutputDataBlock;
@@ -231,6 +234,15 @@ begin
   {$ENDIF}
 end;
 
+class method Process.CurrentProcessId: Integer;
+begin
+  {$IF WINDOWS}
+  result := rtl.GetCurrentProcessId;
+  {$ELSEIF POSIX AND NOT IOS}
+  result := rtl.getpid();
+  {$ENDIF}
+end;
+
 method Process.WaitFor;
 begin
   {$IF WINDOWS}
@@ -271,6 +283,8 @@ begin
 
   fWaitHandle := rtl.HANDLE(-1);
   result := rtl.CreateProcess(@lCommand[0], lArgsPointer, nil, nil, true, 0, nil, lWorkingDirPointer, @fStartUpInfo, @fProcessInfo);
+  if result then
+    fId := fProcessInfo.dwProcessId;
   {$ELSEIF POSIX AND NOT IOS}
   Prepare;
   var lCommand := Command.ToAnsiChars(true);
@@ -302,6 +316,7 @@ begin
     rtl.exit(rtl.EXIT_FAILURE);
   end
   else begin
+    fId := fProcessId;
     if RedirectOutput then begin
       rtl.close(fOutPipe[1]);
       rtl.close(fErrPipe[1]);
