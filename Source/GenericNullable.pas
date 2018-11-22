@@ -12,6 +12,8 @@ type
     end;
     fHasValue: Boolean;
     fValue: T;
+    
+    class var fIsReference: Boolean := Object.ReferenceEquals(default(T), nil);
   public
     constructor(aValue: T);
     begin
@@ -58,6 +60,8 @@ type
 
     class operator implicit(aVal: GenericNullable<T>): T;
     begin
+      if fIsReference then 
+        exit aVal.GetValueOrDefault;
       exit aVal.Value;
     end;
 
