@@ -71,6 +71,20 @@ type
         exit default(GenericNullable<T>);
       exit new GenericNullable<T>(aVal as T);
     end;
+    
+    class operator Equal(aLeft, aRight: GenericNullable<T>): Boolean;
+    begin 
+      if aLeft.fHasValue = aRight.fHasValue then begin 
+        if not aLeft.fHasValue then exit true;
+        exit aLeft.fValue.Equals(aRight.fValue);
+      end;
+      exit false;
+    end;
+
+    class operator NotEqual(aLeft, aRight: GenericNullable<T>): Boolean;
+    begin 
+      exit not (aLeft = aRight);
+    end;
   end;
 
 end.
