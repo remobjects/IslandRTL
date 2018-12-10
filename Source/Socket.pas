@@ -24,6 +24,17 @@ type
 
   SocketShutdown = public enum(Receive = 0, Send = 1, Both = 2);
 
+  SocketOptionLevel = public enum(Socket = 65535, IP = 0, IPv6 = 41, Tcp = 6, Udp = 17);
+
+  SocketOptionName = public enum(Debug = 1, AcceptConnection = 2, ReuseAddress = 4, KeepAlive = 8, DontRoute = 16, Broadcast = 32,
+    UseLoopback = 64, Linger = 128, OutOfBandInline = 256, DontLinger = -129, ExclusiveAddressUse = -5, SendBuffer = 4097,
+    ReceiveBuffer = 4098, SendLowWater = 4099, ReceiveLowWater = 4100, SendTimeout = 4101, ReceiveTimeout = 4102, Error = 4103,
+    &Type = 4104, MaxConnections = 2147483647, IPOptions = 1, HeaderIncluded = 2, TypeOfService = 3, IpTimeToLive = 4,
+    MulticastInterface = 9, MulticastTimeToLive = 10, MulticastLoopback = 11, AddMembership = 12, DropMembership = 13,
+    DontFragment = 14, AddSourceMembership = 15, DropSourceMembership = 16, BlockSource = 17, UnblockSource = 18,
+    PacketInformation = 19, NoDelay = 1, BsdUrgent = 2, Expedited = 2, NoChecksum = 1, ChecksumCoverage = 20,
+    HopLimit = 21, UpdateAcceptContext = 28683, UpdateConnectContext = 28688);
+
   EndPoint = public class
   public
     property AddressFamily: AddressFamily;
@@ -68,7 +79,7 @@ type
   private
     fHandle: PlatformSocketHandle;
     constructor(aHandle: PlatformSocketHandle);
-
+    method InternalSetSocketOption(aOptionLevel: SocketOptionLevel; aOptionName: SocketOptionName; aOptionValue: ^Void; aOptionValueLength: Int32);
   public
     constructor(anAddressFamily: AddressFamily; aSocketType: SocketType; aProtocol: ProtocolType);
 
@@ -96,6 +107,11 @@ type
     method Dispose;
 
     method DataAvailable: Integer;
+
+    method SetSocketOption(aOptionLevel: SocketOptionLevel; aOptionName: SocketOptionName; aOptionValue: Int32);
+    method SetSocketOption(aOptionLevel: SocketOptionLevel; aOptionName: SocketOptionName; aOptionValue: Boolean);
+    method SetSocketOption(aOptionLevel: SocketOptionLevel; aOptionName: SocketOptionName; aOptionValue: Object);
+    method SetSocketOption(aOptionLevel: SocketOptionLevel; aOptionName: SocketOptionName; aOptionValue: array of Byte);
 
     property AddressFamily: AddressFamily;
     property Handle: PlatformSocketHandle read fHandle;
@@ -351,6 +367,12 @@ begin
 end;
 {$ENDIF}
 
+method Socket.InternalSetSocketOption(aOptionLevel: SocketOptionLevel; aOptionName: SocketOptionName; aOptionValue: ^Void; aOptionValueLength: Int32);
+begin
+  if rtl.setsockopt(fHandle, Integer(aOptionLevel), Integer(aOptionName), ^AnsiChar(aOptionValue), aOptionValueLength) <> 0 then
+    raise new Exception("Can not change socket option");
+end;
+
 constructor Socket(aHandle: PlatformSocketHandle);
 begin
   fHandle := aHandle;
@@ -535,6 +557,30 @@ begin
     lData := 0;
 
   result := lData;
+end;
+
+method Socket.SetSocketOption(aOptionLevel: SocketOptionLevel; aOptionName: SocketOptionName; aOptionValue: Int32);
+begin
+  var lValue: ^Void := @aOptionValue;
+  InternalSetSocketOption(aOptionLevel, aOptionName, lValue, sizeOf(Int32));
+end;
+
+method Socket.SetSocketOption(aOptionLevel: SocketOptionLevel; aOptionName: SocketOptionName; aOptionValue: Boolean);
+begin
+  var lValue: ^Void := @aOptionValue;
+  InternalSetSocketOption(aOptionLevel, aOptionName, lValue, sizeOf(Boolean));
+end;
+
+method Socket.SetSocketOption(aOptionLevel: SocketOptionLevel; aOptionName: SocketOptionName; aOptionValue: Object);
+begin
+  var lValue: ^Void := @aOptionValue;
+  InternalSetSocketOption(aOptionLevel, aOptionName, lValue, sizeOf(Object));
+end;
+
+method Socket.SetSocketOption(aOptionLevel: SocketOptionLevel; aOptionName: SocketOptionName; aOptionValue: array of Byte);
+begin
+  var lValue: ^Void := @aOptionValue[0];
+  InternalSetSocketOption(aOptionLevel, aOptionName, lValue, length(aOptionValue));
 end;
 
 method Socket.Shutdown(aMode: SocketShutdown);
