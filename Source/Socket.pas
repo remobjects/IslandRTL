@@ -79,6 +79,7 @@ type
   private
     fHandle: PlatformSocketHandle;
     constructor(aHandle: PlatformSocketHandle);
+    class constructor;
     method InternalSetSocketOption(aOptionLevel: SocketOptionLevel; aOptionName: SocketOptionName; aOptionValue: ^Void; aOptionValueLength: Int32);
   public
     constructor(anAddressFamily: AddressFamily; aSocketType: SocketType; aProtocol: ProtocolType);
@@ -204,9 +205,8 @@ begin
         exit false;
 
     address := new IPAddress(lBytes);
-  end
-  else
     result := true;
+  end;
 end;
 
 {$IF WINDOWS}
@@ -376,6 +376,14 @@ end;
 constructor Socket(aHandle: PlatformSocketHandle);
 begin
   fHandle := aHandle;
+end;
+
+class constructor Socket;
+begin
+  {$IF WINDOWS}
+  var lData: rtl.WSADATA;
+  rtl.WSAStartup(rtl.WINSOCK_VERSION, @lData);
+  {$ENDIF}
 end;
 
 constructor Socket(anAddressFamily: AddressFamily; aSocketType: SocketType; aProtocol: ProtocolType);
