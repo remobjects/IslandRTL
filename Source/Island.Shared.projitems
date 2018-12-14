@@ -68,5 +68,6 @@
     <Compile Include="$(MSBuildThisFileDirectory)Bridges.Darwin.pas" />
     <Compile Include="$(MSBuildThisFileDirectory)String.Bridge.Darwin.pas" />
     <Compile Include="$(MSBuildThisFileDirectory)Process.pas" />
+    <Compile Include="$(MSBuildThisFileDirectory)Socket.pas" />
   </ItemGroup>
 </Project>
