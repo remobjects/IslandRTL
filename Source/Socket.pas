@@ -251,10 +251,8 @@ begin
   for i: Integer := 0  to IPv6Length - 1 do
     {$IF ANDROID}
     lBytes[i] := lSockAddr^.sin6_addr.in6_u.u6_addr8[i];
-    //{$ELSEIF TOFFEE}
-    //lBytes[i] := lSockAddr^.sin6_addr.__u6_addr.__u6_addr8[i];
     {$ELSEIF DARWIN}
-    lBytes[i] := 0; // TODO
+    lBytes[i] := lSockAddr^.sin6_addr.__u6_addr.__u6_addr8[i];
     {$ELSEIF POSIX}
     lBytes[i] := lSockAddr^.sin6_addr.__in6_u.__u6_addr8[i];
     {$ELSE}
@@ -314,10 +312,8 @@ begin
       lIPv6.sin6_scope_id := endPoint.Address.ScopeId;
       var lBytes := endPoint.Address.GetAddressBytes();
       for i: Integer := 0 to 15 do
-        //{$IF TOFFEE}
-        //lIPv6.sin6_addr.__u6_addr.__u6_addr8[i] := lBytes[i];
         {$IF DARWIN}
-        lIPv6.sin6_port := 0; // TODO
+        lIPv6.sin6_addr.__u6_addr.__u6_addr8[i] := lBytes[i];
         {$ELSEIF ANDROID}
         lIPv6.sin6_addr.in6_u.u6_addr8[i] := lBytes[i];
         {$ELSEIF POSIX}
@@ -466,8 +462,6 @@ begin
   var lIPv6: rtl.__struct_sockaddr_in6;
   {$IF POSIX AND (NOT (ANDROID OR DARWIN))}
   var lSockAddr: rtl.__CONST_SOCKADDR_ARG;
-  {$ELSE}
-  var lSockAddr: rtl.__struct_sockaddr;
   {$ENDIF}
   {$ELSE}
   var lIPv4: rtl.SOCKADDR_IN;
