@@ -5,6 +5,9 @@ type
   DebugExceptionCallback = public procedure (data: ^Void; ex: IntPtr);
   DebugInvokeCallback = public procedure (data: ^Void);
 
+  
+[assembly: NamespaceAlias('System', ['RemObjects.Elements.System'])]
+
   Utilities = public static class
   private
   public
