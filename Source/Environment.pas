@@ -175,6 +175,26 @@ type
       {$ELSE}{$ERROR}{$ENDIF}
       exit new Folder(fn);
     end;
+    method TempFolder: Folder;
+    begin
+      var lString: String;
+      {$IF WINDOWS}
+      var lBuf := new Char[rtl.MAX_PATH + 1];
+      var lLen := rtl.GetTempPath(rtl.MAX_PATH, @lBuf[0]);
+      lString := if lLen <> 0 then new String(@lBuf[0], lLen) else '';
+      {$ELSEIF POSIX AND NOT DARWIN}
+      lString := 'TMPDIR';
+      var lTmp := rtl.getenv(lString.ToAnsiChars);
+      var lDir: String := '';
+      if lTmp <> nil then
+        lDir := RemObjects.Elements.System.String.FromPAnsiChars(lTmp);
+      lString := if lDir <> '' then lDir else rtl.P_tmpdir;
+      {$ELSEIF DARWIN}
+      var lTemp := Foundation.NSTemporaryDirectory();
+      lString := if lTemp = nil then '/tmp' else String(lTemp);
+      {$ENDIF}
+      result := new Folder(lString);
+    end;
     {$endif}
 
     method ProcessorCount:Integer;
