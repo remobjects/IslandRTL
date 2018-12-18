@@ -59,7 +59,6 @@ type
 
     class method TryParseIPV4(ipString: String; out address: IPAddress): Boolean;
     class method TryParseIPV6(ipString: String; out address: IPAddress): Boolean;
-    class method TryParse(ipString: String; out address: IPAddress): Boolean;
     class method ParseIPV4(ip: String): IPAddress;
     class method ParseIPV6(ip: String): IPAddress;
   public
@@ -67,12 +66,28 @@ type
     constructor(anAddress: array of Byte);
     constructor(newAddress: Int64);
 
+    class method TryParse(ipString: String; out address: IPAddress): Boolean;
     class method Parse(ipString: String): IPAddress;
     method GetAddressBytes: array of Byte;
 
     property ScopeId: Int64 read fScopeId write fScopeId;
     property Address: Int64 read fAddress write fAddress;
     property AddressFamily: AddressFamily read fFamily write fFamily;
+  end;
+
+  IPHostEntry = public class
+  public
+    property AddressList: array of IPAddress;
+    property Aliases: array of String;
+    property HostName: String;
+  end;
+
+  Dns = public static class
+  public
+    method GetHostEntry(aHostOrAddress: String): IPHostEntry;
+    method GetHostEntry(address: IPAddress): IPHostEntry;
+    method GetHostName: String;
+    method GetHostAddresses(aHostOrAddress: String): array of IPAddress;
   end;
 
   Socket = public class(IDisposable)
@@ -289,6 +304,61 @@ begin
     result := lResult
   else
     raise new Exception(String.Format("Can not parse '{0}' as IPv6 address", ip));
+end;
+
+method Dns.GetHostEntry(aHostOrAddress: String): IPHostEntry;
+begin
+  if (aHostOrAddress = nil) or (aHostOrAddress = '') then
+    raise new ArgumentNullException('GetHostEntry argument is empty');
+
+  var lAddress: IPAddress;
+  if IPAddress.TryParse(aHostOrAddress, out lAddress) then
+    result := InternalGetHostByAddress(lAddress, true)
+  else
+    result := InternalGetHostByName(aHostOrAddress, true);
+end;
+
+method Dns.GetHostEntry(address: IPAddress): IPHostEntry;
+begin
+  if address = nil then
+    raise new ArgumentNullException('GetHostEntry argument is empty');
+
+  result := InternalGetHostByAddress(address, true);
+end;
+
+method Dns.GetHostName: String;
+begin
+  {$IF WINDOWS}
+  var lBuffer := new Char[255];
+  var lSize: rtl.DWORD := 255;
+  if rtl.GetComputerNameEx(rtl.COMPUTER_NAME_FORMAT.ComputerNamePhysicalDnsHostname, @lBuffer[0], @lSize) then
+    result := new String(@lBuffer[0], lSize)
+  else
+    result := '';
+  {$ELSEIF POSIX}
+  var lBuffer := new AnsiChar[255];
+  if rtl.gethostname(@lBuffer[0], 255) = 0 then
+    result := String.FromPAnsiChars(@lBuffer[0])
+  else
+    result := '';
+  {$ENDIF}
+end;
+
+method Dns.GetHostAddresses(aHostOrAddress: String): array of IPAddress;
+begin
+  if (aHostOrAddress = nil) or (aHostOrAddress = '') then
+    raise new ArgumentNullException('GetHostAddresses argument is empty');
+
+  var lAddress: IPAddress;
+  if IPAddress.TryParse(aHostOrAddress, out lAddress) then begin
+    result := [lAddress];
+    //result[0] := lAddress;
+  end
+  else begin
+    // InternalGetHostByName works with IP addresses (and avoids a reverse-lookup), but we need
+    // explicit handling in order to do the ArgumentException and guarantee the behavior.
+    result := InternalGetHostByName(aHostOrAddress, true).AddressList;
+ end;
 end;
 
 {$IF DARWIN OR ANDROID}
