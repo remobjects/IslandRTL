@@ -54,25 +54,48 @@ type
     fFamily: AddressFamily;
     fNumbers := new UInt16[IPv6Length / 2];
     fScopeId: Int64;
-    const IPv4Length =  4;
-    const IPv6Length = 16;
 
     class method TryParseIPV4(ipString: String; out address: IPAddress): Boolean;
     class method TryParseIPV6(ipString: String; out address: IPAddress): Boolean;
-    class method TryParse(ipString: String; out address: IPAddress): Boolean;
     class method ParseIPV4(ip: String): IPAddress;
     class method ParseIPV6(ip: String): IPAddress;
   public
+    const IPv4Length =  4;
+    const IPv6Length = 16;
+
     constructor(anAddress: array of Byte; aScopeId: Int64);
     constructor(anAddress: array of Byte);
     constructor(newAddress: Int64);
 
+    class method TryParse(ipString: String; out address: IPAddress): Boolean;
     class method Parse(ipString: String): IPAddress;
     method GetAddressBytes: array of Byte;
 
     property ScopeId: Int64 read fScopeId write fScopeId;
     property Address: Int64 read fAddress write fAddress;
     property AddressFamily: AddressFamily read fFamily write fFamily;
+  end;
+
+  IPHostEntry = public class
+  public
+    property AddressList: array of IPAddress;
+    property Aliases: array of String;
+    property HostName: String;
+  end;
+
+  Dns = public static class
+  private assembly
+    {$IF WINDOWS}
+    class var Initialized: Boolean := false;
+    method InitSockets;
+    {$ENDIF}
+    method InternalGetHostByAddress(address: IPAddress): IPHostEntry;
+    method InternalGetHostByName(aHost: String): IPHostEntry;
+  public
+    method GetHostEntry(aHostOrAddress: String): IPHostEntry;
+    method GetHostEntry(address: IPAddress): IPHostEntry;
+    method GetHostName: String;
+    method GetHostAddresses(aHostOrAddress: String): array of IPAddress;
   end;
 
   Socket = public class(IDisposable)
@@ -89,7 +112,7 @@ type
     method Bind(aEndPoint: IPEndPoint);
 
     method Connect(aEndPoint: EndPoint);
-    method Connect(aHost: String; aPort: Integer);
+    method Connect(aHostOrIPAddress: String; aPort: Integer);
     method Connect(aIP: IPAddress; aPort: Int32);
     method Disconnect;
 
@@ -230,11 +253,7 @@ begin
   var lAddrInfo: ^rtl.__struct_addrinfo;
   var lSockAddr: ^rtl.__struct_sockaddr_in6;
   var lRes := 0;
-  //{$IF DARWIN}
-  //lRes := rtl.getaddrinfo(lString.UTF8String, nil, nil, @lAddrInfo);
-  //{$ELSE}
   lRes := rtl.getaddrinfo(^AnsiChar(lString.FirstChar), nil, nil, @lAddrInfo);
-  //{$ENDIF}
   if lRes <> 0 then
     exit false;
   lSockAddr := ^rtl.__struct_sockaddr_in6(lAddrInfo^.ai_addr);
@@ -289,6 +308,173 @@ begin
     result := lResult
   else
     raise new Exception(String.Format("Can not parse '{0}' as IPv6 address", ip));
+end;
+
+{$IF WINDOWS}
+method Dns.InitSockets;
+begin
+  if not Initialized then begin
+    var lData: rtl.WSADATA;
+    rtl.WSAStartup(rtl.WINSOCK_VERSION, @lData);
+    Initialized := true;
+  end;
+end;
+{$ENDIF}
+
+method Dns.InternalGetHostByAddress(address: IPAddress): IPHostEntry;
+begin
+  var lEndPoint := new IPEndPoint(address, 0);
+  var lHostName := '';
+  {$IF WINDOWS}
+  var lSockAddr4: rtl.SOCKADDR_IN;
+  var lSockAddr6: sockaddr_in6;
+  var lPointer: ^Void;
+  var lSize: Integer;
+  var lName := new Char[255];
+  var lService := new Char[255];
+
+  InitSockets;
+  IPEndPointToNative(lEndPoint, out lSockAddr4, out lSockAddr6, out lPointer, out lSize);
+  if rtl.getnameinfo(^rtl.SOCKADDR(lPointer), lSize, @lName[0], 255, @lService[0], 255, 0) = 0 then
+    lHostName := String.FromPChar(@lName[0])
+  {$ELSEIF POSIX}
+  var lSockAddr4: rtl.__struct_sockaddr_in;
+  var lSockAddr6: rtl.__struct_sockaddr_in6;
+  var lPointer: ^Void;
+  var lSize: Integer;
+  var lName := new AnsiChar[255];
+  var lService := new AnsiChar[255];
+  IPEndPointToNative(lEndPoint, out lSockAddr4, out lSockAddr6, out lPointer, out lSize);
+  if rtl.getnameinfo(^rtl.__struct_sockaddr(lPointer), lSize, @lName[0], 255, @lService[0], 255, 0) = 0 then
+    lHostName := String.FromPAnsiChars(@lName[0])
+  {$ENDIF}
+  if lHostName <> '' then
+    result := InternalGetHostByName(lHostName)
+  else
+    result := new IPHostEntry();
+end;
+
+method Dns.InternalGetHostByName(aHost: String): IPHostEntry;
+begin
+  result := new IPHostEntry;
+  var lIPList := new List<IPAddress>();
+  var lBytes := new Byte[16];
+  {$IF WINDOWS}
+  var lAddrInfo: rtl.PADDRINFOW;
+  var lSockAddr4: ^rtl.SOCKADDR_IN;
+  var lSockAddr6: ^sockaddr_in6;
+  var lPtr: rtl.PADDRINFOW := nil;
+
+  InitSockets;
+  if rtl.GetAddrInfo(aHost.FirstChar, nil, nil, @lAddrInfo) <> 0 then
+    exit;
+
+  result.HostName := String.FromPChar(lAddrInfo^.ai_canonname);
+  lPtr := lAddrInfo;
+  while lPtr <> nil do begin
+    case lPtr^.ai_family of
+      AddressFamily.InterNetwork: begin
+        lSockAddr4 := ^rtl.SOCKADDR_IN(lPtr^.ai_addr);
+        lIPList.Add(new IPAddress(lSockAddr4^.sin_addr.S_un.S_addr));
+      end;
+
+      AddressFamily.InterNetworkV6: begin
+        lSockAddr6 := ^sockaddr_in6(lPtr^.ai_addr);
+        for i: Integer := 0  to IPAddress.IPv6Length - 1 do
+          lBytes[i] := lSockAddr6^.sin6_addr.u.Byte[i];
+
+        lIPList.Add(new IPAddress(lBytes, lSockAddr6^.sin6_scope_id));
+      end;
+    end;
+    lPtr := rtl.PADDRINFOW(lPtr^.ai_next);
+  end;
+  {$ELSEIF POSIX}
+  var lAddrInfo: ^rtl.__struct_addrinfo;
+  var lSockAddr4: ^rtl.__struct_sockaddr_in;
+  var lSockAddr6: ^rtl.__struct_sockaddr_in6;
+  var lPtr: ^rtl.__struct_addrinfo := nil;
+  var lRes := 0;
+  lRes := rtl.getaddrinfo(^AnsiChar(aHost.FirstChar), nil, nil, @lAddrInfo);
+  if lRes <> 0 then
+    exit;
+
+  result.HostName := String.FromPAnsiChars(lAddrInfo^.ai_canonname);
+  lPtr := lAddrInfo;
+  while lPtr <> nil do begin
+    case lPtr^.ai_family of
+      AddressFamily.InterNetwork: begin
+        lSockAddr4 := ^rtl.__struct_sockaddr_in(lPtr^.ai_addr);
+        lIPList.Add(new IPAddress(lSockAddr4^.sin_addr.s_addr));
+      end;
+
+      AddressFamily.InterNetworkV6: begin
+        lSockAddr6 := ^rtl.__struct_sockaddr_in6(lPtr^.ai_addr);
+        for i: Integer := 0 to IPAddress.IPv6Length - 1 do
+          {$IF ANDROID}
+          lBytes[i] := lSockAddr6^.sin6_addr.in6_u.u6_addr8[i];
+          {$ELSEIF DARWIN}
+          lBytes[i] := lSockAddr6^.sin6_addr.__u6_addr.__u6_addr8[i];
+          {$ELSE}
+          lBytes[i] := lSockAddr6^.sin6_addr.__in6_u.__u6_addr8[i];
+          {$ENDIF}
+
+        lIPList.Add(new IPAddress(lBytes, lSockAddr6^.sin6_scope_id));
+      end;
+    end;
+    lPtr := ^rtl.__struct_addrinfo(lPtr^.ai_next);
+  end;
+  {$ENDIF}
+  result.AddressList := lIPList.ToArray();
+end;
+
+method Dns.GetHostEntry(aHostOrAddress: String): IPHostEntry;
+begin
+  if (aHostOrAddress = nil) or (aHostOrAddress = '') then
+    raise new ArgumentNullException('GetHostEntry argument is empty');
+
+  var lAddress: IPAddress;
+  if IPAddress.TryParse(aHostOrAddress, out lAddress) then
+    result := InternalGetHostByAddress(lAddress)
+  else
+    result := InternalGetHostByName(aHostOrAddress);
+end;
+
+method Dns.GetHostEntry(address: IPAddress): IPHostEntry;
+begin
+  if address = nil then
+    raise new ArgumentNullException('GetHostEntry argument is empty');
+
+  result := InternalGetHostByAddress(address);
+end;
+
+method Dns.GetHostName: String;
+begin
+  {$IF WINDOWS}
+  var lBuffer := new Char[255];
+  var lSize: rtl.DWORD := 255;
+  if rtl.GetComputerNameEx(rtl.COMPUTER_NAME_FORMAT.ComputerNamePhysicalDnsHostname, @lBuffer[0], @lSize) then
+    result := new String(@lBuffer[0], lSize)
+  else
+    result := '';
+  {$ELSEIF POSIX}
+  var lBuffer := new AnsiChar[255];
+  if rtl.gethostname(@lBuffer[0], 255) = 0 then
+    result := String.FromPAnsiChars(@lBuffer[0])
+  else
+    result := '';
+  {$ENDIF}
+end;
+
+method Dns.GetHostAddresses(aHostOrAddress: String): array of IPAddress;
+begin
+  if (aHostOrAddress = nil) or (aHostOrAddress = '') then
+    raise new ArgumentNullException('GetHostAddresses argument is empty');
+
+  var lAddress: IPAddress;
+  if IPAddress.TryParse(aHostOrAddress, out lAddress) then
+    result := [lAddress]
+  else
+    result := InternalGetHostByName(aHostOrAddress).AddressList;
 end;
 
 {$IF DARWIN OR ANDROID}
@@ -377,8 +563,7 @@ end;
 class constructor Socket;
 begin
   {$IF WINDOWS}
-  var lData: rtl.WSADATA;
-  rtl.WSAStartup(rtl.WINSOCK_VERSION, @lData);
+  Dns.InitSockets;
   {$ENDIF}
 end;
 
@@ -484,10 +669,16 @@ begin
   Connected := true;
 end;
 
-method Socket.Connect(aHost: String; aPort: Integer);
+method Socket.Connect(aHostOrIPAddress: String; aPort: Integer);
 begin
-  var lAddress := IPAddress.Parse(aHost);
-  Connect(new IPEndPoint(lAddress, aPort));
+  var lHost := Dns.GetHostAddresses(aHostOrIPAddress);
+  for each lAddress in lHost do begin
+    Connect(new IPEndPoint(lAddress, aPort));
+    if Connected then
+      exit;
+  end;
+  //var lAddress := IPAddress.Parse(aHost);
+  //Connect(new IPEndPoint(lAddress, aPort));
 end;
 
 method Socket.Connect(aIP: IPAddress; aPort: Int32);
