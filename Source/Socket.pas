@@ -126,7 +126,7 @@ type
     method Send(aBuffer: array of Byte; aSize: Integer; aFlags: SocketFlags): Integer;
     method Send(aBuffer: array of Byte): Integer;
 
-    method ReceiveFrom(aBuffer: array of Byte; aSize: Integer; aFlags: SocketFlags; var remoteEP: EndPoint): Integer;
+    method ReceiveFrom(aBuffer: array of Byte; aOffset: Integer; aSize: Integer; aFlags: SocketFlags; var remoteEP: EndPoint): Integer;
     method SendTo(aBuffer: array of Byte; aOffset: Integer; aSize: Integer; aFlags: SocketFlags; remoteEP: EndPoint): Integer;
 
     method Shutdown(aMode: SocketShutdown);
@@ -793,21 +793,21 @@ begin
   {$ENDIF}
 end;
 
-method Socket.ReceiveFrom(aBuffer: array of Byte; aSize: Integer; aFlags: SocketFlags; var remoteEP: EndPoint): Integer;
+method Socket.ReceiveFrom(aBuffer: array of Byte; aOffset: Integer; aSize: Integer; aFlags: SocketFlags; var remoteEP: EndPoint): Integer;
 begin
   var lIPEndPoint := IPEndPoint(remoteEP);
   {$IF ANDROID OR DARWIN}
   var lFrom := new Byte[sizeOf(rtl.__struct_sockaddr_in6)];
   var lSize: rtl.socklen_t := sizeOf(lFrom);
-  result := rtl.recvfrom(fHandle, @aBuffer, aSize, Int32(aFlags), ^rtl.__struct_sockaddr(@lFrom[0]), @lSize);
+  result := rtl.recvfrom(fHandle, @aBuffer[aOffset], aSize, Int32(aFlags), ^rtl.__struct_sockaddr(@lFrom[0]), @lSize);
   {$ELSEIF POSIX}
   var lFrom: rtl.__SOCKADDR_ARG;
   var lSize: rtl.socklen_t := sizeOf(lFrom);
-  result := rtl.recvfrom(fHandle, @aBuffer, aSize, Int32(aFlags), lFrom, @lSize);
+  result := rtl.recvfrom(fHandle, @aBuffer[aOffset], aSize, Int32(aFlags), lFrom, @lSize);
   {$ELSEIF WINDOWS}
   var lFrom := new Byte[sizeOf(sockaddr_in6)];
   var lSize := sizeOf(lFrom);
-  result := rtl.recvfrom(fHandle, ^AnsiChar(@aBuffer[0]), aSize, Int32(aFlags), @lFrom[0], @lSize);
+  result := rtl.recvfrom(fHandle, ^AnsiChar(@aBuffer[aOffset]), aSize, Int32(aFlags), @lFrom[0], @lSize);
   {$ENDIF}
   if result < 0 then
     raise new Exception('Error in recvfrom');
