@@ -126,6 +126,9 @@ type
     method Send(aBuffer: array of Byte; aSize: Integer; aFlags: SocketFlags): Integer;
     method Send(aBuffer: array of Byte): Integer;
 
+    method ReceiveFrom(aBuffer: array of Byte; aSize: Integer; aFlags: SocketFlags; var remoteEP: EndPoint): Integer;
+    method SendTo(aBuffer: array of Byte; aOffset: Integer; aSize: Integer; aFlags: SocketFlags; remoteEP: EndPoint): Integer;
+
     method Shutdown(aMode: SocketShutdown);
     method Close;
     method Dispose;
@@ -730,6 +733,118 @@ end;
 method Socket.Send(aBuffer: array of Byte): Integer;
 begin
   result := Send(aBuffer, 0, length(aBuffer), SocketFlags.None);
+end;
+
+method IPNativeToEndPoint(aBuffer: ^Void; var aIPEndPoint: IPEndPoint);
+begin
+  {$IF ANDROID OR DARWIN}
+  var lSockAddrIn: ^rtl.__struct_sockaddr_in := ^rtl.__struct_sockaddr_in(aBuffer);
+  {$IF ANDROID}
+  var lToCompare := rtl.__kernel_sa_family_t(AddressFamily.InterNetwork);
+  {$ELSE}
+  var lToCompare := Byte(AddressFamily.InterNetwork);
+  {$ENDIF}
+  if lSockAddrIn^.sin_family = lToCompare then begin
+    aIPEndPoint.AddressFamily := AddressFamily.InterNetwork;
+    aIPEndPoint.Address := new IPAddress(lSockAddrIn^.sin_addr.s_addr);
+  end
+  else begin
+    var lSockAddrIn6 := ^rtl.__struct_sockaddr_in6(aBuffer);
+    var lBytes := new Byte[IPAddress.IPv6Length];
+    aIPEndPoint.AddressFamily := AddressFamily.InterNetworkV6;
+    for i: Integer := 0  to IPAddress.IPv6Length - 1 do
+      {$IF ANDROID}
+      lBytes[i] := lSockAddrIn6^.sin6_addr.in6_u.u6_addr8[i];
+      {$ELSE}
+      lBytes[i] := lSockAddrIn6^.sin6_addr.__u6_addr.__u6_addr8[i];
+      {$ENDIF}
+    aIPEndPoint.Address := new IPAddress(lBytes, lSockAddrIn6^.sin6_scope_id);
+  end;
+  {$ELSEIF POSIX AND NOT DARWIN}
+  var lSockAddrIn: ^rtl.__struct_sockaddr_in := ^rtl.__SOCKADDR_ARG(aBuffer)^.__sockaddr_in__;
+  if lSockAddrIn^.sin_family = rtl.USHORT(AddressFamily.InterNetwork) then begin
+    aIPEndPoint.AddressFamily := AddressFamily.InterNetwork;
+    aIPEndPoint.Address := new IPAddress(lSockAddrIn^.sin_addr.s_addr);
+  end
+  else begin
+    var lSockAddrIn6: ^rtl.__struct_sockaddr_in6 := ^rtl.__SOCKADDR_ARG(aBuffer)^.__sockaddr_in6__;
+    var lBytes := new Byte[IPAddress.IPv6Length];
+    aIPEndPoint.AddressFamily := AddressFamily.InterNetworkV6;
+    for i: Integer := 0  to IPAddress.IPv6Length - 1 do
+      lBytes[i] := lSockAddrIn6^.sin6_addr.__in6_u.__u6_addr8[i];
+    aIPEndPoint.Address := new IPAddress(lBytes, lSockAddrIn6^.sin6_scope_id);
+  end;
+  {$ELSEIF WINDOWS}
+  var lSockAddrIn: ^rtl.SOCKADDR_IN;
+  var lSockAddrIn6: ^sockaddr_in6;
+  lSockAddrIn := ^rtl.SOCKADDR_IN(aBuffer);
+  if lSockAddrIn^.sin_family = rtl.USHORT(AddressFamily.InterNetwork) then begin
+    aIPEndPoint.AddressFamily := AddressFamily.InterNetwork;
+    aIPEndPoint.Address := new IPAddress(lSockAddrIn^.sin_addr.S_un.S_addr);
+  end
+  else begin
+    lSockAddrIn6 := ^sockaddr_in6(aBuffer);
+    var lBytes := new Byte[IPAddress.IPv6Length];
+    aIPEndPoint.AddressFamily := AddressFamily.InterNetworkV6;
+    for i: Integer := 0  to IPAddress.IPv6Length - 1 do
+      lBytes[i] := lSockAddrIn6^.sin6_addr.u.Byte[i];
+    aIPEndPoint.Address := new IPAddress(lBytes, lSockAddrIn6^.sin6_scope_id);
+  end;
+  {$ENDIF}
+end;
+
+method Socket.ReceiveFrom(aBuffer: array of Byte; aSize: Integer; aFlags: SocketFlags; var remoteEP: EndPoint): Integer;
+begin
+  var lIPEndPoint := IPEndPoint(remoteEP);
+  {$IF ANDROID OR DARWIN}
+  var lFrom := new Byte[sizeOf(rtl.__struct_sockaddr_in6)];
+  var lSize: rtl.socklen_t := sizeOf(lFrom);
+  result := rtl.recvfrom(fHandle, @aBuffer, aSize, Int32(aFlags), ^rtl.__struct_sockaddr(@lFrom[0]), @lSize);
+  {$ELSEIF POSIX}
+  var lFrom: rtl.__SOCKADDR_ARG;
+  var lSize: rtl.socklen_t := sizeOf(lFrom);
+  result := rtl.recvfrom(fHandle, @aBuffer, aSize, Int32(aFlags), lFrom, @lSize);
+  {$ELSEIF WINDOWS}
+  var lFrom := new Byte[sizeOf(sockaddr_in6)];
+  var lSize := sizeOf(lFrom);
+  result := rtl.recvfrom(fHandle, ^AnsiChar(@aBuffer[0]), aSize, Int32(aFlags), @lFrom[0], @lSize);
+  {$ENDIF}
+  if result < 0 then
+    raise new Exception('Error in recvfrom');
+  {$IF ANDROID OR DARWIN OR WINDOWS}
+  IPNativeToEndPoint(@lFrom[0], var lIPEndPoint);
+  {$ELSE}
+  IPNativeToEndPoint(@lFrom, var lIPEndPoint);
+  {$ENDIF}
+end;
+
+method Socket.SendTo(aBuffer: array of Byte; aOffset: Integer; aSize: Integer; aFlags: SocketFlags; remoteEP: EndPoint): Integer;
+begin
+  var lEndPoint := IPEndPoint(remoteEP);
+  var lPointer: ^Void;
+  var lSize: Integer;
+  {$IF POSIX OR DARWIN OR ANDROID}
+  var lSockAddr4: rtl.__struct_sockaddr_in;
+  var lSockAddr6: rtl.__struct_sockaddr_in6;
+  IPEndPointToNative(lEndPoint, out lSockAddr4, out lSockAddr6, out lPointer, out lSize);
+  {$IF ANDROID OR DARWIN}
+  result := rtl.sendto(fHandle, @aBuffer[0], aSize, Int32(aFlags), ^rtl.__struct_sockaddr(lPointer), lSize);
+  {$ELSE}
+  var lAddr: rtl.__CONST_SOCKADDR_ARG;
+  if lSize = IPAddress.IPv6Length then
+    lAddr.__sockaddr_in6__ := ^rtl.__struct_sockaddr_in6(lPointer)
+  else
+    lAddr.__sockaddr_in__ := ^rtl.__struct_sockaddr_in(lPointer);
+  result := rtl.sendto(fHandle, @aBuffer[0], aSize, Int32(aFlags), lAddr, lSize);
+  {$ENDIF}
+  {$ELSEIF WINDOWS}
+  var lSockAddr4: rtl.SOCKADDR_IN;
+  var lSockAddr6: sockaddr_in6;
+  IPEndPointToNative(lEndPoint, out lSockAddr4, out lSockAddr6, out lPointer, out lSize);
+  result := rtl.sendto(fHandle, ^AnsiChar(@aBuffer[0]), aSize, Int32(aFlags), lPointer, lSize);
+  {$ENDIF}
+  if result < 0 then
+    raise new Exception('Error in SendTo');
 end;
 
 method Socket.DataAvailable: Integer;
