@@ -62,4 +62,20 @@ type
   INSFastEnumeration<T> = public interface mapped to Foundation.INSFastEnumeration
     method countByEnumeratingWithState(aState: ^NSFastEnumerationState) objects(stackbuf: ^T) count(len: NSUInteger): NSUInteger; mapped to countByEnumeratingWithState(aState) objects(^id(stackbuf)) count(len);
   end;
+
+  extension method INSFastEnumeration<T>.GetSequence<T>: sequence of T; iterator;
+  begin
+    var lState: NSFastEnumerationState;
+    var lDest: array[0..3] of T;
+    loop begin
+      var n := self.countByEnumeratingWithState(@lState) objects(@lDest) count(4);
+      if n = 0 then break;
+      for i: Integer := 0 to n -1 do begin
+        yield(T(lState.itemsPtr[i]));
+      end;
+    end;
+  end;
+
+
+
 end.
