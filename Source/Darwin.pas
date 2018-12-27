@@ -76,6 +76,10 @@ type
     end;
   end;
 
+  extension method INSFastEnumeration.GetSequence: sequence of id;
+  begin
+    exit INSFastEnumeration<id>(self).GetSequence;
+  end;
 
 
 end.
