@@ -142,10 +142,12 @@ namespace RemObjects.Elements.MicroTasks
 			}
 		}
 
-		public bool IsCompleted()
+		public bool IsCompleted
 		{
-			if (t == null) return true;
-			return t.IsCompleted;
+			get {
+				if (t == null) return true;
+				return t.IsCompleted;
+			}
 		}
 
 		public T GetResult()
@@ -174,7 +176,7 @@ namespace RemObjects.Elements.MicroTasks
 		/// Creates a new result with a task as content.
 		/// </summary>
 		/// <param name="task"></param>
-		public Result(Task<T> task, T value)
+		private Result(Task<T> task, T value)
 		{
 			this.task = task;
 			this.value = value;
