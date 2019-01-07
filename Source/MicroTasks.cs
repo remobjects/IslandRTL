@@ -32,7 +32,7 @@ namespace RemObjects.Elements.MicroTasks
 		/// <summary>
 		/// returns true if result is done.
 		/// </summary>
-		public bool Complete
+		public bool IsCompleted
 		{
 			get
 			{
@@ -49,9 +49,11 @@ namespace RemObjects.Elements.MicroTasks
 		/// empty "done" result.
 		/// </summary>
 		/// <returns></returns>
-		public static Result Done()
+		public static Result CompletedTask
 		{
-			return default(Result);
+			get {
+				return default(Result);
+			}
 		}
 
 		/// <summary>
@@ -71,9 +73,9 @@ namespace RemObjects.Elements.MicroTasks
 #endif
 	}
 #if ECHOES
-public class ResultAwaiter
+	public class ResultAwaiter
 	{
-		Task t;
+		readonly Task t;
 
 		public ResultAwaiter(Task t)
 		{
@@ -108,7 +110,7 @@ public class ResultAwaiter
 
 	class AwaitCompletion: IAsyncCompletion
 	{
-		Action c;
+		readonly Action c;
 		public AwaitCompletion(Action c)
 		{
 			this.c = c;
@@ -123,8 +125,8 @@ public class ResultAwaiter
 
 	public class ResultAwaiter<T>
 	{
-		Task<T> t;
-		T value;
+		readonly Task<T> t;
+		readonly T value;
 
 		public ResultAwaiter(Task<T> t, T value)
 		{
@@ -188,10 +190,14 @@ public class ResultAwaiter
 			this.task = task;
 		}
 
+		public static Result<T> FromResult(T value){
+			return new Result<T>(null, value);
+		}
+
 		/// <summary>
 		/// returns true if result is done.
 		/// </summary>
-		public bool Complete
+		public bool IsCompleted
 		{
 			get
 			{
