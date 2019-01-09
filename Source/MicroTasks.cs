@@ -64,6 +64,15 @@ namespace RemObjects.Elements.MicroTasks
 			if (task == null) return;
 			task.GetResult();
 		}
+
+		public void OnComplete(IAsyncCompletion callback)
+		{
+			if (task == null)
+				callback.Step();
+			else
+				task.OnComplete(callback);
+		}
+
 #if ECHOES
 		public ResultAwaiter GetAwaiter()
 		{
@@ -222,6 +231,13 @@ namespace RemObjects.Elements.MicroTasks
 			return new Result<T>(null, value);
 		}
 
+		public void OnComplete(IAsyncCompletion callback)
+		{
+			if (task == null)
+				callback.Step();
+			else
+				task.OnComplete(callback);
+		}
 		/// <summary>
 		/// Used to re-throw any exception if there was one, for non void results this would return an actual value (Result&lt;T&gt;)
 		/// </summary>
