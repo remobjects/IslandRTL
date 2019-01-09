@@ -12,19 +12,19 @@ namespace RemObjects.Elements.MicroTasks
 	/// <summary>
 	/// Result of a (void) method, by default this implies "completed synchronously"
 	/// </summary>
-	public struct Result
+	public struct VoidResult
 	{
 
 		/// <summary>
 		/// holds the task; if this is null it's already complete. If there's an exception it's stored as part of a completed task.
 		/// </summary>
-		private Task task;
+		private VoidTask task;
 
 		/// <summary>
 		/// Creates a new result with a task as content.
 		/// </summary>
 		/// <param name="task"></param>
-		public Result(Task task)
+		public VoidResult(VoidTask task)
 		{
 			this.task = task;
 		}
@@ -43,16 +43,16 @@ namespace RemObjects.Elements.MicroTasks
 		/// <summary>
 		/// returns the task, this can be null.
 		/// </summary>
-		public Task Task { get { return task; } }
+		public VoidTask Task { get { return task; } }
 
 		/// <summary>
 		/// empty "done" result.
 		/// </summary>
 		/// <returns></returns>
-		public static Result CompletedTask
+		public static VoidResult CompletedTask
 		{
 			get {
-				return default(Result);
+				return default(VoidResult);
 			}
 		}
 
@@ -74,19 +74,19 @@ namespace RemObjects.Elements.MicroTasks
 		}
 
 #if ECHOES
-		public ResultAwaiter GetAwaiter()
+		public VoidResultAwaiter GetAwaiter()
 		{
-			return new ResultAwaiter(task);
+			return new VoidResultAwaiter(task);
 		}
 
 #endif
 	}
 #if ECHOES
-	public class ResultAwaiter
+	public class VoidResultAwaiter
 	{
-		readonly Task t;
+		readonly VoidTask t;
 
-		public ResultAwaiter(Task t)
+		public VoidResultAwaiter(VoidTask t)
 		{
 			this.t = t;
 		}
@@ -247,9 +247,9 @@ namespace RemObjects.Elements.MicroTasks
 			return task.GetResult();
 		}
 #if ECHOES
-		public ResultAwaiter GetAwaiter()
+		public VoidResultAwaiter GetAwaiter()
 		{
-			return new ResultAwaiter(task);
+			return new VoidResultAwaiter(task);
 		}
 
 #endif
@@ -258,7 +258,7 @@ namespace RemObjects.Elements.MicroTasks
 	/// <summary>
 	/// state for the tasks
 	/// </summary>
-	public enum TaskState
+	public enum TaskState: int
 	{
 		Running,
 		NotStartedYet,
@@ -269,9 +269,11 @@ namespace RemObjects.Elements.MicroTasks
 	/// <summary>
 	/// A task is a piece of code that completes asynchronously; Tasks do not deal with threading and synchronization contexts, they always run on calling thread that triggers the completion.
 	/// </summary>
-	public class Task
+	public class VoidTask
 	{
+		#if !COOPER
 		private int @lock;
+		#endif
 		private volatile TaskState state;
 		private Exception exception;
 		private volatile Completion completion;
@@ -284,6 +286,7 @@ namespace RemObjects.Elements.MicroTasks
 		}
 
 
+		#if !COOPER
 		private static void SpinLockEnter(ref int v)
 		{
 			#if ISLAND
@@ -306,6 +309,7 @@ namespace RemObjects.Elements.MicroTasks
 			global::System.Threading.Thread.VolatileWrite(ref v, 0);
 			#endif
 		}
+		#endif
 
 		/// <summary>
 		/// contains the state for this task
@@ -315,18 +319,18 @@ namespace RemObjects.Elements.MicroTasks
 			get { return state; }
 		}
 
-		private static Task GetDone()
+		private static VoidTask GetDone()
 		{
-			var t = new Task();
+			var t = new VoidTask();
 			t.SetComplete();
 			return t;
 		}
-		private static Task done;
+		private static VoidTask done;
 
 		/// <summary>
 		/// returns an empty "done" task.
 		/// </summary>
-		public static Task Done { get { return done ?? (done = GetDone()); } }
+		public static VoidTask Done { get { return done ?? (done = GetDone()); } }
 
 		/// <summary>
 		/// Returns if this task is done or not.
@@ -352,6 +356,17 @@ namespace RemObjects.Elements.MicroTasks
 			}
 			var p = new Completion();
 			p.Action = callback;
+			#if COOPER
+			lock(this) {
+				if (this.state >= TaskState.Done)
+				{
+					callback.Step();
+					return;
+				}
+				p.Next = completion;
+				completion = p;
+			}
+			#else
 			SpinLockEnter(ref @lock);
 			if (this.state >= TaskState.Done)
 			{
@@ -362,6 +377,7 @@ namespace RemObjects.Elements.MicroTasks
 			p.Next = completion;
 			completion = p;
 			SpinLockExit(ref @lock);
+			#endif
 		}
 
 		#if ECHOES
@@ -380,7 +396,25 @@ namespace RemObjects.Elements.MicroTasks
 			}
 		}
 		#else
-		#if !NOTHREADS
+		#if COOPER
+		class Waiter: IAsyncCompletion
+		{
+			public bool done;
+			public Object o = new Object();
+
+			public void Dispose()
+			{
+			}
+
+			public void Step()
+			{
+				lock(o){
+					done = true;
+					o.notifyAll();
+				}
+			}
+		}
+		#elseif !NOTHREADS
 		class Waiter: IAsyncCompletion, IDisposable
 		{
 			public EventWaitHandle ev = new EventWaitHandle(true, false);
@@ -409,6 +443,12 @@ namespace RemObjects.Elements.MicroTasks
 			OnComplete(w);
 			#if ECHOES
 			w.ev.WaitOne();
+			#elseif COOPER
+			lock(w.o) {
+				while (!w.done) {
+					w.o.wait();
+				}
+			}
 			#else
 			w.ev.Wait();
 			#endif
@@ -447,6 +487,23 @@ namespace RemObjects.Elements.MicroTasks
 		/// </summary>
 		public void SetComplete()
 		{
+			#if COOPER
+			Completion w;
+			lock(this) {
+				if (this.state != TaskState.Running)
+				{
+					throw new Exception("Invalid state for task: "+this.state);
+				}
+				 w = this.completion;
+				this.completion = null;
+				this.state = TaskState.Done;
+			}
+			while (w != null)
+			{
+				w.Action.Step();
+				w = w.Next;
+			}
+			#else
 			SpinLockEnter(ref @lock);
 			if (this.state != TaskState.Running)
 			{
@@ -462,6 +519,7 @@ namespace RemObjects.Elements.MicroTasks
 				w.Action.Step();
 				w = w.Next;
 			}
+			#endif
 		}
 
 		/// <summary>
@@ -470,6 +528,25 @@ namespace RemObjects.Elements.MicroTasks
 		/// <param name="e">the exception</param>
 		public void SetException(Exception e)
 		{
+			#if COOPER
+			Completion w;
+			lock(this) {
+				if (this.state != TaskState.Running)
+				{
+					throw new Exception("Invalid state for task: "+this.state);
+				}
+				w = this.completion;
+				this.exception = e;
+				this.completion = null;
+				this.state = TaskState.Exception;
+			}
+			while (w != null)
+			{
+				w.Action.Step();
+				w = w.Next;
+			}
+
+			#else
 			SpinLockEnter(ref @lock);
 			if (this.state != TaskState.Running)
 			{
@@ -486,10 +563,11 @@ namespace RemObjects.Elements.MicroTasks
 				w.Action.Step();
 				w = w.Next;
 			}
+			#endif
 		}
 	}
 
-	public class Task<T>: Task
+	public class Task<T>: VoidTask
 	{
 		T value;
 
