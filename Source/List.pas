@@ -72,6 +72,14 @@ type
       for i: Integer := 0 to aArray.count-1 do
         &Add(aArray[i]);
     end;
+
+    method ToNSArray: Foundation.NSArray<T>;
+    begin
+      var lResult := new Foundation.NSMutableArray<T> withCapacity(Count);
+      for i: Integer := 0 to Count-1 do
+        lResult.addObject(self[i]);
+      result := lResult;
+    end;
     {$ENDIF}
 
     method GetEnumerator: IEnumerator<T>;
