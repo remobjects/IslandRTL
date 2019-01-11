@@ -18,7 +18,7 @@ type
     //property CallStack: List<String> read new List<String>(callstackSymbols);
   end;
 
-  CocoaException = public class(Exception)
+  CocoaException = public class(IslandException)
   private
 
     var fException: NSException;
@@ -34,5 +34,22 @@ type
     property InnerException: NSException read fException;
 
   end;
+
+  //SwiftException = public class(IslandException)
+  //private
+
+    //var fError: Swift.Error;
+
+  //public
+
+    //constructor (aError: Swift.Error);
+    //begin
+      //inherited constructor(aError.localizedDescription);
+      //fError := aError;
+    //end;
+
+    //property InnerError: Swift.Error read fError;
+
+  //end;
 
 end.

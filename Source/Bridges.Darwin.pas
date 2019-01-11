@@ -6,15 +6,21 @@ uses
   Foundation;
 
 type
-  IslandObject = public Object;
-  IslandString = public String;
-  CocoaObject = public NSObject;
-  CocoaString = public NSString;
-  SwiftObject = public NSObject; // hack for now
-  SwiftString = public NSString; // hack for now
+  IslandObject = public System.Object;
+  IslandString = public System.String;
+  IslandException = public System.Exception;
+  CocoaObject = public Foundation.NSObject;
+  CocoaString = public Foundation.NSString;
+  SwiftObject = public Foundation.NSObject; // hack for now
+  SwiftString = public Foundation.NSString; // hack for now
 
-  Swift.Comparable = public interface
+  Swift.Comparable = public interface // hack for now
   end;
+
+  //Swift.Error = public record // hack for now
+  //public
+    //property localizedDescription: String read;
+  //end;
 
   //
   // Island <-> Cocoa
