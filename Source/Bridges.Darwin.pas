@@ -14,6 +14,14 @@ type
   SwiftObject = public Foundation.NSObject; // hack for now
   SwiftString = public Foundation.NSString; // hack for now
 
+  RemObjects.Elements.System.Cocoa.Object = public Foundation.NSObject;
+  RemObjects.Elements.System.Cocoa.String = public Foundation.NSString;
+  RemObjects.Elements.System.Cocoa.Exception = public Foundation.NSException;
+
+  RemObjects.Elements.System.Swift.Object = public Foundation.NSObject; // hack for now
+  RemObjects.Elements.System.Swift.String = public Foundation.NSString; // hack for now
+  RemObjects.Elements.System.Swift.Exception = public Foundation.NSException; // hack for now
+
   Swift.Comparable = public interface // hack for now
   end;
 
