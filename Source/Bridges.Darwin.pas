@@ -14,10 +14,12 @@ type
   SwiftObject = public Foundation.NSObject; // hack for now
   SwiftString = public Foundation.NSString; // hack for now
 
+  RemObjects.Elements.System.Island.Object = public System.Object;
+  RemObjects.Elements.System.Island.String = public System.String;
+  RemObjects.Elements.System.Island.Exception = public System.Exception;
   RemObjects.Elements.System.Cocoa.Object = public Foundation.NSObject;
   RemObjects.Elements.System.Cocoa.String = public Foundation.NSString;
   RemObjects.Elements.System.Cocoa.Exception = public Foundation.NSException;
-
   RemObjects.Elements.System.Swift.Object = public Foundation.NSObject; // hack for now
   RemObjects.Elements.System.Swift.String = public Foundation.NSString; // hack for now
   RemObjects.Elements.System.Swift.Exception = public Foundation.NSException; // hack for now
@@ -235,7 +237,7 @@ type
 
     method CompareTo(aOther: IslandObject): Integer;
     begin
-      if Value is not Swift.Comparable then
+      if Value is not :Swift.Comparable then
         raise new Exception("Swift Object does not implement Comparable");
 
       raise new Exception("Can not compare Swift objects yet.");
@@ -355,7 +357,7 @@ type
 
     method compareTo(aOther: CocoaObject): NSComparisonResult; //override;
     begin
-      if Value is not Swift.Comparable then
+      if Value is not :Swift.Comparable then
         raise new Exception("Swift Object does not implement Comparable");
 
       raise new Exception("Can not compare Swift objects yet.");
