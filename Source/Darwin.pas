@@ -167,4 +167,37 @@ type
         yield UInt64(el);
     end;
   end;
+
+extension method INSFastEnumeration<T>.Count(): Integer; public;
+begin
+  exit self.GetSequence.Count;
+end;
+
+extension method INSFastEnumeration<T>.Count(aCond: not nullable block(aItem: not nullable T): Boolean): Integer; public;
+begin
+  exit self.GetSequence.Count(aCond);
+end;
+
+extension method INSFastEnumeration<T>.Where(aBlock: not nullable block(aItem: not nullable T): Boolean): sequence of T; public;
+begin
+  exit self.GetSequence.Where(aBlock);
+end;
+
+
+extension method INSFastEnumeration<T>.Select<T, K>(aBlock: not nullable block(aItem: not nullable T): K): sequence of K; public;
+begin
+  exit self.GetSequence.Select(aBlock);
+end;
+
+
+extension method INSFastEnumeration<T>.FirstOrDefault<T>(aBlock: not nullable block(aItem: not nullable T): Boolean): T; public;
+begin
+  exit self.GetSequence.FirstOrDefault(aBlock);
+end;
+
+
+extension method INSFastEnumeration<T>.FirstOrDefault<T>(): T; public;
+begin
+  exit self.GetSequence.FirstOrDefault();
+end;
 end.
