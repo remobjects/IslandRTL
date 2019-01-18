@@ -60,6 +60,17 @@ type
 
   end;
 
+
+  [Island]
+  IIslandGetCocoaWrapper = public interface
+  method «$__CreateCocoaWrapper»: Foundation.NSObject;
+  end;
+
+  [Cocoa]
+  IIslandGetComWrapper = public interface
+  method «$__CreateIslandWrapper»: RemObjects.Elements.System.Object;
+  end;
+
   INSFastEnumeration<T> = public interface mapped to Foundation.INSFastEnumeration
     method countByEnumeratingWithState(aState: ^NSFastEnumerationState) objects(stackbuf: ^T) count(len: NSUInteger): NSUInteger; mapped to countByEnumeratingWithState(aState) objects(^id(stackbuf)) count(len);
   end;
