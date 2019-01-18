@@ -97,7 +97,7 @@ type
     class method FromValue(aValue: CocoaObject): IslandObject;
     begin
       if aValue = nil then exit nil;
-      if aValue is IIslandGetComWrapper then exit IIslandGetComWrapper(aValue).«$__CreateIslandWrapper»();
+      if aValue is ICocoaGetIslandWrapper then exit ICocoaGetIslandWrapper(aValue).«$__CreateIslandWrapper»();
       if aValue is NSString then exit String(NSString(aValue));
       if aValue is CocoaWrappedIslandObject then exit CocoaWrappedIslandObject(aValue).Value;
       if aValue is CocoaWrappedSwiftObject then exit IslandWrappedSwiftObject(CocoaWrappedSwiftObject(aValue).Value);
