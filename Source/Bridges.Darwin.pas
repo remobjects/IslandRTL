@@ -37,14 +37,11 @@ type
   //
 
   CocoaWrappedIslandObject = public class(CocoaObject)
-  private
-
+  public
     constructor(aValue: IslandObject);
     begin
       Value := aValue;
     end;
-
-  public
 
     property Value: IslandObject; readonly;
 
@@ -86,15 +83,14 @@ type
   end;
 
   IslandWrappedCocoaObject = public class(WrappedObject, IComparable, IEquatable)
-  private
+  public
 
     constructor(aValue: CocoaObject);
     begin
       Value := aValue;
     end;
-
-  public
-
+    
+    
     property Value: CocoaObject; readonly;
 
     class method FromValue(aValue: CocoaObject): IslandObject;
