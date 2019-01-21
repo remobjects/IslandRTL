@@ -67,7 +67,7 @@ type
   end;
 
   [Cocoa]
-  IIslandGetComWrapper = public interface
+  ICocoaGetIslandWrapper = public interface
   method «$__CreateIslandWrapper»: RemObjects.Elements.System.Object;
   end;
 
