@@ -15,7 +15,6 @@ type
   end;
   {$ENDIF}
 
-  [COM]
   ICOMInterface = public interface
     method QueryInterface(var riid: Guid; out ppvObject: ^Void): Boolean;
     method AddRef(): rtl.ULONG;
