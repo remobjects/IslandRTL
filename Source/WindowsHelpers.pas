@@ -340,7 +340,7 @@ var
       StartAddressOfRawData := NativeUInt(@_tls_start),
       EndAddressOfRawData := NativeUInt (@_tls_end),
       AddressOfIndex := NativeUInt(@_tls_index),
-      AddressOfCallbacks := NativeInt(^NativeInt(@__xl_a)+1),
+      AddressOfCallBacks := NativeInt(^NativeInt(@__xl_a)+1),
       SizeOfZeroFill := 0
     ); readonly;public;
 {$IFDEF _WIN64}
@@ -363,7 +363,7 @@ var
   [Used, SymbolName('_load_config_used')]
   _load_config_used: rtl.IMAGE_LOAD_CONFIG_DIRECTORY := 
   new rtl.IMAGE_LOAD_CONFIG_DIRECTORY(
-    size := sizeOf(rtl.IMAGE_LOAD_CONFIG_DIRECTORY),
+    Size := sizeOf(rtl.IMAGE_LOAD_CONFIG_DIRECTORY),
     SecurityCookie := UIntPtr(^UIntPtr(@__security_cookie)),
     SEHandlerTable := UIntPtr(^UIntPtr(@__safe_se_handler_table)),
     SEHandlerCount := UIntPtr(^UIntPtr(@__safe_se_handler_count)),
