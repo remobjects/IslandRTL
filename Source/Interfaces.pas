@@ -62,8 +62,8 @@ type
     begin
       var lPVal := ICOMInterface(aVal);
       if lPVal = nil then exit;
-      if not lPVal.QueryInterface(var aGuid, out ^^Void(@aGuid)^) then
-        ^^Void(@aGuid)^ := nil;
+      if not lPVal.QueryInterface(var aGuid, out ^^Void(@result)^) then
+        ^^Void(@result)^ := nil;
     end;
   end;
 
