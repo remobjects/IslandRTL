@@ -20,7 +20,7 @@ type
     method AddRef(): rtl.ULONG;
     method Release(): rtl.ULONG;
   end;
-  
+
 var IElementsObject_UID: Guid := new RemObjects.Elements.System.Guid(Data1 := $5b9e00e5, Data2 := $c1da, Data3 := $4f0d, Data4_0 := $8d, Data4_1 := $92, Data4_2 := $e0,  Data4_3 := $68,  Data4_4 := $42,  Data4_5 := $bd,  Data4_6 := $5d,  Data4_7 := $f5); public; readonly;
 
 type
@@ -33,8 +33,7 @@ type
 
   COMHelpers = public static class
   public
-
-    method ObjectToComObject(aVal: ICOMInterface; aForVMT: ^Void): IUnknown;
+    method IntObjectToComObject(aVal: ICOMInterface; aForVMT: ^Void): ^Void;
     begin
       aVal.AddRef; // increases the ref count for the gc handle; also creates the handle if needed
       var lPtr := ExternalCalls.malloc(sizeOf(ElementsCOMInterface));
@@ -44,13 +43,27 @@ type
       ^^Void(@result)^ := lPtr;
     end;
 
+    method ObjectToComObject(aVal: ICOMInterface; aForVMT: ^Void): IUnknown;
+    begin
+      var lTmp := IntObjectToComObject(aVal, aForVMT);
+      ^^Void(@result)^ := lTmp;
+    end;
+
     method ComObjectToObject(aVal: IUnknown): ICOMInterface;
     begin
       if aVal = nil then exit nil;
       var lPtr: ^Void;
-      if 0 = ^^rtl.__struct_IUnknownVtbl(aVal)^^.QueryInterface(aVal, ^rtl.GUID(@IElementsObject_UID), @lPtr) then exit nil;
+      if 0 <> ^^rtl.__struct_IUnknownVtbl(aVal)^^.QueryInterface(aVal, ^rtl.GUID(@IElementsObject_UID), @lPtr) then exit nil;
       result := ICOMInterface(^ElementsCOMInterface(lPtr)^.Object);
       ^^rtl.__struct_IUnknownVtbl(lPtr)^^.Release(^rtl.IUnknown(@lPtr)^);
+    end;
+
+    method ObjectToCom(aVal: Object; aGuid: Guid): IUnknown;
+    begin
+      var lPVal := ICOMInterface(aVal);
+      if lPVal = nil then exit;
+      if not lPVal.QueryInterface(var aGuid, out ^^Void(@aGuid)^) then
+        ^^Void(@aGuid)^ := nil;
     end;
   end;
 
@@ -71,12 +84,12 @@ type
         ^GCHandle(@lHandle)^.Dispose;
     end;
   end;
-  
+
   // Bridge methods; These call
   [CallingConvention(CallingConvention.Stdcall)]
   method IUnknown_VMTImpl_QueryInterface(aSelf: ^ElementsCOMInterface; riid: ^rtl.GUID; ppvObject: ^^Void): rtl.HRESULT;public;static;
   begin
-    if ICOMInterface(^ElementsCOMInterface(aSelf)^.Object).QueryInterface(var ^Guid(riid)^, out ppvObject^) then 
+    if ICOMInterface(^ElementsCOMInterface(aSelf)^.Object).QueryInterface(var ^Guid(riid)^, out ppvObject^) then
       exit 0;
     exit $80004002;
   end;
@@ -116,14 +129,14 @@ type
     constructor Copy(var aValue: COMGC);
     begin
       fInst := aValue.fInst;
-      if ^^rtl.__struct_IUnknownVtbl(fInst) <> nil then 
+      if ^^rtl.__struct_IUnknownVtbl(fInst) <> nil then
         ^^rtl.__struct_IUnknownVtbl(fInst)^^.AddRef(^rtl.IUnknown(@fInst)^);
     end;
 
     class method Copy(var aDest, aSource: COMGC);
     begin
       var lInst := aSource.fInst;
-      if ^^rtl.__struct_IUnknownVtbl(lInst) <> nil then 
+      if ^^rtl.__struct_IUnknownVtbl(lInst) <> nil then
         ^^rtl.__struct_IUnknownVtbl(lInst)^^.AddRef(^rtl.IUnknown(@lInst)^);
       aDest.fInst := lInst;
     end;
@@ -137,16 +150,16 @@ type
     begin
       var lNew := aSource.fInst;
       var lOld := InternalCalls.Exchange(var aDest.fInst, lNew);
-      if ^^rtl.__struct_IUnknownVtbl(lNew) <> nil then 
+      if ^^rtl.__struct_IUnknownVtbl(lNew) <> nil then
         ^^rtl.__struct_IUnknownVtbl(lNew)^^.AddRef(^rtl.IUnknown(@lNew)^);
-      if ^^rtl.__struct_IUnknownVtbl(lOld) <> nil then 
+      if ^^rtl.__struct_IUnknownVtbl(lOld) <> nil then
         ^^rtl.__struct_IUnknownVtbl(lOld)^^.Release(^rtl.IUnknown(@lOld)^);
     end;
 
     class method Release(var aDest: COMGC);
     begin
       var lOld := InternalCalls.Exchange(var aDest.fInst, nil);
-      if ^^rtl.__struct_IUnknownVtbl(lOld) <> nil then 
+      if ^^rtl.__struct_IUnknownVtbl(lOld) <> nil then
         ^^rtl.__struct_IUnknownVtbl(lOld)^^.Release(^rtl.IUnknown(@lOld)^);
     end;
 
