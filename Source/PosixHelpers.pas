@@ -15,7 +15,7 @@ type
   end;
   UserEntryPointType =public method (args: array of String): Integer;
   {$IFNDEF DARWIN}
-  dliteratecb = function (info :^__struct_dl_phdr_info; size: size_t; data: ^Void): Integer;
+  dliteratecb = public function (info :^__struct_dl_phdr_info; size: size_t; data: ^Void): Integer; 
   {$ENDIF}
   {$IFDEF ARM and not DARWIN}rtl.__struct__Unwind_Exception = rtl.__struct__Unwind_Control_Block;{$ENDIF}
   ExternalCalls = public static class
@@ -25,7 +25,7 @@ type
 //[SymbolName('__executable_start')]
 //var __executable_start: ^Void; external;
     [SymbolName("dl_iterate_phdr"), &Weak]
-    method dl_iterate_phdr(info: dliteratecb; data: ^Void): Integer;
+    method dl_iterate_phdr(info: dliteratecb; data: ^Void): Integer; public;
     begin
       exit; (*
       var ehdr := @__executable_start;

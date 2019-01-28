@@ -155,6 +155,8 @@ type
 
     class operator Equal(Value1, Value2: Guid): Boolean;
     begin
+      writeLn('G1: '+Value1);
+      writeLn('G2: '+Value2);
       exit (Value1.Data1 = Value2.Data1) and
            (Value1.Data2 = Value2.Data2) and
            (Value1.Data3 = Value2.Data3) and
