@@ -106,7 +106,6 @@ type
   method IUnknown_VMTImpl_QueryInterface(aSelf: ^ElementsCOMInterface; riid: ^rtl.GUID; ppvObject: ^^Void): rtl.HRESULT;public;static;
   begin
     var g := ^Guid(riid)^;
-    writeLn('QI Guid: '+g);
     if ICOMInterface(^ElementsCOMInterface(aSelf)^.Object).QueryInterface(var g, out ppvObject^) then
       exit 0;
     exit $80004002;
