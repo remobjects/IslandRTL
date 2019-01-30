@@ -764,8 +764,8 @@ type
       if not FGCLoaded then InitGC;
       {$ENDIF}
 
-      var ptr := InternalCalls.Cast(o^);
-      if ptr = nil then exit;
+      var ptr := o^;
+      if ptr = 0 then exit;
       Debug('AddRef: ');
       Debug(IntPtr(ptr));
       if (^Void(o) < {$IFDEF WEBASSEMBLY}^Void(@StackTop){$ELSE}lList^.StackTop{$ENDIF}) and (^Void(o) >= ^Void(@o)) then exit; // on the stack, should be relatively rare
@@ -787,8 +787,8 @@ type
       if not FGCLoaded then InitGC;
       {$ENDIF}
 
-      var ptr := InternalCalls.Cast(o^);
-      if ptr = nil then exit;
+      var ptr := o^;
+      if ptr = 0 then exit;
       Debug('Release: ');
       Debug(IntPtr(ptr));
       if (^Void(o) < {$IFDEF WEBASSEMBLY}^Void(@StackTop){$ELSE}lList^.StackTop{$ENDIF}) and (^Void(o) >= ^Void(@o)) then exit; // on the stack, should be relatively rare
