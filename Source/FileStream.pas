@@ -9,15 +9,20 @@ type
   FileMode = public enum(CreateNew, &Create, Open, OpenOrCreate, Truncate);
   FileAccess = public enum(&Read, &Write, ReadWrite);
   FileShare = public enum(None, &Read, &Write, ReadWrite, Delete);
+  {$IF WINDOWS}
+  PlatformHandle = rtl.HANDLE;
+  {$ELSEIF ANDROID OR DARWIN}
+  PlatformHandle = ^rtl.FILE;
+  {$ELSEIF POSIX}
+  PlatformHandle = ^rtl._IO_FILE;
+  {$ENDIF}
 
   FileStream = public class(Stream)
   private
     {$IFDEF WINDOWS}
-    fHandle: rtl.HANDLE := rtl.INVALID_HANDLE_VALUE;
-    {$ELSEIF ANDROID or DARWIN}
-    fHandle: ^rtl.FILE;
-    {$ELSEIF POSIX}
-    fHandle: ^rtl._IO_FILE;
+    fHandle: PlatformHandle := rtl.INVALID_HANDLE_VALUE;
+    {$ELSE}
+    fHandle: PlatformHandle;
     {$ENDIF}
     fAccess: FileAccess;
     method GetLength: Int64;
@@ -25,6 +30,7 @@ type
     method IsValid: Boolean; override;
   public
     constructor(FileName: String; Mode: FileMode; Access: FileAccess; Share: FileShare := FileShare.Read);
+    constructor(aHandle: PlatformHandle; Access: FileAccess);
     finalizer;
     property CanRead: Boolean read (fAccess ≠ FileAccess.Write) and IsValid; override;
     property CanSeek: Boolean read IsValid; override;
@@ -32,7 +38,7 @@ type
     method Seek(Offset: Int64; Origin: SeekOrigin): Int64; override;
     method Flush; override;
     method Close; override;
-    method &Read(aSpan: Span<Byte>): Int32; override; 
+    method &Read(aSpan: Span<Byte>): Int32; override;
     method &Write(aSpan: ImmutableSpan<Byte>): Int32; override;
     property Length: Int64 read GetLength; override;
     method SetLength(value: Int64); override;
@@ -87,6 +93,12 @@ begin
   {$ELSE}
     {$ERROR}
   {$ENDIF}
+end;
+
+constructor FileStream(aHandle: PlatformHandle; Access: FileAccess);
+begin
+  fAccess := Access;
+  fHandle := aHandle;
 end;
 
 finalizer FileStream;

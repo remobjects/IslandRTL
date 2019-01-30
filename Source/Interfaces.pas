@@ -128,8 +128,8 @@ type
   end;
 
 type
-  COMGC<T> = public lifetimestrategy (COMGC) T;
-  COMGC = public record(ILifetimeStrategy<COMGC>)
+  COMRC<T> = public lifetimestrategy (COMRC) T;
+  COMRC = public record(ILifetimeStrategy<COMRC>)
   assembly
     fInst: IntPtr;
   public
@@ -138,19 +138,19 @@ type
       raise new Exception('Not supported');
     end;
 
-    class method Init(var Dest: COMGC);
+    class method Init(var Dest: COMRC);
     begin
       Dest.fInst := nil;
     end;
 
-    constructor Copy(var aValue: COMGC);
+    constructor Copy(var aValue: COMRC);
     begin
       fInst := aValue.fInst;
       if ^^rtl.__struct_IUnknownVtbl(fInst) <> nil then
         ^^rtl.__struct_IUnknownVtbl(fInst)^^.AddRef(^rtl.IUnknown(@fInst)^);
     end;
 
-    class method Copy(var aDest, aSource: COMGC);
+    class method Copy(var aDest, aSource: COMRC);
     begin
       var lInst := aSource.fInst;
       if ^^rtl.__struct_IUnknownVtbl(lInst) <> nil then
@@ -158,12 +158,12 @@ type
       aDest.fInst := lInst;
     end;
 
-    class operator Assign(var aDest: COMGC; var aSource: COMGC);
+    class operator Assign(var aDest: COMRC; var aSource: COMRC);
     begin
       Assign(var aDest, var aSource);
     end;
 
-    class method Assign(var aDest, aSource: COMGC);
+    class method Assign(var aDest, aSource: COMRC);
     begin
       var lNew := aSource.fInst;
       var lOld := InternalCalls.Exchange(var aDest.fInst, lNew);
@@ -173,7 +173,7 @@ type
         ^^rtl.__struct_IUnknownVtbl(lOld)^^.Release(^rtl.IUnknown(@lOld)^);
     end;
 
-    class method Release(var aDest: COMGC);
+    class method Release(var aDest: COMRC);
     begin
       var lOld := InternalCalls.Exchange(var aDest.fInst, nil);
       if ^^rtl.__struct_IUnknownVtbl(lOld) <> nil then
