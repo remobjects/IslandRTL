@@ -180,6 +180,36 @@ type
     end;
   end;
 
+
+extension method Foundation.INSFastEnumeration.array: not nullable NSArray; public;
+begin
+  var lRes: not nullable NSMutableArray := new NSMutableArray;
+  for each el in self do
+    lRes.addObject(el);
+
+  exit lRes;
+end;
+
+type IDBlock = public block(aItem: not nullable id): id;
+
+extension method Foundation.INSFastEnumeration.dictionary(aKeyBlock: IDBlock; aValueBlock: IDBlock): not nullable NSDictionary; public;
+begin
+  var lArray := self.array();
+  result := new NSMutableDictionary withCapacity(lArray.count);
+  for each i in lArray do
+    NSMutableDictionary(result)[aKeyBlock(i)] := aValueBlock(i);
+end;
+
+
+extension method IEnumerable<T>.array<T>: not nullable NSArray<T>; public;
+begin
+  var lRes: not nullable NSMutableArray := new NSMutableArray;
+  for each el in self do
+    lRes.addObject(coalesce(el, NSNull.null));
+
+  exit lRes;
+end;
+
 extension method INSFastEnumeration<T>.Count(): Integer; public;
 begin
   exit self.GetSequence.Count;
