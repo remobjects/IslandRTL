@@ -1,4 +1,5 @@
 ﻿namespace RemObjects.Elements.System;
+
 [assembly:AssemblyDefine('SIMPLEGC')]
 [assembly:AssemblyDefine('TRACINGGC')]
 [assembly:AssemblyDefine('REFCOUNTINGGC')]
@@ -7,7 +8,6 @@
 {$ENDIF}
 {.$DEFINE DEBUGGC}
 {.$DEFINE DOUBLEFREECHECK}
-
 
 type
   {$IFNDEF WEBASSEMBLY}
@@ -23,12 +23,15 @@ type
     Data: array[0..FreeListSize-1] of IntPtr;
   end;
   {$ENDIF}
+
   MyIntPtr = {$IFNDEF CPU64}Int32{$ELSE CPU64}Int64{$ENDIF};
   {$IFDEF WEBASSEMBLY}
-  GC<T> = public lifetimestrategy (SimpleGC) T;
   DefaultGC = public SimpleGC;
   {$ENDIF}
+
+  GC<T> = public lifetimestrategy (SimpleGC) T;
   SimpleGC<T> = public lifetimestrategy(SimpleGC) T;
+
   SimpleGC = public record (ILifetimeStrategy<SimpleGC>)
   private
     var fInst: IntPtr;
@@ -39,30 +42,28 @@ type
     class var fSharedMemory: SharedMemory; assembly;
     {$ENDIF}
 
-{$IFNDEF WEBASSEMBLY}
+    {$IFNDEF WEBASSEMBLY}
     [ThreadLocal]
     class var fCheckList: ^CheckListData;
-{$ENDIF}
+    {$ENDIF}
 
-{$IFNDEF WEBASSEMBLY}
-      class var fGCWait: Manual<EventWaitHandle>;
-      class var FGCWake: Manual<EventWaitHandle>;
-      class var fThreads: Manual<GCList>;
-{$ENDIF}
-      class var FGCLoaded: Boolean;
-      class var fRemoveList: Manual<GCList>;
-      class var fRetryList: Manual<GCList>;
-      class var fWalkList: Manual<GCList>;
-      class var fBlackList: Manual<GCList>;
-      class var fGlobalFreeList: Manual<GCHashSet>;
-      {$IFNDEF WEBASSEMBLY}
-      class var fLock: Integer;
-      {$ENDIF}
-      class var fRunNumber: Integer;
+    {$IFNDEF WEBASSEMBLY}
+    class var fGCWait: Manual<EventWaitHandle>;
+    class var FGCWake: Manual<EventWaitHandle>;
+    class var fThreads: Manual<GCList>;
+    {$ENDIF}
+    class var FGCLoaded: Boolean;
+    class var fRemoveList: Manual<GCList>;
+    class var fRetryList: Manual<GCList>;
+    class var fWalkList: Manual<GCList>;
+    class var fBlackList: Manual<GCList>;
+    class var fGlobalFreeList: Manual<GCHashSet>;
+    {$IFNDEF WEBASSEMBLY}
+    class var fLock: Integer;
+    {$ENDIF}
+    class var fRunNumber: Integer;
 
-
-
-{$IFNDEF WEBASSEMBLY}
+    {$IFNDEF WEBASSEMBLY}
     class method GCSpinLockEnter(var x: Integer);
     begin
       loop begin
@@ -71,7 +72,7 @@ type
         fGCWait.Wait;
      end;
     end;
-{$ENDIF}
+    {$ENDIF}
 
     // we use the bit below to set if something is "on stack", during the marking phase; if fLastTopBitSet is set, then all items in fGlobalFreeList will have the bit set, \
     // and we have to reverse, unset it for the next run to mark an item as "on stack", this bit is stored inside the reference count.
@@ -82,10 +83,7 @@ type
       Purple: UInt64 = {$IFDEF CPU64}(1 shl 62){$ELSE}(1 shl 30){$ENDIF};
       Gray: UInt64 = {$IFDEF CPU64}(1 shl 63){$ELSE}(1 shl 31){$ENDIF};
 
-
       Mask: UInt64 = ColorMask;
-
-
 
     [Conditional('DEBUGGC')]
     class method Debug(s: ^Char);
@@ -106,9 +104,6 @@ type
     end;
 
     {$IFDEF WINDOWS}
-
-
-
     class method SetupThread(aData: ^CheckListData);
     begin
       {$IFDEF CPU64}
@@ -148,7 +143,6 @@ type
 
       UnregisterThread(lData);
     end;
-
 
     class method PauseAllThreads;
     begin
@@ -228,7 +222,7 @@ type
       {$ENDIF}
     end;
 
-{$IFNDEF WEBASSEMBLY}
+    {$IFNDEF WEBASSEMBLY}
     class method UnregisterThread(aThread: ^CheckListData);
     begin
       GCSpinLockEnter(var fLock);
@@ -242,10 +236,9 @@ type
       fThreads.Remove(IntPtr(aThread));
       Utilities.SpinLockExit(var fLock);
     end;
-{$ENDIF}
+    {$ENDIF}
 
-
-{$IFNDEF WEBASSEMBLY}
+    {$IFNDEF WEBASSEMBLY}
     class method GCLoop(dummy: Object);
     begin
       RegisterThread;
@@ -253,15 +246,13 @@ type
         fGCWait.Reset;
         fGCWake.Wait(30000);
 
-
         DoGC;
-
 
         Thread.Sleep(100);
       end;
 
     end;
-{$ENDIF}
+    {$ENDIF}
 
     // Walk all nodes, if they're not gray, make them gray and decrease the reference.
     class method MarkGray;
@@ -448,7 +439,6 @@ type
       end;
       AddChildrenBlackExt(el, lExt);
     end;
-
 
     class method CollectChildrenExt(el: IntPtr; lExt: ^IslandExtTypeInfo; mode: Integer := 0);
     begin
@@ -738,7 +728,7 @@ type
     class method RegisterThread: Integer;
     begin
       if not FGCLoaded then InitGC;
-    {$IFNDEF WEBASSEMBLY}
+      {$IFNDEF WEBASSEMBLY}
       var lList := fCheckList;
       if lList <> nil then exit;
       lList := ^CheckListData(malloc(sizeof(CheckListData)));
@@ -748,7 +738,7 @@ type
       GCSpinLockEnter(var fLock);
       fThreads.Add(IntPtr(lList));
       Utilities.SpinLockExit(var fLock);
-    {$ENDIF}
+      {$ENDIF}
     end;
 
     class method AddRef(o: ^IntPtr);
