@@ -592,6 +592,20 @@ type
 
   &Type = public class
    private
+     method get_COMGuids: sequence of Guid; iterator;
+     begin
+       var lPtr := fValue^.Ext^.MemberInfoData;
+       var lKey: Integer;
+       var lTy: ProtoReadType;
+       while ProtoReadHeader(var lPtr, out lKey, out lTy) do begin
+         if (lKey = 15) and (lTy = ProtoReadType.length) then begin
+           yield new Guid(ProtoReadBytes(var lPtr));
+           ProtoSkipValue(var lPtr, lTy);
+         end else
+           ProtoSkipValue(var lPtr, lTy);
+       end;
+     end;
+
      method get_Constants: sequence of ConstantInfo; iterator;
      begin
        var lPtr := fValue^.Ext^.MemberInfoData;
@@ -966,6 +980,7 @@ type
     property Properties: sequence of PropertyInfo read get_Properties;
     property Events: sequence of EventInfo read get_Events;
     property GenericArguments: sequence of &Type read get_GenericArguments;
+    property COMGuids: sequence of Guid read get_COMGuids;
 
     method Instantiate<T>: Object; where T is ILifetimeStrategy<T>; // Creates a new instance of this type and calls the default constructor, fails if none is present!
     begin
