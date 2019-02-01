@@ -63,13 +63,13 @@ type
       while InternalCalls.Add(var lcurrTasks, 0) > 0 do levent.Wait;
     end;
 
-    class method ForEach<TSource>(source: IEnumerable<TSource>; body: Action<TSource,ParallelLoopState>);
+    class method ForEach<TSource>(source: IEnumerable<TSource>; body: Action<TSource,ParallelLoopState, Int64>);
     begin
       var lthreadcnt := Environment.ProcessorCount;
       var lcurrTasks: Integer := 0;
       var levent := new EventWaitHandle(true, false);
       var ls:= new ParallelLoopState();
-      for m in source do begin
+      for m in source index n do begin
         while InternalCalls.Add(var lcurrTasks, 0) >= lthreadcnt do begin
           if ls.IsStopped then Break;
           levent.Wait;
@@ -77,9 +77,10 @@ type
         if ls.IsStopped then Break;
         InternalCalls.Add(var lcurrTasks, 1);
         var temp := m;
+        var tempi := n;
         new Task(->
           begin
-            body(temp, ls);
+            body(temp, ls, tempi);
             InternalCalls.Add(var lcurrTasks, -1);
             levent.Set;
           end).Start;
