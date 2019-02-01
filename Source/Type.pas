@@ -600,7 +600,6 @@ type
        while ProtoReadHeader(var lPtr, out lKey, out lTy) do begin
          if (lKey = 15) and (lTy = ProtoReadType.length) then begin
            yield new Guid(ProtoReadBytes(var lPtr));
-           ProtoSkipValue(var lPtr, lTy);
          end else
            ProtoSkipValue(var lPtr, lTy);
        end;

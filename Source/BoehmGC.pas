@@ -1,18 +1,21 @@
 ﻿namespace RemObjects.Elements.System;
+
 uses gc;
 
 [assembly:DefaultObjectLifetimeStrategy(typeOf(BoehmGC), typeOf(ForeignBoehmGC))]
 
 type
   GC<T> = public lifetimestrategy (BoehmGC) T;
+  BoehmGC<T> = public lifetimestrategy (BoehmGC) T;
+
   DefaultGC = public BoehmGC;
 
   // Same as boehm gc, but works in foreign object models
   ForeignBoehmGC = public record(ILifetimeStrategy<ForeignBoehmGC>)
   private
-    {$HIDE h6} // DO NOT REMOVE!!
+    {$HIDE H6} // DO NOT REMOVE!!
     fInst: IntPtr;
-    {$SHOW h6} // DO NOT REMOVE!!
+    {$SHOW H6} // DO NOT REMOVE!!
 
     class var fGC: Dictionary<Object, Integer> := new Dictionary<Object, Integer>(new ObjectReferenceComparer<Object>);
     class var fLock: Monitor := new Monitor;
@@ -45,12 +48,12 @@ type
     end;
 
     constructor;
-    begin 
+    begin
       fInst := 0;
     end;
 
     class method &New(aTTY: ^Void; aSize: IntPtr): ^Void;
-    begin 
+    begin
       exit BoehmGC.New(aTTY, aSize);
     end;
 
@@ -72,18 +75,17 @@ type
       Release(lOld);
     end;
 
-
     [GCSkipIfOnStack]
     finalizer;
-    begin 
+    begin
       var lValue := InternalCalls.Exchange(var fInst, 0);
       Release(lValue);
     end;
 
     class method AddRef(aVal: Object);
-    begin 
+    begin
       if aVal = nil then exit;
-      locking fLock do begin 
+      locking fLock do begin
         var i:  Integer;
         if fGC.TryGetValue(aVal, out i) then inc(i) else i := 1;
         fGC[aVal] := i;
@@ -91,11 +93,11 @@ type
     end;
 
     class method Release(aVal: Object);
-    begin 
+    begin
       if aVal = nil then exit;
-      locking fLock do begin 
+      locking fLock do begin
         var i:  Integer;
-        if fGC.TryGetValue(aVal, out i) then begin 
+        if fGC.TryGetValue(aVal, out i) then begin
           dec(i);
           if i = 0 then fGC.Remove(aVal) else fGC[aVal] := i;
         end;
@@ -106,16 +108,17 @@ type
 
   BoehmGC = public record(ILifetimeStrategy<BoehmGC>)
   assembly
-    {$HIDE h6} // DO NOT REMOVE!!
+
+    {$HIDE H6} // DO NOT REMOVE!!
     var fInst: IntPtr;
-    {$SHOW h6}
+    {$SHOW H6}
     class var fFinalizer: ^Void;
     class var fLoaded: Integer; assembly;
     class var fLock: Integer;
     {$IFDEF POSIX}[LinkOnce]{$ENDIF}
     class var fSharedMemory: SharedMemory; assembly;
 
-{$IFDEF POSIX}[LinkOnce, DllExport]{$ENDIF}
+    {$IFDEF POSIX}[LinkOnce, DllExport]{$ENDIF}
     [SkipDebug]
     class method LocalGC; private;
     begin
@@ -128,7 +131,9 @@ type
       fSharedMemory.setfinalizer := @SetFinalizer;
       fSharedMemory.unsetfinalizer := @UnsetFinalizer;
     end;
+
     {$IFDEF WINDOWS}class var fMapping: rtl.HANDLE;{$ENDIF}
+
     [SkipDebug]
     class method LoadGC; assembly;
     begin
@@ -220,7 +225,7 @@ type
     end;
 
     class method GC_my_register_my_thread: Integer;
-    begin 
+    begin
       {$IFDEF WINDOWS}
       var sb: GC_stack_base;
       GC_get_stack_base(@sb);
@@ -233,6 +238,7 @@ type
     end;
 
   public
+
     class method Collect(c: Integer);
     begin
       for i: Integer := 0 to c -1 do
@@ -241,16 +247,16 @@ type
 
     [SymbolName('boehmregisterthread')]
     class method RegisterThread;
-    begin 
+    begin
       fSharedMemory.register();
     end;
 
     [SymbolName('boehmunregisterthread')]
-    class method UnregisterThread; 
-    begin 
+    class method UnregisterThread;
+    begin
       fSharedMemory.unregister;
     end;
-    
+
     class method &New(aTTY: ^Void; aSize: NativeInt): ^Void;
     begin
       if fFinalizer = nil then begin
@@ -266,21 +272,23 @@ type
       end;
     end;
 
-    class method Assign(var aDest, aSource: BoehmGC); 
-    begin 
-      aDest := aSource;
-    end;
-    
-    class method Copy(var aDest, aSource: BoehmGC); 
+    class method Assign(var aDest, aSource: BoehmGC);
     begin
       aDest := aSource;
     end;
+
+    class method Copy(var aDest, aSource: BoehmGC);
+    begin
+      aDest := aSource;
+    end;
+
     class method Init(var Dest: BoehmGC); empty;
     class method Release(var Dest: BoehmGC); empty;
+
   end;
 
   BoehmGCExt = public extension class(Utilities)
-  public 
+  public
     class method Collect(c: Integer);
     begin
       BoehmGC.Collect(c);
