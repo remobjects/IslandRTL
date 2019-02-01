@@ -4,7 +4,7 @@ type
   {$IFDEF WINDOWS}
   IUnknown = public rtl.IUnknown;
   {$ELSE}
-  [COM]
+  [COM, Guid("{00000000-0000-0000-C000-000000000046}")]
   rtl.IUnknown = public interface
     [CallingConvention(CallingConvention.Stdcall)]
     method QueryInterface(riid: ^rtl.GUID; ppvObject: ^^Void): Cardinal;
