@@ -46,7 +46,6 @@
   <ItemGroup>
     <Compile Include="BoehmGC.pas" />
     <Compile Include="HString.pas"></Compile>
-    <Compile Include="OleString.pas" />
     <Compile Include="Registry.pas" />
     <Compile Include="WindowsHelpers.pas" />
     <Compile Include="Windows_FFI_x64.pas" />

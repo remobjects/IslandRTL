@@ -71,5 +71,6 @@
     <Compile Include="$(MSBuildThisFileDirectory)Socket.pas" />
     <Compile Include="$(MSBuildThisFileDirectory)MicroTasks.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Interfaces.pas" />
+    <Compile Include="$(MSBuildThisFileDirectory)OleString.pas" />
   </ItemGroup>
 </Project>

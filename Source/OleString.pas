@@ -6,15 +6,29 @@ type
   protected
     method AllocString(Value: String): ^Char;
     begin
-      if assigned(Value) then
+      if assigned(Value) then begin
+        {$IFDEF WINDOWS}
         exit rtl.SysAllocStringLen(Value.FirstChar, Value.Length)
-      else
+        {$ELSE}
+        var lData: ^Byte := ^Byte(malloc(Value.Length * 2 + 4));
+        ^Int32(lData)^ := length(Value);
+        lData := lData + 4;
+        memcpy(lData, @Value.fFirstChar, length(Value) * 2);
+        exit ^Char(lData);
+        {$ENDIF}
+      end else
         exit nil;
     end;
 
     method FreeString(Value : ^Char);
     begin
-      if Value <> nil then rtl.SysFreeString(Value);
+      if Value <> nil then begin
+        {$IFDEF WINDOWS}
+        rtl.SysFreeString(Value);
+        {$ELSE}
+        free(^Void(IntPtr(Value) - 4));
+        {$ENDIF}
+      end;
     end;
   public
     constructor(Value: String);
@@ -31,8 +45,13 @@ type
     begin
       if bstr = nil then
         exit nil
-      else
+      else begin
+        {$IFDEF WINDOWS}
         exit String.FromPChar(bstr,rtl.SysStringLen(bstr));
+        {$ELSE}
+        exit String.FromPChar(bstr, ^Integer(bstr)[-1]);
+        {$ENDIF}
+      end;
     end;
 
     method GetHashCode: Integer; override;
