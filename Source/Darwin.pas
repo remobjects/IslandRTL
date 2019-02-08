@@ -15,6 +15,8 @@ uses
 [assembly:DllImport('/usr/lib/libobjc.A.dylib', EntryPoint := '_objc_retainAutoreleasedReturnValue')]
 [assembly:DllImport('/usr/lib/libobjc.A.dylib', EntryPoint := '_objc_storeStrong')]
 [assembly:DllImport('/usr/lib/libobjc.A.dylib', EntryPoint := '_objc_storeWeak')]
+[assembly:DllImport('/usr/lib/libobjc.A.dylib', EntryPoint := '_objc_copyWeak')]
+[assembly:DllImport('/usr/lib/libobjc.A.dylib', EntryPoint := '_objc_destroyWeak')]
 [assembly:DllImport('/usr/lib/libobjc.A.dylib', EntryPoint := '_objc_msgSendSuper2')]
 [assembly:DllImport('/usr/lib/libobjc.A.dylib', EntryPoint := '_objc_msgSendSuper2_stret')]
 [assembly:DllImport('/usr/lib/libobjc.A.dylib', EntryPoint := '_objc_msgSend_fpret')]
@@ -32,6 +34,8 @@ uses
 [assembly:DllImport('/usr/lib/system/libdyld.dylib', EntryPoint := '__tlv_bootstrap')]
 [assembly:DllImport('/usr/lib/libobjc.A.dylib', EntryPoint := '_NSConcreteGlobalBlock')]
 [assembly:DllImport('/usr/lib/libobjc.A.dylib', EntryPoint := '_NSConcreteStackBlock')]
+[assembly:DllImport('/usr/lib/libobjc.A.dylib', EntryPoint := '_Block_object_assign')]
+[assembly:DllImport('/usr/lib/libobjc.A.dylib', EntryPoint := '_Block_object_dispose')]
 
 [assembly:DllImport('/System/Library/Frameworks/CoreFoundation.framework/Versions/A/CoreFoundation', EntryPoint := '___CFConstantStringClassReference')]
 
