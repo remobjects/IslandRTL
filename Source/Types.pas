@@ -6,7 +6,49 @@ type
   ValueType = public abstract class
   end;
 
+  DummyEnum = class(&Enum) public fValue: Integer; end;
+
   &Enum = public abstract class
+  public 
+    property EnumSize: Integer 
+      read self.GetType.SizeOfType;
+    method GetHashCode: Integer; override;
+    begin 
+      var lSelf := InternalCalls.Cast<DummyEnum>(InternalCalls.Cast(self));
+      case EnumSize of 
+        1: exit ^Byte(@lSelf.fValue)^;
+        2: exit ^Word(@lSelf.fValue)^;
+        4, 8: exit ^Int32(@lSelf.fValue)^;
+      end;
+    end;
+
+    method &Equals(aOther: Object): Boolean; override;
+    begin 
+      if aOther = nil then exit false;
+      if aOther.GetType <> GetType then exit false;
+      var lSelf := InternalCalls.Cast<DummyEnum>(InternalCalls.Cast(self));
+      var lOther := InternalCalls.Cast<DummyEnum>(InternalCalls.Cast(aOther));
+      case EnumSize of 
+        1: exit ^Byte(@lSelf.fValue)^ = ^Byte(@lOther.fValue)^;
+        2: exit ^Int16(@lSelf.fValue)^ = ^Int16(@lOther.fValue)^;
+        4: exit ^Int32(@lSelf.fValue)^ = ^Int32(@lOther.fValue)^;
+        8: exit ^Int64(@lSelf.fValue)^ = ^Int64(@lOther.fValue)^;
+      end;
+    end;
+
+    method ToString: String; override;
+    begin 
+      var lSelf := InternalCalls.Cast<DummyEnum>(InternalCalls.Cast(self));
+      var lValue: Int64 := 0;
+      case EnumSize of 
+        1: lValue := ^Byte(@lSelf.fValue)^;
+        2: lValue := ^Word(@lSelf.fValue)^;
+        4: lValue := ^Int32(@lSelf.fValue)^;
+        8: lValue := ^Int64(@lSelf.fValue)^;
+      end;
+      result := self.GetType.Constants.FirstOrDefault(a -> a.IsStatic and (Convert.ToInt64(a.Value) = lValue)):Name;
+      if result = nil then exit lValue.ToString();
+    end;
   end;
 
   Void = public record
