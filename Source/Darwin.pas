@@ -80,6 +80,17 @@ type
   INSFastEnumeration<T> = public interface mapped to Foundation.INSFastEnumeration
     method countByEnumeratingWithState(aState: ^NSFastEnumerationState) objects(stackbuf: ^T) count(len: NSUInteger): NSUInteger; mapped to countByEnumeratingWithState(aState) objects(^id(stackbuf)) count(len);
   end;
+  
+
+  operator Implicit<T>(aIn: NSArray<T>): sequence of T; public;
+  begin
+    exit INSFastEnumeration<T>(aIn).GetSequence;
+  end;  
+  
+  operator Implicit<T>(aIn: NSMutableArray<T>): sequence of T; public;
+  begin
+    exit INSFastEnumeration<T>(aIn).GetSequence;
+  end;  
 
   extension method INSFastEnumeration<T>.GetSequence<T>: sequence of T; iterator;
   begin
