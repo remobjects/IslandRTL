@@ -124,6 +124,7 @@ begin
   if not lres then begin
     exit #0;
   end;
+  exit ch[0];
   {$ELSE}
   var c := rtl.getchar();
   if c < 0 then exit #0;
