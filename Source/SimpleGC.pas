@@ -884,7 +884,7 @@ type
       end;
       if lOld <> 0  then begin
         InternalCalls.Decrement(var ^IntPtr(lOld)[-1]);
-        InternalCalls.Or(var ^MyIntPtr(lInst)[-1], not ColorMask);
+        InternalCalls.Or(var ^MyIntPtr(lOld)[-1], not ColorMask);
         AddToFreeList(IntPtr(InternalCalls.Cast(lOld)));
       end;
     end;

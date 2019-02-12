@@ -146,6 +146,7 @@ end;
 
 class method String.FromPChar(c: ^Char; aCharCount: Integer): String;
 begin
+  if c = nil then exit nil;
   result := AllocString(aCharCount);
   memcpy(@result.fFirstChar, c, aCharCount * 2);
 end;
