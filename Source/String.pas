@@ -1069,6 +1069,13 @@ begin
   {$ELSEIF WEBASSEMBLY}
   // JavaScript standard does not have lowerCase function with a locale as parameter yet
   exit WebAssembly.GetStringFromHandle(WebAssemblyCalls.ToLower(@fFirstChar, Length, false), true);
+  {$ELSEIF DARWIN}
+  var lTmp := CoreFoundation.CFStringCreateMutable(nil, 0);
+  CoreFoundation.CFStringAppendCharacters(lTmp, ^rtl.UniChar(@fFirstChar), Length);
+  CoreFoundation.CFStringLowercase(lTmp, aLocale.PlatformLocale);
+  var lTotal := CoreFoundation.CFStringGetLength(lTmp); // need to get converted string length, it can change
+  result := String.AllocString(lTotal);
+  CoreFoundation.CFStringGetCharacters(lTmp, CoreFoundation.CFRangeMake(0, lTotal), ^rtl.UniChar(@result.fFirstChar));
   {$ELSEIF POSIX AND NOT ANDROID}
   var b := Encoding.UTF32LE.GetBytes(self);
   for i: Int32 := 0 to RemObjects.Elements.System.length(b)-1 step 4 do begin
@@ -1100,6 +1107,13 @@ begin
   {$ELSEIF WEBASSEMBLY}
   // JavaScript standard does not have upperCase function with a locale as parameter yet
   exit WebAssembly.GetStringFromHandle(WebAssemblyCalls.Toupper(@fFirstChar, Length, false), true);
+  {$ELSEIF DARWIN}
+  var lTmp := CoreFoundation.CFStringCreateMutable(nil, 0);
+  CoreFoundation.CFStringAppendCharacters(lTmp, ^rtl.UniChar(@fFirstChar), Length);
+  CoreFoundation.CFStringUppercase(lTmp, aLocale.PlatformLocale);
+  var lTotal := CoreFoundation.CFStringGetLength(lTmp);
+  result := String.AllocString(lTotal);
+  CoreFoundation.CFStringGetCharacters(lTmp, CoreFoundation.CFRangeMake(0, lTotal), ^rtl.UniChar(@result.fFirstChar));
   {$ELSEIF POSIX AND NOT ANDROID}
   var b := Encoding.UTF32LE.GetBytes(self);
   for i: Int32 := 0 to RemObjects.Elements.System.length(b)-1 step 4 do begin

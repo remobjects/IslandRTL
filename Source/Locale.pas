@@ -2,6 +2,11 @@
 
 interface
 
+{$IF DARWIN}
+uses
+  CoreFoundation;
+{$ENDIF}
+
 {$IFDEF ANDROID}
   {$DEFINE ICU_LOCALE}
 {$ENDIF}
@@ -271,7 +276,8 @@ begin
     raise new Exception("Error getting locale name");
   result := String.FromPAnsiChars(lName) as not nullable;
   {$ELSEIF DARWIN}
-  result := '';
+  var lString := bridge<Foundation.NSString>(CFLocaleGetIdentifier(fLocaleID));
+  result := lString as not nullable;
   {$ELSEIF ICU_LOCALE}
   var lErr: UErrorCode;
   var lName := new Char[80];
@@ -291,7 +297,7 @@ begin
     var lInvariant := 'en_US.utf8'.ToAnsiChars(true);
     fInvariant := new Locale(rtl.newLocale(rtl.LC_ALL_MASK, @lInvariant[0], nil), true);
     {$ELSEIF DARWIN}
-    //TODO
+    fInvariant := new Locale(CFLocaleGetSystem());
     {$ELSEIF ICU_LOCALE OR WEBASSEMBLY}
     fInvariant := new Locale('en-US', true);
     {$ENDIF}
@@ -313,7 +319,7 @@ begin
     var lLocale := rtl.newlocale(rtl.LC_ALL_MASK, @lName[0], nil);
     fCurrent := new Locale(lLocale, true);
     {$ELSEIF DARWIN}
-    //TODO
+    fCurrent := new Locale(CFLocaleCopyCurrent());
     {$ELSEIF ICU_LOCALE}
     var lName: ^Char := ICUHelper.ULocGetDefault();
     var lDefaultName := String.FromPChar(lName);
