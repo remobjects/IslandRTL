@@ -5,6 +5,12 @@ interface
 {$IF DARWIN}
 uses
   CoreFoundation;
+
+[assembly:DllImport('/System/Library/Frameworks/CoreFoundation.framework/Versions/A/CoreFoundation', EntryPoint := '_kCFLocaleCurrencySymbol')]
+[assembly:DllImport('/System/Library/Frameworks/CoreFoundation.framework/Versions/A/CoreFoundation', EntryPoint := '_kCFLocaleDecimalSeparator')]
+[assembly:DllImport('/System/Library/Frameworks/CoreFoundation.framework/Versions/A/CoreFoundation', EntryPoint := '_kCFDateFormatterPMSymbol')]
+[assembly:DllImport('/System/Library/Frameworks/CoreFoundation.framework/Versions/A/CoreFoundation', EntryPoint := '_kCFDateFormatterAMSymbol')]
+[assembly:DllImport('/System/Library/Frameworks/CoreFoundation.framework/Versions/A/CoreFoundation', EntryPoint := '_kCFLocaleGroupingSeparator')]
 {$ENDIF}
 
 {$IFDEF ANDROID}
@@ -66,9 +72,11 @@ type
     method GetDateTimePattern(aTimeStyle: UDateFormatStyle; aDateStyle: UDateFormatStyle; aLocaleID: PlatformLocale): String;
     {$ENDIF}
     {$IF LINUX OR ICU_LOCALE}
+    method AdjustPattern(aPattern: String): String;
+    {$ENDIF}
+    {$IF LINUX OR ICU_LOCALE OR DARWIN}
     method GetDateSeparator(aShortDatePattern: String): String;
     method GetTimeSeparator(aShortTimePattern: String): String;
-    method AdjustPattern(aPattern: String): String;
     {$ENDIF}
   public
     constructor(aLocale: PlatformLocale; aIsReadonly: Boolean := false);
@@ -232,7 +240,18 @@ begin
       lCurrency := lTempString.SubString(1);
   end;
   {$ELSEIF DARWIN}
-  //TODO
+  var lData := CFLocaleGetValue(aLocaleID, kCFLocaleDecimalSeparator);
+  var lString: String := bridge<Foundation.NSString>(CFStringRef(lData));
+  if lString.Length > 0 then
+    lDecimalSep := lString[0];
+
+  lData := CFLocaleGetValue(aLocaleID, kCFLocaleGroupingSeparator);
+  lString := bridge<Foundation.NSString>(CFStringRef(lData));
+  if lString.Length > 0 then
+    lThousandsSep := lString[0];
+
+  lData := CFLocaleGetValue(aLocaleID, kCFLocaleCurrencySymbol);
+  lCurrency := bridge<Foundation.NSString>(CFStringRef(lData));
   {$ELSEIF ICU_LOCALE}
   var lParseError: UParseError;
   var lStatus: UErrorCode;
@@ -389,7 +408,27 @@ begin
   fDateSeparator := GetDateSeparator(fShortDatePattern);
   fTimeSeparator := GetTimeSeparator(fShortTimePattern);
   {$ELSEIF DARWIN}
-  //TODO
+  var lFormatter := CFDateFormatterCreate(nil, aLocale, CFDateFormatterStyle.NoStyle, CFDateFormatterStyle.LongStyle);
+  var lData := CFDateFormatterCopyProperty(lFormatter, kCFDateFormatterAMSymbol);
+  fAMString := bridge<Foundation.NSString>(CFStringRef(lData));
+
+  lData := CFDateFormatterCopyProperty(lFormatter, kCFDateFormatterPMSymbol);
+  fPMString := bridge<Foundation.NSString>(CFStringRef(lData));
+  fLongTimePattern := bridge<Foundation.NSString>(CFDateFormatterGetFormat(lFormatter));
+
+  lFormatter := CFDateFormatterCreate(nil, aLocale, CFDateFormatterStyle.NoStyle, CFDateFormatterStyle.ShortStyle);
+  fShortTimePattern := bridge<Foundation.NSString>(CFDateFormatterGetFormat(lFormatter));
+
+  lFormatter := CFDateFormatterCreate(nil, aLocale, CFDateFormatterStyle.MediumStyle, CFDateFormatterStyle.NoStyle);
+  fLongDatePattern := bridge<Foundation.NSString>(CFDateFormatterGetFormat(lFormatter));
+
+  lFormatter := CFDateFormatterCreate(nil, aLocale, CFDateFormatterStyle.ShortStyle, CFDateFormatterStyle.NoStyle);
+  fShortDatePattern := bridge<Foundation.NSString>(CFDateFormatterGetFormat(lFormatter));
+
+  //fDateSeparator := GetDateSeparator(fShortDatePattern);
+  //fTimeSeparator := GetTimeSeparator(fShortTimePattern);
+  fDateSeparator := '/';
+  fTimeSeparator := ':';
   {$ELSEIF ICU_LOCALE}
   var lErr: UErrorCode;
   var lData := ICUHelper.UDatOpen(UDateFormatStyle.UDAT_FULL, UDateFormatStyle.UDAT_FULL, aLocale, nil, 0, nil, 0, @lErr);
@@ -456,7 +495,7 @@ begin
 end;
 {$ENDIF}
 
-{$IF LINUX OR ICU_LOCALE}
+{$IF LINUX OR ICU_LOCALE OR DARWIN}
 method DateTimeFormatInfo.GetDateSeparator(aShortDatePattern: String): String;
 begin
   var lDayPos := aShortDatePattern.IndexOf('dd');
@@ -503,7 +542,9 @@ begin
 
   result := lSeparator;
 end;
+{$ENDIF}
 
+{$IF LINUX OR ICU_LOCALE}
 method DateTimeFormatInfo.AdjustPattern(aPattern: String): String;
 begin
   {$IF LINUX}
