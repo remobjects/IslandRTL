@@ -637,13 +637,13 @@ type
        var lSize: {$IF __LP64__}UInt64{$ELSE}UInt32{$ENDIF};
        var lStart := rtl.getsectiondata(@rtl._mh_execute_header, "ELRTTLRR", "__ELRTTLRR", @lSize);
        var lWork := ^^IslandTypeInfo(lStart);
-       var lEnd := ^IslandTypeInfo(^Byte(lStart) + lSize);
+       var lEnd := ^^IslandTypeInfo(^Byte(lStart) + lSize);
        loop begin
          if lWork^ <> nil then begin
            yield new &Type(lWork^);
          end;
          inc(lWork);
-         if lWork > @lEnd then break;
+         if lWork >= lEnd then break;
        end;
      end;
     {$ELSE}
