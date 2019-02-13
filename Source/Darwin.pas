@@ -198,6 +198,12 @@ type
   end;
 
 
+[Obsolete("Use ToNSArray() instead")]
+extension method Foundation.INSFastEnumeration.array: not nullable NSArray; public; inline;
+begin
+  result := self.ToNSArray;
+end;
+
 extension method Foundation.INSFastEnumeration.ToNSArray: not nullable NSArray; public;
 begin
   var lRes: not nullable NSMutableArray := new NSMutableArray;
