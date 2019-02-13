@@ -243,6 +243,43 @@ type
       constructor(aDictionary);
     end;
 
+    {$IF DARWIN}
+    constructor(aDictionary: Foundation.NSDictionary<T,U>);
+    begin
+      constructor(aDictionary.count);
+      for each k: T in aDictionary.allKeys do
+        self[k] := aDictionary[k];
+    end;
+
+    method ToNSDictionary: Foundation.NSDictionary<T,U>; inline;
+    begin
+      result := ToNSMutableDictionary();
+    end;
+
+    method ToNSMutableDictionary: Foundation.NSMutableDictionary<T,U>;
+    begin
+      var lResult := new Foundation.NSMutableDictionary<T,U> withCapacity(Count);
+      for each k in Keys do
+        lResult[k] := self[k];
+      result := lResult;
+    end;
+
+    operator Explicit(aDictionary: Foundation.NSDictionary<T,U>): Dictionary<T,U>;
+    begin
+      result := new Dictionary<T,U>(aDictionary);
+    end;
+
+    operator Explicit(aDictionary: Dictionary<T,U>): Foundation.NSDictionary<T,U>;
+    begin
+      result := aDictionary:ToNSDictionary;
+    end;
+
+    operator Explicit(aDictionary: Dictionary<T,U>): Foundation.NSMutableDictionary<T,U>;
+    begin
+      result := aDictionary:ToNSMutableDictionary;
+    end;
+    {$ENDIF}
+
     method GetSequence: sequence of KeyValuePair<T,U>;
     begin
       var r := new array of KeyValuePair<T,U>(fCount);

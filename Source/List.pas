@@ -85,6 +85,21 @@ type
         lResult.addObject(self[i]);
       result := lResult;
     end;
+
+    operator Explicit(aArray: Foundation.NSArray<T>): List<T>;
+    begin
+      result := new List<T>(aArray);
+    end;
+
+    operator Explicit(aArray: List<T>): Foundation.NSArray<T>;
+    begin
+      result := aArray:ToNSArray;
+    end;
+
+    operator Explicit(aArray: List<T>): Foundation.NSMutableArray<T>;
+    begin
+      result := aArray:ToNSMutableArray;
+    end;
     {$ENDIF}
 
     method GetEnumerator: IEnumerator<T>;
