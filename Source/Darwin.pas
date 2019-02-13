@@ -80,17 +80,17 @@ type
   INSFastEnumeration<T> = public interface mapped to Foundation.INSFastEnumeration
     method countByEnumeratingWithState(aState: ^NSFastEnumerationState) objects(stackbuf: ^T) count(len: NSUInteger): NSUInteger; mapped to countByEnumeratingWithState(aState) objects(^id(stackbuf)) count(len);
   end;
-  
+
 
   operator Implicit<T>(aIn: NSArray<T>): sequence of T; public;
   begin
     exit INSFastEnumeration<T>(aIn).GetSequence;
-  end;  
-  
+  end;
+
   operator Implicit<T>(aIn: NSMutableArray<T>): sequence of T; public;
   begin
     exit INSFastEnumeration<T>(aIn).GetSequence;
-  end;  
+  end;
 
   extension method INSFastEnumeration<T>.GetSequence<T>: sequence of T; iterator;
   begin
@@ -198,7 +198,7 @@ type
   end;
 
 
-extension method Foundation.INSFastEnumeration.array: not nullable NSArray; public;
+extension method Foundation.INSFastEnumeration.ToNSArray: not nullable NSArray; public;
 begin
   var lRes: not nullable NSMutableArray := new NSMutableArray;
   for each el in self do
@@ -211,7 +211,7 @@ type IDBlock = public block(aItem: not nullable id): id;
 
 extension method Foundation.INSFastEnumeration.dictionary(aKeyBlock: IDBlock; aValueBlock: IDBlock): not nullable NSDictionary; public;
 begin
-  var lArray := self.array();
+  var lArray := self.ToNSArray();
   result := new NSMutableDictionary withCapacity(lArray.count);
   for each i in lArray do
     NSMutableDictionary(result)[aKeyBlock(i)] := aValueBlock(i);

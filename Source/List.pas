@@ -73,7 +73,12 @@ type
         &Add(aArray[i]);
     end;
 
-    method ToNSArray: Foundation.NSArray<T>;
+    method ToNSArray: Foundation.NSArray<T>; inline;
+    begin
+      result := ToNSMutableArray();
+    end;
+
+    method ToNSMutableArray: Foundation.NSMutableArray<T>;
     begin
       var lResult := new Foundation.NSMutableArray<T> withCapacity(Count);
       for i: Integer := 0 to Count-1 do
