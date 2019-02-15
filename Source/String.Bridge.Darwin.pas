@@ -41,7 +41,7 @@ type
     class operator Implicit(aValue: nullable id): nullable String;
     begin
       var lWrappedNativeObject := CocoaWrappedIslandObject(aValue);
-      result := coalesce(String(lWrappedNativeObject:Value), lWrappedNativeObject:Value:ToString, aValue:description);
+      result := coalesce(String(lWrappedNativeObject:Value), lWrappedNativeObject:Value:ToString, String(aValue:description));
     end;
 
     //
