@@ -53,6 +53,8 @@
   <ItemGroup>
     <Reference Include="gc" />
     <Reference Include="rtl" />
+    <Reference Include="Foundation" />
+    <Reference Include="CoreFoundation" />
   </ItemGroup>
   <Import Project="$(MSBuildExtensionsPath)\RemObjects Software\Elements\RemObjects.Elements.Island.Darwin.targets" />
   <Import Project="Island.Shared.projitems" Label="Shared" />
