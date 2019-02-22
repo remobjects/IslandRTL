@@ -32,10 +32,10 @@ uses
 [assembly:DllImport('/usr/lib/libobjc.A.dylib', EntryPoint := '_objc_autoreleasePoolPop')]
 [assembly:DllImport('/usr/lib/libobjc.A.dylib', EntryPoint := '_objc_ehtype_vtable')]
 [assembly:DllImport('/usr/lib/system/libdyld.dylib', EntryPoint := '__tlv_bootstrap')]
-[assembly:DllImport('/usr/lib/libobjc.A.dylib', EntryPoint := '__NSConcreteGlobalBlock')]
-[assembly:DllImport('/usr/lib/libobjc.A.dylib', EntryPoint := '__NSConcreteStackBlock')]
-[assembly:DllImport('/usr/lib/libobjc.A.dylib', EntryPoint := '__Block_object_assign')]
-[assembly:DllImport('/usr/lib/libobjc.A.dylib', EntryPoint := '__Block_object_dispose')]
+[assembly:DllImport('/usr/lib/system/libsystem_blocks.dylib', EntryPoint := '__NSConcreteGlobalBlock')]
+[assembly:DllImport('/usr/lib/system/libsystem_blocks.dylib', EntryPoint := '__NSConcreteStackBlock')]
+[assembly:DllImport('/usr/lib/system/libsystem_blocks.dylib', EntryPoint := '__Block_object_assign')]
+[assembly:DllImport('/usr/lib/system/libsystem_blocks.dylib', EntryPoint := '__Block_object_dispose')]
 
 [assembly:DllImport('/System/Library/Frameworks/CoreFoundation.framework/Versions/A/CoreFoundation', EntryPoint := '___CFConstantStringClassReference')]
 
