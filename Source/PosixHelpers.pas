@@ -269,6 +269,17 @@ begin
 end;
 
 
+[SymbolName("__builtin_inf")]
+method builtin_inf: Double; public; begin exit RemObjects.Elements.System.__builtin_inf; end;
+[SymbolName("__builtin_inff")]
+method builtin_inff: Single; public; begin exit RemObjects.Elements.System.__builtin_inff; end;
+[SymbolName("__builtin_fabs")]
+method builtin_fabs(d: Double): Double; public; begin exit RemObjects.Elements.System.__builtin_fabs(d); end;
+[SymbolName("__builtin_fabsf")]
+method builtin_fabsf(d: Single): Single; public; begin exit RemObjects.Elements.System.__builtin_fabsf(d); end;
+ 
+
+
 [SymbolName('__elements_entry_point')]
 method UserEntryPoint(aArgs: array of String): Integer; external;
 
