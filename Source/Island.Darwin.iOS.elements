@@ -49,8 +49,9 @@
     <Compile Include="PosixHelpers.pas" />
     <Compile Include="Darwin.pas" />
     <Compile Include="CocoaGC.pas" />
-    <Compile Include="Darwin.Macros.pas"/>
-    <Compile Include="Darwin.Macros.Foundation.pas"/>
+    <Compile Include="Darwin.Macros.pas" />
+    <Compile Include="Darwin.Macros.Foundation.pas" />
+    <Compile Include="NSException.pas" />
   </ItemGroup>
   <ItemGroup>
     <Reference Include="gc" />
