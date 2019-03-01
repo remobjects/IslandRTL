@@ -17,7 +17,7 @@ type
 
     property Message: String read description;
 
-    //property CallStack: List<String> read new List<String>(callstackSymbols);
+    //property CallStack: List<String> read new List<String>(callstackSymbols.GetSequence().Cast<String>); // E48 There are no overloads that have 1 generic parameters // E48 There are no overloads that have 1 generic parameters
   end;
 
   CocoaException = public class(IslandException)

@@ -73,10 +73,23 @@ begin
   exit lList;
 end;
 
-extension method ISequence<T>.Select<T, R>(aBlock: not nullable block(aItem: not nullable T): R): /*not nullable*/ ISequence<R>; public; iterator;
+extension method ISequence<T>.Select<T, U>(aBlock: not nullable block(aItem: not nullable T): U): /*not nullable*/ ISequence<U>; public; iterator;
 begin
   for each el in self do
     yield aBlock(el);
+end;
+
+extension method ISequence<T>.Cast<U>: /*not nullable*/ ISequence<U>; public; iterator;
+begin
+  for each el in self do
+    yield el as U;
+end;
+
+extension method ISequence<T>.OfType<U>: /*not nullable*/ ISequence<U>; public; iterator;
+begin
+  for each el in self do
+    if el is U then
+      yield el as U;
 end;
 
 extension method ISequence<T>.Concat(aSecond: not nullable ISequence<T>): /*not nullable*/ ISequence<T>; public; iterator;
