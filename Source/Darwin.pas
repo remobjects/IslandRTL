@@ -1,5 +1,7 @@
 ﻿namespace RemObjects.Elements.System;
 
+{$IF DARWIN}
+
 uses
   Foundation;
 
@@ -265,4 +267,7 @@ extension method INSFastEnumeration<T>.FirstOrDefault<T>(): T; public;
 begin
   exit self.GetSequence.FirstOrDefault();
 end;
+
+{$ENDIF}
+
 end.

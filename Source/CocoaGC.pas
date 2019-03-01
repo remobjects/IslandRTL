@@ -1,6 +1,10 @@
 ﻿namespace RemObjects.Elements.System;
-uses 
+
+{$IF DARWIN}
+
+uses
   Foundation;
+
 type
   ObjcStrong<T> = public lifetimestrategy (ObjcStrong) T;
   ObjcStrong = public record(ILifetimeStrategy<ObjcStrong>)
@@ -174,4 +178,7 @@ type
       Release(var self);
     end;
   end;
+
+{$ENDIF}
+
 end.

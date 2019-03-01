@@ -2,8 +2,6 @@
 <Project xmlns="http://schemas.microsoft.com/developer/msbuild/2003" ToolsVersion="4.0" DefaultTargets="Build">
   <PropertyGroup Label="Globals">
     <ProjectGuid>8BE19C06-DD7E-41F7-954B-6D269C087E4C</ProjectGuid>
-  </PropertyGroup>
-  <PropertyGroup>
     <RootNamespace>RemObjects.Elements.System</RootNamespace>
   </PropertyGroup>
   <Import Project="Island.Shared.projitems" Label="Shared" />

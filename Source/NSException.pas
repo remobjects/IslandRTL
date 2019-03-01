@@ -1,5 +1,7 @@
 ﻿namespace RemObjects.Elements.System;
 
+{$IF DARWIN}
+
 uses
   Foundation;
 
@@ -51,5 +53,7 @@ type
     //property InnerError: Swift.Error read fError;
 
   //end;
+
+{$ENDIF}
 
 end.

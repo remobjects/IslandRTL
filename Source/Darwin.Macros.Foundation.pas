@@ -1,5 +1,7 @@
 ﻿namespace RemObjects.Elements.System;
 
+{$IF DARWIN}
+
 uses
   Foundation;
 
@@ -23,5 +25,7 @@ method NSLocalizedStringWithDefaultValue(aKey: NSString; aTable: NSString; aBund
 begin
   result := aBundle.mainBundle.localizedStringForKey(aKey) value(aDefaultValue) table(aTable);
 end;
+
+{$ENDIF}
 
 end.

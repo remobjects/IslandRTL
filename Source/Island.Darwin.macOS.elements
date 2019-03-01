@@ -47,11 +47,6 @@
     <Compile Include="Posix_FFI_x64.pas" />
     <Compile Include="ManagedThreadPool.pas" />
     <Compile Include="PosixHelpers.pas" />
-    <Compile Include="Darwin.pas" />
-    <Compile Include="CocoaGC.pas" />
-    <Compile Include="NSException.pas" />
-    <Compile Include="Darwin.Macros.pas"/>
-    <Compile Include="Darwin.Macros.Foundation.pas"/>
   </ItemGroup>
   <ItemGroup>
     <Reference Include="gc" />

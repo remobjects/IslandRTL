@@ -1,6 +1,9 @@
 ﻿namespace RemObjects.Elements.System;
 
+{$IF DARWIN}
+
 interface
+
 uses
   rtl;
 
@@ -270,5 +273,7 @@ function __builtin_constant_p(o: id): Boolean;
 begin
   exit false;
 end;
+
+{$ENDIF}
 
 end.

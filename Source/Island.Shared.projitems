@@ -72,5 +72,10 @@
     <Compile Include="$(MSBuildThisFileDirectory)MicroTasks.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Interfaces.pas" />
     <Compile Include="$(MSBuildThisFileDirectory)OleString.pas" />
+    <Compile Include="$(MSBuildThisFileDirectory)NSException.pas" />
+    <Compile Include="$(MSBuildThisFileDirectory)Darwin.pas" />
+    <Compile Include="$(MSBuildThisFileDirectory)Darwin.Macros.pas" />
+    <Compile Include="$(MSBuildThisFileDirectory)Darwin.Macros.Foundation.pas" />
+    <Compile Include="$(MSBuildThisFileDirectory)CocoaGC.pas" />
   </ItemGroup>
 </Project>
