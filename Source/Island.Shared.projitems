@@ -61,6 +61,7 @@
     <Compile Include="Linq.pas" />
     <Compile Include="Dynamic.pas" />
     <Compile Include="Span.pas" />
+    <Compile Include="Set.pas" />
     <Compile Include="$(MSBuildThisFileDirectory)Encoding.pas" />
     <Compile Include="$(MSBuildThisFileDirectory)GenericNullable.pas" />
     <Compile Include="$(MSBuildThisFileDirectory)Serializable.pas" />
