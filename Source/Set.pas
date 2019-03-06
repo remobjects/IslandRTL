@@ -76,7 +76,7 @@ begin
   else begin
     if aEnd / 8 >= length(fValue) then begin
       lSet := new &Set<T>(aEnd + 1);
-      &Array.Copy(fValue, lSet.fValue, fValue.Length);
+      RemObjects.Elements.System.&Array.Copy(fValue, lSet.fValue, fValue.Length);
     end
     else begin
       lSet := new &Set<T>(fValue);
@@ -110,7 +110,7 @@ begin
   else begin
     if aEnd / 8 >= length(fValue) then begin
       lSet := new &Set<T>(aEnd + 1);
-      &Array.Copy(fValue, lSet.fValue, fValue.Length);
+      RemObjects.Elements.System.&Array.Copy(fValue, lSet.fValue, fValue.Length);
     end
     else begin
       lSet := new &Set<T>(fValue);
@@ -141,7 +141,7 @@ begin
   else begin
     if i/8 >= length(fValue) then begin
       lSet := new &Set<T>(i + 1);
-      &Array.Copy(fValue, lSet.fValue, fValue.Length);
+      RemObjects.Elements.System.&Array.Copy(fValue, lSet.fValue, fValue.Length);
     end
     else begin
       lSet := new &Set<T>(fValue);
@@ -165,7 +165,7 @@ begin
   else begin
     if i / 8 >= length(fValue) then begin
       lset := new &Set<T>(i + 1);
-      &Array.Copy(fValue, lset.fValue, fValue.Length);
+      RemObjects.Elements.System.&Array.Copy(fValue, lset.fValue, fValue.Length);
     end
     else begin
       lset := new &Set<T>(fValue);
@@ -198,7 +198,7 @@ begin
     exit new Byte[0];
   end;
   var lArray: array of Byte := new Byte[fValue.Length];
-  lArray.Copy(fValue, lArray, lArray.Length);
+  RemObjects.Elements.System.Array.Copy(fValue, lArray, lArray.Length);
   exit lArray;
 end;
 
@@ -459,7 +459,7 @@ constructor &Set<T>(aData: array of Byte);
 begin
   fValue := new Byte[length(aData)];
   if fValue.Length <> 0 then begin
-    &Array.Copy(aData, fValue, aData.Length);
+    RemObjects.Elements.System.Array.Copy(aData, fValue, aData.Length);
   end;
 end;
 
