@@ -107,10 +107,9 @@ type
     method GetIdentifier: not nullable String;
     class var fCurrent: Locale;
     class var fInvariant: Locale;
-  protected
+  public
     constructor(aLocaleID: PlatformLocale; aIsReadOnly: Boolean := false);
     constructor(aLocale: String);
-  public
     class property Invariant: Locale read GetInvariant;
     class property Current: Locale read GetCurrent;
     property Identifier: not nullable String read GetIdentifier;
