@@ -18,13 +18,13 @@ namespace RemObjects.Elements.MicroTasks
 		/// <summary>
 		/// holds the task; if this is null it's already complete. If there's an exception it's stored as part of a completed task.
 		/// </summary>
-		private VoidTask task;
+		private VoidMicroTask task;
 
 		/// <summary>
 		/// Creates a new result with a task as content.
 		/// </summary>
 		/// <param name="task"></param>
-		public VoidResult(VoidTask task)
+		public VoidResult(VoidMicroTask task)
 		{
 			this.task = task;
 		}
@@ -43,7 +43,7 @@ namespace RemObjects.Elements.MicroTasks
 		/// <summary>
 		/// returns the task, this can be null.
 		/// </summary>
-		public VoidTask Task { get { return task; } }
+		public VoidMicroTask Task { get { return task; } }
 
 		/// <summary>
 		/// empty "done" result.
@@ -84,9 +84,9 @@ namespace RemObjects.Elements.MicroTasks
 #if ECHOES
 	public class VoidResultAwaiter
 	{
-		readonly VoidTask t;
+		readonly VoidMicroTask t;
 
-		public VoidResultAwaiter(VoidTask t)
+		public VoidResultAwaiter(VoidMicroTask t)
 		{
 			this.t = t;
 		}
@@ -134,10 +134,10 @@ namespace RemObjects.Elements.MicroTasks
 
 	public class ResultAwaiter<T>
 	{
-		readonly Task<T> t;
+		readonly MicroTask<T> t;
 		readonly T value;
 
-		public ResultAwaiter(Task<T> t, T value)
+		public ResultAwaiter(MicroTask<T> t, T value)
 		{
 			this.t = t;
 			this.value = value;
@@ -179,13 +179,13 @@ namespace RemObjects.Elements.MicroTasks
 		/// <summary>
 		/// holds the task; if this is null it's already complete. If there's an exception it's stored as part of a completed task.
 		/// </summary>
-		private Task<T> task;
+		private MicroTask<T> task;
 
 		/// <summary>
 		/// Creates a new result with a task as content.
 		/// </summary>
 		/// <param name="task"></param>
-		private Result(Task<T> task, T value)
+		private Result(MicroTask<T> task, T value)
 		{
 			this.task = task;
 			this.value = value;
@@ -195,7 +195,7 @@ namespace RemObjects.Elements.MicroTasks
 		/// Creates a new result with a task as content.
 		/// </summary>
 		/// <param name="task"></param>
-		public Result(Task<T> task)
+		public Result(MicroTask<T> task)
 		{
 			this.value = default(T);
 			this.task = task;
@@ -219,7 +219,7 @@ namespace RemObjects.Elements.MicroTasks
 		/// <summary>
 		/// Returns the underlying task, could be null.
 		/// </summary>
-		public Task<T> Task { get { return task; } }
+		public MicroTask<T> Task { get { return task; } }
 
 		/// <summary>
 		/// returns a done task with this value.
@@ -269,7 +269,7 @@ namespace RemObjects.Elements.MicroTasks
 	/// <summary>
 	/// A task is a piece of code that completes asynchronously; Tasks do not deal with threading and synchronization contexts, they always run on calling thread that triggers the completion.
 	/// </summary>
-	public class VoidTask
+	public class VoidMicroTask
 	{
 		#if !COOPER
 		private int @lock;
@@ -319,18 +319,18 @@ namespace RemObjects.Elements.MicroTasks
 			get { return state; }
 		}
 
-		private static VoidTask GetDone()
+		private static VoidMicroTask GetDone()
 		{
-			var t = new VoidTask();
+			var t = new VoidMicroTask();
 			t.SetComplete();
 			return t;
 		}
-		private static VoidTask done;
+		private static VoidMicroTask done;
 
 		/// <summary>
 		/// returns an empty "done" task.
 		/// </summary>
-		public static VoidTask Done { get { return done ?? (done = GetDone()); } }
+		public static VoidMicroTask Done { get { return done ?? (done = GetDone()); } }
 
 		/// <summary>
 		/// Returns if this task is done or not.
@@ -567,7 +567,7 @@ namespace RemObjects.Elements.MicroTasks
 		}
 	}
 
-	public class Task<T>: VoidTask
+	public class MicroTask<T>: VoidMicroTask
 	{
 		T value;
 
