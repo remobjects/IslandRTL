@@ -107,9 +107,9 @@ type
     method GetIdentifier: not nullable String;
     class var fCurrent: Locale;
     class var fInvariant: Locale;
-  protected
-    constructor(aLocaleID: PlatformLocale; aIsReadOnly: Boolean := false);
   public
+    constructor(aLocaleID: PlatformLocale; aIsReadOnly: Boolean := false);
+    constructor(aLocale: String);
     class property Invariant: Locale read GetInvariant;
     class property Current: Locale read GetCurrent;
     property Identifier: not nullable String read GetIdentifier;
@@ -279,6 +279,23 @@ begin
   {$ENDIF}
   fNumberFormat := new NumberFormatInfo(lDecimalSep, lThousandsSep, lCurrency, aIsReadOnly);
   fDateTimeFormat := new DateTimeFormatInfo(aLocaleID, aIsReadOnly);
+end;
+
+constructor Locale(aLocale: String);
+begin
+  {$IF WINDOWS}
+  constructor(rtl.LocaleNameToLCID(aLocale.ToLPCWSTR, 0), false);
+  {$ELSEIF LINUX AND NOT ANDROID}
+  aLocale := aLocale.Replace('-', '_');
+  var lName := aLocale.ToAnsiChars(true);
+  var lLocale := rtl.newlocale(rtl.LC_ALL_MASK, @lName[0], nil);
+  constructor(lLocale, false);
+  {$ELSEIF DARWIN}
+  var lLocale := CFLocaleCreate(nil, CFLocaleCreateCanonicalLanguageIdentifierFromString(nil, aLocale));
+  constructor(lLocale, false);
+  {$ELSEIF ICU_LOCALE OR WEBASSEMBLY}
+  constructor(aLocale, false);
+  {$ENDIF}
 end;
 
 method Locale.GetIdentifier: not nullable String;
