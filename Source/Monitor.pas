@@ -6,7 +6,7 @@ type
   IDisposable = public interface
     method Dispose;
   end;
-  Monitor = public class(IDisposable)
+  Monitor = public class(IDisposable, IMonitor)
   assembly
     {$IFDEF WINDOWS}
     fCS: rtl.CRITICAL_SECTION;
@@ -18,6 +18,11 @@ type
     method Wait;
     method Release;
     method Dispose;
+  end;
+
+  IMonitor = public interface
+    method Wait;
+    method Release;
   end;
 
   SingleLinkedList<T> = class
