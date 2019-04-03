@@ -78,5 +78,6 @@
     <Compile Include="$(MSBuildThisFileDirectory)Darwin.Macros.pas" />
     <Compile Include="$(MSBuildThisFileDirectory)Darwin.Macros.Foundation.pas" />
     <Compile Include="$(MSBuildThisFileDirectory)CocoaGC.pas" />
+    <Compile Include="$(MSBuildThisFileDirectory)Currency.pas" />
   </ItemGroup>
 </Project>
