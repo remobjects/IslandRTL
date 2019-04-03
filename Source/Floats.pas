@@ -21,6 +21,7 @@ type
     method GetHashCode: Integer; override;
     method &Equals(obj: Object): Boolean; override;
     class method Parse(s: String): Single;
+    class method Parse(s: String; aLocale: Locale): Single;
     class method TryParse(s: String; out Value: Single): Boolean; inline;
     class method TryParse(s: String; aLocale: Locale; out Value: Single): Boolean; inline;
 
@@ -85,6 +86,7 @@ type
     method ToString(aNumberOfDecimalDigits: UInt32): String; inline;
     method ToString(aNumberOfDecimalDigits: UInt32; aLocale: Locale): String; 
     class method Parse(s: String): Double;
+    class method Parse(s: String; aLocale: Locale): Double;
     class method TryParse(s: String; out Value: Double): Boolean;
     class method TryParse(s: String; aLocale: Locale; out Value: Double): Boolean;
     method GetHashCode: Integer; override;
@@ -231,6 +233,12 @@ begin
   if not DoTryParse(s, Locale.Invariant, out result, true) then Convert.RaiseFormatException;
 end;
 
+class method Double.Parse(s: String; aLocale: Locale): Double;
+begin
+  if not DoTryParse(s, aLocale, out result, true) then Convert.RaiseFormatException;
+end;
+
+
 class method Double.TryParse(s: String; out Value: Double): Boolean;
 begin
   exit DoTryParse(s, Locale.Invariant, out Value, false);
@@ -332,6 +340,11 @@ end;
 class method Single.Parse(s: String): Single;
 begin
   if not DoTryParse(s, Locale.Invariant, out result, true) then Convert.RaiseFormatException;
+end;
+
+class method Single.Parse(s: String; aLocale: Locale): Single;
+begin
+  if not DoTryParse(s, aLocale, out result, true) then Convert.RaiseFormatException;
 end;
 
 class method Single.TryParse(s: String; out Value: Single): Boolean;
