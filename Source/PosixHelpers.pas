@@ -15,7 +15,7 @@ type
   end;
   UserEntryPointType =public method (args: array of String): Integer;
   {$IFNDEF DARWIN}
-  dliteratecb = public function (info :^__struct_dl_phdr_info; size: size_t; data: ^Void): Integer; 
+  dliteratecb = public function (info :^__struct_dl_phdr_info; size: size_t; data: ^Void): Integer;
   {$ENDIF}
   {$IFDEF ARM and not DARWIN}rtl.__struct__Unwind_Exception = rtl.__struct__Unwind_Control_Block;{$ENDIF}
   ExternalCalls = public static class
@@ -66,17 +66,20 @@ type
   public
 
 
-    {$IFDEF ARM OR DARWIN OR LINUX}
+{$IFDEF ARM}
+    [SymbolName('_elements_posix_exception_handler')]
+    method ExceptionHandler(aState: rtl._Unwind_Action; aECB: ^rtl.__struct__Unwind_Control_Block; aCtx: ^Void): rtl._Unwind_Reason_Code;
+    begin
+      exit IntExceptionHandler(1, aState,
+                               ^UInt64(@aECB^.exception_class)^,
+                               aECB,
+                               aCtx);
+    end;
+    {$ELSE}
     [SymbolName('_elements_posix_exception_handler')]
     method ExceptionHandler(aVersion: Integer; aState: rtl._Unwind_Action; aClass: UInt64; aEx: ^rtl.__struct__Unwind_Exception; aCtx: ^Void): rtl._Unwind_Reason_Code;
     begin
       exit IntExceptionHandler(aVersion, aState, aClass, aEx, aCtx);
-    end;
-    {$ELSE}
-    [SymbolName('_elements_posix_exception_handler')]
-    method ExceptionHandler(aState: rtl._Unwind_Action; aClass: UInt64; aEx: ^rtl.__struct__Unwind_Exception; aCtx: ^Void): rtl._Unwind_Reason_Code;
-    begin
-      exit IntExceptionHandler(1, aState, aClass, aEx, aCtx);
     end;
     {$ENDIF}
 
@@ -277,7 +280,7 @@ method builtin_inff: Single; public; begin exit RemObjects.Elements.System.__bui
 method builtin_fabs(d: Double): Double; public; begin exit RemObjects.Elements.System.__builtin_fabs(d); end;
 [SymbolName("__builtin_fabsf")]
 method builtin_fabsf(d: Single): Single; public; begin exit RemObjects.Elements.System.__builtin_fabsf(d); end;
- 
+
 
 
 [SymbolName('__elements_entry_point')]
@@ -332,9 +335,10 @@ begin
   var lMine := aClass = ElementsExceptionCode;
   {$IFDEF ARM and not DARWIN}
   if (aState  and rtl._Unwind_State._US_ACTION_MASK) <> rtl._Unwind_State._US_UNWIND_FRAME_STARTING then begin
-     if rtl.__gnu_unwind_frame (aEx, aCtx) <> rtl._Unwind_Reason_Code._URC_OK  then
+    if rtl.__gnu_unwind_frame (aEx, aCtx) <> rtl._Unwind_Reason_Code._URC_OK  then begin
       exit rtl._Unwind_Reason_Code._URC_FAILURE;
-    exit rtl._Unwind_Reason_Code._URC_CONTINUE_UNWIND;
+    end;
+    aState := {$IFDEF EMSCRIPTEN OR x86_64}rtl._Unwind_Action._UA_CLEANUP_PHASE{$ELSE}rtl._UA_CLEANUP_PHASE{$ENDIF};
   end;
   rtl._Unwind_SetGR (aCtx, UNWIND_POINTER_REG, rtl._Unwind_Word(aEx));
   {$ENDIF}
