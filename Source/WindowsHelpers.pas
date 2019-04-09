@@ -1159,13 +1159,13 @@ end;
 
 method mainCRTStartup: Integer;
 begin
-	ExternalCalls.fModuleHandle := rtl.GetModuleHandle(0);
+	ExternalCalls.fModuleHandle := rtl.GetModuleHandle(nil);
 	ExternalCalls.exit(main);
 end;
 
 method WinMainCRTStartup: Integer;
 begin
-	ExternalCalls.fModuleHandle := rtl.GetModuleHandle(0);
+	ExternalCalls.fModuleHandle := rtl.GetModuleHandle(nil);
 	ExternalCalls.exit(main);
 end;
 
