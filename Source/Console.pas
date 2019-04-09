@@ -56,7 +56,7 @@ begin
   {$IFDEF WEBASSEMBLY}
   WebAssemblyCalls.ConsoleLog(@s.fFirstChar, s.Length);
   {$ELSEIF WINDOWS}
-  Write(s + Environment.NewLine);
+  &Write(s + Environment.NewLine);
   {$ELSE}
   var c := s.ToAnsiChars(true);
   {$IFDEF ANDROID}
@@ -65,7 +65,7 @@ begin
   {$ELSE}
   rtl.puts(@c[0]);
   {$ENDIF}
- {$ENDIF}
+  {$ENDIF}
 end;
 
 class method Console.WriteLine;
@@ -75,14 +75,16 @@ end;
 
 class method Console.Write(s: Object);
 begin
-  if s = nil then s := '';
-  &Write(s.ToString);
+  if s ≠ nil then
+    &Write(s.ToString);
 end;
 
 class method Console.WriteLine(s: Object);
 begin
-  if s = nil then s := '';
-  &WriteLine(s.ToString);
+  if s ≠ nil then
+    WriteLine(s.ToString)
+  else
+    WriteLine("");
 end;
 
 class method Console.ReadLine: String;
