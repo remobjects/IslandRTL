@@ -798,7 +798,7 @@ begin
           exit rtl._Unwind_Reason_Code._URC_INSTALL_CONTEXT;
         end;
         // we can't parse the LSDA table and the exception isn't ours, touble.
-        exit rtl._Unwind_Reason_Code._URC_FAILURE;
+        exit  {$IFNDEF ARM and not DARWIN}rtl._Unwind_Reason_Code._URC_FATAL_PHASE1_ERROR{$ELSE}rtl._Unwind_Reason_Code._URC_FAILURE{$ENDIF};
       end;
       var lRecord := ^ElementsException(aEx);
       lRecord := ^ElementsException(@^Byte(lRecord)[-Int32((^Byte(@lRecord^.Unwind) - ^Byte(lRecord)))]);
@@ -812,7 +812,7 @@ begin
       free(lRecord);
       exit rtl._Unwind_Reason_Code._URC_INSTALL_CONTEXT;
     end;
-    exit rtl._Unwind_Reason_Code._URC_FAILURE;
+  exit  {$IFNDEF ARM and not DARWIN}rtl._Unwind_Reason_Code._URC_FATAL_PHASE1_ERROR{$ELSE}rtl._Unwind_Reason_Code._URC_FAILURE{$ENDIF};
 end;
 {$ENDIF}
 
