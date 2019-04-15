@@ -20,20 +20,29 @@ type
     property CallStack: List<String> read new List<String>(callstackSymbols.GetSequence().Cast<String>); // E48 There are no overloads that have 1 generic parameters // E48 There are no overloads that have 1 generic parameters
   end;
 
-  CocoaException = public class(IslandException)
-  private
-
-    var fException: NSException;
-
+  IslandWrappedCocoaException = public class(IslandException)
   public
 
-    constructor (aException: NSException);
+    constructor (aException: CocoaException);
     begin
       inherited constructor(aException.reason);
-      fException := aException;
+      InnerException := aException;
     end;
 
-    property InnerException: NSException read fException;
+    property InnerException: NSException read private write;
+
+  end;
+
+  CocoaWrappedIslandException = public class(CocoaException)
+  public
+
+    constructor (aException: IslandException);
+    begin
+      inherited constructor withName(aException.GetType.Name) reason(aException.Message) userInfo(nil);
+      InnerException := aException;
+    end;
+
+    property InnerException: IslandException read private write;
 
   end;
 
