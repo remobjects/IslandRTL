@@ -32,11 +32,11 @@ type
     begin
       if LastPtr = nil then begin
         var lNew := ((size + 65535) / 65536);
-        LastPtr := ^Byte(WebAssemblyCalls.GrowMemory(lNew)  * 65536);
+        LastPtr := ^Byte(WebAssemblyCalls.GrowMemory(0, lNew)  * 65536);
         SpaceLeft := ((size + 65535) / 65536) * 65536;
       end else if size > SpaceLeft then begin
         var lNew := (size - SpaceLeft + 65535) / 65536;
-        WebAssemblyCalls.GrowMemory(lNew);
+        WebAssemblyCalls.GrowMemory(0, lNew);
         SpaceLeft := SpaceLeft + (lNew * 65536);
       end;
       assert(size <= SpaceLeft);
@@ -119,8 +119,14 @@ type
     [DllImport('', EntryPoint := '__island_to_upper')]
     class method Toupper(val: ^Char; data: Integer; aInvariant: Boolean): Integer; external;
 
-    [DllImport('', EntryPoint := 'llvm.wasm.grow.memory')]
-    class method GrowMemory(aSize: Integer): Integer; external;
+    [DllImport('', EntryPoint := 'llvm.wasm.memory.grow.i32')]
+    class method GrowMemory(aMemory: Integer; aSize: Integer): Integer; external;
+
+    [DllImport('', EntryPoint := 'llvm.wasm.memory.size.i32')]
+    class method MemorySize(aMemory: Integer): Integer; external;
+
+    [DllImport('', EntryPoint := '__island_enumerate_known_types')]
+    class method EnumerateKnownTypes(aData: Object; aCB: KnownTypesEnumerator); external;
 
     [DllImport('', EntryPoint := '__island_eval')]
     class method Eval(aVal: String): IntPtr; external;
@@ -227,6 +233,8 @@ type
     [DllImport('', EntryPoint := '__island_responseBinaryTextToArray')]
     class method ResponseBinaryTextToArray(aSource: IntPtr; aTarget: ^Byte): Int32; external;
   end;
+
+  KnownTypesEnumerator = public procedure (aData: Object; aRTTI: ^Byte);
 
   EcmaScriptPropertyFlags = public flags (
     Enumerable = 1,

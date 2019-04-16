@@ -630,6 +630,20 @@ type
          yield new &Type(lWork^);
        end;
      end;
+    {$ELSEIF WEBASSEMBLY}
+     class var fAllTypes: List<&Type>;
+     class method get_AllTypes: sequence of &Type; 
+     begin
+       if fAllTypes = nil then begin 
+         var lAllTypes := new List<&Type>;
+         // this lambda CANNOT escape scope
+         WebAssemblyCalls.EnumerateKnownTypes(lAllTypes, (lData, aType) -> begin 
+           List<&Type>(lData).Add(new &Type(^IslandTypeInfo(aType)));
+         end);
+         fAllTypes := lAllTypes;
+       end;
+       exit fAllTypes;
+     end;
     {$ELSEIF DARWIN}
 
      class method get_AllTypes: sequence of &Type; iterator;
