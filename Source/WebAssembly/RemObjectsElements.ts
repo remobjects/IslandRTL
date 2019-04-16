@@ -457,7 +457,16 @@ module ElementsWebAssembly {
               dest[i] = stream.charCodeAt(i) & 0xff;
             }
             return stream.length;                    
-        };                      
+        };    
+        imp.env.__island_enumerate_known_types = function(obj: number, cb: number) {
+            var func = (imp.env.table as WebAssembly.Table).get(cb);
+            for (var name in inst.instance.exports) {
+                if ((name as any).startsWith("_rtti")) {
+                    var val = inst.instance.exports[name];
+                    func(obj, val.value);
+                }
+            }
+        }
     }
 
 
@@ -481,6 +490,7 @@ module ElementsWebAssembly {
                     initial: tableSize,
                     element:"anyfunc"
                 });
+                importObject.env.__indirect_function_table = importObject.env.table;
             }
             return WebAssembly.instantiate(bytes, importObject);
         }
@@ -489,6 +499,7 @@ module ElementsWebAssembly {
             mem = importObject.env.memory;
             result = results;
             inst = importObject;
+            inst.instance = result.instance;
             return {
                 module: results.module,
                 instance: result.instance,
