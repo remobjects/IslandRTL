@@ -11,8 +11,10 @@ type
   IslandException = public System.Exception;
   CocoaObject = public Foundation.NSObject;
   CocoaString = public Foundation.NSString;
+  CocoaException = public Foundation.NSException;
   SwiftObject = public Foundation.NSObject; // hack for now
   SwiftString = public Foundation.NSString; // hack for now
+  SeiftException = public Foundation.NSException; // hack for now
 
   RemObjects.Elements.System.Island.Object = public System.Object;
   RemObjects.Elements.System.Island.String = public System.String;
