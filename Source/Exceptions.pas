@@ -78,7 +78,7 @@ type
 
     constructor(s: String);
     begin
-      inherited constructor(if s = nil then 'Member access on null reference' else 'Member access on null reference; for expression: '+s);
+      inherited constructor(if s = nil then 'Member access on null reference' else 'Null Reference Exception for expression: '+s);
     end;
   end;
 
