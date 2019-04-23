@@ -646,9 +646,9 @@ type
      end;
     {$ELSEIF DARWIN}
     [&Weak, SymbolName('__mh_elements_execute_header')]
-    class var __mh_elements_execute_header: {$IFDEF CPU64}rtl.__struct_mach_header_64{$ELSE}rtl.rtl.__struct_mach_header{$ENDIF} ; external;
+    class var __mh_elements_execute_header: {$IFDEF CPU64}rtl.__struct_mach_header_64{$ELSE}rtl.__struct_mach_header{$ENDIF} ; external;
 
-    class method GetHDR: ^{$IFDEF CPU64}rtl.__struct_mach_header_64{$ELSE}rtl.rtl.__struct_mach_header{$ENDIF};
+    class method GetHDR: ^{$IFDEF CPU64}rtl.__struct_mach_header_64{$ELSE}rtl.__struct_mach_header{$ENDIF};
     begin 
       var hdr := @__mh_elements_execute_header;
       exit hdr;
