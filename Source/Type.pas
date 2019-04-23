@@ -645,11 +645,20 @@ type
        exit fAllTypes;
      end;
     {$ELSEIF DARWIN}
+    [&Weak, SymbolName('__mh_elements_execute_header')]
+    class var __mh_elements_execute_header: {$IFDEF CPU64}rtl.__struct_mach_header_64{$ELSE}rtl.rtl.__struct_mach_header{$ENDIF} ; external;
+
+    class method GetHDR: ^{$IFDEF CPU64}rtl.__struct_mach_header_64{$ELSE}rtl.rtl.__struct_mach_header{$ENDIF};
+    begin 
+      var hdr := @__mh_elements_execute_header;
+      exit hdr;
+    end;
 
      class method get_AllTypes: sequence of &Type; iterator;
      begin
        var lSize: {$IF __LP64__}UInt64{$ELSE}UInt32{$ENDIF};
-       var lStart := rtl.getsectiondata(@rtl._mh_execute_header, "ELRTTLRR", "__ELRTTLRR", @lSize);
+       var hdr := GetHDR;
+       var lStart := rtl.getsectiondata(hdr, "ELRTTLRR", "__ELRTTLRR", @lSize);
        var lWork := ^^IslandTypeInfo(lStart);
        var lEnd := ^^IslandTypeInfo(^Byte(lStart) + lSize);
        loop begin
