@@ -88,7 +88,7 @@ begin
     repeat
       lSet.Put(num, false);
       inc(num);
-    until not num <> num2;
+    until not (num <> num2);
   end;
   exit lSet;
 end;
@@ -122,7 +122,7 @@ begin
     repeat
       lSet.Put(num, true);
       inc(num);
-    until not num <> num2;
+    until not (num <> num2);
   end;
   exit lSet;
 end;
@@ -244,7 +244,7 @@ begin
     repeat
       num := Math.Max(num, Converter(aData[num3]));
       inc(num3);
-    until not num3 <> num2;
+    until not (num3 <> num2);
   end;
   var lset: &Set<T> := new &Set<T>(num);
   num2 := (if aData = nil then (0) else (aData.Length)) - 1;
@@ -254,7 +254,7 @@ begin
     repeat
       lset.Put(Converter(aData[num3]), true);
       inc(num3);
-    until not num3 <> num2;
+    until not (num3 <> num2);
   end;
   exit lset;
 end;
@@ -276,7 +276,7 @@ begin
     repeat
       lset.fValue[num2] := a.fValue[num2];
       inc(num2);
-    until not num2 <> num;
+    until not (num2 <> num);
   end;
   num := b.fValue.Length - 1;
   num2 := 0;
@@ -285,7 +285,7 @@ begin
     repeat
       lset.fValue[num2] := lset.fValue[num2] and b.fValue[num2];
       inc(num2);
-    until not num2 <> num;
+    until not (num2 <> num);
   end;
   exit lset;
 end;
@@ -403,7 +403,7 @@ begin
     repeat
       lset.fValue[num2] := a.fValue[num2];
       inc(num2);
-    until not num2 <> num;
+    until not (num2 <> num);
   end;
   num := b.fValue.Length - 1;
   num2 := 0;
@@ -412,7 +412,7 @@ begin
     repeat
       lset.fValue[num2] := lset.fValue[num2] and not b.fValue[num2];
       inc(num2);
-    until not num2 <> num;
+    until not(num2 <> num);
   end;
   exit lset;
 end;
@@ -436,7 +436,7 @@ begin
     repeat
       lset.fValue[num2] := a.fValue[num2];
       inc(num2);
-    until not num2 <> num;
+    until not (num2 <> num);
   end;
   num := b.fValue.Length - 1;
   num2 := 0;
@@ -445,7 +445,7 @@ begin
     repeat
       lset.fValue[num2] := lset.fValue[num2] or b.fValue[num2];
       inc(num2);
-    until not num2 <> num;
+    until not (num2 <> num);
   end;
   exit lset;
 end;
@@ -504,7 +504,7 @@ begin
         end;
       end;
       inc(num);
-    until not num <> num2;
+    until not (num <> num2);
   end;
 end;
 

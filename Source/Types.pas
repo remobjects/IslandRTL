@@ -22,6 +22,17 @@ type
       end;
     end;
 
+    method ToInt64: Int64;
+    begin 
+      var lSelf := InternalCalls.Cast<DummyEnum>(InternalCalls.Cast(self));
+      case EnumSize of 
+        1: exit ^Byte(@lSelf.fValue)^;
+        2: exit ^Word(@lSelf.fValue)^;
+        8: exit ^Int64(@lSelf.fValue)^;
+        4: exit ^Int32(@lSelf.fValue)^
+      end;
+    end;
+
     method &Equals(aOther: Object): Boolean; override;
     begin 
       if aOther = nil then exit false;
