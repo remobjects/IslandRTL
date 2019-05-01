@@ -96,6 +96,7 @@ type
     constructor(aAddress: NativeInt); empty;
   end;
 
+ 
   [AttributeUsage(AttributeTargets.Enum)]
   FlagsAttribute = public class(Attribute)
   public
@@ -344,5 +345,12 @@ type
   public
     constructor(aSource, aLifetimeType: &Type); empty;
   end;
+  
+
+  [AttributeUsage(AttributeTargets.Field)]
+  StaticallyInitializedFieldAttribute = public class(Attribute)
+  public
+    constructor; empty;
+  end;  
   
 end.

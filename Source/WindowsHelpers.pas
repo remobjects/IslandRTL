@@ -320,21 +320,21 @@ method DllMain(aModule: rtl.HMODULE; aReason: rtl.DWORD; aReserved: ^Void): Bool
 // This is needed by anything msvc compiled; it's the offset in fs for the tls array
 var
 	_dllmain: DllMainType := @DllMain;public;
-	[SymbolName('_tls_index'), Used]
+	[SymbolName('_tls_index'), Used, StaticallyInitializedField]
 	_tls_index: Cardinal; public;
-	[SectionName('.tls'), SymbolName('_tls_start')]
+	[SectionName('.tls'), SymbolName('_tls_start'), StaticallyInitializedField]
 	_tls_start: NativeInt := 0;public;
-	[SectionName('.tls$ZZZ'), SymbolName('_tls_end')]
+	[SectionName('.tls$ZZZ'), SymbolName('_tls_end'), StaticallyInitializedField]
 	_tls_end: NativeInt := 0; public;
 
-	[SectionName(".CRT$XLA"), SymbolName('__xl_a')]
+	[SectionName(".CRT$XLA"), SymbolName('__xl_a'), StaticallyInitializedField]
 	__xl_a: rtl.PIMAGE_TLS_CALLBACK := nil;public;
-	[SectionName(".CRT$XLEL"), SymbolName('__elements_tls_callback'), Used()]
+	[SectionName(".CRT$XLEL"), SymbolName('__elements_tls_callback'), Used(), StaticallyInitializedField]
 	__elements_tls_callback: rtl.PIMAGE_TLS_CALLBACK := @elements_tls_callback;public;
-	[SectionName(".CRT$XLZ"), SymbolName('__xl_z')]
+	[SectionName(".CRT$XLZ"), SymbolName('__xl_z'), StaticallyInitializedField]
 	__xl_z: rtl.PIMAGE_TLS_CALLBACK := nil;public;
 
-	[SectionName('.rdata$T'), SymbolName('_tls_used'), Used]
+	[SectionName('.rdata$T'), SymbolName('_tls_used'), Used, StaticallyInitializedField]
 	_tls_used: {$IFDEF _WIN64}rtl.IMAGE_TLS_DIRECTORY64{$ELSE}rtl.IMAGE_TLS_DIRECTORY {$ENDIF}:=
 		new {$IFDEF _WIN64}rtl.IMAGE_TLS_DIRECTORY64{$ELSE}rtl.IMAGE_TLS_DIRECTORY {$ENDIF}(
 			StartAddressOfRawData := NativeUInt(@_tls_start),
@@ -344,7 +344,7 @@ var
 			SizeOfZeroFill := 0
 		); readonly;public;
 {$IFDEF _WIN64}
-	[Used, SymbolName('_load_config_used')]
+	[Used, SymbolName('_load_config_used'), StaticallyInitializedField]
 	_load_config_used: rtl.IMAGE_LOAD_CONFIG_DIRECTORY :=
 	new rtl.IMAGE_LOAD_CONFIG_DIRECTORY(
 		size := sizeOf(rtl.IMAGE_LOAD_CONFIG_DIRECTORY),
@@ -360,7 +360,7 @@ var
 		GuardLongJumpTargetCount := UIntPtr(^UIntPtr(@__guard_longjmp_count))
 	);readonly;public;
 {$else}
-	[Used, SymbolName('_load_config_used')]
+	[Used, SymbolName('_load_config_used'), StaticallyInitializedField]
 	_load_config_used: rtl.IMAGE_LOAD_CONFIG_DIRECTORY :=
 	new rtl.IMAGE_LOAD_CONFIG_DIRECTORY(
 		Size := sizeOf(rtl.IMAGE_LOAD_CONFIG_DIRECTORY),
@@ -379,13 +379,13 @@ var
 	); readonly;public;
 {$ENDIF}
 
-[SymbolName('__security_cookie')] var __security_cookie: Integer := $12345678;
+[SymbolName('__security_cookie'), StaticallyInitializedField] var __security_cookie: Integer := $12345678;
 //[SymbolName('__guard_check_icall_fptr')] var __guard_check_icall_fptr: Integer; external;
 {$IFDEF _WIN64}
 //[SymbolName('__guard_dispatch_icall_fptr')] var __guard_dispatch_icall_fptr: Integer; external;
 {$ELSE}
-[SymbolName('__safe_se_handler_table')] var __safe_se_handler_table: Integer; external;
-[SymbolName('__safe_se_handler_count')] var __safe_se_handler_count: Integer; external;
+[SymbolName('__safe_se_handler_table'), StaticallyInitializedField] var __safe_se_handler_table: Integer; external;
+[SymbolName('__safe_se_handler_count'), StaticallyInitializedField] var __safe_se_handler_count: Integer; external;
 {$ENDIF}
 
 
