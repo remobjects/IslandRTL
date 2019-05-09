@@ -500,6 +500,7 @@ module ElementsWebAssembly {
             result = results;
             inst = importObject;
             inst.instance = result.instance;
+            result.instance.exports["__initialize_GC"]();
             return {
                 module: results.module,
                 instance: result.instance,

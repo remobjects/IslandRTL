@@ -3,9 +3,9 @@
 {$IFDEF WINDOWS}
 
 var
-  [SymbolName('__elements_RTTIStart'), SectionName('ELRTTLRR$a')]
-  fStart: ^IslandTypeInfo := nil; readonly;
-  [SymbolName('__elements_RTTIEnd'), SectionName('ELRTTLRR$z')]
+  [SymbolName('__elements_RTTIStart'), SectionName('ELRTTLRR$a'), StaticallyInitializedField]
+  fStart: ^IslandTypeInfo := nil;  readonly;
+  [SymbolName('__elements_RTTIEnd'), SectionName('ELRTTLRR$z'), StaticallyInitializedField]
   fEnd: ^IslandTypeInfo := nil; readonly;
 {$ENDIF}
 

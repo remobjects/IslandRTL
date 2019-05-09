@@ -194,7 +194,9 @@ type
     end;
     {$ELSEIF WEBASSEMBLY}
     [SymbolName('__stack_start')]
-    class var StackTop: IntPtr; external;
+    class var StackTop: IntPtr; 
+
+    
     class method CheckThread;
     begin
       // in wasm; we can take the address of any var here and get the stack top.
@@ -581,9 +583,12 @@ type
       fRemoveList.Clear;
     end;
 
+    [SymbolName('__initialize_GC'), DllExport]
     class method InitGC;
     begin
       if FGCLoaded then exit;
+      var i: Integer; 
+      StackTop := IntPtr(@i);
       FGCLoaded := true;
       {$IFNDEF WEBASSEMBLY}
       Utilities.SpinLockEnter(var fLock);
@@ -698,7 +703,7 @@ type
       end;
 
       {$IFDEF WEBASSEMBLY}
-      if not FGCLoaded then InitGC;
+      //if not FGCLoaded then InitGC;
       {$ELSE}
       if fCheckList = nil then RegisterThread;
       {$ENDIF}
