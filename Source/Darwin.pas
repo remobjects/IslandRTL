@@ -350,7 +350,7 @@ begin
     sb.SelectProperty(false, 'protocols');
     sb.StartList;
     //var methodCount: UInt32 := 0;
-    var props: ^Protocol := class_copyProtocolList(clz, @methodCount);
+    var props := class_copyProtocolList(clz, @methodCount);
     for i: Integer := 0 to methodCount - 1 do begin
       var &prop := props[i];
       sb.StartListEntry(i = 0);
