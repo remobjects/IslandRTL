@@ -268,6 +268,141 @@ begin
   exit self.GetSequence.FirstOrDefault();
 end;
 
+
+
+[SymbolName('__elements_ObjcClassInfoToString'), Used]
+method __elements_ObjcClassInfoToString(clz: &Class): String;
+begin
+  var sb := new JsonSerializer();
+  sb.StartObject;
+  sb.SelectProperty(true, 'name');
+  sb.WriteString(String.FromPAnsiChars(class_getName(clz)));
+
+  var sz := class_getSuperclass(clz);
+  if sz <> nil then begin
+    sb.SelectProperty(false, 'base');
+    sb.WriteString(String.FromPAnsiChars(class_getName(sz)));
+  end;
+
+  sb.SelectProperty(false, 'methods');
+  sb.StartList;
+  var methodCount: UInt32 := 0;
+  var methods: ^&Method := class_copyMethodList(clz, @methodCount);
+  for i: Integer := 0 to methodCount - 1 do begin
+    var &method: &Method := methods[i];
+    sb.StartListEntry(i = 0);
+    sb.StartObject;
+    sb.SelectProperty(true, 'selector');
+    sb.WriteString(String.FromPAnsiChars(sel_getName(method_getName(&method))));
+    sb.SelectProperty(false, 'signature');
+    sb.WriteString(String.FromPAnsiChars(method_getTypeEncoding(&method)));
+    sb.EndObject;
+  end;
+  rtl.free(methods); 
+  sb.EndList;
+
+
+  begin
+    sb.SelectProperty(false, 'properties');
+    sb.StartList;
+    //var methodCount: UInt32 := 0;
+    var props: ^objc_property_t := class_copyPropertyList(clz, @methodCount);
+    for i: Integer := 0 to methodCount - 1 do begin
+      var &prop := props[i];
+      sb.StartListEntry(i = 0);
+      sb.StartObject;
+      sb.SelectProperty(true, 'name');
+      sb.WriteString(String.FromPAnsiChars(property_getName(&prop)));
+      sb.SelectProperty(false, 'signature');
+      sb.WriteString(String.FromPAnsiChars(property_getAttributes(&prop)));
+      sb.EndObject;
+    end;
+    rtl.free(props);
+    sb.EndList;
+  end;
+
+  begin
+    sb.SelectProperty(false, 'fields');
+    sb.StartList;
+    //var methodCount: UInt32 := 0;
+    var props: ^Ivar := class_copyIvarList(clz, @methodCount);
+    for i: Integer := 0 to methodCount - 1 do begin
+      var &prop := props[i];
+      sb.StartListEntry(i = 0);
+      sb.StartObject;
+      sb.SelectProperty(true, 'name');
+      sb.WriteString(String.FromPAnsiChars(ivar_getName(&prop)));
+      sb.SelectProperty(false, 'type');
+      sb.WriteString(String.FromPAnsiChars(ivar_getTypeEncoding(&prop)));
+      sb.SelectProperty(false, 'offset');
+      sb.WriteValue(ivar_getOffset(&prop));
+      sb.EndObject;
+    end;
+    rtl.free(props);
+    sb.EndList;
+  end;
+
+  begin
+    sb.SelectProperty(false, 'protocols');
+    sb.StartList;
+    //var methodCount: UInt32 := 0;
+    var props: ^Protocol := class_copyProtocolList(clz, @methodCount);
+    for i: Integer := 0 to methodCount - 1 do begin
+      var &prop := props[i];
+      sb.StartListEntry(i = 0);
+      sb.WriteString(String.FromPAnsiChars(protocol_getName(&prop)));
+    end;
+    rtl.free(props);
+    sb.EndList;
+  end;
+
+  clz := objc_getMetaClass(class_getName(clz));
+
+  
+  sb.SelectProperty(false, 'classMethods');
+  sb.StartList;
+  methodCount := 0;
+  methods := class_copyMethodList(clz, @methodCount);
+  for i: Integer := 0 to methodCount - 1 do begin
+    var &method: &Method := methods[i];
+    sb.StartListEntry(i = 0);
+    sb.StartObject;
+    sb.SelectProperty(true, 'selector');
+    sb.WriteString(String.FromPAnsiChars(sel_getName(method_getName(&method))));
+    sb.SelectProperty(false, 'signature');
+    sb.WriteString(String.FromPAnsiChars(method_getTypeEncoding(&method)));
+    sb.EndObject;
+  end;
+  rtl.free(methods); 
+  sb.EndList;
+
+
+  begin
+    sb.SelectProperty(false, 'classProperties');
+    sb.StartList;
+    //var methodCount: UInt32 := 0;
+    var props: ^objc_property_t := class_copyPropertyList(clz, @methodCount);
+    for i: Integer := 0 to methodCount - 1 do begin
+      var &prop := props[i];
+      sb.StartListEntry(i = 0);
+      sb.StartObject;
+      sb.SelectProperty(true, 'name');
+      sb.WriteString(String.FromPAnsiChars(property_getName(&prop)));
+      sb.SelectProperty(false, 'signature');
+      sb.WriteString(String.FromPAnsiChars(property_getAttributes(&prop)));
+      sb.EndObject;
+    end;
+    rtl.free(props);
+    sb.EndList;
+  end;
+
+
+  sb.EndObject;
+
+  exit sb.ToString;
+end;
+
+
 {$ENDIF}
 
 end.

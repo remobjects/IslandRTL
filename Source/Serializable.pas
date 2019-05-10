@@ -346,6 +346,14 @@ type
       WriteString(aProperty.Name);
       fSB.Append(':');
     end;
+    
+    method SelectProperty(aFirst: Boolean;aProperty: String); 
+    begin
+      if not aFirst then 
+        fSB.Append(',');
+      WriteString(aProperty);
+      fSB.Append(':');
+    end;
 
     method WriteValue(aValue: Object); override;
     begin 

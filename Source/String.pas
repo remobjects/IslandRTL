@@ -277,7 +277,7 @@ end;
 
 class method String.AllocString(aLen: Integer): String;
 begin
-  result := InternalCalls.Cast<String>(DefaultGC.New(InternalCalls.GetTypeInfo<String>(), (sizeOf(Object) + sizeOf(Integer)) + 2 * aLen));
+  result := InternalCalls.Cast<String>(DefaultGC.New(InternalCalls.GetTypeInfo<String>(), (sizeOf(Object) + sizeOf(Integer) + if defined('DARWIN') then sizeof(IntPtr) else 0) + 2 * aLen));
   result.fLength := aLen;
 end;
 
