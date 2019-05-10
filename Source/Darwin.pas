@@ -296,6 +296,10 @@ begin
     sb.WriteString(String.FromPAnsiChars(sel_getName(method_getName(&method))));
     sb.SelectProperty(false, 'signature');
     sb.WriteString(String.FromPAnsiChars(method_getTypeEncoding(&method)));
+    sb.SelectProperty(false, 'implementation');
+    var imp := method_getImplementation(&method);
+    sb.WriteString(^IntPtr(@imp)^.ToString);
+    
     sb.EndObject;
   end;
   rtl.free(methods); 
@@ -371,6 +375,9 @@ begin
     sb.WriteString(String.FromPAnsiChars(sel_getName(method_getName(&method))));
     sb.SelectProperty(false, 'signature');
     sb.WriteString(String.FromPAnsiChars(method_getTypeEncoding(&method)));
+    sb.SelectProperty(false, 'implementation');
+    var imp := method_getImplementation(&method);
+    sb.WriteString(^IntPtr(@imp)^.ToString);
     sb.EndObject;
   end;
   rtl.free(methods); 
