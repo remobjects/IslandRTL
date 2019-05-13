@@ -53,6 +53,7 @@ type
       if aValue is IIslandGetCocoaWrapper then exit IIslandGetCocoaWrapper(aValue).«$__CreateCocoaWrapper»();
       if aValue is IslandWrappedCocoaObject then exit IslandWrappedCocoaObject(aValue).Value;
       if aValue is IslandWrappedSwiftObject then exit CocoaWrappedSwiftObject.FromValue(IslandWrappedSwiftObject(aValue).Value);
+      if aValue is IslandWrappedCocoaException then exit IslandWrappedCocoaException(aValue).InnerException;
       exit new CocoaWrappedIslandObject(aValue);
     end;
 
@@ -103,6 +104,7 @@ type
       if aValue is NSString then exit String(NSString(aValue));
       if aValue is CocoaWrappedIslandObject then exit CocoaWrappedIslandObject(aValue).Value;
       if aValue is CocoaWrappedSwiftObject then exit IslandWrappedSwiftObject(CocoaWrappedSwiftObject(aValue).Value);
+      if aValue is NSException then exit new IslandWrappedCocoaException(NSException(aValue));
       result := new IslandWrappedCocoaObject(aValue);
     end;
 

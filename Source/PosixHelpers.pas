@@ -20,6 +20,11 @@ type
   {$IFDEF ARM and not DARWIN}rtl.__struct__Unwind_Exception = rtl.__struct__Unwind_Control_Block;{$ENDIF}
   ExternalCalls = public static class
   private
+    [ThreadLocal]
+    HandlerSwitch: Integer; assembly;
+    [ThreadLocal]
+    Target: IntPtr; assembly;
+
     class var atexitlist: ^atexitrec;
     {$IFDEF ANDROID}
 //[SymbolName('__executable_start')]
@@ -78,6 +83,7 @@ type
     method RaiseException(aRaiseAddress: ^Void; aRaiseFrame: ^Void; aRaiseObject: Object);
 
     const ElementsExceptionCode: UInt64 = $E042881952454d4f;
+    const CocoaExceptionCode: UInt64 = $434C4E47432B2B00;
 
     //{$IFNDEF xANDROID}
     [SymbolName('atexit')]
@@ -116,7 +122,7 @@ type
     [SymbolName('__elements_fini'), Used]
     method fini;
 
-    method Parselsda(aAction: rtl._Unwind_Action; aNative: Boolean; aEx: ^rtl.__struct__Unwind_Exception; aCtx: ^Void;
+    method Parselsda(aAction: rtl._Unwind_Action; aNative, aObjc: Boolean; aEx: ^rtl.__struct__Unwind_Exception; aCtx: ^Void;
       out aTypeIndex: rtl.int64_t; out aLandingPadPointer: rtl.uintptr_t): Boolean;
     method DwarfEHReadPointer(var aData: ^Byte; aEncoding: DwarfEHEncodingType): rtl.uintptr_t;
     method DwarfEHReadPointer(var aData: ^Byte): rtl.uintptr_t;
@@ -236,11 +242,31 @@ type
 
   ElementsException = public record
   public
-    handlerSwitchValue: Integer;
-    landingPad: rtl.uintptr_t;
-
     Unwind: rtl.__struct__Unwind_Exception;
     Object: Object;
+  end;
+
+  CocoaExceptionRecord = public record
+  public
+    Unwind: rtl.__struct__Unwind_Exception;
+    Object: IntPtr;
+  end;
+
+  CXXException = public record 
+  public
+    exceptionType, 
+    dtor,
+    unexpected,
+    terminated,
+    nextexception: IntPtr;
+    hc: Integer;
+    sw: Integer;
+    ar, spd: IntPtr;
+    catchTemp: IntPtr;
+    adjustedPtr: IntPtr;
+    
+    Unwind: rtl.__struct__Unwind_Exception;
+    Object: IntPtr;
   end;
 
 method CheckForLastError(aMessage: String := '');
@@ -327,6 +353,13 @@ begin
   if ^UInt64(@lRecord^.Unwind.exception_class)^ = ElementsExceptionCode then begin
     exit InternalCalls.Cast(lRecord^.Object);
   end;
+  {$IFDEF DARWIN}
+  if ^UInt64(@lRecord^.Unwind.exception_class)^ = CocoaExceptionCode then begin
+    var lObj := ^Foundation.NSException(@^CocoaExceptionRecord(lRecord)^.Object)^;
+    ^Foundation.NSException(@^CocoaExceptionRecord(lRecord)^.Object)^ := nil;
+    exit InternalCalls.Cast(new IslandWrappedCocoaException(lObj));
+  end;
+  {$ENDIF}
   exit @lRecord^.Object;
 end;
 
@@ -458,7 +491,7 @@ begin
   exit ^Void(^IntPtr(p + ^IntPtr(p)^)^);
 end;
 
-method ExternalCalls.Parselsda(aAction: rtl._Unwind_Action; aNative: Boolean; aEx: ^rtl.__struct__Unwind_Exception; aCtx: ^Void;
+method ExternalCalls.Parselsda(aAction: rtl._Unwind_Action; aNative, aObjc: Boolean; aEx: ^rtl.__struct__Unwind_Exception; aCtx: ^Void;
       out aTypeIndex: rtl.int64_t; out aLandingPadPointer: rtl.uintptr_t): Boolean;
 begin
   var lLSD := ^Byte(rtl._Unwind_GetLanguageSpecificData(aCtx));
@@ -542,15 +575,30 @@ begin
           if aNative then begin
             var exception_header := ^ElementsException(aEx);
             exception_header := ^ElementsException(@^Byte(exception_header)[-Int32((^Byte(@exception_header^.Unwind) - ^Byte(exception_header)))]);
-            if Utilities.IsInstance(exception_header^.Object, catchType) <> nil then begin
-              if 0 <> (aAction and {$IFDEF EMSCRIPTEN  OR x86_64}_Unwind_Action._UA_SEARCH_PHASE{$ELSE}_UA_SEARCH_PHASE{$ENDIF}) then begin
-                aTypeIndex := lIndexInTypeInfoTable;
-                exit true;
-              end
-              else begin
-                if 0 = (aAction and {$IFDEF EMSCRIPTEN  OR x86_64}_Unwind_Action._UA_FORCE_UNWIND{$ELSE}_UA_FORCE_UNWIND{$ENDIF}) then begin
-                  //call_terminate(native_exception, unwind_exception);
-                  exit false;
+            if aObjc then begin 
+              if new &Type(^IslandTypeInfo(catchType)).IsAssignableFrom(typeOf(IslandWrappedCocoaException)) then begin
+                if 0 <> (aAction and {$IFDEF EMSCRIPTEN  OR x86_64}_Unwind_Action._UA_SEARCH_PHASE{$ELSE}_UA_SEARCH_PHASE{$ENDIF}) then begin
+                  aTypeIndex := lIndexInTypeInfoTable;
+                  exit true;
+                end
+                else begin
+                  if 0 = (aAction and {$IFDEF EMSCRIPTEN  OR x86_64}_Unwind_Action._UA_FORCE_UNWIND{$ELSE}_UA_FORCE_UNWIND{$ENDIF}) then begin
+                    //call_terminate(native_exception, unwind_exception);
+                    exit false;
+                  end;
+                end;
+              end;
+            end else begin
+              if Utilities.IsInstance(exception_header^.Object, catchType) <> nil then begin
+                if 0 <> (aAction and {$IFDEF EMSCRIPTEN  OR x86_64}_Unwind_Action._UA_SEARCH_PHASE{$ELSE}_UA_SEARCH_PHASE{$ENDIF}) then begin
+                  aTypeIndex := lIndexInTypeInfoTable;
+                  exit true;
+                end
+                else begin
+                  if 0 = (aAction and {$IFDEF EMSCRIPTEN  OR x86_64}_Unwind_Action._UA_FORCE_UNWIND{$ELSE}_UA_FORCE_UNWIND{$ENDIF}) then begin
+                    //call_terminate(native_exception, unwind_exception);
+                    exit false;
+                  end;
                 end;
               end;
             end;
@@ -664,18 +712,23 @@ begin
 
   if (aECB = nil) or (aCtx = nil) then exit rtl._Unwind_Reason_Code._URC_FAILURE;
   var lMine := ^UInt64(@aECB.exception_class)^ = ElementsExceptionCode;
+  var lObjc := false;
+  if not lMine and (^UInt64(@aECB.exception_class)^ = 4849336966747728640) then begin 
+    lMine := true;
+    lObjc := true;
+  end;
   rtl._Unwind_SetGR (aCtx, UNWIND_POINTER_REG, rtl._Unwind_Word(aECB));
 
   var lTypeInfo: rtl.int64_t;
   var lLandingPad: rtl.uintptr_t;
   if lSearching then begin
-    if Parselsda(_UA_SEARCH_PHASE, lMine, aECB, aCtx, out lTypeInfo, out lLandingPad) then begin
+    if Parselsda(_UA_SEARCH_PHASE, lMine, lObjc, aECB, aCtx, out lTypeInfo, out lLandingPad) then begin
       if lMine then begin
         var lRecord := ^ElementsException(aECB);
         lRecord := ^ElementsException(@^Byte(lRecord)[-Int32((^Byte(@lRecord^.Unwind) - ^Byte(lRecord)))]);
 
-        lRecord^.handlerSwitchValue := lTypeInfo;
-        lRecord^.landingPad := lLandingPad;
+        ExternalCalls.HandlerSwitch := lTypeInfo;
+        ExternalCalls.Target := lLandingPad;
       // Save r13.
         aECB^.barrier_cache.sp := rtl._Unwind_GetGR(aCtx, 13);
 
@@ -694,8 +747,8 @@ begin
     if lMine then begin
       var lRecord := ^ElementsException(aECB);
       lRecord := ^ElementsException(@^Byte(lRecord)[-Int32((^Byte(@lRecord^.Unwind) - ^Byte(lRecord)))]);
-      lTypeInfo := lRecord^.handlerSwitchValue;
-      lLandingPad := lRecord^.landingPad;
+      lTypeInfo := ExternalCalls.HandlerSwitch;
+      lLandingPad := ExternalCalls.Target;
     end;
   end;
 
@@ -703,7 +756,7 @@ begin
     // This is either unwinding OR catching
     if (0 = (aState and {$IFDEF EMSCRIPTEN OR x86_64}rtl._Unwind_Action._UA_HANDLER_FRAME{$ELSE}rtl._UA_HANDLER_FRAME{$ENDIF}))  then begin
       // finally, always parse
-      if Parselsda(aState, lMine, aECB, aCtx, out lTypeInfo, out lLandingPad) then begin
+      if Parselsda(aState, lMine, lObjc, aECB, aCtx, out lTypeInfo, out lLandingPad) then begin
         rtl._Unwind_SetGR(aCtx, 0, rtl.uintptr_t(aECB));
         rtl._Unwind_SetGR(aCtx, 1, rtl.uintptr_t(lTypeInfo));
         {$IFDEF ARM}
@@ -718,7 +771,7 @@ begin
     end;
     // exception
     if not lMine then begin
-      if Parselsda(aState, lMine, aECB, aCtx, out lTypeInfo, out lLandingPad) then begin
+      if Parselsda(aState, lMine, lObjc, aECB, aCtx, out lTypeInfo, out lLandingPad) then begin
         rtl._Unwind_SetGR(aCtx, 0, rtl.uintptr_t(aECB));
         rtl._Unwind_SetGR(aCtx, 1, rtl.uintptr_t(lTypeInfo));
         {$IFDEF ARM}
@@ -734,11 +787,11 @@ begin
     var lRecord := ^ElementsException(aECB);
     lRecord := ^ElementsException(@^Byte(lRecord)[-Int32((^Byte(@lRecord^.Unwind) - ^Byte(lRecord)))]);
     rtl._Unwind_SetGR(aCtx, 0, rtl.uintptr_t(aECB));
-    rtl._Unwind_SetGR(aCtx, 1, rtl.uintptr_t(lRecord^.handlerSwitchValue));
+    rtl._Unwind_SetGR(aCtx, 1, rtl.uintptr_t(ExternalCalls.HandlerSwitch));
     {$IFDEF ARM}
     rtl._Unwind_SetGR(aCtx, 15, lLandingPad or (rtl._Unwind_GetGR(aCtx, 15)and 1));
     {$ELSE}
-    rtl._Unwind_SetIP(aCtx, lRecord^.landingPad);
+    rtl._Unwind_SetIP(aCtx, ExternalCalls.Target);
     {$ENDIF}
     free(lRecord);
     exit rtl._Unwind_Reason_Code._URC_INSTALL_CONTEXT;
@@ -750,16 +803,21 @@ method ExternalCalls.ExceptionHandler(aVersion: Integer; aState: rtl._Unwind_Act
 begin
   if (aVersion <> 1) or (aEx = nil) or (aCtx = nil) then exit rtl._Unwind_Reason_Code._URC_FATAL_PHASE1_ERROR;
   var lMine := aClass = ElementsExceptionCode;
-    var lTypeInfo: rtl.int64_t;
+  var lObjc: Boolean := false;
+  if not lMine and (aClass = 4849336966747728640) then begin 
+    lMine := true;
+    lObjc := true;
+  end;
+  var lTypeInfo: rtl.int64_t;
     var lLandingPad: rtl.uintptr_t;
     if 0 <> (aState and {$IFDEF EMSCRIPTEN OR x86_64}rtl._Unwind_Action._UA_SEARCH_PHASE{$ELSE}rtl._UA_SEARCH_PHASE{$ENDIF})  then begin
-      if Parselsda(aState, lMine, aEx, aCtx, out lTypeInfo, out lLandingPad) then begin
+      if Parselsda(aState, lMine, lObjc, aEx, aCtx, out lTypeInfo, out lLandingPad) then begin
         if lMine then begin
           var lRecord := ^ElementsException(aEx);
           lRecord := ^ElementsException(@^Byte(lRecord)[-Int32((^Byte(@lRecord^.Unwind) - ^Byte(lRecord)))]);
 
-          lRecord^.handlerSwitchValue := lTypeInfo;
-          lRecord^.landingPad := lLandingPad;
+          ExternalCalls.HandlerSwitch := lTypeInfo;
+          ExternalCalls.Target := lLandingPad;
 
 
         end;
@@ -772,7 +830,7 @@ begin
       // This is either unwinding OR catching
       if (0 = (aState and {$IFDEF EMSCRIPTEN OR x86_64}rtl._Unwind_Action._UA_HANDLER_FRAME{$ELSE}rtl._UA_HANDLER_FRAME{$ENDIF}))  then begin
         // finally, always parse
-        if Parselsda(aState, lMine, aEx, aCtx, out lTypeInfo, out lLandingPad) then begin
+        if Parselsda(aState, lMine, lObjc, aEx, aCtx, out lTypeInfo, out lLandingPad) then begin
           rtl._Unwind_SetGR(aCtx, 0, rtl.uintptr_t(aEx));
           rtl._Unwind_SetGR(aCtx, 1, rtl.uintptr_t(lTypeInfo));
           {$IFDEF ARM}
@@ -787,7 +845,7 @@ begin
       end;
       // exception
       if not lMine then begin
-        if Parselsda(aState, lMine, aEx, aCtx, out lTypeInfo, out lLandingPad) then begin
+        if Parselsda(aState, lMine, lObjc, aEx, aCtx, out lTypeInfo, out lLandingPad) then begin
           rtl._Unwind_SetGR(aCtx, 0, rtl.uintptr_t(aEx));
           rtl._Unwind_SetGR(aCtx, 1, rtl.uintptr_t(lTypeInfo));
           {$IFDEF ARM}
@@ -803,13 +861,18 @@ begin
       var lRecord := ^ElementsException(aEx);
       lRecord := ^ElementsException(@^Byte(lRecord)[-Int32((^Byte(@lRecord^.Unwind) - ^Byte(lRecord)))]);
       rtl._Unwind_SetGR(aCtx, 0, rtl.uintptr_t(aEx));
-      rtl._Unwind_SetGR(aCtx, 1, rtl.uintptr_t(lRecord^.handlerSwitchValue));
+      rtl._Unwind_SetGR(aCtx, 1, rtl.uintptr_t(ExternalCalls.HandlerSwitch));
       {$IFDEF ARM}
       rtl._Unwind_SetGR(aCtx, 15, lLandingPad or (rtl._Unwind_GetGR(aCtx, 15)and 1));
       {$ELSE}
-      rtl._Unwind_SetIP(aCtx, lRecord^.landingPad);
+      rtl._Unwind_SetIP(aCtx, ExternalCalls.Target);
       {$ENDIF}
-      free(lRecord);
+      if lObjc then begin
+        var lRec := ^CXXException(aEx);
+        lRec := ^CXXException(@^Byte(lRec)[-Int32((^Byte(@lRec^.Unwind) - ^Byte(lRec))) - (sizeof(IntPtr) * 2)]);
+        free(lRec)
+      end else 
+        free(lRecord);
       exit rtl._Unwind_Reason_Code._URC_INSTALL_CONTEXT;
     end;
   exit  {$IFNDEF ARM and not DARWIN}rtl._Unwind_Reason_Code._URC_FATAL_PHASE1_ERROR{$ELSE}rtl._Unwind_Reason_Code._URC_FAILURE{$ENDIF};
