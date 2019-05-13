@@ -434,13 +434,9 @@ type
 
     class method GetProxyFor(aType: &Type): EcmaScriptObject;
     begin
-      WebAssemblyCalls.ConsoleLog('GetProxy1',9);
-      WebAssemblyCalls.ConsoleLog(IntPtr(aType.RTTI));
       if fProxies.TryGetValue(IntPtr(aType.RTTI), out result) then begin
         exit;
       end;
-      WebAssemblyCalls.ConsoleLog('GetProxy2',9);
-      //WebAssemblyCalls.ConsoleLog(IntPtr(aType.RTTI));
       if aType.IsValueType then raise new ArgumentException('Value types not supported!');
       var lBase: EcmaScriptObject := if (aType.BaseType = nil) or (aType.BaseType = typeOf(Object)) then nil else GetProxyFor(aType.BaseType);
       if lBase = nil then lBase := CreateObject else lBase := EcmaScriptObject(EcmaScriptObject(Object).Call('create', lBase));
@@ -476,9 +472,7 @@ type
         end;
         lBase[el.Name] := lDel;
       end;
-      WebAssemblyCalls.ConsoleLog('GetProxy3', 9);
       fProxies.Add(IntPtr(aType.RTTI), lBase);
-      WebAssemblyCalls.ConsoleLog('GetProxy4',9);
       exit lBase;
     end;
   public
