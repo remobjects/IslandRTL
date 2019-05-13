@@ -576,6 +576,7 @@ begin
             var exception_header := ^ElementsException(aEx);
             exception_header := ^ElementsException(@^Byte(exception_header)[-Int32((^Byte(@exception_header^.Unwind) - ^Byte(exception_header)))]);
             if aObjc then begin 
+            {$IFDEF DARWIN}
               if new &Type(^IslandTypeInfo(catchType)).IsAssignableFrom(typeOf(IslandWrappedCocoaException)) then begin
                 if 0 <> (aAction and {$IFDEF EMSCRIPTEN  OR x86_64}_Unwind_Action._UA_SEARCH_PHASE{$ELSE}_UA_SEARCH_PHASE{$ENDIF}) then begin
                   aTypeIndex := lIndexInTypeInfoTable;
@@ -588,6 +589,7 @@ begin
                   end;
                 end;
               end;
+            {$ENDIF}
             end else begin
               if Utilities.IsInstance(exception_header^.Object, catchType) <> nil then begin
                 if 0 <> (aAction and {$IFDEF EMSCRIPTEN  OR x86_64}_Unwind_Action._UA_SEARCH_PHASE{$ELSE}_UA_SEARCH_PHASE{$ENDIF}) then begin
