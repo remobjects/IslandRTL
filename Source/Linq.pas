@@ -145,17 +145,32 @@ begin
     if not list.Contains(el) then yield el;
 end;
 
+extension method ISequence<T>.First: T; public;
+begin
+  for each el in self do
+    exit el;
+  raise new Exception("Sequence is empty");
+end;
+
 extension method ISequence<T>.FirstOrDefault: nullable T; public;
 begin
   for each el in self do
     exit el;
 end;
 
+extension method ISequence<T>.First(aBlock: not nullable block(aItem: not nullable T): Boolean): T; public;
+begin
+  for each el in self do
+    if aBlock(el) then
+      exit  el;
+  raise new Exception("Sequence is empty");
+end;
+
 extension method ISequence<T>.FirstOrDefault(aBlock: not nullable block(aItem: not nullable T): Boolean): nullable T; public;
 begin
   for each el in self do
-  if aBlock(el) then
-    exit  el;
+    if aBlock(el) then
+      exit  el;
 end;
 
 extension method ISequence<T>.Min: nullable T; public;
