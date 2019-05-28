@@ -1,7 +1,7 @@
 ﻿namespace RemObjects.Elements.System;
 
 type
-  Utf8String = public record 
+  UTF8String = public record 
   private 
     fData: array of Byte;
 

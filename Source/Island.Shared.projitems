@@ -30,7 +30,7 @@
     <Compile Include="$(MSBuildThisFileDirectory)TextConvert.pas" />
     <Compile Include="$(MSBuildThisFileDirectory)Timer.pas" />
     <Compile Include="$(MSBuildThisFileDirectory)TimeZone.pas" />
-    <Compile Include="$(MSBuildThisFileDirectory)Utf8String.pas" />
+    <Compile Include="$(MSBuildThisFileDirectory)UTF8String.pas" />
     <Compile Include="$(MSBuildThisFileDirectory)Utilities.pas" />
     <Compile Include="Environment.pas" />
     <Compile Include="StringBuilder.pas" />
