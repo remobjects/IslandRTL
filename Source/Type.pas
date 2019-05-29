@@ -658,7 +658,7 @@ type
      begin
        var lSize: {$IF __LP64__}UInt64{$ELSE}UInt32{$ENDIF};
        var hdr := GetHDR;
-       var lStart := rtl.getsectiondata(hdr, "ELRTTLRR", "__ELRTTLRR", @lSize);
+       var lStart := rtl.getsectiondata(hdr, "__DATA", "__ELRTTLRR", @lSize);
        var lWork := ^^IslandTypeInfo(lStart);
        var lEnd := ^^IslandTypeInfo(^Byte(lStart) + lSize);
        loop begin
