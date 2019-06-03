@@ -4,7 +4,7 @@ type
   private
     bstr: ^Char;
   protected
-    method AllocString(Value: String): ^Char;
+    class method AllocString(Value: String): ^Char;
     begin
       if assigned(Value) then begin
         {$IFDEF WINDOWS}
@@ -20,7 +20,19 @@ type
         exit nil;
     end;
 
-    method FreeString(Value : ^Char);
+    class method AllocString(aLength: Integer): ^Char;
+    begin
+        {$IFDEF WINDOWS}
+        exit rtl.SysAllocStringLen(nil, aLength)
+        {$ELSE}
+        var lData: ^Byte := ^Byte(malloc(Value.Length * 2 + 4));
+        ^Int32(lData)^ := aLength;
+        lData := lData + 4;
+        exit ^Char(lData);
+        {$ENDIF}
+    end;
+
+    class method FreeString(Value : ^Char);
     begin
       if Value <> nil then begin
         {$IFDEF WINDOWS}
@@ -30,10 +42,37 @@ type
         {$ENDIF}
       end;
     end;
+
+    class method DuplicateString(aSource: OleString; var aDest: OleString);
+    begin 
+      aDest.bstr := AllocString(aSource.Length);
+      memcpy(aDest.bstr,  aSource.bstr, aSource.Length);
+    end;
   public
     constructor(Value: String);
     begin
       bstr := AllocString(Value);
+    end;
+
+    
+    constructor Copy(var aValue: OleString);
+    begin
+      if aValue.bstr = nil then
+        bstr := nil
+      else
+        DuplicateString(aValue, var self);
+    end;
+
+
+    class operator Assign(var aDest: OleString; var aSource: OleString);
+    begin
+      if (@aDest) = (@aSource) then exit;
+      if aDest.bstr <> nil then
+        FreeString(aDest.bstr);
+      if aSource.bstr = nil then begin
+        aDest.bstr := nil;
+      end else
+        DuplicateString(aDest, var aSource);
     end;
 
     finalizer;
@@ -71,6 +110,18 @@ type
       else
         exit default(OleString);
     end;
+
+    method get_Length: Integer;
+    begin
+      if self.bstr = nil then exit 0;
+      {$IFDEF WINDOWS}
+        exit rtl.SysStringByteLen(self.bstr);
+      {$ELSE}
+        exit ^Integer(bstr)[-1];
+      {$ENDIF}
+    end;
+    property Item[I: Integer]: Char read bstr[I] write bstr[i];
+    property Length: Integer read get_Length;
   end;
 
   String_OleStringSupport = public extension class(String)
