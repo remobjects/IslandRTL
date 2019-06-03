@@ -25,7 +25,7 @@ type
         {$IFDEF WINDOWS}
         exit rtl.SysAllocStringLen(nil, aLength)
         {$ELSE}
-        var lData: ^Byte := ^Byte(malloc(Value.Length * 2 + 4));
+        var lData: ^Byte := ^Byte(malloc(aLength * 2 + 4));
         ^Int32(lData)^ := aLength;
         lData := lData + 4;
         exit ^Char(lData);
