@@ -15,7 +15,7 @@ type
         lData := lData + 4;
         memcpy(lData, @Value.fFirstChar, length(Value) * 2);
           
-        ^Char(lData)[aLength] := #0;
+        ^Char(lData)[length(Value)] := #0;
         exit ^Char(lData);
         {$ENDIF}
       end else
