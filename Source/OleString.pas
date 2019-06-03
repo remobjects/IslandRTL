@@ -10,10 +10,12 @@ type
         {$IFDEF WINDOWS}
         exit rtl.SysAllocStringLen(Value.FirstChar, Value.Length)
         {$ELSE}
-        var lData: ^Byte := ^Byte(malloc(Value.Length * 2 + 4));
+        var lData: ^Byte := ^Byte(malloc((Value.Length + 1) * 2 + 4));
         ^Int32(lData)^ := length(Value);
         lData := lData + 4;
         memcpy(lData, @Value.fFirstChar, length(Value) * 2);
+          
+        ^Char(lData)[aLength] := #0;
         exit ^Char(lData);
         {$ENDIF}
       end else
@@ -25,9 +27,10 @@ type
         {$IFDEF WINDOWS}
         exit rtl.SysAllocStringLen(nil, aLength)
         {$ELSE}
-        var lData: ^Byte := ^Byte(malloc(aLength * 2 + 4));
+        var lData: ^Byte := ^Byte(malloc((aLength + 1) * 2 + 4));
         ^Int32(lData)^ := aLength;
         lData := lData + 4;
+        ^Char(lData)[aLength] := #0;
         exit ^Char(lData);
         {$ENDIF}
     end;
