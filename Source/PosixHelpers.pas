@@ -323,10 +323,10 @@ end;
 {$IFDEF DARWIN}
 [SymbolName('__stack_chk_guard')]
 var __stack_chk_guard: ^Void := ^Void($DEADBEEF);  public;
-[Alias, SymbolNameAttribute('__sprintf_chk')]
-var __sprintf_chk: ^Void := ^Void(@snprintf);public;
-[Alias, SymbolNameAttribute('___vsnprintf_chk')]
-var ___vsnprintf_chk: ^Void := ^Void(@vsnprintf);public;
+[SymbolNameAttribute('__sprintf_chk')]
+method __sprintf_chk;public; begin end;
+[SymbolNameAttribute('__vsnprintf_chk')]
+method __vsnprintf_chk;public; begin end;
 
 {$ENDIF}
 
