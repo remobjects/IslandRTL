@@ -204,7 +204,6 @@ type
    end;
    {$ENDIF}
 
-   {$IFNDEF DARWIN}
     [SymbolName('__stack_chk_fail')]
     method __stack_chk_fail(); external;
     {$IFNDEF i386}
@@ -215,8 +214,41 @@ type
     end;
     {$ENDIF}
     {$ENDIF}
-  {$ENDIF}
+    {$IFDEF DARWIN}
+    [SymbolNameAttribute('memset_pattern4')]
+    class method memset_pattern4(ptr: ^Int32; pattern: ^Int32; len: Integer);
+    begin 
+      var p := pattern^;
+      for i: Integer := 0 to (len div 4) -1 do 
+        ptr[i] := p;
+      memcpy(@ptr[len div 4], pattern, len mod 4);
+    end;
+    [SymbolNameAttribute('memset_pattern8')]
+    class method memset_pattern8(ptr: ^Int64; pattern: ^Int64; len: Integer);
+    begin 
+      var p := pattern^;
+      for i: Integer := 0 to (len div 8) -1 do 
+        ptr[i] := p;
+      memcpy(@ptr[len div 4], pattern, len mod 8);
+    end;
+    [SymbolNameAttribute('memset_pattern16')]
+    class method memset_pattern16(ptr: ^Int64Pair; pattern: ^Int64Pair; len: Integer);
+    begin 
+      var p := pattern^;
+      for i: Integer := 0 to (len div 16) -1 do 
+        ptr[i] := p;
+      memcpy(@ptr[len div 4], pattern, len mod 16);
+    end;
+    [SymbolNameAttribute('__memmove_chk')]
+    class method __memmove_chk(dest: ^Void; src: ^Void; len: size_t; destlength: size_t): ^Void;
+    begin 
+      exit memmove(dest, src, len);
+    end;
+
+    {$ENDIF}
   end;
+
+  Int64Pair = public packed record public a,b: Int64; end;
 
   DwarfEHEncodingType = public enum (
     DW_EH_PE_absptr = $00,
@@ -269,6 +301,8 @@ type
     Object: IntPtr;
   end;
 
+
+  
 method CheckForLastError(aMessage: String := '');
 method CheckForIOError(value: Integer);
 
@@ -286,7 +320,15 @@ method free(v: ^Void);inline;
 begin
    rtl.Free(v);
 end;
+{$IFDEF DARWIN}
+[SymbolName('__stack_chk_guard')]
+var __stack_chk_guard: ^Void := ^Void($DEADBEEF);  public;
+[Alias, SymbolNameAttribute('__sprintf_chk')]
+var __sprintf_chk: ^Void := ^Void(@snprintf);public;
+[Alias, SymbolNameAttribute('___vsnprintf_chk')]
+var ___vsnprintf_chk: ^Void := ^Void(@vsnprintf);public;
 
+{$ENDIF}
 
 [SymbolName("__builtin_inf")]
 method builtin_inf: Double; public; begin exit RemObjects.Elements.System.__builtin_inf; end;
