@@ -204,11 +204,16 @@ type
    end;
    {$ENDIF}
 
+    {$IFDEF DARWIN}
     [SymbolName('__stack_chk_fail')]
-    method __stack_chk_fail(); external;
+    class method __stack_chk_fail();  begin end;
+    {$ELSE}
+    [SymbolName('__stack_chk_fail')]
+    class method __stack_chk_fail(); external;
+    {$ENDIF}
     {$IFNDEF i386}
     [SymbolName('__stack_chk_fail_local')]
-    method __stack_chk_fail_local();
+    class method __stack_chk_fail_local();
     begin
       __stack_chk_fail();
     end;
@@ -243,6 +248,11 @@ type
     class method __memmove_chk(dest: ^Void; src: ^Void; len: size_t; destlength: size_t): ^Void;
     begin 
       exit memmove(dest, src, len);
+    end;
+    [SymbolNameAttribute('__memset_chk')]
+    class method __memset_chk (dest: ^Void; c: Integer; n, dest_len: size_t ): ^Void;
+    begin 
+      exit memset(dest, c, n);
     end;
 
     {$ENDIF}
@@ -325,6 +335,8 @@ end;
 var __stack_chk_guard: ^Void := ^Void($DEADBEEF);  public;
 [SymbolNameAttribute('__sprintf_chk')]
 method __sprintf_chk;public; begin end;
+[SymbolNameAttribute('__snprintf_chk')]
+method _snprintf_chk;public; begin end;
 [SymbolNameAttribute('__vsnprintf_chk')]
 method __vsnprintf_chk;public; begin end;
 
