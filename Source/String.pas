@@ -22,6 +22,15 @@ type
     method doLCMapString(aLocale: Locale; aMode:LCMapStringTransformMode := LCMapStringTransformMode.None): String;
     {$ENDIF}
     method TestChar(c: Char; Arr : array of Char): Boolean;
+    class method PcharLen(c: ^Char): Integer;
+    begin
+	    if c = nil then exit 0;
+	    result := 0;
+	    while Byte(c^) <> 0 do begin
+		    inc(c);
+		    inc(result);
+	    end;
+    end;
     class method RaiseError(aMessage: String);
     method CheckIndex(aIndex: Integer);
     method GetNonGenericEnumerator: IEnumerator; implements IEnumerable.GetEnumerator;
@@ -790,7 +799,7 @@ end;
 
 class method String.FromPChar(c: ^Char): String;
 begin
-  exit FromPChar(c, {$IFDEF WINDOWS OR WEBASSEMBLY}ExternalCalls.wcslen(c){$ELSEIF POSIX}rtl.wcslen(c){$ELSE}{$ERROR Not Implemented}{$ENDIF});
+  exit FromPChar(c, PcharLen(c));
 end;
 
 class method String.FromChar(c: Char): String;
