@@ -319,6 +319,7 @@ method DllMain(aModule: rtl.HMODULE; aReason: rtl.DWORD; aReserved: ^Void): Bool
 
 // This is needed by anything msvc compiled; it's the offset in fs for the tls array
 var
+  [Used, StaticallyInitializedField]
 	_dllmain: DllMainType := @DllMain;public;
 	[SymbolName('_tls_index'), Used, StaticallyInitializedField]
 	_tls_index: Cardinal; public;
