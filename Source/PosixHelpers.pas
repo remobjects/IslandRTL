@@ -103,7 +103,7 @@ type
     //[SymbolName('__elements_entry_point'), &Weak]
     //method UserEntryPoint(args: array of String): Integer; external;
 
-    {$IFDEF ARM}
+    {$IFDEF ARM and not DARWIN}
     [Used, SymbolName('_GLOBAL_OFFSET_TABLE_')]
     class var _GLOBAL_OFFSET_TABLE_: Integer; private; external;
     {$ENDIF}
@@ -205,6 +205,11 @@ type
    {$ENDIF}
 
     {$IFDEF DARWIN}
+    [SymbolName('bzero')]
+    class method bzero(p: ^Void; s: size_t); public;
+    begin 
+      memset(p, 0, s);
+    end;
     [SymbolName('__stack_chk_fail')]
     class method __stack_chk_fail();  begin end;
     {$ELSE}
