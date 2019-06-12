@@ -78,7 +78,7 @@ type
       fLibrary := aLibrary;
       fVersion := aVersion;
     end;
-
+    property ReferenceFromMain: Boolean;
     property Name: String read fName;
     property Library: String read fLibrary;
     property Version: String read fVersion;
