@@ -289,7 +289,7 @@ var ElementsWebAssembly;
         imp.env.__island_getutctime = function () { return Date.now(); };
         imp.env.__island_getlocaltime = function () { return Date.now(); };
         imp.env.__island_eval = function (str) {
-            return eval(readStringFromMemory(str));
+            return createHandle(eval(readStringFromMemory(str)));
         };
         imp.env.__island_get_typeof = function (handle) {
             var ht = handletable[handle];
