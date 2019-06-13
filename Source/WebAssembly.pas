@@ -264,11 +264,12 @@ type
 
     method GetMember(aName: String; aGetFlags: Integer; aArgs: array of Object): Object;
     begin
-      if aArgs.Length = 1 then begin
+      if (aArgs.Length = 1) and (not String.IsNullOrempty(aName)) then begin
+        var lNew := GetMember(aName, 0, []);
         if (aArgs[0] is String) and not Int32.TryParse(String(aArgs[0]), out var dummy) then
-          exit self.Items[String(aArgs[0])]
+          exit EcmaScriptObject(lNew).Items[String(aArgs[0])]
         else
-          exit self.Items[Convert.ToInt32(aArgs[0])];
+          exit EcmaScriptObject(lNew).Items[Convert.ToInt32(aArgs[0])];
       end;
 
       if aArgs.Length = 0 then
@@ -278,11 +279,12 @@ type
 
     method SetMember(aName: String; aGetFlags: Integer; aArgs: array of Object): Object;
     begin
-      if aArgs.Length = 2 then begin
+      if (aArgs.Length = 2) and (not String.IsNullOrempty(aName)) then begin
+        var lNew := GetMember(aName, 0, []);
         if (aArgs[0] is String) and not Int32.TryParse(String(aArgs[0]), out var dummy) then
-          self.Items[String(aArgs[0])] := aArgs[1]
+          EcmaScriptObject(lNew).Items[String(aArgs[0])] := aArgs[1]
         else
-          self.Items[Convert.ToInt32(aArgs[0])] := aArgs[1];
+          EcmaScriptObject(lNew).Items[Convert.ToInt32(aArgs[0])] := aArgs[1];
         exit;
       end;
 
