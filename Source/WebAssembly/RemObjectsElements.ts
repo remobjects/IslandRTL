@@ -248,7 +248,7 @@ module ElementsWebAssembly {
         imp.env.__island_getutctime = function(): number { return Date.now(); }
         imp.env.__island_getlocaltime = function(): number { return Date.now(); }
         imp.env.__island_eval = function(str: number): number {
-            return eval(readStringFromMemory(str));
+            return createHandle(eval(readStringFromMemory(str)));
         };
         imp.env.__island_get_typeof = function(handle: number): number {
             var ht = handletable[handle];

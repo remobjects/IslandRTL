@@ -264,8 +264,14 @@ type
 
     method GetMember(aName: String; aGetFlags: Integer; aArgs: array of Object): Object;
     begin
-      if aArgs.Length = 1 then
-        exit self.Items[Convert.ToInt32(aArgs[0])];
+      if (aArgs.Length = 1) and (not String.IsNullOrempty(aName)) then begin
+        var lNew := GetMember(aName, 0, []);
+        if (aArgs[0] is String) and not Int32.TryParse(String(aArgs[0]), out var dummy) then
+          exit EcmaScriptObject(lNew).Items[String(aArgs[0])]
+        else
+          exit EcmaScriptObject(lNew).Items[Convert.ToInt32(aArgs[0])];
+      end;
+
       if aArgs.Length = 0 then
         exit self.Items[aName];
       raise new Exception('Array accessors not allowed in EcmaScript');
@@ -273,10 +279,15 @@ type
 
     method SetMember(aName: String; aGetFlags: Integer; aArgs: array of Object): Object;
     begin
-      if aArgs.Length = 2 then begin
-        self.Items[Convert.ToInt32(aArgs[0])] := aArgs[1];
+      if (aArgs.Length = 2) and (not String.IsNullOrempty(aName)) then begin
+        var lNew := GetMember(aName, 0, []);
+        if (aArgs[0] is String) and not Int32.TryParse(String(aArgs[0]), out var dummy) then
+          EcmaScriptObject(lNew).Items[String(aArgs[0])] := aArgs[1]
+        else
+          EcmaScriptObject(lNew).Items[Convert.ToInt32(aArgs[0])] := aArgs[1];
         exit;
       end;
+
       if aArgs.Length = 1 then begin
         self.Items[aName] := aArgs[0];
         exit;
@@ -595,7 +606,7 @@ type
       lProxy.Release;
     end;
 
-    class method Eval(s: String): Object;
+    class method Eval(s: String): dynamic;
     begin
       exit GetObjectForHandle(WebAssemblyCalls.Eval(s));
     end;
