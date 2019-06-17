@@ -290,6 +290,8 @@ type
     // Optimizer tool: Returns an undefined value of type T
     class method Undefined<T>: T; external;
 
+    class method GuidOf<T>: Guid; external;
+
     // Inline asm
     class method VoidAsm(aAsm: String; aConstraints: String; aSideEffects, aAlign: Boolean; params aArgs: array of Object); external;
     class method Asm(aAsm: String; aConstraints: String; aSideEffects, aAlign: Boolean; params aArgs: array of Object): NativeInt; external;
