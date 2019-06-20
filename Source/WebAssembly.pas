@@ -870,4 +870,10 @@ type
     rpmalloc.rpfree(v);
   end;
 
+    [SymbolName('__elements_get_stack_pointer'), Used, DllExport]
+    method GetStackPointer: IntPtr;
+    begin 
+      exit IntPtr(@result);
+    end;
+
 end.
