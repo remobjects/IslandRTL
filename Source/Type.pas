@@ -7,9 +7,20 @@ var
   fStart: ^IslandTypeInfo := nil;  readonly;
   [SymbolName('__elements_RTTIEnd'), SectionName('ELRTTLRR$z'), StaticallyInitializedField]
   fEnd: ^IslandTypeInfo := nil; readonly;
+
+  [SymbolName('__elements_RTTIMStart'), SectionName('ELRTMLRR$a'), StaticallyInitializedField]
+  fMStart: IslandMethodUIDInfo := default(IslandMethodUIDInfo);  readonly;
+  [SymbolName('__elements_RTTIMEnd'), SectionName('ELRTMLRR$z'), StaticallyInitializedField]
+  fMEnd: IslandMethodUIDInfo := default(IslandMethodUIDInfo); readonly;
 {$ENDIF}
 
 type
+  [Packed]
+  IslandMethodUIDInfo = record
+  public
+    K1, K2: Int64;
+    Ptr: IntPtr;
+  end;
   CustomAttribute = public class
   private
     fArguments: array of CustomAttributeArgument;
@@ -100,7 +111,7 @@ type
       var lTy: ProtoReadType;
       while (lPtr < fEnd) and ProtoReadHeader(var lPtr, out lKey, out lTy) do begin
         if (lKey = 5) and (lTy = ProtoReadType.varint) then begin
-          exit new &Type(^IslandTypeInfo(fValue^.Ext^.MemberInfoList[ProtoReadVarInt(var lPtr)]));
+          exit new &Type(^IslandTypeInfo(&Type.ResolveType(fValue^.Ext^.MemberInfoList[ProtoReadVarInt(var lPtr)])));
         end else
           ProtoSkipValue(var lPtr, lTy);
       end;
@@ -150,7 +161,7 @@ type
       var lTy: ProtoReadType;
       while ProtoReadHeader(var lPtr, out lKey, out lTy) do begin
         if (lKey = 2) and (lTy = ProtoReadType.varint) then begin
-          exit new &Type(^IslandTypeInfo(fValue^.Ext^.MemberInfoList[ProtoReadVarInt(var lPtr)]));
+          exit new &Type(&Type.ResolveType(fValue^.Ext^.MemberInfoList[ProtoReadVarInt(var lPtr)]));
         end else
           ProtoSkipValue(var lPtr, lTy);
       end;
@@ -330,7 +341,7 @@ type
       var lTy: ProtoReadType;
       while (lPtr < fEnd) and ProtoReadHeader(var lPtr, out lKey, out lTy) do begin
         if (lKey = 6) and (lTy = ProtoReadType.varint) then begin
-          exit  fValue^.Ext^.MemberInfoList[ProtoReadVarInt(var lPtr)]
+          exit &Type.ResolveMethod(fValue^.Ext^.MemberInfoList[ProtoReadVarInt(var lPtr)])
         end else
           ProtoSkipValue(var lPtr, lTy);
       end;
@@ -342,7 +353,7 @@ type
       var lTy: ProtoReadType;
       while (lPtr < fEnd) and ProtoReadHeader(var lPtr, out lKey, out lTy) do begin
         if (lKey = 7) and (lTy = ProtoReadType.varint) then begin
-          exit  fValue^.Ext^.MemberInfoList[ProtoReadVarInt(var lPtr)]
+          exit  &Type.ResolveMethod(fValue^.Ext^.MemberInfoList[ProtoReadVarInt(var lPtr)])
         end else
           ProtoSkipValue(var lPtr, lTy);
       end;
@@ -430,7 +441,7 @@ type
       var lTy: ProtoReadType;
       while (lPtr < fEnd) and ProtoReadHeader(var lPtr, out lKey, out lTy) do begin
         if (lKey = 6) and (lTy = ProtoReadType.varint) then begin
-          exit  fValue^.Ext^.MemberInfoList[ProtoReadVarInt(var lPtr)]
+          exit &Type.ResolveMethod(fValue^.Ext^.MemberInfoList[ProtoReadVarInt(var lPtr)])
         end else
           ProtoSkipValue(var lPtr, lTy);
       end;
@@ -442,7 +453,7 @@ type
       var lTy: ProtoReadType;
       while (lPtr < fEnd) and ProtoReadHeader(var lPtr, out lKey, out lTy) do begin
         if (lKey = 6) and (lTy = ProtoReadType.varint) then begin
-          exit  fValue^.Ext^.MemberInfoList[ProtoReadVarInt(var lPtr)]
+          exit  &Type.ResolveMethod(fValue^.Ext^.MemberInfoList[ProtoReadVarInt(var lPtr)])
         end else
           ProtoSkipValue(var lPtr, lTy);
       end;
@@ -454,7 +465,7 @@ type
       var lTy: ProtoReadType;
       while (lPtr < fEnd) and ProtoReadHeader(var lPtr, out lKey, out lTy) do begin
         if (lKey = 6) and (lTy = ProtoReadType.varint) then begin
-          exit  fValue^.Ext^.MemberInfoList[ProtoReadVarInt(var lPtr)]
+          exit  &Type.ResolveMethod(fValue^.Ext^.MemberInfoList[ProtoReadVarInt(var lPtr)])
         end else
           ProtoSkipValue(var lPtr, lTy);
       end;
@@ -504,7 +515,7 @@ type
       var lTy: ProtoReadType;
       while (lPtr < fEnd) and ProtoReadHeader(var lPtr, out lKey, out lTy) do begin
         if (lKey = 6) and (lTy = ProtoReadType.varint) then begin
-          exit  fValue^.Ext^.MemberInfoList[ProtoReadVarInt(var lPtr)]
+          exit  &Type.ResolveMethod(fValue^.Ext^.MemberInfoList[ProtoReadVarInt(var lPtr)])
         end else
           ProtoSkipValue(var lPtr, lTy);
       end;
@@ -618,32 +629,30 @@ type
            ProtoSkipValue(var lPtr, lTy);
        end;
      end;
+    class method get_AllTypes: sequence of &Type; iterator;
+     begin
+       if fTypes = nil then LoadTypes;
+       for i: Integer := 0 to fTypes.Count -1 do begin 
+         if FTypes[i] = nil then continue;
+         yield new &Type(FTypes[i]);
+       end;
+     end;
     {$IFDEF WINDOWS}
-
-     class method get_AllTypes: sequence of &Type; iterator;
+    class method LoadTypes;
      begin
        var lWork := @fStart;
+       var lTypes := new ^IslandTypeInfo[(IntPtr(@fEnd) - IntPtr(@fStart)) / sizeof(IntPtr)];
+       var n := 0;
        loop begin
          inc(lWork);
          if lWork = @fEnd then break;
          if lWork^ = nil then continue;
-         yield new &Type(lWork^);
+         lTypes[n] := lWork^;
+         inc(n);
        end;
+       SortTypes(lTypes);
      end;
-    {$ELSEIF WEBASSEMBLY}
-     class var fAllTypes: List<&Type>;
-     class method get_AllTypes: sequence of &Type; 
-     begin
-       if fAllTypes = nil then begin 
-         var lAllTypes := new List<&Type>;
-         // this lambda CANNOT escape scope
-         WebAssemblyCalls.EnumerateKnownTypes(lAllTypes, (lData, aType) -> begin 
-           List<&Type>(lData).Add(new &Type(^IslandTypeInfo(aType)));
-         end);
-         fAllTypes := lAllTypes;
-       end;
-       exit fAllTypes;
-     end;
+    
     {$ELSEIF DARWIN}
     [&Weak, SymbolName('_mh_elements_execute_header')]
     class var __mh_elements_execute_header: {$IFDEF CPU64}rtl.__struct_mach_header_64{$ELSE}rtl.__struct_mach_header{$ENDIF} ; external;
@@ -654,20 +663,24 @@ type
       exit hdr;
     end;
 
-     class method get_AllTypes: sequence of &Type; iterator;
+     class method LoadTypes;
      begin
        var lSize: {$IF __LP64__}UInt64{$ELSE}UInt32{$ENDIF};
        var hdr := GetHDR;
        var lStart := rtl.getsectiondata(hdr, "__DATA", "__ELRTTLRR", @lSize);
        var lWork := ^^IslandTypeInfo(lStart);
        var lEnd := ^^IslandTypeInfo(^Byte(lStart) + lSize);
+       var lTypes := new ^IslandTypeInfo[lSize / sizeof(IntPtr)];
+       var n := 0;
        loop begin
          if lWork^ <> nil then begin
-           yield new &Type(lWork^);
+           lTypes[n] := lWork^;
+           inc(n);
          end;
          inc(lWork);
          if lWork >= lEnd then break;
        end;
+       SortTypes(lTypes);
      end;
     {$ELSE}
     [SymbolName('__start_ELRTTLRR')]
@@ -675,16 +688,145 @@ type
     [SymbolName('__stop_ELRTTLRR')]
     class var fEnd: ^IslandTypeInfo;external;
 
-     class method get_AllTypes: sequence of &Type; iterator;
+     class method LoadTypes;
      begin
        var lWork := @fStart;
+       var lTypes := new ^IslandTypeInfo[(IntPtr(fEnd) - IntPtr(fStart)) / sizeOf(IntPtr)];
+       var n := 0;
        loop begin
          if lWork^ <> nil then begin
-           yield new &Type(lWork^);
+           lTypes[n] := lWork^;
+           inc(n);
          end;
          inc(lWork);
          if lWork > @fEnd then break;
        end;
+     end;
+    {$ENDIF}
+
+
+    class var fMethods: array of IslandMethodUIDInfo;
+    class var fTypes: array of ^IslandTypeInfo;
+
+    class method Sorter(a, b: IslandMethodUIDInfo): Integer;
+    begin 
+      result := a.K1.CompareTo(b.K1);
+      if result = 0 then 
+        result := a.K2.CompareTo(b.K2);
+    end;
+    class method Sorter(a, b: ^IslandTypeInfo): Integer;
+    begin 
+      if a = b then exit 0;
+      if a = nil then exit -1;
+      if b = nil then exit 1;
+
+      result := a^.Hash1.CompareTo(b^.Hash1);
+      if result = 0 then 
+        result := a^.Hash2.CompareTo(b^.Hash2);
+    end;
+
+    class method SortTypes(aTypes: array of ^IslandTypeInfo);
+    begin 
+      Array.Sort(aTypes, @Sorter);
+      fTypes := aTypes;
+    end;
+    class method SortMethods(aMethods: array of IslandMethodUIDInfo);
+    begin 
+      Array.Sort(aMethods, @Sorter);
+      fMethods := aMethods;
+    end;
+
+    class method ResolveType(aType: ^Void): ^IslandTypeInfo; assembly;
+    begin 
+      if fTypes = nil then LoadTypes;
+      var n := Array.BinarySearch(fTypes, aType, (a, b) -> begin
+        if a = nil then exit -1;
+        result := a^.Hash1.CompareTo(^IslandMethodUIDInfo(b).K1);
+        if result = 0 then 
+          result := a^.Hash2.CompareTo(^IslandMethodUIDInfo(b).K2);
+      end);
+      if n < 0 then exit 0;
+      if n >= fTypes.Length then exit 0;
+      exit fTypes[n];
+    end;
+
+    class method ResolveMethod(aMethod: ^Void): ^Void; assembly;
+    begin 
+      if fMethods = nil then LoadMethods;
+      var n := Array.BinarySearch(fMethods, aMethod, (a, b) -> begin
+        result := a.K1.CompareTo(^IslandMethodUIDInfo(b).K1);
+        if result = 0 then 
+          result := a.K2.CompareTo(^IslandMethodUIDInfo(b).K2);
+      end);
+      if n < 0 then exit 0;
+      if n >= fMethods.Length then exit 0;
+      exit ^Void(fMethods[n].Ptr);
+    end;
+
+    {$IFDEF WINDOWS}
+     class method LoadMethods;
+     begin
+       var lWork := @fMStart;
+       var n := 0;
+       var lMethods := new IslandMethodUIDInfo[((IntPtr(@fMEnd) - IntPtr(@fMStart)) / sizeOf(IslandMethodUIDInfo))+1];
+       loop begin
+         inc(lWork);
+         lMethods[n] := lWork^;
+         if lWork >= @fMEnd then break;
+         if lWork^.Ptr = 0 then continue;
+         inc(n);
+       end;
+       SortMethods(lMethods);
+     end;
+    //{$ELSEIF WEBASSEMBLY}
+     //class var fAllTypes: List<&Type>;
+     /*class method LoadMethods;
+     begin
+       
+       //SortMethods;
+     end;*/
+    {$ELSEIF DARWIN}
+
+
+     class method LoadMethods;
+     begin
+       var lSize: {$IF __LP64__}UInt64{$ELSE}UInt32{$ENDIF};
+       var hdr := GetHDR;
+       var lStart := rtl.getsectiondata(hdr, "__DATA", "__ELRTMLRR", @lSize);
+       var lWork := ^IslandMethodUIDInfo(lStart);
+       var lEnd := ^IslandMethodUIDInfo(^Byte(lStart) + lSize);
+       var n := 0;
+       var lMethods := new IslandMethodUIDInfo[lSize / sizeof(IslandMethodUIDInfo)+ 1];
+       loop begin
+         if lWork^.Ptr <> nil then begin
+           lMethods[n] := lWork^;
+           inc(n);
+         end;
+         inc(lWork);
+         if lWork >= lEnd then break;
+       end;
+       SortMethods(lMethods);
+     end;
+    {$ELSE}
+    [SymbolName('__start_ELRTMLRR')]
+    class var fStartM: IslandMethodUIDInfo; external;
+    [SymbolName('__stop_ELRTMLRR')]
+    class var fEndM: IslandMethodUIDInfo;external;
+
+     class method LoadMethods;
+     begin
+       var lWork := @fStartM;
+       var n := 0;
+       var lMethods := new IslandMethodUIDInfo[(IntPtr(@fEndM) - IntPtr(@fStartM) / sizeof(IslandMethodUIDInfo)) + 1];
+       loop begin
+         if lWork^ <> nil then begin
+           lMethods[n] := lWork^;
+           inc(n);
+         end;
+         inc(lWork);
+         if lWork > @fEndM then break;
+       end;
+       SortMethods(lMethods);
      end;
     {$ENDIF}
      method get_Events: sequence of EventInfo;iterator;

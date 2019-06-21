@@ -42,6 +42,23 @@ type
       Sort(aVal, 0, aVal.Length -1, Comparison);
     end;
 
+    class method BinarySearch<T, V>(aVal: array of T; aInput: V; aComparer: Func<T, V, Integer>): Integer;
+    begin 
+      var min := 0;
+      var max := aVal.Length -1;
+      while min <= max do begin
+        var  middle := min + ((max - min) shr 1);
+                
+        result := aComparer(aVal[middle], aInput);
+        if result = 0  then exit middle;
+        if result < 0 then 
+          min := middle + 1
+        else
+          max := middle - 1;
+      end;
+      exit not min;
+    end;
+
     class method Sort<T>(aVal: array of T; L, R: Integer; Comparison: Comparison<T>);
     begin
       var I, J: Integer;
