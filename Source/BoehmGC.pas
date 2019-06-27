@@ -288,17 +288,19 @@ type
     begin
       Utilities.SpinLockEnter(var fLock);
       try
+        {$IFDEF WINDOWS}
         if (fMapping <> nil) and (fMapping <> rtl.INVALID_HANDLE_VALUE) then begin
           rtl.CloseHandle(fMapping);
           fMapping := rtl.INVALID_HANDLE_VALUE;
-          fLoaded := 0;
-          fSharedMemory.collect := nil;
-          fSharedMemory.register := nil;
-          fSharedMemory.unregister := nil;
-          fSharedMemory.malloc := nil;
-          fSharedMemory.setfinalizer := nil;
-          fSharedMemory.unsetfinalizer := nil;
         end;
+        {$ENDIF}
+        fLoaded := 0;
+        fSharedMemory.collect := nil;
+        fSharedMemory.register := nil;
+        fSharedMemory.unregister := nil;
+        fSharedMemory.malloc := nil;
+        fSharedMemory.setfinalizer := nil;
+        fSharedMemory.unsetfinalizer := nil;
       finally
         Utilities.SpinLockExit(var fLock);
       end;
