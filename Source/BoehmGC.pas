@@ -284,7 +284,25 @@ type
 
     class method Init(var Dest: BoehmGC); empty;
     class method Release(var Dest: BoehmGC); empty;
-
+    class method UnloadGC;
+    begin
+      Utilities.SpinLockEnter(var fLock);
+      try
+        if (fMapping <> nil) and (fMapping <> rtl.INVALID_HANDLE_VALUE) then begin
+          rtl.CloseHandle(fMapping);
+          fMapping := rtl.INVALID_HANDLE_VALUE;
+          fLoaded := 0;
+          fSharedMemory.collect := nil;
+          fSharedMemory.register := nil;
+          fSharedMemory.unregister := nil;
+          fSharedMemory.malloc := nil;
+          fSharedMemory.setfinalizer := nil;
+          fSharedMemory.unsetfinalizer := nil;
+        end;
+      finally
+        Utilities.SpinLockExit(var fLock);
+      end;
+    end;
   end;
 
   BoehmGCExt = public extension class(Utilities)
