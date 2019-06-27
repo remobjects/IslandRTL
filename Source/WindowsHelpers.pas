@@ -1177,8 +1177,12 @@ method DllMainCRTStartup(aModule: rtl.HMODULE; aReason: rtl.DWORD; aReserved: ^V
 begin
 	var lMain: ^DllMainType := @_dllmain;
 	ExternalCalls.fModuleHandle := aModule;
-	if lMain^ = nil then exit true;
-	exit lMain^(aModule, aReason, aReserved);
+	try
+		if lMain^ = nil then exit true;
+		exit lMain^(aModule, aReason, aReserved);
+	finally
+		if (aReason = rtl.DLL_PROCESS_DETACH) then BoehmGC.UnloadGC;
+	end;
 end;
 
 
