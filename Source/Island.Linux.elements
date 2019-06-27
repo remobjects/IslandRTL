@@ -17,6 +17,7 @@
     <Platform Condition="'$(Platform)' == ''">AnyCPU</Platform>
     <GenerateDebugInfo>True</GenerateDebugInfo>
     <DefineConstants>LINUX</DefineConstants>
+    <Architecture>x86_64;armv6</Architecture>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)' == 'Debug'">
     <OutputPath>Bin\Debug</OutputPath>
@@ -39,7 +40,8 @@
     <XmlDoc>False</XmlDoc>
     <XmlDocWarningLevel>WarningOnPublicMembers</XmlDocWarningLevel>
     <EnableUnmanagedDebugging>False</EnableUnmanagedDebugging>
-    <GenerateDebugInfo>True</GenerateDebugInfo>
+    <GenerateDebugInfo>False</GenerateDebugInfo>
+    <Optimize>True</Optimize>
   </PropertyGroup>
   <ItemGroup>
     <Compile Include="BoehmGC.pas" />
