@@ -18,6 +18,7 @@
     <GenerateDebugInfo>True</GenerateDebugInfo>
     <DefineConstants>POSIX;DARWIN;MACOS;x86_64</DefineConstants>
     <SDK>iOS</SDK>
+    <SupportUIKitForMac>True</SupportUIKitForMac>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)' == 'Debug'">
     <OutputPath>Bin\Debug</OutputPath>
