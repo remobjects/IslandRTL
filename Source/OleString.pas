@@ -46,10 +46,11 @@ type
       end;
     end;
 
-    class method DuplicateString(aSource: OleString; var aDest: OleString);
+    class method DuplicateString(var aSource: OleString; var aDest: OleString);
     begin 
       aDest.bstr := AllocString(aSource.Length);
-      memcpy(aDest.bstr,  aSource.bstr, aSource.Length);
+      memcpy(aDest.bstr,  aSource.bstr, aSource.Length * 2);
+      aDest.bstr[aSource.Length] := #0;
     end;
   public
     constructor(Value: String);
@@ -63,7 +64,7 @@ type
       if aValue.bstr = nil then
         bstr := nil
       else
-        DuplicateString(aValue, var self);
+        DuplicateString(var aValue, var self);
     end;
 
 
@@ -75,7 +76,7 @@ type
       if aSource.bstr = nil then begin
         aDest.bstr := nil;
       end else
-        DuplicateString(aDest, var aSource);
+        DuplicateString(var aSource, var aDest);
     end;
 
     finalizer;
@@ -118,12 +119,12 @@ type
     begin
       if self.bstr = nil then exit 0;
       {$IFDEF WINDOWS}
-        exit rtl.SysStringByteLen(self.bstr);
+        exit rtl.SysStringLen(self.bstr);
       {$ELSE}
         exit ^Integer(bstr)[-1];
       {$ENDIF}
     end;
-    property Item[I: Integer]: Char read bstr[I] write bstr[i];
+    property Item[i: Integer]: Char read bstr[i] write bstr[i];
     property Length: Integer read get_Length;
   end;
 
