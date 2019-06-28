@@ -443,7 +443,22 @@ end;
 method ExternalCalls._start;
 begin
 {$IFDEF ARM64}
-
+  InternalCalls.VoidAsm("
+   mov	x29, #0x0
+   mov	x30, #0x0
+   mov	x5, x0
+   ldr	x1, [sp]
+  add	x2, sp, #0x8
+  mov	x6, sp
+  adrp	x0, __elements_entry_point_helper
+  ldr	x0, [x0]
+  adrp	x3, __libc_csu_init
+  ldr	x3, [x3]
+  adrp	x4, __libc_csu_fini
+  ldr	x4, [x4]
+  bl	__libc_start_main
+  
+  ", "", false, false);
 {$ELSEIF ARM}
   InternalCalls.VoidAsm(
     "
