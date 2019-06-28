@@ -11,7 +11,7 @@ type
   FileShare = public enum(None, &Read, &Write, ReadWrite, Delete);
   {$IF WINDOWS}
   PlatformHandle = rtl.HANDLE;
-  {$ELSEIF ANDROID OR DARWIN}
+  {$ELSEIF ANDROID OR DARWIN or ARM64}
   PlatformHandle = ^rtl.FILE;
   {$ELSEIF POSIX}
   PlatformHandle = ^rtl._IO_FILE;

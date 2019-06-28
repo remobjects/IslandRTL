@@ -633,8 +633,8 @@ type
      begin
        if fTypes = nil then LoadTypes;
        for i: Integer := 0 to fTypes.Count -1 do begin 
-         if FTypes[i] = nil then continue;
-         yield new &Type(FTypes[i]);
+         if fTypes[i] = nil then continue;
+         yield new &Type(fTypes[i]);
        end;
      end;
     {$IFDEF WINDOWS}
@@ -817,9 +817,9 @@ type
      begin
        var lWork := @fStartM;
        var n := 0;
-       var lMethods := new IslandMethodUIDInfo[(IntPtr(@fEndM) - IntPtr(@fStartM) / sizeof(IslandMethodUIDInfo)) + 1];
+       var lMethods := new IslandMethodUIDInfo[(IntPtr(@fEndM) - IntPtr(@fStartM) / sizeOf(IslandMethodUIDInfo)) + 1];
        loop begin
-         if lWork^ <> nil then begin
+         if lWork^.Ptr <> 0 then begin
            lMethods[n] := lWork^;
            inc(n);
          end;

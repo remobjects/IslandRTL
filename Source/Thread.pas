@@ -319,7 +319,7 @@ begin
   var pol: Int32;
   var sched: rtl.__struct_sched_param;
   rtl. pthread_getschedparam(fthread, @pol, @sched);
-  var pri := {$IFDEF EMSCRIPTEN or DARWIN}sched.sched_priority{$ELSE}sched.__sched_priority{$ENDIF};
+  var pri := {$IFDEF EMSCRIPTEN or DARWIN or ARM64}sched.sched_priority{$ELSE}sched.__sched_priority{$ENDIF};
   if pri < -1 then exit ThreadPriority.Lowest
   else if pri = -1 then exit ThreadPriority.BelowNormal
   else if pri =  0 then exit ThreadPriority.Normal

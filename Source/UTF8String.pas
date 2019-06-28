@@ -6,9 +6,9 @@ type
     fData: array of Byte;
 
 
-    class var fEmpty: Utf8String := new Utf8String(new Byte[0], 0, 0);
+    class var fEmpty: UTF8String := new UTF8String(new Byte[0], 0, 0);
   public 
-    class property Empty: Utf8String read fEmpty;
+    class property Empty: UTF8String read fEmpty;
     // note: Presumes ownership of aData!
     constructor(aData: array of Byte; aStart: Integer; aLength: Integer); 
     begin 
@@ -32,22 +32,22 @@ type
     property Item[idx: Integer]: Byte read fData[idx] write fData[idx];
 
 
-    method Substring(aStart: Integer): Utf8String;
+    method Substring(aStart: Integer): UTF8String;
     begin 
       if aStart < 0 then raise new ArgumentException('aStart < 0');
       var lNewLength := Length - aStart;
-      if lNewLength < 0 then exit Utf8String.Empty;
+      if lNewLength < 0 then exit UTF8String.Empty;
 
-      exit new Utf8String(fData, aStart, lNewLength);
+      exit new UTF8String(fData, aStart, lNewLength);
     end;
 
-    method Substring(aStart, aLength: Integer): Utf8String;
+    method Substring(aStart, aLength: Integer): UTF8String;
     begin 
       if aStart < 0 then raise new ArgumentException('aStart < 0');
       var lNewLength := Math.Min(Length - aStart, aLength);
-      if lNewLength < 0 then exit Utf8String.Empty;
+      if lNewLength < 0 then exit UTF8String.Empty;
 
-      exit new Utf8String(fData, aStart, lNewLength);
+      exit new UTF8String(fData, aStart, lNewLength);
     end;
 
     method ToString: String; override;
@@ -60,28 +60,28 @@ type
       exit fData.Length;
     end;
 
-    class operator Explicit(aVal: String): Utf8String;
+    class operator Explicit(aVal: String): UTF8String;
     begin 
-      exit new Utf8String(Encoding.UTF8.GetBytes(aVal, false));
+      exit new UTF8String(Encoding.UTF8.GetBytes(aVal, false));
     end;
 
-    class operator Explicit(aVal: Utf8String): String;
+    class operator Explicit(aVal: UTF8String): String;
     begin 
       exit aVal.ToString;
     end;
 
-    class operator Implicit(aVal: Utf8String): ^Byte;
+    class operator Implicit(aVal: UTF8String): ^Byte;
     begin 
       exit @aVal.fData[0]; // 0 terminated already.
     end;
 
     
-    class operator Implicit(aVal: Utf8String): ^AnsiChar;
+    class operator Implicit(aVal: UTF8String): ^AnsiChar;
     begin 
       exit ^AnsiChar(@aVal.fData[0]); // 0 terminated already.
     end;
 
-    class operator Implicit(aVal: Utf8String): Span<Byte>;
+    class operator Implicit(aVal: UTF8String): Span<Byte>;
     begin 
       exit new Span<Byte>(aVal.fData, 0, aVal.Length);
     end;
