@@ -451,11 +451,11 @@ begin
   add	x2, sp, #0x8
   mov	x6, sp
   adrp	x0, __elements_entry_point_helper
-  ldr	x0, [x0]
-  adrp	x3, __libc_csu_init
-  ldr	x3, [x3]
-  adrp	x4, __libc_csu_fini
-  ldr	x4, [x4]
+  add x0, x0, :lo12:__elements_entry_point_helper
+  adrp	x3, __elements_init
+  add x3, x3, :lo12:__elements_init
+  adrp	x4, __elements_fini
+  add x4, x4, :lo12:__elements_fini
   bl	__libc_start_main
   
   ", "", false, false);
