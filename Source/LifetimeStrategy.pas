@@ -109,7 +109,7 @@ type
         InternalCalls.Increment(var ^IntPtr(lInst)[-1]);
       end;
       if lOld <> 0  then begin 
-        if InternalCalls.Decrement(var ^IntPtr(lOld)[-1]) = 0 then  
+        if InternalCalls.Decrement(var ^IntPtr(lOld)[-1]) = 1 then  
           FreeObject(lOld);
       end;
     end;
@@ -119,7 +119,7 @@ type
       var lValue := InternalCalls.Exchange(var fValue, 0);
       if lValue = 0 then exit;
       var p := InternalCalls.Decrement(var ^IntPtr(lValue)[-1]);
-      if p = 0 then 
+      if p = 1 then 
         FreeObject(p);    
     end;
 
@@ -130,7 +130,7 @@ type
       var lValue := InternalCalls.Exchange(var Dest.fValue, 0);
       if lValue = 0 then exit;
       var p := InternalCalls.Decrement(var ^IntPtr(lValue)[-1]);
-      if p = 0 then 
+      if p = 1 then 
         FreeObject(p);
     end;
     

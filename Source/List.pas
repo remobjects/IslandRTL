@@ -282,8 +282,9 @@ end;
 
 method List<T>.Clear;
 begin
+  for i: Integer := 0 to fCount -1 do 
+    fItems[i] := default(T);
   fCount := 0;
-  fItems := new array of T(0);
 end;
 
 method List<T>.Contains(anItem: T): Boolean;
