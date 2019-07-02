@@ -158,12 +158,13 @@ type
 
 
 
+{$IFNDEF ANDROID}
     [SymbolName("__atomic_store_4")]
     class method __atomic_store_4(var mem: Int32; val: Int32);
     begin
       InternalCalls.VolatileWrite(var mem, val);
     end;
-
+{$ENDIF}
    [SymbolName("__atomic_fetch_add_4")]
    class method __atomic_fetch_add_4(var mem: Int32; val: Int32): Int32;
    begin
