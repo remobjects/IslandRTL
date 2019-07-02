@@ -43,9 +43,9 @@ begin
   {$ELSEIF LINUX OR ANDROID}
   var lTime: rtl.time_t := rtl.time(nil);
   var lTimeZone: ^rtl.__struct_tm;
-  lTimeZone := rtl.localtime(@lTime);  
+  lTimeZone := rtl.localtime(@lTime);
   result := new TimeZone(String.FromPAnsiChars(lTimeZone^.tm_zone), lTimeZone^.tm_gmtoff div 60);
-  {$ELSE}  
+  {$ELSE}
   result := new TimeZone('', 0);
   {$ENDIF}
 end;
@@ -76,7 +76,7 @@ begin
   var lMaxLength: rtl.DWORD;
 
   var lList: not nullable List<String> := new List<String>;
-  if rtl.RegOpenKeyEx(rtl.HKEY_LOCAL_MACHINE, @lKey[0], 0, rtl.KEY_QUERY_VALUE or rtl.KEY_ENUMERATE_SUB_KEYS or rtl.KEY_READ, @lNewKey) <> rtl.ERROR_SUCCESS then 
+  if rtl.RegOpenKeyEx(rtl.HKEY_LOCAL_MACHINE, @lKey[0], 0, rtl.KEY_QUERY_VALUE or rtl.KEY_ENUMERATE_SUB_KEYS or rtl.KEY_READ, @lNewKey) <> rtl.ERROR_SUCCESS then
     raise new Exception('Can not open TimeZone registry key');
 
   if rtl.RegQueryInfoKey(lNewKey, nil, nil, nil, @lSubKeys, @lMaxLength, nil, nil, nil, nil, nil, nil) <> rtl.ERROR_SUCCESS then
@@ -135,7 +135,7 @@ begin
   var lKey := ('SOFTWARE\Microsoft\Windows NT\CurrentVersion\Time Zones\' + aName).ToCharArray(true);
   var lNewKey: rtl.HKEY;
 
-  if rtl.RegOpenKeyEx(rtl.HKEY_LOCAL_MACHINE, @lKey[0], 0, rtl.KEY_READ, @lNewKey) <> rtl.ERROR_SUCCESS then 
+  if rtl.RegOpenKeyEx(rtl.HKEY_LOCAL_MACHINE, @lKey[0], 0, rtl.KEY_READ, @lNewKey) <> rtl.ERROR_SUCCESS then
     raise new Exception('Can not open TimeZone registry key');
 
   var lType: rtl.DWORD;
@@ -155,7 +155,7 @@ begin
     rtl.setenv(@lNameBytes[0], @lValueBytes[0], 1);
     var lTime: rtl.time_t := rtl.time(nil);
     var lTimeZone: ^rtl.__struct_tm;
-    lTimeZone := rtl.localtime(@lTime);  
+    lTimeZone := rtl.localtime(@lTime);
     result := new TimeZone(aName, lTimeZone^.tm_gmtoff div 60);
   finally
     if lOldValue = nil then begin
