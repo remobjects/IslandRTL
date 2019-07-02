@@ -24,12 +24,12 @@ type
     method TestChar(c: Char; Arr : array of Char): Boolean;
     class method PcharLen(c: ^Char): Integer;
     begin
-	    if c = nil then exit 0;
-	    result := 0;
-	    while Byte(c^) <> 0 do begin
-		    inc(c);
-		    inc(result);
-	    end;
+      if c = nil then exit 0;
+      result := 0;
+      while Byte(c^) <> 0 do begin
+        inc(c);
+        inc(result);
+      end;
     end;
     class method RaiseError(aMessage: String);
     method CheckIndex(aIndex: Integer);
@@ -286,7 +286,7 @@ end;
 
 class method String.AllocString(aLen: Integer): String;
 begin
-  result := InternalCalls.Cast<String>(DefaultGC.New(InternalCalls.GetTypeInfo<String>(), (sizeOf(Object) + sizeOf(Integer) + if defined('DARWIN') then sizeof(IntPtr) else 0) + 2 * aLen));
+  result := InternalCalls.Cast<String>(DefaultGC.New(InternalCalls.GetTypeInfo<String>(), (sizeOf(Object) + sizeOf(Integer) + if defined('DARWIN') then sizeOf(IntPtr) else 0) + 2 * aLen));
   result.fLength := aLen;
 end;
 

@@ -632,7 +632,7 @@ type
     class method get_AllTypes: sequence of &Type; iterator;
      begin
        if fTypes = nil then LoadTypes;
-       for i: Integer := 0 to fTypes.Count -1 do begin 
+       for i: Integer := 0 to fTypes.Count -1 do begin
          if fTypes[i] = nil then continue;
          yield new &Type(fTypes[i]);
        end;
@@ -641,7 +641,7 @@ type
     class method LoadTypes;
      begin
        var lWork := @fStart;
-       var lTypes := new ^IslandTypeInfo[(IntPtr(@fEnd) - IntPtr(@fStart)) / sizeof(IntPtr)];
+       var lTypes := new ^IslandTypeInfo[(IntPtr(@fEnd) - IntPtr(@fStart)) / sizeOf(IntPtr)];
        var n := 0;
        loop begin
          inc(lWork);
@@ -652,13 +652,13 @@ type
        end;
        SortTypes(lTypes);
      end;
-    
+
     {$ELSEIF DARWIN}
     [&Weak, SymbolName('_mh_elements_execute_header')]
     class var __mh_elements_execute_header: {$IFDEF CPU64}rtl.__struct_mach_header_64{$ELSE}rtl.__struct_mach_header{$ENDIF} ; external;
 
     class method GetHDR: ^{$IFDEF CPU64}rtl.__struct_mach_header_64{$ELSE}rtl.__struct_mach_header{$ENDIF};
-    begin 
+    begin
       var hdr := @__mh_elements_execute_header;
       exit hdr;
     end;
@@ -670,7 +670,7 @@ type
        var lStart := rtl.getsectiondata(hdr, "__DATA", "__ELRTTLRR", @lSize);
        var lWork := ^^IslandTypeInfo(lStart);
        var lEnd := ^^IslandTypeInfo(^Byte(lStart) + lSize);
-       var lTypes := new ^IslandTypeInfo[lSize / sizeof(IntPtr)];
+       var lTypes := new ^IslandTypeInfo[lSize / sizeOf(IntPtr)];
        var n := 0;
        loop begin
          if lWork^ <> nil then begin
@@ -709,40 +709,40 @@ type
     class var fTypes: array of ^IslandTypeInfo;
 
     class method Sorter(a, b: IslandMethodUIDInfo): Integer;
-    begin 
+    begin
       result := a.K1.CompareTo(b.K1);
-      if result = 0 then 
+      if result = 0 then
         result := a.K2.CompareTo(b.K2);
     end;
     class method Sorter(a, b: ^IslandTypeInfo): Integer;
-    begin 
+    begin
       if a = b then exit 0;
       if a = nil then exit -1;
       if b = nil then exit 1;
 
       result := a^.Hash1.CompareTo(b^.Hash1);
-      if result = 0 then 
+      if result = 0 then
         result := a^.Hash2.CompareTo(b^.Hash2);
     end;
 
     class method SortTypes(aTypes: array of ^IslandTypeInfo);
-    begin 
+    begin
       Array.Sort(aTypes, @Sorter);
       fTypes := aTypes;
     end;
     class method SortMethods(aMethods: array of IslandMethodUIDInfo);
-    begin 
+    begin
       Array.Sort(aMethods, @Sorter);
       fMethods := aMethods;
     end;
 
     class method ResolveType(aType: ^Void): ^IslandTypeInfo; assembly;
-    begin 
+    begin
       if fTypes = nil then LoadTypes;
       var n := Array.BinarySearch(fTypes, aType, (a, b) -> begin
         if a = nil then exit -1;
         result := a^.Hash1.CompareTo(^IslandMethodUIDInfo(b).K1);
-        if result = 0 then 
+        if result = 0 then
           result := a^.Hash2.CompareTo(^IslandMethodUIDInfo(b).K2);
       end);
       if n < 0 then exit 0;
@@ -751,11 +751,11 @@ type
     end;
 
     class method ResolveMethod(aMethod: ^Void): ^Void; assembly;
-    begin 
+    begin
       if fMethods = nil then LoadMethods;
       var n := Array.BinarySearch(fMethods, aMethod, (a, b) -> begin
         result := a.K1.CompareTo(^IslandMethodUIDInfo(b).K1);
-        if result = 0 then 
+        if result = 0 then
           result := a.K2.CompareTo(^IslandMethodUIDInfo(b).K2);
       end);
       if n < 0 then exit 0;
@@ -782,7 +782,7 @@ type
      //class var fAllTypes: List<&Type>;
      /*class method LoadMethods;
      begin
-       
+
        //SortMethods;
      end;*/
     {$ELSEIF DARWIN}
@@ -796,7 +796,7 @@ type
        var lWork := ^IslandMethodUIDInfo(lStart);
        var lEnd := ^IslandMethodUIDInfo(^Byte(lStart) + lSize);
        var n := 0;
-       var lMethods := new IslandMethodUIDInfo[lSize / sizeof(IslandMethodUIDInfo)+ 1];
+       var lMethods := new IslandMethodUIDInfo[lSize / sizeOf(IslandMethodUIDInfo)+ 1];
        loop begin
          if lWork^.Ptr <> nil then begin
            lMethods[n] := lWork^;
