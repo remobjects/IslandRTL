@@ -43,9 +43,9 @@ type
     method CleanUp;
   public
     constructor;
-    constructor(aCommand: String; aArguments: List<String>; aEnvironment: Dictionary<String, String>; aWorkingDirectory: String);
-    class method Run(aCommand: not nullable String; aArguments: List<String> := nil; aEnvironment: nullable Dictionary<String, String> := nil; aWorkingDirectory: nullable String := nil; out aStdOut: String; out aStdErr: String): Integer;
-    class method RunAsync(aCommand: not nullable String; aArguments: List<String> := nil; aEnvironment: nullable Dictionary<String, String> := nil; aWorkingDirectory: nullable String := nil; aStdOutCallback: block(aLine: String); aStdErrCallback: block(aLine: String) := nil; aFinishedCallback: block(aExitCode: Integer) := nil): Process;
+    constructor(aCommand: String; aArguments: ImmutableList<String>; aEnvironment: ImmutableDictionary<String, String>; aWorkingDirectory: String);
+    class method Run(aCommand: not nullable String; aArguments: ImmutableList<String> := nil; aEnvironment: nullable ImmutableDictionary<String, String> := nil; aWorkingDirectory: nullable String := nil; out aStdOut: String; out aStdErr: String): Integer;
+    class method RunAsync(aCommand: not nullable String; aArguments: ImmutableList<String> := nil; aEnvironment: nullable ImmutableDictionary<String, String> := nil; aWorkingDirectory: nullable String := nil; aStdOutCallback: block(aLine: String); aStdErrCallback: block(aLine: String) := nil; aFinishedCallback: block(aExitCode: Integer) := nil): Process;
     class method CurrentProcessId: Integer;
     method WaitFor;
     method Start: Boolean;
@@ -53,8 +53,8 @@ type
     property ExitCode: Integer read GetExitCode;
     property IsRunning: Boolean read GetIsRunning;
     property Command: String;
-    property Arguments: List<String>;
-    property Environment: Dictionary<String, String>;
+    property Arguments: ImmutableList<String>;
+    property Environment: ImmutableDictionary<String, String>;
     property WorkingDirectory: String read fWorkingDirectory;
     property StandardOutput: String read GetStandardOutput;
     property StandardError: String read GetStandardError;
@@ -70,15 +70,15 @@ implementation
 
 constructor Process;
 begin
-  Arguments := new List<String>();
-  Environment := new Dictionary<String, String>;
+  Arguments := new ImmutableList<String>();
+  Environment := new ImmutableDictionary<String, String>;
 end;
 
-constructor Process(aCommand: String; aArguments: List<String>; aEnvironment: Dictionary<String, String>; aWorkingDirectory: String);
+constructor Process(aCommand: String; aArguments: ImmutableList<String>; aEnvironment: ImmutableDictionary<String, String>; aWorkingDirectory: String);
 begin
   Command := aCommand;
-  Arguments := if aArguments ≠ nil then aArguments else new List<String>;
-  Environment := if aEnvironment ≠ nil then aEnvironment else new Dictionary<String, String>;
+  Arguments := if aArguments ≠ nil then aArguments else new ImmutableList<String>;
+  Environment := if aEnvironment ≠ nil then aEnvironment else new ImmutableDictionary<String, String>;
   fWorkingDirectory := aWorkingDirectory;
 end;
 
@@ -212,7 +212,7 @@ begin
   {$ENDIF}
 end;
 
-class method Process.Run(aCommand: not nullable String; aArguments: List<String> := nil; aEnvironment: nullable Dictionary<String, String> := nil; aWorkingDirectory: nullable String := nil; out aStdOut: String; out aStdErr: String): Integer;
+class method Process.Run(aCommand: not nullable String; aArguments: ImmutableList<String> := nil; aEnvironment: nullable ImmutableDictionary<String, String> := nil; aWorkingDirectory: nullable String := nil; out aStdOut: String; out aStdErr: String): Integer;
 begin
   var lProcess := new Process(aCommand, aArguments, aEnvironment, aWorkingDirectory);
   lProcess.RedirectOutput := True;
@@ -224,7 +224,7 @@ begin
   lProcess.CleanUp;
 end;
 
-class method Process.RunAsync(aCommand: not nullable String; aArguments: List<String> := nil; aEnvironment: nullable Dictionary<String, String> := nil; aWorkingDirectory: nullable String := nil; aStdOutCallback: block(aLine: String); aStdErrCallback: block(aLine: String) := nil; aFinishedCallback: block(aExitCode: Integer) := nil): Process;
+class method Process.RunAsync(aCommand: not nullable String; aArguments: ImmutableList<String> := nil; aEnvironment: nullable ImmutableDictionary<String, String> := nil; aWorkingDirectory: nullable String := nil; aStdOutCallback: block(aLine: String); aStdErrCallback: block(aLine: String) := nil; aFinishedCallback: block(aExitCode: Integer) := nil): Process;
 begin
   result := new Process(aCommand, aArguments, aEnvironment, aWorkingDirectory);
   result.RedirectOutput := True;

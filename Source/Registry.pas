@@ -192,13 +192,13 @@ type
         raise new Exception('error code is '+res.ToString);
     end;
 
-    method GetSubKeyNames(KeyName: String): nullable List<String>;
+    method GetSubKeyNames(KeyName: String): nullable ImmutableList<String>;
     begin
       var subKeyName: String;
       var lrootkey := ParseKeyName(KeyName, out subKeyName);
       var lsubKey := subKeyName.ToLPCWSTR;
       var lNewKey: rtl.HKEY;
-      result := new List<String>;
+      var lResult := new List<String> as not nullable;;
 
       var lRes := rtl.RegOpenKeyEx(lrootkey, lsubKey, 0, rtl.KEY_ALL_ACCESS, @lNewKey);
       if lRes ≠ rtl.ERROR_SUCCESS then
@@ -216,8 +216,9 @@ type
         lWritten := lBuffer.Length;
         if rtl.RegEnumKeyEx(lNewKey, i, @lBuffer[0], @lWritten, nil, nil, nil, nil) ≠ rtl.ERROR_SUCCESS then
           raise new Exception("Can not get registry subkeys");
-        result.Add(String.FromPChar(@lBuffer[0]));
+        lResult.Add(String.FromPChar(@lBuffer[0]));
       end;
+      result := lResult;
     end;
   end;
 

@@ -1,7 +1,7 @@
 ﻿namespace RemObjects.Elements.System;
 
 type
-  Entry<T, U> = private record
+  Entry<T, U> = unit record
   public
     HashCode: Integer; // current hashcode
     Next: Integer; // contains reference to next item with the same hashcode
@@ -9,21 +9,21 @@ type
     Value: U;
   end;
 
-  Dictionary<T, U> = public class
-  private
+  ImmutableDictionary<T,U> = public class(sequence of KeyValuePair<T,U>)
+  unit
     const EMPTYHASH: Integer = 0;
     const EMPTY_BUCKET: Integer = 0;
     const POSITIVE_INTEGER_MASK: UInt32 = $7FFFFFFF;
     const MIN_DICTIONATY_SIZE: Integer = 11;
     const DEFAULT_MAX_INDEX = 1;
-  private
-    fCount: Integer := 0;
-    fMaxUsedIndex: Integer := DEFAULT_MAX_INDEX;
-    fbucketTable: array of Integer; // contains "hash / fcapacity" and references to fTable
 
-    fFirstHole: Integer := EMPTY_BUCKET;
-    fEntriesTable: array of Entry<T, U>;
-    fComparer : IEqualityComparer<T>;
+    var fCount: Integer := 0;
+    var fMaxUsedIndex: Integer := DEFAULT_MAX_INDEX;
+    var fbucketTable: array of Integer; // contains "hash / fcapacity" and references to fTable
+
+    var fFirstHole: Integer := EMPTY_BUCKET;
+    var fEntriesTable: array of Entry<T, U>;
+    var fComparer : IEqualityComparer<T>;
 
     method GetKeys: sequence of T; iterator;
     begin
@@ -204,7 +204,6 @@ type
       fEntriesTable := new_fEntriesTable;
     end;
 
-
   public
     constructor;
     begin
@@ -264,22 +263,23 @@ type
       result := lResult;
     end;
 
-    operator Explicit(aDictionary: Foundation.NSDictionary<T,U>): Dictionary<T,U>;
+    operator Explicit(aDictionary: Foundation.NSDictionary<T,U>): ImmutableDictionary<T,U>;
     begin
       result := new Dictionary<T,U>(aDictionary);
     end;
 
-    operator Explicit(aDictionary: Dictionary<T,U>): Foundation.NSDictionary<T,U>;
+    operator Explicit(aDictionary: ImmutableDictionary<T,U>): Foundation.NSDictionary<T,U>;
     begin
       result := aDictionary:ToNSDictionary;
     end;
 
-    operator Explicit(aDictionary: Dictionary<T,U>): Foundation.NSMutableDictionary<T,U>;
+    operator Explicit(aDictionary: ImmutableDictionary<T,U>): Foundation.NSMutableDictionary<T,U>;
     begin
       result := aDictionary:ToNSMutableDictionary;
     end;
     {$ENDIF}
 
+    [&Sequence]
     method GetSequence: sequence of KeyValuePair<T,U>;
     begin
       var r := new array of KeyValuePair<T,U>(fCount);
@@ -291,22 +291,6 @@ type
         end;
       end;
       exit r;
-    end;
-
-    method &Add(Key: T; Value: U);
-    begin
-      var hash := CalcHashCode(Key);
-      if IndexOfKey(hash, Key) <> -1 then raise new Exception('Duplicated key');
-      DoAdd(hash, Key,Value);
-    end;
-
-    method Clear;
-    begin
-      fbucketTable := new array of Integer(0);
-      fEntriesTable := new array of Entry<T,U>(0);
-      fCount := 0;
-      fMaxUsedIndex := DEFAULT_MAX_INDEX;
-      fFirstHole := EMPTY_BUCKET;
     end;
 
     method TryGetValue(aKey: T; out aValue: U): Boolean;
@@ -330,6 +314,36 @@ type
       exit IndexOfValue(Value) <> -1;
     end;
 
+    method ForEach(Action: Action<KeyValuePair<T, U>>);
+    begin
+      for i: Integer := 0 to fCount - 1 do
+        Action(new KeyValuePair<T,U>(fEntriesTable[i].Key,fEntriesTable[i].Value));
+    end;
+
+    property Item[Key: T]: U read GetItem protected write SetItem; virtual; default;
+    property Keys: sequence of T read GetKeys;
+    property Values: sequence of U read GetValues;
+    property Count: Integer read fCount;
+  end;
+
+  Dictionary<T,U> = public class(ImmutableDictionary<T,U>)
+  public
+    method &Add(Key: T; Value: U);
+    begin
+      var hash := CalcHashCode(Key);
+      if IndexOfKey(hash, Key) <> -1 then raise new Exception('Duplicated key');
+      DoAdd(hash, Key,Value);
+    end;
+
+    method Clear;
+    begin
+      fbucketTable := new array of Integer(0);
+      fEntriesTable := new array of Entry<T,U>(0);
+      fCount := 0;
+      fMaxUsedIndex := DEFAULT_MAX_INDEX;
+      fFirstHole := EMPTY_BUCKET;
+    end;
+
     method &Remove(Key: T): Boolean;
     begin
       var hash := CalcHashCode(Key);
@@ -338,16 +352,8 @@ type
       exit idx <> -1;
     end;
 
-    method ForEach(Action: Action<KeyValuePair<T, U>>);
-    begin
-      for i: Integer := 0 to fCount - 1 do
-        Action(new KeyValuePair<T,U>(fEntriesTable[i].Key,fEntriesTable[i].Value));
-    end;
+    property Item[Key: T]: U read GetItem write SetItem; default; override;
 
-    property Item[Key: T]: U read GetItem write SetItem; default;
-    property Keys: sequence of T read GetKeys;
-    property Values: sequence of U read GetValues;
-    property Count: Integer read fCount;
   end;
 
 end.

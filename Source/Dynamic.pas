@@ -537,10 +537,10 @@ type
 
   DynamicMethodGroup = public class
   private
-    fItems: List<&MethodInfo>;
+    fItems: ImmutableList<&MethodInfo>;
     fInst: Object;
   public
-    constructor(aInst: Object; aItems: List<&MethodInfo>);
+    constructor(aInst: Object; aItems: ImmutableList<&MethodInfo>);
     begin
       fItems := aItems;
       fInst := aInst;

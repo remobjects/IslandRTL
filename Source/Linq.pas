@@ -230,6 +230,13 @@ begin
   exit self.ToList().ToArray;
 end;
 
+extension method ISequence<T>.ToImmutableList(): not nullable ImmutableList<T>; public;
+begin
+  if self is ImmutableList<T> then exit self as ImmutableList<T>;
+  if self is array of T then exit new ImmutableList<T>(self as array of T);
+  result := new ImmutableList<T>(self);
+end;
+
 extension method ISequence<T>.ToList(): not nullable List<T>; public;
 begin
   if self is List<T> then exit self as List<T>;

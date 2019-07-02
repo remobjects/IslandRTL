@@ -82,9 +82,9 @@ type
       {$ENDIF}
     end;
 
-    method GetEnvironmentVariables: Dictionary<String, String>;
+    method GetEnvironmentVariables: ImmutableDictionary<String, String>;
     begin
-      result := new Dictionary<String,String>();
+      var lResult := new Dictionary<String,String>();
       {$IFDEF WINDOWS}
       var lEnvp := rtl.GetEnvironmentStringsW;
       if lEnvp = nil then
@@ -103,7 +103,7 @@ type
           if lPos >= 0 then begin
             var lKey := lOneVar.Substring(0, lPos);
             var lValue := lOneVar.Substring(lPos + 1);
-            result.Add(lKey, lValue);
+            lResult.Add(lKey, lValue);
           end;
         end;
         inc(lStrings);
@@ -118,11 +118,12 @@ type
         if lPos >= 0 then begin
           var lKey := lVar.Substring(0, lPos);
           var lValue := lVar.Substring(lPos + 1);
-          result.Add(lKey, lValue);
+          lResult.Add(lKey, lValue);
         end;
         inc(i);
       end;
       {$ENDIF}
+      result := lResult;
     end;
 
     method CurrentDirectory: String;
