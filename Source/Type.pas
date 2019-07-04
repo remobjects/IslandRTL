@@ -683,15 +683,16 @@ type
        SortTypes(lTypes);
      end;
     {$ELSE}
-    [SymbolName('__start_ELRTTLRR')]
+    [SymbolName('__start_ELRTTLRR')] 
     class var fStart: ^IslandTypeInfo; external;
     [SymbolName('__stop_ELRTTLRR')]
     class var fEnd: ^IslandTypeInfo;external;
 
      class method LoadTypes;
      begin
+       var lEnd := @fEnd;
        var lWork := @fStart;
-       var lTypes := new ^IslandTypeInfo[(IntPtr(fEnd) - IntPtr(fStart)) / sizeOf(IntPtr)];
+       var lTypes := new ^IslandTypeInfo[(IntPtr(lEnd) - IntPtr(lWork)) / sizeOf(IntPtr) + 1];
        var n := 0;
        loop begin
          if lWork^ <> nil then begin
@@ -699,8 +700,9 @@ type
            inc(n);
          end;
          inc(lWork);
-         if lWork > @fEnd then break;
+         if lWork >= lEnd then break;
        end;
+       SortTypes(lTypes);
      end;
     {$ENDIF}
 
@@ -813,18 +815,27 @@ type
     [SymbolName('__stop_ELRTMLRR')]
     class var fEndM: IslandMethodUIDInfo;external;
 
+    [DisableInlining]
+    class method GetMethodStart: ^IslandMethodUIDInfo; begin exit @FStartM; end;
+
+    [DisableInlining]
+    class method GetMethodsEnd: ^IslandMethodUIDInfo; begin exit @FEndM; end;
+
+
      class method LoadMethods;
      begin
-       var lWork := @fStartM;
+
+       var lEnd := GetMethodsEnd;
+       var lWork := GetMethodStart;
        var n := 0;
-       var lMethods := new IslandMethodUIDInfo[(IntPtr(@fEndM) - IntPtr(@fStartM) / sizeOf(IslandMethodUIDInfo)) + 1];
+       var lMethods := new IslandMethodUIDInfo[((IntPtr(lEnd) - IntPtr(lWork)) / sizeOf(IslandMethodUIDInfo))+1];
        loop begin
          if lWork^.Ptr <> 0 then begin
            lMethods[n] := lWork^;
            inc(n);
          end;
          inc(lWork);
-         if lWork > @fEndM then break;
+         if lWork > lEnd then break;
        end;
        SortMethods(lMethods);
      end;
