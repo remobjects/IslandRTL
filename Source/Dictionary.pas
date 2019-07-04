@@ -210,7 +210,7 @@ type
       constructor(MIN_DICTIONATY_SIZE);
     end;
 
-    constructor(aComparer : IEqualityComparer<T>);
+    constructor(aComparer: nullable IEqualityComparer<T>);
     begin
       fComparer := aComparer;
       constructor;
@@ -223,20 +223,20 @@ type
       DoResize(CalcNextCapacity(aCapacity));
     end;
 
-    constructor(aCapacity: Int32; aComparer : IEqualityComparer<T>);
+    constructor(aCapacity: Int32; aComparer: nullable IEqualityComparer<T>);
     begin
       fComparer := aComparer;
       constructor(aCapacity);
     end;
 
-    constructor(aDictionary: Dictionary<T,U>);
+    constructor(aDictionary: not nullable ImmutableDictionary<T,U>);
     begin
       constructor(aDictionary.Keys.Count);
       for each k in aDictionary.Keys do
         self[k] := aDictionary[k];
     end;
 
-    constructor(aDictionary: Dictionary<T,U>; aComparer : IEqualityComparer<T>);
+    constructor(aDictionary: not nullable ImmutableDictionary<T,U>; aComparer: nullable IEqualityComparer<T>);
     begin
       fComparer := aComparer;
       constructor(aDictionary);
