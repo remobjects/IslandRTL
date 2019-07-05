@@ -32,12 +32,12 @@ begin
 
   __ElementsPlatformVersion[0] := 1;
   {$IF DARWIN}
-  var version := NSProcessInfo.processInfo.operatingSystemVersion;
+  var version := Foundation.NSProcessInfo.processInfo.operatingSystemVersion;
   __ElementsPlatformVersion[1] := version.majorVersion;
   __ElementsPlatformVersion[2] := version.minorVersion;
   __ElementsPlatformVersion[3] := version.patchVersion;
 
-  if defined("TARGET_OS_UIKITFORMAC") and __ElementsPlatformVersion[2] ≥ 15 then begin
+  if defined("TARGET_OS_UIKITFORMAC") and (__ElementsPlatformVersion[2] ≥ 15) then begin
     __ElementsUIKitForMacVersion[0] := 1;
     __ElementsUIKitForMacVersion[1] := __ElementsPlatformVersion[2]-2;
     __ElementsUIKitForMacVersion[2] := __ElementsPlatformVersion[3];
