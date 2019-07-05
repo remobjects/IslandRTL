@@ -69,7 +69,7 @@ type
     begin
       if aVal = nil then exit nil;
       var lPtr: ^Void;
-      if 0 <> ^^rtl.__struct_IUnknownVtbl(aVal)^^.QueryInterface(aVal, ^rtl.GUID(@IElementsObject_UID), @lPtr) then exit nil;
+      if 0 <> ^^^rtl.__struct_IUnknownVtbl(@aVal)^^.QueryInterface(aVal, ^rtl.GUID(@IElementsObject_UID), @lPtr) then exit nil;
       result := ICOMInterface(^ElementsCOMInterface(lPtr)^.Object);
       ^^rtl.__struct_IUnknownVtbl(lPtr)^^.Release(^rtl.IUnknown(@lPtr)^);
     end;
