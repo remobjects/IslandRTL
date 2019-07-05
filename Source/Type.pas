@@ -16,7 +16,7 @@ var
 
 type
   [Packed]
-  IslandMethodUIDInfo = record
+  IslandMethodUIDInfo = public record
   public
     K1, K2: Int64;
     Ptr: IntPtr;
@@ -641,7 +641,7 @@ type
     class method LoadTypes;
      begin
        var lWork := @fStart;
-       var lTypes := new ^IslandTypeInfo[(IntPtr(@fEnd) - IntPtr(@fStart)) / sizeOf(IntPtr)];
+       var lTypes := new ^IslandTypeInfo[(IntPtr(@fEnd) - IntPtr(@fStart)) / sizeOf(IntPtr) + 3];
        var n := 0;
        loop begin
          inc(lWork);
@@ -650,6 +650,9 @@ type
          lTypes[n] := lWork^;
          inc(n);
        end;
+      lTypes[n] := @ComInterfaceRTTI; inc(n);
+      lTypes[n] := @CocoaClassRTTI; inc(n);
+      lTypes[n] := @SwiftClassRTTI; inc(n);
        SortTypes(lTypes);
      end;
 
@@ -670,7 +673,7 @@ type
        var lStart := rtl.getsectiondata(hdr, "__DATA", "__ELRTTLRR", @lSize);
        var lWork := ^^IslandTypeInfo(lStart);
        var lEnd := ^^IslandTypeInfo(^Byte(lStart) + lSize);
-       var lTypes := new ^IslandTypeInfo[lSize / sizeOf(IntPtr)];
+       var lTypes := new ^IslandTypeInfo[lSize / sizeOf(IntPtr) + 3];
        var n := 0;
        loop begin
          if lWork^ <> nil then begin
@@ -680,6 +683,9 @@ type
          inc(lWork);
          if lWork >= lEnd then break;
        end;
+        lTypes[n] := @ComInterfaceRTTI; inc(n);
+        lTypes[n] := @CocoaClassRTTI; inc(n);
+        lTypes[n] := @SwiftClassRTTI; inc(n);
        SortTypes(lTypes);
      end;
     {$ELSE}
@@ -692,7 +698,7 @@ type
      begin
        var lEnd := @fEnd;
        var lWork := @fStart;
-       var lTypes := new ^IslandTypeInfo[(IntPtr(lEnd) - IntPtr(lWork)) / sizeOf(IntPtr) + 1];
+       var lTypes := new ^IslandTypeInfo[(IntPtr(lEnd) - IntPtr(lWork)) / sizeOf(IntPtr) + 1 + 3];
        var n := 0;
        loop begin
          if lWork^ <> nil then begin
@@ -702,8 +708,12 @@ type
          inc(lWork);
          if lWork >= lEnd then break;
        end;
-       SortTypes(lTypes);
-     end;
+       
+      lTypes[n] := @ComInterfaceRTTI; inc(n);
+      lTypes[n] := @CocoaClassRTTI; inc(n);
+      lTypes[n] := @SwiftClassRTTI; inc(n);
+      SortTypes(lTypes);
+    end;
     {$ENDIF}
 
 
@@ -740,7 +750,9 @@ type
 
     class method ResolveType(aType: ^Void): ^IslandTypeInfo; assembly;
     begin
-      if fTypes = nil then LoadTypes;
+      if fTypes = nil then LoadTypes; 
+      var z := ^IslandMethodUIDInfo(aType); 
+      z^.tostring;
       var n := Array.BinarySearch(fTypes, aType, (a, b) -> begin
         if a = nil then exit -1;
         result := a^.Hash1.CompareTo(^IslandMethodUIDInfo(b).K1);
@@ -1132,6 +1144,9 @@ type
     property IsFloat: Boolean read Code in [TypeCodes.Single, TypeCodes.Double];
     property IsEnum: Boolean read (&Flags and IslandTypeFlags.TypeKindMask) = IslandTypeFlags.EnumFlags;
     property IsDelegate: Boolean read (&Flags and IslandTypeFlags.TypeKindMask) = IslandTypeFlags.Delegate;
+    property IsComInterface: Boolean read (IslandTypeFlags.TypeKindMask and fValue^.Ext^.Flags) = IslandTypeFlags.ComInterface;
+    property IsCocoaClass: Boolean read (IslandTypeFlags.TypeKindMask and fValue^.Ext^.Flags) = IslandTypeFlags.CocoaClass;
+    property IsSwiftClass: Boolean read (IslandTypeFlags.TypeKindMask and fValue^.Ext^.Flags) = IslandTypeFlags.SwiftClass;
 
     property DefFlags: TypeDefFlags read get_DefFlags;
     property SizeOfType: Integer read get_SizeOfType;
@@ -1234,6 +1249,52 @@ type
     Hash2: Int64;
   end;
 
+  var 
+  [SymbolName("__cominterface_rtti"), Used, StaticallyInitializedField]
+  ComInterfaceRTTI: IslandTypeInfo := new IslandTypeInfo (
+    Ext := @ComInterfaceExt,
+    ParentType := nil,
+    InterfaceType := nil,
+    InterfaceVMT := nil,
+    Hash1 := Int64($cbb97d02e4749c92),
+    Hash2 := Int64($b48e4f27c4374719)
+  );assembly;
+  [SymbolName("__cocoainterface_rtti"), Used, StaticallyInitializedField]
+  CocoaClassRTTI: IslandTypeInfo := new IslandTypeInfo (
+    Ext := @CococaClassExt,
+    ParentType := nil,
+    InterfaceType := nil,
+    InterfaceVMT := nil,
+    Hash1 := Int64($49987f1cfb738353), 
+    Hash2 := Int64($733406f403e14ced)
+  );assembly;
+  [SymbolName("__swiftinterface_rtti"), Used, StaticallyInitializedField]
+  SwiftClassRTTI: IslandTypeInfo := new IslandTypeInfo (
+    Ext := @SwiftClasseExt,
+    ParentType := nil,
+    InterfaceType := nil,
+    InterfaceVMT := nil,
+    Hash1 := Int64($62eb5fa6785f90c9),
+    Hash2 := Int64($3599d954c1778e2f)
+  );assembly;
+  [StaticallyInitializedField]
+  ComInterfaceExt: IslandExtTypeInfo := new IslandExtTypeInfo(
+    &Flags := IslandTypeFlags.ComInterface,
+    TypeSize := sizeOf(^Void)
+  );assembly;
+  [StaticallyInitializedField]
+  CococaClassExt: IslandExtTypeInfo := new IslandExtTypeInfo(
+    &Flags := IslandTypeFlags.CocoaClass,
+    TypeSize := sizeOf(^Void)
+  );assembly;
+  [StaticallyInitializedField]
+  SwiftClasseExt: IslandExtTypeInfo := new IslandExtTypeInfo(
+    &Flags := IslandTypeFlags.SwiftClass,
+    TypeSize := sizeOf(^Void)
+  ); assembly;
+
+
+type
   IslandInterfaceTable = public record
   public
     HashTableSize: Cardinal;
@@ -1254,6 +1315,9 @@ type
     &Array = 7,
     Pointer = 8,
     &Set = 9,
+    ComInterface = 10,
+    CocoaClass = 11,
+    SwiftClass = 12,
     MemberInfoPresent = 16,
     Generic = 32) of UInt64;
 
