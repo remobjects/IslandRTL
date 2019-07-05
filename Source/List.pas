@@ -170,7 +170,7 @@ type
     begin
       constructor(aArray.count);
       for i: Integer := 0 to aArray.count-1 do
-        &Add(aArray[i]);
+        PrivateAdd(aArray[i]);
     end;
 
     method ToNSArray: Foundation.NSArray<T>; inline;
