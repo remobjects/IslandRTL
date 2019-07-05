@@ -99,19 +99,11 @@ type
       exit GetEnumerator;
     end;
 
-    method &Add(val: Object);
+    method PrivateAdd(anItem: Object);
     begin
-      Add(T(val));
-    end;
-
-    method &Remove(val: Object): Boolean;
-    begin
-      exit Remove(T(val));
-    end;
-
-    method Contains(val: Object): Boolean;
-    begin
-      exit Contains(T(val));
+      if fCount = Capacity then Grow(Capacity+1);
+      fItems[fCount] := T(anItem);
+      inc(fCount);
     end;
 
   public
@@ -160,7 +152,7 @@ type
       var lLength := aSequence.Count; // ineffficient; looks the sequence twice :(
       if lLength > 0 then begin
         for each s in aSequence do
-          &Add(s);
+          &PrivateAdd(s);
       end
       else begin
         Clear();
@@ -352,6 +344,21 @@ type
     property IntItem[i: Integer]: Object read Item[i] write set_IntItem; implements IList.Item;
 
   public
+
+    method &Add(val: Object);
+    begin
+      Add(T(val));
+    end;
+
+    method &Remove(val: Object): Boolean;
+    begin
+      exit Remove(T(val));
+    end;
+
+    method Contains(val: Object): Boolean;
+    begin
+      exit Contains(T(val));
+    end;
 
     method &Add(anItem: T);
     begin
