@@ -13,11 +13,16 @@ type
     func: atexitfunc;
     next: ^atexitrec;
   end;
+
   UserEntryPointType =public method (args: array of String): Integer;
   {$IFNDEF DARWIN}
   dliteratecb = public function (info :^__struct_dl_phdr_info; size: size_t; data: ^Void): Integer;
   {$ENDIF}
-  {$IFDEF ARM and not ARM64 and not DARWIN}rtl.__struct__Unwind_Exception = rtl.__struct__Unwind_Control_Block;{$ENDIF}
+
+  {$IFDEF ARM and not ARM64 and not DARWIN}
+  rtl.__struct__Unwind_Exception = rtl.__struct__Unwind_Control_Block;
+  {$ENDIF}
+
   ExternalCalls = public static class
   private
     [ThreadLocal]
@@ -26,9 +31,10 @@ type
     Target: IntPtr; assembly;
 
     class var atexitlist: ^atexitrec;
+
     {$IFDEF ANDROID}
-//[SymbolName('__executable_start')]
-//var __executable_start: ^Void; external;
+    //[SymbolName('__executable_start')]
+    //var __executable_start: ^Void; external;
     [SymbolName("dl_iterate_phdr"), &Weak]
     method dl_iterate_phdr(info: dliteratecb; data: ^Void): Integer; public;
     begin
@@ -68,8 +74,8 @@ type
       {$ENDIF}*)
     end;
     {$ENDIF}
-  public
 
+  public
 
     {$IFDEF ARM and not arm64 and not DARWIN}
     [SymbolName('_elements_posix_exception_handler')]
@@ -107,16 +113,19 @@ type
     [Used, SymbolName('_GLOBAL_OFFSET_TABLE_')]
     class var _GLOBAL_OFFSET_TABLE_: Integer; private; external;
     {$ENDIF}
+
     {$IF NOT EMSCRIPTEN AND NOT ANDROID and not DARWIN}
     [SymbolName('_start'), Naked]
     method _start;
     [SymbolName('__libc_start_main', 'libc.so.6'), &weak]
     method libc_main(main: LibCEntryHelper; argc: Integer; argv: ^^Char; aInit: LibCEntryHelper; aFini: LibCFinalizerHelper); external;
     {$ENDIF}
+
     {$IFDEF DARWIN}
     [SymbolName('main')]
     method main(argc: Integer; argv: ^^AnsiChar; env: ^^AnsiChar): Integer;
     {$ENDIF}
+
     [SymbolName('__elements_init'), Used]
     method init(_nargs: Integer; _args: ^^AnsiChar; _envp: ^^AnsiChar): Integer;
     [SymbolName('__elements_fini'), Used]
@@ -156,28 +165,25 @@ type
 
 {$ELSE}
 
-
-
-{$IFNDEF ANDROID}
+    {$IFNDEF ANDROID}
     [SymbolName("__atomic_store_4")]
     class method __atomic_store_4(var mem: Int32; val: Int32);
     begin
       InternalCalls.VolatileWrite(var mem, val);
     end;
-{$ENDIF}
-   [SymbolName("__atomic_fetch_add_4")]
-   class method __atomic_fetch_add_4(var mem: Int32; val: Int32): Int32;
-   begin
-     exit InternalCalls.Add(var mem, val);
-   end;
+    {$ENDIF}
 
+    [SymbolName("__atomic_fetch_add_4")]
+    class method __atomic_fetch_add_4(var mem: Int32; val: Int32): Int32;
+    begin
+      exit InternalCalls.Add(var mem, val);
+    end;
 
-   [SymbolName("__atomic_compare_exchange_4")]
-   class method __atomic_compare_exchange_4(var mem: Int32; exp: Int32; val: Int32): Int32;
-   begin
-     exit InternalCalls.CompareExchange(var mem, val, exp);
-   end;
-
+    [SymbolName("__atomic_compare_exchange_4")]
+    class method __atomic_compare_exchange_4(var mem: Int32; exp: Int32; val: Int32): Int32;
+    begin
+      exit InternalCalls.CompareExchange(var mem, val, exp);
+    end;
 
     [SymbolName("__atomic_store_8")]
     class method __atomic_store_8(var mem: Int64; val: Int64);
