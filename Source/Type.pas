@@ -689,7 +689,7 @@ type
        SortTypes(lTypes);
      end;
     {$ELSE}
-    [SymbolName('__start_ELRTTLRR')] 
+    [SymbolName('__start_ELRTTLRR')]
     class var fStart: ^IslandTypeInfo; external;
     [SymbolName('__stop_ELRTTLRR')]
     class var fEnd: ^IslandTypeInfo;external;
@@ -708,7 +708,7 @@ type
          inc(lWork);
          if lWork >= lEnd then break;
        end;
-       
+
       lTypes[n] := @ComInterfaceRTTI; inc(n);
       lTypes[n] := @CocoaClassRTTI; inc(n);
       lTypes[n] := @SwiftClassRTTI; inc(n);
@@ -750,9 +750,9 @@ type
 
     class method ResolveType(aType: ^Void): ^IslandTypeInfo; assembly;
     begin
-      if fTypes = nil then LoadTypes; 
-      var z := ^IslandMethodUIDInfo(aType); 
-      z^.tostring;
+      if fTypes = nil then LoadTypes;
+      var z := ^IslandMethodUIDInfo(aType);
+      z^.ToString;
       var n := Array.BinarySearch(fTypes, aType, (a, b) -> begin
         if a = nil then exit -1;
         result := a^.Hash1.CompareTo(^IslandMethodUIDInfo(b).K1);
@@ -828,10 +828,10 @@ type
     class var fEndM: IslandMethodUIDInfo;external;
 
     [DisableInlining]
-    class method GetMethodStart: ^IslandMethodUIDInfo; begin exit @FStartM; end;
+    class method GetMethodStart: ^IslandMethodUIDInfo; begin exit @fStartM; end;
 
     [DisableInlining]
-    class method GetMethodsEnd: ^IslandMethodUIDInfo; begin exit @FEndM; end;
+    class method GetMethodsEnd: ^IslandMethodUIDInfo; begin exit @fEndM; end;
 
 
      class method LoadMethods;
@@ -1249,7 +1249,7 @@ type
     Hash2: Int64;
   end;
 
-  var 
+  var
   [SymbolName("__cominterface_rtti"), Used, StaticallyInitializedField]
   ComInterfaceRTTI: IslandTypeInfo := new IslandTypeInfo (
     Ext := @ComInterfaceExt,
@@ -1265,7 +1265,7 @@ type
     ParentType := nil,
     InterfaceType := nil,
     InterfaceVMT := nil,
-    Hash1 := Int64($49987f1cfb738353), 
+    Hash1 := Int64($49987f1cfb738353),
     Hash2 := Int64($733406f403e14ced)
   );assembly;
   [SymbolName("__swiftinterface_rtti"), Used, StaticallyInitializedField]

@@ -5,6 +5,12 @@
 uses
   Foundation;
 
+{$IF TARGET_OS_IPHONE OR TARGET_OS_TV OR TARGET_OS_WATCH}
+const COREFOUNDATION_FRAMEWORK = "/System/Library/Frameworks/CoreFoundation.framework/CoreFoundation"; assembly;
+{$ELSE}
+const COREFOUNDATION_FRAMEWORK = "/System/Library/Frameworks/CoreFoundation.framework/Versions/A/CoreFoundation"; assembly;
+{$ENDIF}
+
 [assembly:AssemblyDefineAttribute('DARWIN')]
 
 // These are "required" dllimports; pretty much all projects use this.
@@ -39,7 +45,7 @@ uses
 [assembly:DllImport('/usr/lib/system/libsystem_blocks.dylib', EntryPoint := '__Block_object_assign')]
 [assembly:DllImport('/usr/lib/system/libsystem_blocks.dylib', EntryPoint := '__Block_object_dispose')]
 
-[assembly:DllImport('/System/Library/Frameworks/CoreFoundation.framework/Versions/A/CoreFoundation', EntryPoint := '___CFConstantStringClassReference')]
+[assembly:DllImport(COREFOUNDATION_FRAMEWORK, EntryPoint := '___CFConstantStringClassReference')]
 
 type
   [AttributeUsage(AttributeTargets.Method)]
@@ -299,10 +305,10 @@ begin
     sb.SelectProperty(false, 'implementation');
     var imp := method_getImplementation(&method);
     sb.WriteString(^IntPtr(@imp)^.ToString);
-    
+
     sb.EndObject;
   end;
-  rtl.free(methods); 
+  rtl.free(methods);
   sb.EndList;
 
 
@@ -362,7 +368,7 @@ begin
 
   clz := objc_getMetaClass(class_getName(clz));
 
-  
+
   sb.SelectProperty(false, 'classMethods');
   sb.StartList;
   methodCount := 0;
@@ -380,7 +386,7 @@ begin
     sb.WriteString(^IntPtr(@imp)^.ToString);
     sb.EndObject;
   end;
-  rtl.free(methods); 
+  rtl.free(methods);
   sb.EndList;
 
 

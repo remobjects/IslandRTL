@@ -6,11 +6,11 @@ interface
 uses
   CoreFoundation;
 
-[assembly:DllImport('/System/Library/Frameworks/CoreFoundation.framework/Versions/A/CoreFoundation', EntryPoint := '_kCFLocaleCurrencySymbol')]
-[assembly:DllImport('/System/Library/Frameworks/CoreFoundation.framework/Versions/A/CoreFoundation', EntryPoint := '_kCFLocaleDecimalSeparator')]
-[assembly:DllImport('/System/Library/Frameworks/CoreFoundation.framework/Versions/A/CoreFoundation', EntryPoint := '_kCFDateFormatterPMSymbol')]
-[assembly:DllImport('/System/Library/Frameworks/CoreFoundation.framework/Versions/A/CoreFoundation', EntryPoint := '_kCFDateFormatterAMSymbol')]
-[assembly:DllImport('/System/Library/Frameworks/CoreFoundation.framework/Versions/A/CoreFoundation', EntryPoint := '_kCFLocaleGroupingSeparator')]
+[assembly:DllImport(COREFOUNDATION_FRAMEWORK, EntryPoint := '_kCFLocaleCurrencySymbol')]
+[assembly:DllImport(COREFOUNDATION_FRAMEWORK, EntryPoint := '_kCFLocaleDecimalSeparator')]
+[assembly:DllImport(COREFOUNDATION_FRAMEWORK, EntryPoint := '_kCFDateFormatterPMSymbol')]
+[assembly:DllImport(COREFOUNDATION_FRAMEWORK, EntryPoint := '_kCFDateFormatterAMSymbol')]
+[assembly:DllImport(COREFOUNDATION_FRAMEWORK, EntryPoint := '_kCFLocaleGroupingSeparator')]
 {$ENDIF}
 
 {$IFDEF ANDROID}

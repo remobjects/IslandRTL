@@ -132,7 +132,7 @@ type
       end;
     end;
 
-    constructor(aArray: array of T);
+    constructor(params aArray: array of T);
     begin
       var lLength := length(aArray);
       if lLength > 0 then begin
