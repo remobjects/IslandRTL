@@ -208,26 +208,27 @@ type
     {$IFDEF DARWIN}
     [SymbolName('bzero')]
     class method bzero(p: ^Void; s: size_t); public;
-    begin 
-      while s>= 8 do begin
+    begin
+      while s ≥ 8 do begin
         ^Int64(p)^ := 0;
         p := ^Void(^Byte(p) + 8);
         dec(s, 8);
       end;
-      if s>= 4 then begin
+      if s ≥ 4 then begin
         ^Int32(p)^ := 0;
-        ptr := ^Void(^Byte(p) + 4);
-        p(s, 4);
+        p := ^Void(^Byte(p) + 4);
+        dec(s, 4);
       end;
-      if s>= 2 then begin
+      if s ≥ 2 then begin
         ^Int16(p)^ := 0;
         p := ^Void(^Byte(p) + 2);
         dec(s, 2);
       end;
-      if s>= 1 then begin
+      if s ≥ 1 then begin
         ^Byte(p)^ := 0;
       end;
     end;
+
     [SymbolName('__stack_chk_fail')]
     class method __stack_chk_fail();  begin end;
     {$ELSE}
@@ -245,36 +246,36 @@ type
     {$IFDEF DARWIN}
     [SymbolNameAttribute('memset_pattern4')]
     class method memset_pattern4(ptr: ^Int32; pattern: ^Int32; len: Integer);
-    begin 
+    begin
       var p := pattern^;
-      for i: Integer := 0 to (len div 4) -1 do 
+      for i: Integer := 0 to (len div 4) -1 do
         ptr[i] := p;
       memcpy(@ptr[len div 4], pattern, len mod 4);
     end;
     [SymbolNameAttribute('memset_pattern8')]
     class method memset_pattern8(ptr: ^Int64; pattern: ^Int64; len: Integer);
-    begin 
+    begin
       var p := pattern^;
-      for i: Integer := 0 to (len div 8) -1 do 
+      for i: Integer := 0 to (len div 8) -1 do
         ptr[i] := p;
       memcpy(@ptr[len div 4], pattern, len mod 8);
     end;
     [SymbolNameAttribute('memset_pattern16')]
     class method memset_pattern16(ptr: ^Int64Pair; pattern: ^Int64Pair; len: Integer);
-    begin 
+    begin
       var p := pattern^;
-      for i: Integer := 0 to (len div 16) -1 do 
+      for i: Integer := 0 to (len div 16) -1 do
         ptr[i] := p;
       memcpy(@ptr[len div 4], pattern, len mod 16);
     end;
     [SymbolNameAttribute('__memmove_chk')]
     class method __memmove_chk(dest: ^Void; src: ^Void; len: size_t; destlength: size_t): ^Void;
-    begin 
+    begin
       exit memmove(dest, src, len);
     end;
     [SymbolNameAttribute('__memset_chk')]
     class method __memset_chk (dest: ^Void; c: Integer; n, dest_len: size_t ): ^Void;
-    begin 
+    begin
       exit memset(dest, c, n);
     end;
 
@@ -317,9 +318,9 @@ type
     Object: IntPtr;
   end;
 
-  CXXException = public record 
+  CXXException = public record
   public
-    exceptionType, 
+    exceptionType,
     dtor,
     unexpected,
     terminated,
@@ -329,13 +330,13 @@ type
     ar, spd: IntPtr;
     catchTemp: IntPtr;
     adjustedPtr: IntPtr;
-    
+
     Unwind: rtl.__struct__Unwind_Exception;
     Object: IntPtr;
   end;
 
 
-  
+
 method CheckForLastError(aMessage: String := '');
 method CheckForIOError(value: Integer);
 
@@ -462,20 +463,20 @@ method ExternalCalls._start;
 begin
 {$IFDEF ARM64}
   InternalCalls.VoidAsm("
-   mov	x29, #0x0
-   mov	x30, #0x0
-   mov	x5, x0
-   ldr	x1, [sp]
-  add	x2, sp, #0x8
-  mov	x6, sp
-  adrp	x0, __elements_entry_point_helper
+   mov  x29, #0x0
+   mov  x30, #0x0
+   mov  x5, x0
+   ldr  x1, [sp]
+  add  x2, sp, #0x8
+  mov  x6, sp
+  adrp  x0, __elements_entry_point_helper
   add x0, x0, :lo12:__elements_entry_point_helper
-  adrp	x3, __elements_init
+  adrp  x3, __elements_init
   add x3, x3, :lo12:__elements_init
-  adrp	x4, __elements_fini
+  adrp  x4, __elements_fini
   add x4, x4, :lo12:__elements_fini
-  bl	__libc_start_main
-  
+  bl  __libc_start_main
+
   ", "", false, false);
 {$ELSEIF ARM}
   InternalCalls.VoidAsm(
@@ -669,7 +670,7 @@ begin
           if aNative then begin
             var exception_header := ^ElementsException(aEx);
             exception_header := ^ElementsException(@^Byte(exception_header)[-Int32((^Byte(@exception_header^.Unwind) - ^Byte(exception_header)))]);
-            if aObjc then begin 
+            if aObjc then begin
             {$IFDEF DARWIN}
               if new &Type(^IslandTypeInfo(catchType)).IsAssignableFrom(typeOf(IslandWrappedCocoaException)) then begin
                 if 0 <> (aAction and {$IFDEF EMSCRIPTEN  OR x86_64}_Unwind_Action._UA_SEARCH_PHASE{$ELSE}_UA_SEARCH_PHASE{$ENDIF}) then begin
@@ -809,7 +810,7 @@ begin
   if (aECB = nil) or (aCtx = nil) then exit rtl._Unwind_Reason_Code._URC_FAILURE;
   var lMine := ^UInt64(@aECB.exception_class)^ = ElementsExceptionCode;
   var lObjc := false;
-  if not lMine and (^UInt64(@aECB.exception_class)^ = 4849336966747728640) then begin 
+  if not lMine and (^UInt64(@aECB.exception_class)^ = 4849336966747728640) then begin
     lMine := true;
     lObjc := true;
   end;
@@ -900,7 +901,7 @@ begin
   if (aVersion <> 1) or (aEx = nil) or (aCtx = nil) then exit rtl._Unwind_Reason_Code._URC_FATAL_PHASE1_ERROR;
   var lMine := aClass = ElementsExceptionCode;
   var lObjc: Boolean := false;
-  if not lMine and (aClass = 4849336966747728640) then begin 
+  if not lMine and (aClass = 4849336966747728640) then begin
     lMine := true;
     lObjc := true;
   end;
@@ -967,7 +968,7 @@ begin
         var lRec := ^CXXException(aEx);
         lRec := ^CXXException(@^Byte(lRec)[-Int32((^Byte(@lRec^.Unwind) - ^Byte(lRec))) - (sizeOf(IntPtr) * 2)]);
         free(lRec)
-      end else 
+      end else
         free(lRecord);
       exit rtl._Unwind_Reason_Code._URC_INSTALL_CONTEXT;
     end;
