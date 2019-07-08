@@ -971,7 +971,7 @@ type
       var lTy: ProtoReadType;
       while ProtoReadHeader(var lPtr, out lKey, out lTy) do begin
         if (lKey = 7) and (lTy = ProtoReadType.varint) then begin
-          yield new &Type(^IslandTypeInfo(fValue^.Ext^.MemberInfoList[ProtoReadVarInt(var lPtr)]))
+          yield new &Type(^IslandTypeInfo(&Type.ResolveType(fValue^.Ext^.MemberInfoList[ProtoReadVarInt(var lPtr)])))
         end else
           ProtoSkipValue(var lPtr, lTy);
       end;
@@ -1038,7 +1038,7 @@ type
       var lTy: ProtoReadType;
       while ProtoReadHeader(var lPtr, out lKey, out lTy) do begin
         if (lKey = 13) and (lTy = ProtoReadType.varint) then
-          exit new &Type(^IslandTypeInfo(fValue^.Ext^.MemberInfoList[ProtoReadVarInt(var lPtr)]))
+          exit new &Type(^IslandTypeInfo(&Type.ResolveType(fValue^.Ext^.MemberInfoList[ProtoReadVarInt(var lPtr)])))
         else
           ProtoSkipValue(var lPtr, lTy);
       end;
