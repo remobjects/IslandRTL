@@ -515,22 +515,22 @@ begin
 	vval := vval or (vval shl 32);
 	// TODO: Optimize this
 	while aNum >= 8 do begin
-		^Int64(ptr)^ := 0;
+		^Int64(ptr)^ := vval;
 		ptr := ^Void(^Byte(ptr) + 8);
 		dec(aNum, 8);
 	end;
 	if aNum >= 4 then begin
-		^Int32(ptr)^ := 0;
+		^Int32(ptr)^ := Int32(vval);
 		ptr := ^Void(^Byte(ptr) + 4);
 		dec(aNum, 4);
 	end;
 	if aNum >= 2 then begin
-		^Int16(ptr)^ := 0;
+		^Int16(ptr)^ := Int16(vval);
 		ptr := ^Void(^Byte(ptr) + 2);
 		dec(aNum, 2);
 	end;
 	if aNum >= 1 then begin
-		^Byte(ptr)^ := 0;
+		^Byte(ptr)^ := value;
 	end;
 end;
 

@@ -209,7 +209,24 @@ type
     [SymbolName('bzero')]
     class method bzero(p: ^Void; s: size_t); public;
     begin 
-      memset(p, 0, s);
+      while s>= 8 do begin
+        ^Int64(p)^ := 0;
+        p := ^Void(^Byte(p) + 8);
+        dec(s, 8);
+      end;
+      if s>= 4 then begin
+        ^Int32(p)^ := 0;
+        ptr := ^Void(^Byte(p) + 4);
+        p(s, 4);
+      end;
+      if s>= 2 then begin
+        ^Int16(p)^ := 0;
+        p := ^Void(^Byte(p) + 2);
+        dec(s, 2);
+      end;
+      if s>= 1 then begin
+        ^Byte(p)^ := 0;
+      end;
     end;
     [SymbolName('__stack_chk_fail')]
     class method __stack_chk_fail();  begin end;
