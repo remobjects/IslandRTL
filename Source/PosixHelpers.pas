@@ -146,7 +146,8 @@ type
     [SymbolName('__init_array_end')] class var __init_array_end: Integer; external;
     {$ENDIF}
 
-{$IF not ANDROID and not DARWIN}
+{$IF NOT ANDROID AND NOT DARWIN}
+
     [SymbolName('stat64')]
     class method stat64(file: ^AnsiChar; var buf: rtl.__struct_stat64): Integer;
     begin
@@ -165,7 +166,7 @@ type
 
 {$ELSE}
 
-    {$IFNDEF ANDROID}
+    {$IF NOT ANDROID}
     [SymbolName("__atomic_store_4")]
     class method __atomic_store_4(var mem: Int32; val: Int32);
     begin
@@ -191,25 +192,25 @@ type
       InternalCalls.VolatileWrite(var mem, val);
     end;
 
-   [SymbolName("__atomic_fetch_add_8")]
-   class method __atomic_fetch_add_8(var mem: Int64; val: Int64): Int64;
-   begin
-     exit InternalCalls.Add(var mem, val);
-   end;
+    [SymbolName("__atomic_fetch_add_8")]
+    class method __atomic_fetch_add_8(var mem: Int64; val: Int64): Int64;
+    begin
+      exit InternalCalls.Add(var mem, val);
+    end;
 
+    [SymbolName("__atomic_compare_exchange_8")]
+    class method __atomic_compare_exchange_8(var mem: Int64; exp: Int64; val: Int64): Int64;
+    begin
+      exit InternalCalls.CompareExchange(var mem, val, exp);
+    end;
 
-   [SymbolName("__atomic_compare_exchange_8")]
-   class method __atomic_compare_exchange_8(var mem: Int64; exp: Int64; val: Int64): Int64;
-   begin
-    exit InternalCalls.CompareExchange(var mem, val, exp);
-   end;
-   {$IFDEF LINUX AND not ANDROID}
-   [SymbolNameAttribute('mknod')]
-   class method mknod(path: ^AnsiChar; mode: mode_t; dev: dev_t): Integer;
-   begin
-     exit __xmknod (0, path, mode, @dev);
-   end;
-   {$ENDIF}
+    {$IFDEF LINUX AND NOT ANDROID}
+    [SymbolNameAttribute('mknod')]
+    class method mknod(path: ^AnsiChar; mode: mode_t; dev: dev_t): Integer;
+    begin
+      exit __xmknod (0, path, mode, @dev);
+    end;
+    {$ENDIF}
 
     {$IFDEF DARWIN}
     [SymbolName('bzero')]
@@ -234,13 +235,18 @@ type
         ^Byte(p)^ := 0;
       end;
     end;
+    {$ENDIF}
 
+    {$IFDEF DARWIN}
     [SymbolName('__stack_chk_fail')]
-    class method __stack_chk_fail();  begin end;
+    class method __stack_chk_fail();
+    begin
+    end;
     {$ELSE}
     [SymbolName('__stack_chk_fail')]
     class method __stack_chk_fail(); external;
     {$ENDIF}
+
     {$IFNDEF i386}
     [SymbolName('__stack_chk_fail_local')]
     class method __stack_chk_fail_local();
@@ -248,7 +254,9 @@ type
       __stack_chk_fail();
     end;
     {$ENDIF}
-    {$ENDIF}
+
+{$ENDIF}
+
     {$IFDEF DARWIN}
     [SymbolNameAttribute('memset_pattern4')]
     class method memset_pattern4(ptr: ^Int32; pattern: ^Int32; len: Integer);
@@ -258,6 +266,7 @@ type
         ptr[i] := p;
       memcpy(@ptr[len div 4], pattern, len mod 4);
     end;
+
     [SymbolNameAttribute('memset_pattern8')]
     class method memset_pattern8(ptr: ^Int64; pattern: ^Int64; len: Integer);
     begin
@@ -266,6 +275,7 @@ type
         ptr[i] := p;
       memcpy(@ptr[len div 4], pattern, len mod 8);
     end;
+
     [SymbolNameAttribute('memset_pattern16')]
     class method memset_pattern16(ptr: ^Int64Pair; pattern: ^Int64Pair; len: Integer);
     begin
@@ -274,18 +284,20 @@ type
         ptr[i] := p;
       memcpy(@ptr[len div 4], pattern, len mod 16);
     end;
+
     [SymbolNameAttribute('__memmove_chk')]
     class method __memmove_chk(dest: ^Void; src: ^Void; len: size_t; destlength: size_t): ^Void;
     begin
       exit memmove(dest, src, len);
     end;
+
     [SymbolNameAttribute('__memset_chk')]
     class method __memset_chk (dest: ^Void; c: Integer; n, dest_len: size_t ): ^Void;
     begin
       exit memset(dest, c, n);
     end;
-
     {$ENDIF}
+
   end;
 
   Int64Pair = public packed record public a,b: Int64; end;
@@ -341,8 +353,6 @@ type
     Object: IntPtr;
   end;
 
-
-
 method CheckForLastError(aMessage: String := '');
 method CheckForIOError(value: Integer);
 
@@ -360,6 +370,7 @@ method free(v: ^Void);inline;
 begin
    rtl.Free(v);
 end;
+
 {$IFDEF DARWIN}
 [SymbolName('__stack_chk_guard')]
 var __stack_chk_guard: ^Void := ^Void($DEADBEEF);  public;
@@ -369,7 +380,6 @@ method __sprintf_chk;public; begin end;
 method _snprintf_chk;public; begin end;
 [SymbolNameAttribute('__vsnprintf_chk')]
 method __vsnprintf_chk;public; begin end;
-
 {$ENDIF}
 
 [SymbolName("__builtin_inf")]
@@ -382,10 +392,8 @@ method builtin_fabs(d: Double): Double; public; begin exit RemObjects.Elements.S
 method builtin_fabsf(d: Single): Single; public; begin exit RemObjects.Elements.System.__builtin_fabsf(d); end;
 
 
-
 [SymbolName('__elements_entry_point')]
 method UserEntryPoint(aArgs: array of String): Integer; external;
-
 
 [SymbolName({$IF EMSCRIPTEN OR ANDROID}'_start'{$ELSE}'__elements_entry_point_helper'{$ENDIF}), Used]
 method Entrypoint(argc: Integer; argv: ^^AnsiChar; _envp: ^^AnsiChar): Integer;
