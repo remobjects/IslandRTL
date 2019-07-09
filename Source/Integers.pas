@@ -3,6 +3,9 @@
 interface
 
 type
+  Int8 = public SByte;
+  UInt8 = public Byte;
+
   SByte = public record(INumber, IIntegerNumber, IEquatable<SByte>, IComparable, IComparable<SByte>)
   private
     class method DoTryParse(s: String; out Value: SByte; aRaiseOverflowException: Boolean):Boolean;
@@ -46,21 +49,21 @@ type
     const MaxValue: SByte = $7f;
 
 
-    
+
     method &Equals(other: SByte): Boolean;
-    begin 
+    begin
       exit self = other;
     end;
-    
+
     method CompareTo(a: Object): Integer;
-    begin 
-      if a is SByte then 
+    begin
+      if a is SByte then
         exit CompareTo(SByte(a));
       exit CompareTo(Convert.ToSByte(a));
     end;
 
     method CompareTo(a: SByte): Integer;
-    begin 
+    begin
       if self < a then exit -1;
       if self > a then exit 1;
       exit 0;
@@ -103,21 +106,21 @@ type
     const MaxValue: Byte = $ff;
 
 
-    
+
     method &Equals(other: Byte): Boolean;
-    begin 
+    begin
       exit self = other;
     end;
-    
+
     method CompareTo(a: Object): Integer;
-    begin 
-      if a is Byte then 
+    begin
+      if a is Byte then
         exit CompareTo(Byte(a));
       exit CompareTo(Convert.ToByte(a));
     end;
 
     method CompareTo(a: Byte): Integer;
-    begin 
+    begin
       if self < a then exit -1;
       if self > a then exit 1;
       exit 0;
@@ -166,21 +169,21 @@ type
     const MaxValue: Int16 = $7fff;
 
 
-    
+
     method &Equals(other: Int16): Boolean;
-    begin 
+    begin
       exit self = other;
     end;
-    
+
     method CompareTo(a: Object): Integer;
-    begin 
-      if a is Int16 then 
+    begin
+      if a is Int16 then
         exit CompareTo(Int16(a));
       exit CompareTo(Convert.ToInt16(a));
     end;
 
     method CompareTo(a: Int16): Integer;
-    begin 
+    begin
       if self < a then exit -1;
       if self > a then exit 1;
       exit 0;
@@ -223,21 +226,21 @@ type
     const MaxValue: UInt16 = $ffff;
 
 
-    
+
     method &Equals(other: UInt16): Boolean;
-    begin 
+    begin
       exit self = other;
     end;
-    
+
     method CompareTo(a: Object): Integer;
-    begin 
-      if a is UInt16 then 
+    begin
+      if a is UInt16 then
         exit CompareTo(UInt16(a));
       exit CompareTo(Convert.ToUInt16(a));
     end;
 
     method CompareTo(a: UInt16): Integer;
-    begin 
+    begin
       if self < a then exit -1;
       if self > a then exit 1;
       exit 0;
@@ -286,21 +289,21 @@ type
     const MinValue: Int32 = $80000000;
     const MaxValue: Int32 = $7fffffff;
 
-   
+
     method &Equals(other: Int32): Boolean;
-    begin 
+    begin
       exit self = other;
     end;
-    
+
     method CompareTo(a: Object): Integer;
-    begin 
-      if a is Int32 then 
+    begin
+      if a is Int32 then
         exit CompareTo(Int32(a));
       exit CompareTo(Convert.ToInt32(a));
     end;
 
     method CompareTo(a: Int32): Integer;
-    begin 
+    begin
       if self < a then exit -1;
       if self > a then exit 1;
       exit 0;
@@ -344,21 +347,21 @@ type
     const MaxValue: UInt32 = $ffffffff;
 
 
-    
+
     method &Equals(other: UInt32): Boolean;
-    begin 
+    begin
       exit self = other;
     end;
-    
+
     method CompareTo(a: Object): Integer;
-    begin 
-      if a is UInt32 then 
+    begin
+      if a is UInt32 then
         exit CompareTo(UInt32(a));
       exit CompareTo(Convert.ToUInt32(a));
     end;
 
     method CompareTo(a: UInt32): Integer;
-    begin 
+    begin
       if self < a then exit -1;
       if self > a then exit 1;
       exit 0;
@@ -398,21 +401,21 @@ type
     const MaxValue: Int64 = $7fffffffffffffff;
 
 
-    
+
     method &Equals(other: Int64): Boolean;
-    begin 
+    begin
       exit self = other;
     end;
-    
+
     method CompareTo(a: Object): Integer;
-    begin 
-      if a is Int64 then 
+    begin
+      if a is Int64 then
         exit CompareTo(Int64(a));
       exit CompareTo(Convert.ToInt64(a));
     end;
 
     method CompareTo(a: Int64): Integer;
-    begin 
+    begin
       if self < a then exit -1;
       if self > a then exit 1;
       exit 0;
@@ -451,21 +454,21 @@ type
     const MaxValue: UInt64 = $ffffffffffffffff;
 
 
-    
+
     method &Equals(other: UInt64): Boolean;
-    begin 
+    begin
       exit self = other;
     end;
-    
+
     method CompareTo(a: Object): Integer;
-    begin 
-      if a is UInt64 then 
+    begin
+      if a is UInt64 then
         exit CompareTo(UInt64(a));
       exit CompareTo(Convert.ToUInt64(a));
     end;
 
     method CompareTo(a: UInt64): Integer;
-    begin 
+    begin
       if self < a then exit -1;
       if self > a then exit 1;
       exit 0;
@@ -523,21 +526,21 @@ type
     const MaxValue: NativeInt = {$IFDEF cpu64}$7fffffffffffffff{$ELSE}$7fffffff{$ENDIF};
 
 
-    
+
     method &Equals(other: NativeInt): Boolean;
-    begin 
+    begin
       exit self = other;
     end;
-    
+
     method CompareTo(a: Object): Integer;
-    begin 
-      if a is NativeInt then 
+    begin
+      if a is NativeInt then
         exit CompareTo(NativeInt(a));
       exit CompareTo(NativeInt(Convert.ToInt64(a)));
     end;
 
     method CompareTo(a: NativeInt): Integer;
-    begin 
+    begin
       if self < a then exit -1;
       if self > a then exit 1;
       exit 0;
@@ -589,21 +592,21 @@ type
     const MaxValue: NativeUInt = {$IFDEF cpu64}$ffffffffffffffff{$ELSE}$ffffffff{$ENDIF};
 
 
-    
+
     method &Equals(other: NativeUInt): Boolean;
-    begin 
+    begin
       exit self = other;
     end;
-    
+
     method CompareTo(a: Object): Integer;
-    begin 
-      if a is NativeUInt then 
+    begin
+      if a is NativeUInt then
         exit CompareTo(NativeUInt(a));
       exit CompareTo(NativeUInt(Convert.ToUInt64(a)));
     end;
 
     method CompareTo(a: NativeUInt): Integer;
-    begin 
+    begin
       if self < a then exit -1;
       if self > a then exit 1;
       exit 0;
