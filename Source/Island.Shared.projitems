@@ -81,5 +81,6 @@
     <Compile Include="$(MSBuildThisFileDirectory)CocoaGC.pas" />
     <Compile Include="$(MSBuildThisFileDirectory)Currency.pas" />
     <Compile Include="$(MSBuildThisFileDirectory)VersionHelpers.pas" />
+    <Compile Include="$(MSBuildThisFileDirectory)StopWatch.pas" />
   </ItemGroup>
 </Project>
