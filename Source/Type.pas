@@ -583,7 +583,7 @@ type
       {$ELSEIF WEBASSEMBLY}
       result := WebAssembly.UnwrapCall(&Type, WebAssembly.InvokeMethod(Pointer, lParams));
       {$ELSE}{$ERROR}{$ENDIF}
-      for k in Arguments index i do
+      for nil in Arguments index i do
         if lModes[i+dx] in [ArgumentMode.Var,ArgumentMode.Out] then
           aArgs[i]:=lParams[i+dx];
     end;
@@ -812,7 +812,7 @@ type
        var n := 0;
        var lMethods := new IslandMethodUIDInfo[lSize / sizeOf(IslandMethodUIDInfo)+ 1];
        loop begin
-         if lWork^.Ptr <> nil then begin
+         if lWork^.Ptr ≠ 0 then begin
            lMethods[n] := lWork^;
            inc(n);
          end;
