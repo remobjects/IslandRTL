@@ -49,6 +49,8 @@
     <Compile Include="Posix_FFI_x64.pas" />
     <Compile Include="ManagedThreadPool.pas" />
     <Compile Include="PosixHelpers.pas" />
+    <Compile Include="DarwinNumbers.pas" />
+    <Compile Include="DarwinNumbers.inc" />
   </ItemGroup>
   <ItemGroup>
     <Reference Include="gc" />
