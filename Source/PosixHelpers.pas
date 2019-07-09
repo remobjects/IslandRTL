@@ -13,11 +13,16 @@ type
     func: atexitfunc;
     next: ^atexitrec;
   end;
+
   UserEntryPointType =public method (args: array of String): Integer;
   {$IFNDEF DARWIN}
   dliteratecb = public function (info :^__struct_dl_phdr_info; size: size_t; data: ^Void): Integer;
   {$ENDIF}
-  {$IFDEF ARM and not ARM64 and not DARWIN}rtl.__struct__Unwind_Exception = rtl.__struct__Unwind_Control_Block;{$ENDIF}
+
+  {$IFDEF ARM and not ARM64 and not DARWIN}
+  rtl.__struct__Unwind_Exception = rtl.__struct__Unwind_Control_Block;
+  {$ENDIF}
+
   ExternalCalls = public static class
   private
     [ThreadLocal]
@@ -26,9 +31,10 @@ type
     Target: IntPtr; assembly;
 
     class var atexitlist: ^atexitrec;
+
     {$IFDEF ANDROID}
-//[SymbolName('__executable_start')]
-//var __executable_start: ^Void; external;
+    //[SymbolName('__executable_start')]
+    //var __executable_start: ^Void; external;
     [SymbolName("dl_iterate_phdr"), &Weak]
     method dl_iterate_phdr(info: dliteratecb; data: ^Void): Integer; public;
     begin
@@ -68,8 +74,8 @@ type
       {$ENDIF}*)
     end;
     {$ENDIF}
-  public
 
+  public
 
     {$IFDEF ARM and not arm64 and not DARWIN}
     [SymbolName('_elements_posix_exception_handler')]
@@ -107,16 +113,19 @@ type
     [Used, SymbolName('_GLOBAL_OFFSET_TABLE_')]
     class var _GLOBAL_OFFSET_TABLE_: Integer; private; external;
     {$ENDIF}
+
     {$IF NOT EMSCRIPTEN AND NOT ANDROID and not DARWIN}
     [SymbolName('_start'), Naked]
     method _start;
     [SymbolName('__libc_start_main', 'libc.so.6'), &weak]
     method libc_main(main: LibCEntryHelper; argc: Integer; argv: ^^Char; aInit: LibCEntryHelper; aFini: LibCFinalizerHelper); external;
     {$ENDIF}
+
     {$IFDEF DARWIN}
     [SymbolName('main')]
     method main(argc: Integer; argv: ^^AnsiChar; env: ^^AnsiChar): Integer;
     {$ENDIF}
+
     [SymbolName('__elements_init'), Used]
     method init(_nargs: Integer; _args: ^^AnsiChar; _envp: ^^AnsiChar): Integer;
     [SymbolName('__elements_fini'), Used]
@@ -137,7 +146,8 @@ type
     [SymbolName('__init_array_end')] class var __init_array_end: Integer; external;
     {$ENDIF}
 
-{$IF not ANDROID and not DARWIN}
+{$IF NOT ANDROID AND NOT DARWIN}
+
     [SymbolName('stat64')]
     class method stat64(file: ^AnsiChar; var buf: rtl.__struct_stat64): Integer;
     begin
@@ -156,28 +166,25 @@ type
 
 {$ELSE}
 
-
-
-{$IFNDEF ANDROID}
+    {$IF NOT ANDROID}
     [SymbolName("__atomic_store_4")]
     class method __atomic_store_4(var mem: Int32; val: Int32);
     begin
       InternalCalls.VolatileWrite(var mem, val);
     end;
-{$ENDIF}
-   [SymbolName("__atomic_fetch_add_4")]
-   class method __atomic_fetch_add_4(var mem: Int32; val: Int32): Int32;
-   begin
-     exit InternalCalls.Add(var mem, val);
-   end;
+    {$ENDIF}
 
+    [SymbolName("__atomic_fetch_add_4")]
+    class method __atomic_fetch_add_4(var mem: Int32; val: Int32): Int32;
+    begin
+      exit InternalCalls.Add(var mem, val);
+    end;
 
-   [SymbolName("__atomic_compare_exchange_4")]
-   class method __atomic_compare_exchange_4(var mem: Int32; exp: Int32; val: Int32): Int32;
-   begin
-     exit InternalCalls.CompareExchange(var mem, val, exp);
-   end;
-
+    [SymbolName("__atomic_compare_exchange_4")]
+    class method __atomic_compare_exchange_4(var mem: Int32; exp: Int32; val: Int32): Int32;
+    begin
+      exit InternalCalls.CompareExchange(var mem, val, exp);
+    end;
 
     [SymbolName("__atomic_store_8")]
     class method __atomic_store_8(var mem: Int64; val: Int64);
@@ -185,55 +192,61 @@ type
       InternalCalls.VolatileWrite(var mem, val);
     end;
 
-   [SymbolName("__atomic_fetch_add_8")]
-   class method __atomic_fetch_add_8(var mem: Int64; val: Int64): Int64;
-   begin
-     exit InternalCalls.Add(var mem, val);
-   end;
+    [SymbolName("__atomic_fetch_add_8")]
+    class method __atomic_fetch_add_8(var mem: Int64; val: Int64): Int64;
+    begin
+      exit InternalCalls.Add(var mem, val);
+    end;
 
+    [SymbolName("__atomic_compare_exchange_8")]
+    class method __atomic_compare_exchange_8(var mem: Int64; exp: Int64; val: Int64): Int64;
+    begin
+      exit InternalCalls.CompareExchange(var mem, val, exp);
+    end;
 
-   [SymbolName("__atomic_compare_exchange_8")]
-   class method __atomic_compare_exchange_8(var mem: Int64; exp: Int64; val: Int64): Int64;
-   begin
-    exit InternalCalls.CompareExchange(var mem, val, exp);
-   end;
-   {$IFDEF LINUX AND not ANDROID}
-   [SymbolNameAttribute('mknod')]
-   class method mknod(path: ^AnsiChar; mode: mode_t; dev: dev_t): Integer;
-   begin
-     exit __xmknod (0, path, mode, @dev);
-   end;
-   {$ENDIF}
+    {$IFDEF LINUX AND NOT ANDROID}
+    [SymbolNameAttribute('mknod')]
+    class method mknod(path: ^AnsiChar; mode: mode_t; dev: dev_t): Integer;
+    begin
+      exit __xmknod (0, path, mode, @dev);
+    end;
+    {$ENDIF}
 
     {$IFDEF DARWIN}
     [SymbolName('bzero')]
     class method bzero(p: ^Void; s: size_t); public;
-    begin 
-      while s>= 8 do begin
+    begin
+      while s ≥ 8 do begin
         ^Int64(p)^ := 0;
         p := ^Void(^Byte(p) + 8);
         dec(s, 8);
       end;
-      if s>= 4 then begin
+      if s ≥ 4 then begin
         ^Int32(p)^ := 0;
-        ptr := ^Void(^Byte(p) + 4);
-        p(s, 4);
+        p := ^Void(^Byte(p) + 4);
+        dec(s, 4);
       end;
-      if s>= 2 then begin
+      if s ≥ 2 then begin
         ^Int16(p)^ := 0;
         p := ^Void(^Byte(p) + 2);
         dec(s, 2);
       end;
-      if s>= 1 then begin
+      if s ≥ 1 then begin
         ^Byte(p)^ := 0;
       end;
     end;
+    {$ENDIF}
+
+    {$IFDEF DARWIN}
     [SymbolName('__stack_chk_fail')]
-    class method __stack_chk_fail();  begin end;
+    class method __stack_chk_fail();
+    begin
+    end;
     {$ELSE}
     [SymbolName('__stack_chk_fail')]
     class method __stack_chk_fail(); external;
     {$ENDIF}
+
     {$IFNDEF i386}
     [SymbolName('__stack_chk_fail_local')]
     class method __stack_chk_fail_local();
@@ -241,44 +254,50 @@ type
       __stack_chk_fail();
     end;
     {$ENDIF}
-    {$ENDIF}
+
+{$ENDIF}
+
     {$IFDEF DARWIN}
     [SymbolNameAttribute('memset_pattern4')]
     class method memset_pattern4(ptr: ^Int32; pattern: ^Int32; len: Integer);
-    begin 
+    begin
       var p := pattern^;
-      for i: Integer := 0 to (len div 4) -1 do 
+      for i: Integer := 0 to (len div 4) -1 do
         ptr[i] := p;
       memcpy(@ptr[len div 4], pattern, len mod 4);
     end;
+
     [SymbolNameAttribute('memset_pattern8')]
     class method memset_pattern8(ptr: ^Int64; pattern: ^Int64; len: Integer);
-    begin 
+    begin
       var p := pattern^;
-      for i: Integer := 0 to (len div 8) -1 do 
+      for i: Integer := 0 to (len div 8) -1 do
         ptr[i] := p;
       memcpy(@ptr[len div 4], pattern, len mod 8);
     end;
+
     [SymbolNameAttribute('memset_pattern16')]
     class method memset_pattern16(ptr: ^Int64Pair; pattern: ^Int64Pair; len: Integer);
-    begin 
+    begin
       var p := pattern^;
-      for i: Integer := 0 to (len div 16) -1 do 
+      for i: Integer := 0 to (len div 16) -1 do
         ptr[i] := p;
       memcpy(@ptr[len div 4], pattern, len mod 16);
     end;
+
     [SymbolNameAttribute('__memmove_chk')]
     class method __memmove_chk(dest: ^Void; src: ^Void; len: size_t; destlength: size_t): ^Void;
-    begin 
+    begin
       exit memmove(dest, src, len);
     end;
+
     [SymbolNameAttribute('__memset_chk')]
     class method __memset_chk (dest: ^Void; c: Integer; n, dest_len: size_t ): ^Void;
-    begin 
+    begin
       exit memset(dest, c, n);
     end;
-
     {$ENDIF}
+
   end;
 
   Int64Pair = public packed record public a,b: Int64; end;
@@ -317,9 +336,9 @@ type
     Object: IntPtr;
   end;
 
-  CXXException = public record 
+  CXXException = public record
   public
-    exceptionType, 
+    exceptionType,
     dtor,
     unexpected,
     terminated,
@@ -329,13 +348,11 @@ type
     ar, spd: IntPtr;
     catchTemp: IntPtr;
     adjustedPtr: IntPtr;
-    
+
     Unwind: rtl.__struct__Unwind_Exception;
     Object: IntPtr;
   end;
 
-
-  
 method CheckForLastError(aMessage: String := '');
 method CheckForIOError(value: Integer);
 
@@ -353,6 +370,7 @@ method free(v: ^Void);inline;
 begin
    rtl.Free(v);
 end;
+
 {$IFDEF DARWIN}
 [SymbolName('__stack_chk_guard')]
 var __stack_chk_guard: ^Void := ^Void($DEADBEEF);  public;
@@ -362,7 +380,6 @@ method __sprintf_chk;public; begin end;
 method _snprintf_chk;public; begin end;
 [SymbolNameAttribute('__vsnprintf_chk')]
 method __vsnprintf_chk;public; begin end;
-
 {$ENDIF}
 
 [SymbolName("__builtin_inf")]
@@ -375,10 +392,8 @@ method builtin_fabs(d: Double): Double; public; begin exit RemObjects.Elements.S
 method builtin_fabsf(d: Single): Single; public; begin exit RemObjects.Elements.System.__builtin_fabsf(d); end;
 
 
-
 [SymbolName('__elements_entry_point')]
 method UserEntryPoint(aArgs: array of String): Integer; external;
-
 
 [SymbolName({$IF EMSCRIPTEN OR ANDROID}'_start'{$ELSE}'__elements_entry_point_helper'{$ENDIF}), Used]
 method Entrypoint(argc: Integer; argv: ^^AnsiChar; _envp: ^^AnsiChar): Integer;
@@ -462,20 +477,20 @@ method ExternalCalls._start;
 begin
 {$IFDEF ARM64}
   InternalCalls.VoidAsm("
-   mov	x29, #0x0
-   mov	x30, #0x0
-   mov	x5, x0
-   ldr	x1, [sp]
-  add	x2, sp, #0x8
-  mov	x6, sp
-  adrp	x0, __elements_entry_point_helper
+   mov  x29, #0x0
+   mov  x30, #0x0
+   mov  x5, x0
+   ldr  x1, [sp]
+  add  x2, sp, #0x8
+  mov  x6, sp
+  adrp  x0, __elements_entry_point_helper
   add x0, x0, :lo12:__elements_entry_point_helper
-  adrp	x3, __elements_init
+  adrp  x3, __elements_init
   add x3, x3, :lo12:__elements_init
-  adrp	x4, __elements_fini
+  adrp  x4, __elements_fini
   add x4, x4, :lo12:__elements_fini
-  bl	__libc_start_main
-  
+  bl  __libc_start_main
+
   ", "", false, false);
 {$ELSEIF ARM}
   InternalCalls.VoidAsm(
@@ -669,7 +684,7 @@ begin
           if aNative then begin
             var exception_header := ^ElementsException(aEx);
             exception_header := ^ElementsException(@^Byte(exception_header)[-Int32((^Byte(@exception_header^.Unwind) - ^Byte(exception_header)))]);
-            if aObjc then begin 
+            if aObjc then begin
             {$IFDEF DARWIN}
               if new &Type(^IslandTypeInfo(catchType)).IsAssignableFrom(typeOf(IslandWrappedCocoaException)) then begin
                 if 0 <> (aAction and {$IFDEF EMSCRIPTEN  OR x86_64}_Unwind_Action._UA_SEARCH_PHASE{$ELSE}_UA_SEARCH_PHASE{$ENDIF}) then begin
@@ -809,7 +824,7 @@ begin
   if (aECB = nil) or (aCtx = nil) then exit rtl._Unwind_Reason_Code._URC_FAILURE;
   var lMine := ^UInt64(@aECB.exception_class)^ = ElementsExceptionCode;
   var lObjc := false;
-  if not lMine and (^UInt64(@aECB.exception_class)^ = 4849336966747728640) then begin 
+  if not lMine and (^UInt64(@aECB.exception_class)^ = 4849336966747728640) then begin
     lMine := true;
     lObjc := true;
   end;
@@ -900,7 +915,7 @@ begin
   if (aVersion <> 1) or (aEx = nil) or (aCtx = nil) then exit rtl._Unwind_Reason_Code._URC_FATAL_PHASE1_ERROR;
   var lMine := aClass = ElementsExceptionCode;
   var lObjc: Boolean := false;
-  if not lMine and (aClass = 4849336966747728640) then begin 
+  if not lMine and (aClass = 4849336966747728640) then begin
     lMine := true;
     lObjc := true;
   end;
@@ -967,7 +982,7 @@ begin
         var lRec := ^CXXException(aEx);
         lRec := ^CXXException(@^Byte(lRec)[-Int32((^Byte(@lRec^.Unwind) - ^Byte(lRec))) - (sizeOf(IntPtr) * 2)]);
         free(lRec)
-      end else 
+      end else
         free(lRecord);
       exit rtl._Unwind_Reason_Code._URC_INSTALL_CONTEXT;
     end;
