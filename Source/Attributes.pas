@@ -352,5 +352,12 @@ type
   public
     constructor; empty;
   end;  
+
+
+  [AttributeUsage(AttributeTargets.Method or AttributeTargets.Events or AttributeTargets.Property or AttributeTargets.Constructor)]
+  PublishedAttribute = public class(Attribute)
+  public
+    constructor; empty;
+  end;  
   
 end.
