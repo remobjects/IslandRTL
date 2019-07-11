@@ -120,7 +120,7 @@ type
       if lValue = 0 then exit;
       var p := InternalCalls.Decrement(var ^IntPtr(lValue)[-1]);
       if p = 1 then 
-        FreeObject(fValue);    
+        FreeObject(lValue);    
     end;
 
     class method Init(var Dest: RC); empty;
