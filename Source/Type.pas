@@ -1148,14 +1148,13 @@ type
     property IsCocoaClass: Boolean read (IslandTypeFlags.TypeKindMask and fValue^.Ext^.Flags) = IslandTypeFlags.CocoaClass;
     property IsSwiftClass: Boolean read (IslandTypeFlags.TypeKindMask and fValue^.Ext^.Flags) = IslandTypeFlags.SwiftClass;
 
-    property Model: IslandClassModel read -> begin 
+    property ObjectModel: ObjectModel read -> begin
       var lFlags := fValue^.Ext^.Flags and IslandTypeFlags.TypeKindMask;
-      case lFlags of 
-        IslandTypeFlags.CocoaClass: exit IslandClassModel.Cocoa;
-        IslandTypeFlags.SwiftClass: exit IslandClassModel.Swift;
-        IslandTypeFlags.ComInterface: exit IslandClassModel.COM;
-      else 
-        exit IslandClassModel.Island;
+      case lFlags of
+        IslandTypeFlags.CocoaClass: exit ObjectModel.Cocoa;
+        IslandTypeFlags.SwiftClass: exit ObjectModel.Swift;
+        IslandTypeFlags.ComInterface: exit ObjectModel.COM;
+        else exit ObjectModel.Island;
       end;
     end;
 
@@ -1311,7 +1310,7 @@ type
     HashTableSize: Cardinal;
     FirstEntry: ^^IslandTypeInfo; // ends with 0
   end;
-  IslandClassModel = public enum (Island, Cocoa, Swift, COM);
+  ObjectModel = public enum (Unknown, Island, Cocoa, Swift, COM);
 
   // Keep in sync with compiler.
   IslandTypeFlags = public flags (
