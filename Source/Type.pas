@@ -1148,6 +1148,17 @@ type
     property IsCocoaClass: Boolean read (IslandTypeFlags.TypeKindMask and fValue^.Ext^.Flags) = IslandTypeFlags.CocoaClass;
     property IsSwiftClass: Boolean read (IslandTypeFlags.TypeKindMask and fValue^.Ext^.Flags) = IslandTypeFlags.SwiftClass;
 
+    property Model: IslandClassModel read -> begin 
+      var lFlags := fValue^.Ext^.Flags and IslandTypeFlags.TypeKindMask;
+      case lFlags of 
+        IslandTypeFlags.CocoaClass: exit IslandClassModel.Cocoa;
+        IslandTypeFlags.SwiftClass: exit IslandClassModel.Swift;
+        IslandTypeFlags.ComInterface: exit IslandClassModel.COM;
+      else 
+        exit IslandClassModel.Island;
+      end;
+    end;
+
     property DefFlags: TypeDefFlags read get_DefFlags;
     property SizeOfType: Integer read get_SizeOfType;
     property BoxedDataOffset: Integer read get_BoxedDataOffset;
@@ -1258,7 +1269,7 @@ type
     InterfaceVMT := nil,
     Hash1 := Int64($cbb97d02e4749c92),
     Hash2 := Int64($b48e4f27c4374719)
-  );assembly;
+  );public;
   [SymbolName("__cocoainterface_rtti"), Used, StaticallyInitializedField]
   CocoaClassRTTI: IslandTypeInfo := new IslandTypeInfo (
     Ext := @CococaClassExt,
@@ -1267,7 +1278,7 @@ type
     InterfaceVMT := nil,
     Hash1 := Int64($49987f1cfb738353),
     Hash2 := Int64($733406f403e14ced)
-  );assembly;
+  );public;
   [SymbolName("__swiftinterface_rtti"), Used, StaticallyInitializedField]
   SwiftClassRTTI: IslandTypeInfo := new IslandTypeInfo (
     Ext := @SwiftClasseExt,
@@ -1276,7 +1287,7 @@ type
     InterfaceVMT := nil,
     Hash1 := Int64($62eb5fa6785f90c9),
     Hash2 := Int64($3599d954c1778e2f)
-  );assembly;
+  );public;
   [StaticallyInitializedField]
   ComInterfaceExt: IslandExtTypeInfo := new IslandExtTypeInfo(
     &Flags := IslandTypeFlags.ComInterface,
@@ -1300,6 +1311,7 @@ type
     HashTableSize: Cardinal;
     FirstEntry: ^^IslandTypeInfo; // ends with 0
   end;
+  IslandClassModel = public enum (Island, Cocoa, Swift, COM);
 
   // Keep in sync with compiler.
   IslandTypeFlags = public flags (
