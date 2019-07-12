@@ -87,6 +87,14 @@ type
 
     method Get(i: Integer): Object; abstract;
     method &Set(i: Integer; v: Object); abstract;
+
+    class method Clear<T>(aVal: array of T; Index, Length : Integer);
+    begin
+      var L: Integer := Index + (Length);
+      if (L > aVal.Length) or (Index < 0) or (Length < 0) then raise new ArgumentOutOfRangeException('Array.Clear ranges');
+      for i: Integer := Index to L-1 do
+        aVal[i] := &default(T);
+    end;
   end;
 
   &Array<T> = public class(&Array, IEnumerable<T>, IEnumerable, IList<T>, IList)
