@@ -6,11 +6,66 @@ uses
   Foundation;
 
 type
+  ObjcBlock = public record 
+  private
+  public
+    &Self: ^Void := @_NSConcreteStackBlock;
+    &Flags: UInt32 := $C2000000;
+    Reserved: UInt32 := 0;
+    Ptr: ^Void;
+    Descriptor: ^ObjcBlockDescriptor := @DefaultBlockDescriptor;
+    MData: Object;
+  end;
+  ObjcBlockDescriptor = public record 
+  public 
+    Reserved: IntPtr;
+    Size: IntPtr;
+    Copy: BlockCopyFunc;
+    Dispose: BlockDisposeFunc;
+  end;
+  BlockCopyFunc = public method(Dest, Source: ^ObjcBlock);
+  BlockDisposeFunc = public method(Dest: ^ObjcBlock);
+
+
+method DefaultBlockDestroy(Dest: ^ObjcBlock);
+begin 
+  ForeignBoehmGC.Release(var ^ForeignBoehmGC(@Dest^.MData)^);
+end;
+
+method DefaultBlockCopy(Dest, Source: ^ObjcBlock);
+begin 
+  ForeignBoehmGC.Copy(var ^ForeignBoehmGC(@Dest^.MData)^, var ^ForeignBoehmGC(@Source^.MData)^);
+end;
+
+
+var 
+  [StaticallyInitializedField]
+  DefaultBlockDescriptor: ObjcBlockDescriptor := new ObjcBlockDescriptor(
+    Reserved := 0,
+    Size := sizeOf(ObjcBlock),
+    Copy := @DefaultBlockCopy,
+    Dispose := @DefaultBlockDestroy
+  ); readonly;
+  
+  
+type
   ObjcStrong<T> = public lifetimestrategy (ObjcStrong) T;
   ObjcStrong = public record(ILifetimeStrategy<ObjcStrong>)
   assembly
     fInst: IntPtr;
   public
+    [SymbolName("new_block_delegate")]
+    class method NewBlockDelegate(aPtr: ^Void; aData: Object): IntPtr; // returns arp
+    begin
+      var lTmp := new ObjcBlock;
+      lTmp.Ptr := aPtr;
+      ForeignBoehmGC.Assign(var ^ForeignBoehmGC(@lTmp.MData)^, var ^ForeignBoehmGC(@aData)^);
+      exit objc_autoreleaseReturnValue(objc_retainBlock(IntPtr(@lTmp)));
+    end;
+
+    [SymbolName('objc_retainBlock')]
+    class method objc_retainBlock(aVal: IntPtr): IntPtr; external;
+
     [SymbolName('objc_retain')]
     class method objc_retain(aVal: IntPtr): IntPtr; external;
 
@@ -25,6 +80,9 @@ type
 
     [SymbolName('objc_retainAutoreleasedReturnValue')]
     class method objc_retainAutoreleasedReturnValue(aVal: IntPtr): IntPtr; external;
+
+    [SymbolName('objc_autoreleaseReturnValue')]
+    class method objc_autoreleaseReturnValue(aVal: IntPtr): IntPtr; external;
 
     class method &New(aTTY: ^Void; aSize: NativeInt): ^Void;
     begin
