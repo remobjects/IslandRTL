@@ -244,4 +244,19 @@ begin
   result := new List<T>(self);
 end;
 
+{$IF DARWIN}
+extension method ISequence<T>.ToNSMutableArray: not nullable Foundation.NSMutableArray<T>; public;
+begin
+  var lResult := new Foundation.NSMutableArray<T> as not nullable;
+  for each i in self do
+    lResult.addObject(i);
+  result := lResult;
+end;
+
+extension method ISequence<T>.ToNSArray: not nullable Foundation.NSArray<T>;  public; inline;
+begin
+  result := ToNSMutableArray();
+end;
+{$ENDIF}
+
 end.
