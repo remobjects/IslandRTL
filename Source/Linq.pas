@@ -227,7 +227,7 @@ extension method ISequence<T>.ToArray(): not nullable array of T; public;
 begin
   if self is array of T then exit self as array of T;
   if self is List<T> then exit (self as List<T>).ToArray();
-  exit self.ToList().ToArray;
+  exit self.ToList().ToArray as not nullable;
 end;
 
 extension method ISequence<T>.ToImmutableList(): not nullable ImmutableList<T>; public;
