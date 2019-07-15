@@ -157,7 +157,7 @@ type
    Port := aPort;
  end;
 
-constructor IPAddress(anAddress: array of Byte; aScopeid: Int64);
+constructor IPAddress(anAddress: array of Byte; aScopeId: Int64);
 begin
   fFamily := AddressFamily.InterNetworkV6;
   for i: Integer := 0 to (IPv6Length / 2) - 1 do
