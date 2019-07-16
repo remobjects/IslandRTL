@@ -111,7 +111,7 @@ begin
   {$IFDEF WINDOWS}
   exit fHandle <> rtl.INVALID_HANDLE_VALUE;
   {$ELSEIF POSIX}
-  exit fHandle <> PlatformHandle(-1);
+  exit fHandle <> nil;
   {$ELSE}
     {$ERROR}
   {$ENDIF}
