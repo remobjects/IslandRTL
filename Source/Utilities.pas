@@ -150,7 +150,7 @@ type
       exit @s[0];
     end;
 
-    [SymbolName('ElementsObjectToString'), Used]
+    [SymbolName('ElementsObjectToString'), Used , DllExport]
     class method GetObjectToString(aObj: Object): ^WideChar;
     begin
       if aObj = nil then exit nil;
