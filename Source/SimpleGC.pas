@@ -193,7 +193,7 @@ type
       end;
     end;
     {$ELSEIF WEBASSEMBLY}
-    [SymbolName('__stack_start')]
+    //[SymbolName('__stack_start')]
     class var StackTop: IntPtr; 
 
     
@@ -786,7 +786,7 @@ type
       if ptr = 0 then exit;
       Debug('Release: ');
       Debug(IntPtr(ptr));
-      if (^Void(o) < {$IFDEF WEBASSEMBLY}^Void(@StackTop){$ELSE}lList^.StackTop{$ENDIF}) and (^Void(o) >= ^Void(@o)) then exit; // on the stack, should be relatively rare
+      if (^Void(o) < {$IFDEF WEBASSEMBLY}^Void(StackTop){$ELSE}lList^.StackTop{$ENDIF}) and (^Void(o) >= ^Void(@o)) then exit; // on the stack, should be relatively rare
       Debug('Release 1');
       dec(ptr, sizeOf(IntPtr));
       Debug('Release 2');
