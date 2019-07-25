@@ -59,18 +59,36 @@ begin
   end;
 end;
 
-extension method ISequence<T>.OrderBy<C>(aBlock: not nullable block(aItem: not nullable T): C): /*not nullable*/ ISequence<T>; public;
+extension method ISequence<T>.OrderBy<C>(aBlock: not nullable block(aItem: not nullable T): C): /*not nullable*/ IOrderedSequence<T>; public;
 begin
-  var lList := ToList();
-  lList.Sort((a, b) -> (aBlock(a) as IComparable).CompareTo(aBlock(b)));
-  exit lList;
+  exit new OrderedSequence<T>(self, (a, b) -> (aBlock(a) as IComparable).CompareTo(aBlock(b)));
 end;
 
 extension method ISequence<T>.OrderByDescending<C>(aBlock: not nullable block(aItem: not nullable T): C): /*not nullable*/ ISequence<T>; public;
 begin
-  var lList := ToList();
-  lList.Sort((a, b) -> (aBlock(b) as IComparable).CompareTo(aBlock(a)));
-  exit lList;
+  exit new OrderedSequence<T>(self, (a, b) -> (aBlock(b) as IComparable).CompareTo(aBlock(a)));
+end;
+
+extension method IOrderedSequence<T>.ThenBy<C>(aBlock: not nullable block(aItem: not nullable T): C): /*not nullable*/ IOrderedSequence<T>; public;
+begin 
+  var lOrg := self.Comparison;
+  exit new OrderedSequence<T>(self.Original, 
+    (a, b) -> begin 
+      result := lOrg(a, b);
+      if result = 0 then
+        result := (aBlock(a) as IComparable).CompareTo(aBlock(b));
+     end);
+end;
+
+extension method IOrderedSequence<T>.ThenByDescending<C>(aBlock: not nullable block(aItem: not nullable T): C): /*not nullable*/ IOrderedSequence<T>; public;
+begin 
+  var lOrg := self.Comparison;
+  exit new OrderedSequence<T>(self.Original, 
+    (a, b) -> begin 
+      result := lOrg(a, b);
+      if result = 0 then
+        result := (aBlock(b) as IComparable).CompareTo(aBlock(a));
+     end);
 end;
 
 extension method ISequence<T>.Select<T, U>(aBlock: not nullable block(aItem: not nullable T): U): /*not nullable*/ ISequence<U>; public; iterator;
@@ -226,7 +244,7 @@ end;
 extension method ISequence<T>.ToArray(): not nullable array of T; public;
 begin
   if self is array of T then exit self as array of T;
-  if self is List<T> then exit (self as List<T>).ToArray();
+  if self is List<T> then exit (self as List<T>).ToArray() as not nullable array of T;
   exit self.ToList().ToArray as not nullable;
 end;
 
@@ -243,6 +261,36 @@ begin
   if self is array of T then exit new List<T>(self as array of T);
   result := new List<T>(self);
 end;
+
+type
+  IOrderedSequence<T> = public interface(ISequence<T>)
+    property Original: ISequence<T> read;  
+    property Comparison: Comparison<T> read;
+  end;
+  OrderedSequence<T> = class(ISequence<T>, IOrderedSequence<T>)
+  public
+    constructor(aSeq: ISequence<T>; aComp: Comparison<T>);
+    begin 
+      Original := aSeq;
+      Comparison := aComp;
+    end;
+
+    property Original: ISequence<T>; readonly;
+    property Comparison: Comparison<T>; readonly;
+
+    method GetEnumerator: IEnumerator<T>;
+    begin 
+      var lSeq := Original.ToList;
+      lSeq.Sort(Comparison);
+      exit lSeq.GetEnumerator;
+    end;
+
+
+    method GetEnumerator2: IEnumerator; implements IEnumerable.GetEnumerator;
+    begin 
+      exit GetEnumerator;
+    end;
+  end;
 
 {$IF DARWIN}
 extension method ISequence<T>.ToNSMutableArray: not nullable Foundation.NSMutableArray<T>; public;
