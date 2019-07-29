@@ -105,6 +105,14 @@ begin
   end;
 end;
 
+extension method ISequence<T>.SelectMany<T, U, TRes>(aBlock: not nullable block(aItem: not nullable T): nullable sequence of U; aSelector: not nullable block(aOriginal: not nullable T; aNew: U): TRes): /*not nullable*/ ISequence<TRes>; public; iterator;
+begin
+  for each el in self do begin
+    for each subval in aBlock(el) do 
+      yield aSelector(el, subval);
+  end;
+end;
+
 extension method IEnumerable.Cast<U>: /*not nullable*/ ISequence<U>; public; iterator;
 begin
   for each el in self do
