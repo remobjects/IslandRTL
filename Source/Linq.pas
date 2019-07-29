@@ -50,7 +50,7 @@ end;
 
 extension method ISequence<T>.SkipWhile(aBlock: not nullable block(aItem: not nullable T): Boolean): /*not nullable*/ ISequence<T>; public; iterator;
 begin
-  var lFound := true;
+  var lFound := false;
   for each el in self do begin
     if not lFound and not aBlock(el) then
       lFound := true;
