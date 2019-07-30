@@ -6,23 +6,32 @@ uses
 type
   Double_Parse = public class(Test)
   private
+    fLocale : Locale;
+
     method doTest(aValue: Double);
     begin
-      Assert.AreEqual(aValue.ToString, Double.Parse(aValue.ToString).ToString);
+      Assert.AreEqual(aValue.ToString(fLocale), Double.Parse(aValue.ToString(fLocale), fLocale).ToString(fLocale));
     end;
 
     method doTest2(aStrValue: String;aValue: Double);
     begin
-      Assert.AreEqual(aValue.ToString, Double.Parse(aStrValue.ToString).ToString);
+      Assert.AreEqual(aValue.ToString(fLocale), Double.Parse(aStrValue, fLocale).ToString(fLocale));
     end;
 
     method doTest3(aValue: Double);
     begin
       var res: Double;
-      Assert.AreEqual(false, Double.TryParse(aValue.ToString,out res));
+      Assert.AreEqual(false, Double.TryParse(aValue.ToString(fLocale), fLocale, out res));
     end;
 
   public
+
+    method SetupTest; override;
+    begin
+      fLocale := new Locale(Locale.Invariant.PlatformLocale);
+    end;
+
+
     method TestStd;
     begin
       doTest(123456);
@@ -30,6 +39,7 @@ type
       doTest(123.456);
       doTest(-123.456E-10);
       doTest(123.456E+10);
+
       doTest2('+12345E-2',+12345E-2);
       doTest2('+12345E+2',+12345E+2);
       doTest2('-12345E2',-12345E2);
@@ -46,6 +56,7 @@ type
                1234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890E40);
     end;
 
+
     method TestOverflow;
     begin
       doTest3(Double.MaxValue);
@@ -54,30 +65,35 @@ type
       doTest3(Double.NegativeInfinity);
       doTest3(Double.NaN);
     end;
-
-
-
   end;
 
   Single_Parse = public class(Test)
   private
+    fLocale : Locale;
     method doTest(aValue: Single);
     begin
-      Assert.AreEqual(aValue.ToString, Single.Parse(aValue.ToString).ToString);
+      Assert.AreEqual(aValue.ToString(fLocale), Single.Parse(aValue.ToString(fLocale), fLocale).ToString(fLocale));
     end;
 
     method doTest2(aStrValue: String;aValue: Single);
     begin
-      Assert.AreEqual(aValue.ToString, Single.Parse(aStrValue.ToString).ToString);
+      Assert.AreEqual(aValue.ToString(fLocale), Single.Parse(aStrValue, fLocale).ToString(fLocale));
     end;
 
     method doTest3(aValue: Single);
     begin
       var res: Single;
-      Assert.AreEqual(false, Single.TryParse(aValue.ToString,out res));
+      Assert.AreEqual(false, Single.TryParse(aValue.ToString(fLocale), fLocale, out res));
     end;
 
   public
+
+    method SetupTest; override;
+    begin
+      fLocale := new Locale(Locale.Invariant.PlatformLocale);
+    end;
+
+
     method TestStd;
     begin
       doTest(123456);
@@ -85,6 +101,11 @@ type
       doTest(123.456);
       doTest(-123.456E-10);
       doTest(123.456E+10);
+      doTest(Single.MaxValue);
+      doTest(Single.MinValue);
+      doTest(Single.MaxValue);
+      doTest(Single.MinValue);
+
       doTest2('+12345E-2',+12345E-2);
       doTest2('+12345E+2',+12345E+2);
       doTest2('-12345E2',-12345E2);
@@ -99,10 +120,8 @@ type
       doTest2(       '123456789012345678901234567890E9',
                Single(123456789012345678901234567890E9));
 
-      doTest(Single.MaxValue);
-      doTest(Single.MinValue);
-
     end;
+
 
     method TestOverflow;
     begin
@@ -110,8 +129,6 @@ type
       doTest3(Single.NegativeInfinity);
       doTest3(Single.NAN);
     end;
-
-
 
   end;
 
