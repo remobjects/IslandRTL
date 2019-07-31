@@ -11,11 +11,14 @@ type
     method doTest(aValue: Double);
     begin
       Assert.AreEqual(aValue.ToString(fLocale), Double.Parse(aValue.ToString(fLocale), fLocale).ToString(fLocale));
+
+     // Check.AreEqual(aValue.ToString, Double.Parse(aValue.ToString).ToString);
+
     end;
 
     method doTest2(aStrValue: String;aValue: Double);
     begin
-      Assert.AreEqual(aValue.ToString(fLocale), Double.Parse(aStrValue, fLocale).ToString(fLocale));
+      Assert.AreEqual(aValue.ToString(Locale.Invariant), Double.Parse(aStrValue, Locale.Invariant).ToString(Locale.Invariant));
     end;
 
     method doTest3(aValue: Double);
@@ -28,7 +31,8 @@ type
 
     method SetupTest; override;
     begin
-      fLocale := new Locale(Locale.Invariant.PlatformLocale);
+      //fLocale := new Locale(Locale.Invariant.PlatformLocale);
+      fLocale := new Locale(Locale.Current.PlatformLocale);
     end;
 
 
@@ -77,7 +81,7 @@ type
 
     method doTest2(aStrValue: String;aValue: Single);
     begin
-      Assert.AreEqual(aValue.ToString(fLocale), Single.Parse(aStrValue, fLocale).ToString(fLocale));
+      Assert.AreEqual(aValue.ToString(Locale.Invariant), Single.Parse(aStrValue, Locale.Invariant).ToString(Locale.Invariant));
     end;
 
     method doTest3(aValue: Single);
@@ -90,7 +94,8 @@ type
 
     method SetupTest; override;
     begin
-      fLocale := new Locale(Locale.Invariant.PlatformLocale);
+     // fLocale := new Locale(Locale.Invariant.PlatformLocale);
+      fLocale := new Locale(Locale.Current.PlatformLocale);
     end;
 
 
