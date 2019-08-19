@@ -29,8 +29,9 @@ type
   
   Manual<T> = public lifetimestrategy (Manual) T;
   Manual = public record(ILifetimeStrategy<Manual>)
-  private 
+  private {$HIDE H6}
     fValue: IntPtr;
+      {$SHOW H6}
   public
     class method &New(aTTY: ^Void; aSize: IntPtr): ^Void;
     begin 
@@ -57,11 +58,19 @@ type
       try {$HIDE W58}
         InternalCalls.Cast<Object>(^Void(aObj)).Finalize;
         {$SHOW W58}
-        free(^Void(aObj));
+        {$IFDEF WINDOWS}
+        __Global.free(^Void(aObj));
+        {$ELSE}
+         rtl.free(^Void(aObj));
+        {$ENDIF}
       except 
       end;
     end;
-    
+    class method Free<T>(aVal: Manual<T>); public;
+    begin 
+      FreeObject(IntPtr(InternalCalls.Cast(aVal)));
+    end;
+
   end;
   
   RC<T> = public lifetimestrategy (RC) T;

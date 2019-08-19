@@ -285,6 +285,7 @@ type
     class method GetTypeInfo<T>(): ^Void; external;
     // Casts an object to ^Void and back. Doesn't do any error checking!
     class method Cast(o: Object): ^Void; external;
+    class method Cast(o: Manual<Object>): ^Void; external;
     class method Cast<T>(o: ^Void): T; external;
 
     // Optimizer tool: Returns an undefined value of type T
