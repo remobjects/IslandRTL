@@ -58,7 +58,7 @@ type
       try {$HIDE W58}
         InternalCalls.Cast<Object>(^Void(aObj)).Finalize;
         {$SHOW W58}
-        {$IFDEF WINDOWS}
+        {$IFDEF WINDOWS or WEBASSEMBLY}
         __Global.free(^Void(aObj));
         {$ELSE}
          rtl.free(^Void(aObj));
