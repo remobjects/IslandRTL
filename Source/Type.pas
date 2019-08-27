@@ -385,6 +385,8 @@ type
       if lRM = nil then exit nil;
       exit DeclaringType.Methods.FirstOrDefault(a -> a.Pointer = lRM);
     end;
+
+
   public
     property Flags: PropertyFlags read get_Flags;
     property IsStatic: Boolean read PropertyFlags.Static in &Flags; override;
@@ -394,15 +396,63 @@ type
     property &Write: MethodInfo read get_Write;
     property Arguments: sequence of ArgumentInfo read get_Arguments;
 
+
+
+
     method GetValue(aInst: Object; aArgs: array of Object): Object;
     begin
+      if (length(aArgs) = 0) and (not IsStatic) and (Arguments.Count = 0) and (ReadMethod <> nil) then begin
+        case &Type.Code of
+          TypeCodes.Boolean: exit BooleanGetter(ReadMethod)(aInst);
+          TypeCodes.Char: exit CharGetter(ReadMethod)(aInst);
+          TypeCodes.SByte: exit SByteGetter(ReadMethod)(aInst);
+          TypeCodes.Byte: exit ByteGetter(ReadMethod)(aInst);
+          TypeCodes.Int16: exit Int16Getter(ReadMethod)(aInst);
+          TypeCodes.UInt16: exit UInt16Getter(ReadMethod)(aInst);
+          TypeCodes.Int32: exit Int32Getter(ReadMethod)(aInst);
+          TypeCodes.UInt32: exit UInt32Getter(ReadMethod)(aInst);
+          TypeCodes.Int64: exit Int64Getter(ReadMethod)(aInst);
+          TypeCodes.UInt64: exit UInt64Getter(ReadMethod)(aInst);
+          TypeCodes.Single: exit SingleGetter(ReadMethod)(aInst);
+          TypeCodes.Double: exit DoubleGetter(ReadMethod)(aInst);
+          TypeCodes.IntPtr: exit IntPtrGetter(ReadMethod)(aInst);
+          TypeCodes.UIntPtr: exit UIntPtrGetter(ReadMethod)(aInst);
+          TypeCodes.String: exit StringGetter(ReadMethod)(aInst);
+        end;
+        if &Type = typeOf(array of Byte) then
+          exit ByteArrayGetter(ReadMethod)(aInst);
+      end;
       var lRead := &Read;
       if lRead = nil then raise new Exception('No read accessor for this property!');
+
       exit lRead.Invoke(aInst, aArgs);
     end;
 
     method SetValue(aInst: Object; aArgs: array of Object; aValue: Object);
     begin
+      if (length(aArgs) = 0) and (not IsStatic) and (Arguments.Count = 0) and (WriteMethod <> nil) then begin
+        case &Type.Code of
+          TypeCodes.Boolean: begin BooleanSetter(WriteMethod)(aInst, Boolean(aValue)); exit end;
+          TypeCodes.Char: begin  CharSetter(WriteMethod)(aInst, Char(aValue)); exit end;
+          TypeCodes.SByte: begin  SByteSetter(WriteMethod)(aInst, Convert.ToInt64(aValue)); exit end;
+          TypeCodes.Byte: begin  ByteSetter(WriteMethod)(aInst, Convert.ToInt64(aValue)); exit end;
+          TypeCodes.Int16: begin  Int16Setter(WriteMethod)(aInst, Convert.ToInt64(aValue)); exit end;
+          TypeCodes.UInt16: begin  UInt16Setter(WriteMethod)(aInst, Convert.ToInt64(aValue)); exit end;
+          TypeCodes.Int32: begin  Int32Setter(WriteMethod)(aInst, Convert.ToInt64(aValue)); exit end;
+          TypeCodes.UInt32: begin  UInt32Setter(WriteMethod)(aInst, Convert.ToInt64(aValue)); exit end;
+          TypeCodes.Int64: begin  Int64Setter(WriteMethod)(aInst, Convert.ToInt64(aValue)); exit end;
+          TypeCodes.UInt64: begin  UInt64Setter(WriteMethod)(aInst, Convert.ToUInt64(aValue)); exit end;
+          TypeCodes.Single: begin  SingleSetter(WriteMethod)(aInst, Convert.ToSingle(aValue)); exit end;
+          TypeCodes.Double: begin  DoubleSetter(WriteMethod)(aInst, Convert.ToDouble(aValue)); exit end;
+          TypeCodes.IntPtr: begin  IntPtrSetter(WriteMethod)(aInst, Convert.ToInt64(aValue)); exit end;
+          TypeCodes.UIntPtr: begin  UIntPtrSetter(WriteMethod)(aInst, Convert.ToInt64(aValue)); exit end;
+          TypeCodes.String: begin  StringSetter(WriteMethod)(aInst, aValue:ToString); exit end;
+        end;
+        if &Type = typeOf(array of Byte) then begin
+          ByteArraySetter(WriteMethod)(aInst, array of Byte(aValue));
+          exit
+        end;
+      end;
       var lWrite := &Write;
       if lWrite = nil then raise new Exception('No write accessor for this property!');
       if (aArgs = nil) or (aArgs.Length = 0)then aArgs := [aValue] else begin
@@ -1438,5 +1488,40 @@ begin
   result := ^Int64(aSelf)^;
   aSelf := aSelf + 8;
 end;
+
+type
+  BooleanSetter = procedure(aInst: Object; v: Boolean);
+  CharSetter = procedure(aInst: Object; v: Char);
+  SByteSetter = procedure(aInst: Object; v: SByte);
+  ByteSetter = procedure(aInst: Object; v: Byte);
+  Int16Setter = procedure(aInst: Object; v: Int16);
+  UInt16Setter = procedure(aInst: Object; v: UInt16);
+  Int32Setter = procedure(aInst: Object; v: Int32);
+  UInt32Setter = procedure(aInst: Object; v: UInt32);
+  Int64Setter = procedure(aInst: Object; v: Int64);
+  UInt64Setter = procedure(aInst: Object; v: UInt64);
+  IntPtrSetter = procedure(aInst: Object; v: IntPtr);
+  UIntPtrSetter = procedure(aInst: Object; v: UIntPtr);
+  SingleSetter = procedure(aInst: Object; v: Single);
+  DoubleSetter = procedure(aInst: Object; v: Double);
+  StringSetter = procedure(aInst: Object; v: String);
+  ByteArraySetter = procedure(aInst: Object; v: array of Byte);
+
+  BooleanGetter = function(aInst: Object): Boolean;
+  CharGetter = function(aInst: Object): Char;
+  SByteGetter = function(aInst: Object): SByte;
+  ByteGetter = function(aInst: Object): Byte;
+  Int16Getter = function(aInst: Object): Int16;
+  UInt16Getter = function(aInst: Object): UInt16;
+  Int32Getter = function(aInst: Object): Int32;
+  UInt32Getter = function(aInst: Object): UInt32;
+  Int64Getter = function(aInst: Object): Int64;
+  UInt64Getter = function(aInst: Object): UInt64;
+  IntPtrGetter = function(aInst: Object): IntPtr;
+  UIntPtrGetter = function(aInst: Object): UIntPtr;
+  SingleGetter = function(aInst: Object): Single;
+  DoubleGetter = function(aInst: Object): Double;
+  StringGetter = function(aInst: Object): String;
+  ByteArrayGetter = function(aInst: Object): array of Byte;
 
 end.
