@@ -177,6 +177,11 @@ type
       exit Append(Value+Environment.NewLine);
     end;
 
+    method Append(o: Object): StringBuilder;
+    begin
+      exit Append(o:ToString);
+    end;
+
     method Clear;
     begin
       Length := 0;
