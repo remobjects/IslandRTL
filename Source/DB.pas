@@ -6,6 +6,11 @@ type
   DbConnection = public abstract class(IDisposable)
   private
   protected
+    method OpenIfNeeded;
+    begin
+      if State = ConnectionState.Closed then
+        Open;
+    end;
   public
     property ConnectionString: String;
     property State: ConnectionState read protected write;
@@ -50,6 +55,7 @@ type
 
     method Execute(aCommand: String; aArgs: Object := nil; aTransaction: DbTransaction := nil): Integer;
     begin
+      OpenIfNeeded;
       using lResult := CreateCommand(aTransaction, aCommand) do begin
         if aArgs <> nil then begin
           for each el in aArgs.GetType().Properties.Where(a -> not a.IsStatic and assigned(a.ReadMethod) and assigned(a.WriteMethod) and CompatibleType(a.Type) and (a.Arguments.Count = 0)) do begin
@@ -63,6 +69,7 @@ type
 
     method ExecuteAsync(aCommand: String; aArgs: Object := nil; aTransaction: DbTransaction := nil): Task<Integer>;
     begin
+      OpenIfNeeded;
       using lResult := CreateCommand(aTransaction, aCommand) do begin
         if aArgs <> nil then begin
           for each el in aArgs.GetType().Properties.Where(a -> not a.IsStatic and assigned(a.ReadMethod) and assigned(a.WriteMethod) and CompatibleType(a.Type) and (a.Arguments.Count = 0)) do begin
@@ -75,6 +82,7 @@ type
 
     method Query<T>(aCommand: String; aArgs: Object := nil; aTransaction: DbTransaction := nil): sequence of T; iterator;
     begin
+      OpenIfNeeded;
       using lResult := CreateCommand(aTransaction, aCommand) do begin
         if aArgs <> nil then begin
           for each el in aArgs.GetType().Properties.Where(a -> not a.IsStatic and assigned(a.ReadMethod) and assigned(a.WriteMethod) and CompatibleType(a.Type) and (a.Arguments.Count = 0)) do begin
