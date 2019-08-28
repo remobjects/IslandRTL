@@ -69,7 +69,7 @@ type
     begin
       {$IFDEF WINDOWS}
       exit IntPtr(rtl.LoadLibrary(aLibrary));
-      {$ELSEIF POSIX and not DARWIN}
+      {$ELSEIF POSIX}
       exit IntPtr(rtl.dlopen(aLibrary, 0));
       {$ELSE}
       raise new NotSupportedException;
@@ -80,7 +80,7 @@ type
     begin
       {$IFDEF WINDOWS}
       exit IntPtr(^Void(rtl.GetProcAddress(rtl.HModule(aLibrary), aProc)));
-      {$ELSEIF POSIX and not DARWIN}
+      {$ELSEIF POSIX}
       exit IntPtr(rtl.dlsym(^Void(aLibrary), aProc));
       {$ELSE}
       raise new NotSupportedException;
@@ -91,7 +91,7 @@ type
     begin
       {$IFDEF WINDOWS}
       rtl.FreeLibrary(rtl.HModule(aLibrary));
-      {$ELSEIF POSIX and not DARWIN}
+      {$ELSEIF POSIX}
       rtl.dlclose(^Void(aLibrary));
       {$ELSE}
       raise new NotSupportedException;
