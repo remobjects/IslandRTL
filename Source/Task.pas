@@ -1,7 +1,7 @@
 ﻿namespace RemObjects.Elements.System;
 
 interface
-{$IFNDEF NOTHREADS}
+
 type
   TaskState = public enum(&New, AwaitingStart, Started, Completed, Failed);
   TaskAction =  abstract class
@@ -115,7 +115,7 @@ type
        Action.DoEnqueue;
      end;
   end;
-
+{$IFNDEF NOTHREADS}
   TaskCompletionWaiter = class(TaskCompletion)
   public
      Monitor: EventWaitHandle;
@@ -124,17 +124,17 @@ type
        Monitor:&Set;
      end;
   end;
-
+{$ENDIF}
 
   TaskCompletionAwait = class(TaskCompletion)
-  public 
+  public
     &Await: IAwaitCompletion;
     SyncContext: SynchronizationContext;
     method Complete(aOwner: Task); override;
-    begin 
-      if SyncContext <> nil then 
+    begin
+      if SyncContext <> nil then
         SyncContext.Invoke( -> &Await.moveNext(aOwner))
-      else 
+      else
         &Await.moveNext(aOwner);
     end;
   end;
@@ -352,25 +352,25 @@ type
       exit new ConfiguredAwaitTask(self, aCaptureContext);
     end;
 
-    method &Await(aCompletion: IAwaitCompletion): Boolean; 
-    begin 
+    method &Await(aCompletion: IAwaitCompletion): Boolean;
+    begin
       exit IntAwait(aCompletion, true);
     end;
 
     method IntAwait(aCompletion: IAwaitCompletion; aCaptureSync: Boolean := true): Boolean; assembly;
-    begin 
-      if fState in [TaskState.Failed, TaskState.Completed] then exit false; 
-      
+    begin
+      if fState in [TaskState.Failed, TaskState.Completed] then exit false;
+
       var lCompl := new TaskCompletionAwait(&Await := aCompletion);
-      if aCaptureSync then 
+      if aCaptureSync then
         lCompl.SyncContext := SynchronizationContext.Current;
       Utilities.SpinLockEnter(var fLock);
       if fState in [TaskState.Failed, TaskState.Completed] then begin
         Utilities.SpinLockExit(var fLock);
         exit false;
       end;
-      
-      
+
+
       lCompl.Next := fCompletionList;
       fCompletionList := lCompl;
       Utilities.SpinLockExit(var fLock);
@@ -381,7 +381,9 @@ type
     method Wait; virtual;
     begin
       if fState in [TaskState.Failed, TaskState.Completed] then exit;
-
+      {$IFDEF WEBASSEMBLY}
+      raise new NotSupportedException("WebAssembly cannot do blocking waits");
+      {$ELSE}
       var lCompl := new TaskCompletionWaiter(Monitor := new EventWaitHandle(true, false));
       Utilities.SpinLockEnter(var fLock);
       if fState in [TaskState.Failed, TaskState.Completed] then begin
@@ -397,12 +399,15 @@ type
       lCompl.Monitor := nil;
 
       lMonitor.Dispose;
+      {$ENDIF}
     end;
 
     method Wait(aTimeoutMSec: Integer): Boolean; virtual;
     begin
       if fState in [TaskState.Failed, TaskState.Completed] then exit;
-
+      {$IFDEF WEBASSEMBLY}
+      raise new NotSupportedException("WebAssembly cannot do blocking waits");
+      {$ELSE}
       var lCompl := new TaskCompletionWaiter(Monitor := new EventWaitHandle(true, false));
       Utilities.SpinLockEnter(var fLock);
       if fState in [TaskState.Failed, TaskState.Completed] then begin
@@ -419,6 +424,7 @@ type
       result := fState in [TaskState.Failed, TaskState.Completed];
       if not result then Thread.Yield;
       lMonitor.Dispose;
+      {$ENDIF}
     end;
 
     method Start();
@@ -465,18 +471,18 @@ type
   SynchronousTask = class(Task)
   public
     method DoEnqueue; override;
-    begin 
+    begin
       // do nothing
     end;
 
     method Wait(aTimeoutMSec: Integer): Boolean; override;
-    begin 
+    begin
       Wait;
       exit true;
     end;
 
     method Wait; override;
-    begin 
+    begin
       if fState in [TaskState.Failed, TaskState.Completed] then exit;
 
       Utilities.SpinLockEnter(var fLock);
@@ -484,7 +490,7 @@ type
         Utilities.SpinLockExit(var fLock);
         exit;
       end;
-      if fState = TaskState.AwaitingStart then begin 
+      if fState = TaskState.AwaitingStart then begin
         fState := TaskState.Started;
         Utilities.SpinLockExit(var fLock);
         DoRun;
@@ -495,23 +501,23 @@ type
     end;
   end;
 
-  
+
 
   SynchronousTask<T> = class(Task<T>)
   public
     method DoEnqueue; override;
-    begin 
+    begin
       // do nothing
     end;
 
     method Wait(aTimeoutMSec: Integer): Boolean; override;
-    begin 
+    begin
       Wait;
       exit true;
     end;
 
     method Wait; override;
-    begin 
+    begin
       if fState in [TaskState.Failed, TaskState.Completed] then exit;
 
       Utilities.SpinLockEnter(var fLock);
@@ -519,7 +525,7 @@ type
         Utilities.SpinLockExit(var fLock);
         exit;
       end;
-      if fState = TaskState.New then begin 
+      if fState = TaskState.New then begin
         fState := TaskState.Started;
         Utilities.SpinLockExit(var fLock);
         DoRun;
@@ -631,15 +637,15 @@ type
   private
     fTask: Task;
     fCaptureContext: Boolean;
-  public 
+  public
     constructor(aTask: Task; aCaptureContext: Boolean);
-    begin 
+    begin
       fTask := aTask;
       fCaptureContext := aCaptureContext;
     end;
 
-    method &Await(aCompletion: IAwaitCompletion): Boolean; 
-    begin 
+    method &Await(aCompletion: IAwaitCompletion): Boolean;
+    begin
       exit fTask.IntAwait(aCompletion, fCaptureContext);
     end;
   end;
@@ -648,15 +654,15 @@ type
   private
     fTask: Task<T>;
     fCaptureContext: Boolean;
-  public 
+  public
     constructor(aTask: Task<T>; aCaptureContext: Boolean);
-    begin 
+    begin
       fTask := aTask;
       fCaptureContext := aCaptureContext;
     end;
 
-    method &Await(aCompletion: IAwaitCompletion): Boolean; 
-    begin 
+    method &Await(aCompletion: IAwaitCompletion): Boolean;
+    begin
       exit fTask.IntAwait(aCompletion, fCaptureContext);
     end;
 
@@ -664,6 +670,7 @@ type
   end;
 
   WaitCallback = Action<Object>;
+
 
   PThreadPoolCallback = ^ThreadPoolCallback;
   ThreadPoolCallback = assembly class
@@ -681,7 +688,7 @@ type
     class var pcbe: rtl.TP_CALLBACK_ENVIRON;
     class var fMinThreads: UInt32;
     class var fMaxThreads: UInt32;
-  {$ELSE}
+  {$ELSEIF not WEBASSEMBLY}
     class var fThreadPool: ManagedThreadPool;
   {$ENDIF}
     class method RaiseError(Value: String);
@@ -690,8 +697,8 @@ type
   public
     constructor;
     class method QueueUserWorkItem(Callback: WaitCallback; State: Object);
-    class property MinThreads: UInt32 read {$IFDEF WINDOWS}fMinThreads{$ELSE}fThreadPool.MinThreads{$ENDIF} write SetMinThreads;
-    class property MaxThreads: UInt32 read {$IFDEF WINDOWS}fMaxThreads{$ELSE}fThreadPool.MaxThreads{$ENDIF} write SetMaxThreads;
+    class property MinThreads: UInt32 read {$IFDEF WINDOWS}fMinThreads{$ELSEIF WEBASSEMBLY}1{$ELSE}fThreadPool.MinThreads{$ENDIF} write SetMinThreads;
+    class property MaxThreads: UInt32 read {$IFDEF WINDOWS}fMaxThreads{$ELSEIF WEBASSEMBLY}1{$ELSE}fThreadPool.MaxThreads{$ENDIF} write SetMaxThreads;
   end;
 
   SynchronizationContext = public abstract class
@@ -704,10 +711,9 @@ type
 
     class property Current: SynchronizationContext read fCurrent write fCurrent;
   end;
-{$ENDIF}
 
 implementation
-{$IFNDEF NOTHREADS}
+
 
 {$IFDEF WINDOWS}
 [CallingConvention(CallingConvention.Stdcall)]
@@ -735,7 +741,11 @@ end;
 
 class method ThreadPool.RaiseError(Value: String);
 begin
+  {$IFDEF WEBASSEMBLY}
+  raise new ArgumentException(Value);
+  {$ELSE}
   CheckForLastError(Value);
+  {$ENDIF}
 end;
 
 class method ThreadPool.QueueUserWorkItem(Callback: WaitCallback; State: Object);
@@ -745,6 +755,8 @@ begin
   var work := rtl.CreateThreadpoolWork(@ThreadCallBack, ^Void(GCHandle.Allocate(lCallback).Handle), @pcbe);
   if work = nil then RaiseError('error at calling CreateThreadpoolWork');
   rtl.SubmitThreadpoolWork(work);
+{$ELSEIF WEBASSEMBLY}
+WebAssembly.SetTimeout(-> Callback(State), 0);
 {$ELSE}
   fThreadPool.Queue(new ThreadPoolCallback(Callback, State));
 {$ENDIF}
@@ -759,7 +771,7 @@ begin
       RaiseError('error at calling SetThreadpoolThreadMinimum');
     fMinThreads := Value;
   end;
-{$ELSE}
+{$ELSEIF not WEBASSEMBLY}
   fThreadPool.MinThreads := Value;
 {$ENDIF}
 end;
@@ -771,7 +783,7 @@ begin
     rtl.SetThreadpoolThreadMaximum(fThreadPool, Value);
     fMaxThreads := Value;
   end;
-  {$ELSE}
+  {$ELSEIF NOT WEBASSEMBLY}
   fThreadPool.MaxThreads := Value;
 {$ENDIF}
 end;
@@ -787,9 +799,9 @@ begin
   MaxThreads := 100;  // can be changed later manually by user
   rtl.InitializeThreadpoolEnvironment(@pcbe);
   rtl.SetThreadpoolCallbackPool(@pcbe, fThreadPool);
-{$ELSE}
+{$ELSEIF NOT WEBASSEMBLY}
   fThreadPool := new ManagedThreadPool;
 {$ENDIF}
 end;
-{$ENDIF}
+
 end.
