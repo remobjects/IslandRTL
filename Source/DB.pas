@@ -164,4 +164,39 @@ type
     end;
   end;
 
+  SqlQueryParameterFixer = public static class
+  private
+  public
+    // replaces @XYZ by calling a Func<String, String>; only outside of strings.
+    class method FixString(aString: String; aReplacer: Func<String, String>): String;
+    begin
+      var lSQ := new StringBuilder;
+      var lQuoteChar := #0;
+      var i := 0;
+      while i < aString.Length do begin
+        case aString[i] of
+          '@': if lQuoteChar <> #0 then lSQ.Append(aString[i]) else begin
+            inc(i);
+            var lStart := i;
+            while i < aString.Length do begin
+              if aString[i] in ['a'..'z', 'A'..'Z', '0'..'9', '_'] then begin
+                inc(i);
+              end else break;
+            end;
+            lSQ.Append(aReplacer(aString.Substring(lStart, i - lStart)));
+          end;
+          '"', '`', '''': begin
+            if lQuoteChar = aString[i] then lQuoteChar := #0 else
+              if lQuoteChar = #0 then lQuoteChar := aString[i];
+            lSQ.Append(aString[i])
+          end;
+          else
+            lSQ.Append(aString[i])
+          end;
+        inc(i);
+      end;
+      exit lSQ.ToString;
+    end;
+  end;
+
 end.

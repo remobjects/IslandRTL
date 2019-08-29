@@ -305,6 +305,12 @@ type
     result.n1.n2.n3.dblVal := aVal;
   end;
 
+  operator implicit(aVal: DateTime): Variant; public;
+  begin
+    result.n1.n2.vt := Integer(VarType.VT_DATE);
+    result.n1.n2.n3.date := DateTime.ToOleDate(aVal);
+  end;
+
   operator implicit(aVal: String): Variant; public;
   begin
     if aVal = nil then
@@ -315,4 +321,48 @@ type
     end;
   end;
 
+  method ObjectToVar(o: Object): Variant; public;
+  begin
+    if o = nil then begin
+      result.n1.n2.vt := Integer(VarType.VT_NULL);
+      exit;
+    end else
+      case o.GetType().Code of
+        TypeCodes.Boolean: exit Variant(Boolean(o));
+        TypeCodes.Char: exit Variant(String(Char(o)));
+        TypeCodes.SByte: exit Variant(SByte(o));
+        TypeCodes.Byte: exit Variant(Integer(SByte(o)));
+        TypeCodes.Int16: exit Variant(Int16(o));
+        TypeCodes.UInt16: exit Variant(Integer(UInt16(o)));
+        TypeCodes.Int32: exit Variant(Integer(o));
+        TypeCodes.UInt32: exit Variant(Int64(Int32(o)));
+        TypeCodes.Int64: exit Variant(Int64(o));
+        TypeCodes.UInt64: exit Variant(Int64(UInt64(o)));
+        TypeCodes.Single: exit Variant(Double(Single(o)));
+        TypeCodes.Double: exit Variant(Double(o));
+        TypeCodes.String: exit Variant(String(o));
+      else
+        if o is DateTime then
+          exit Variant(DateTime(o));
+      end;
+    raise new ArgumentException('Variant type not supported');
+  end;
+
+  method VarToObject(v: Variant): Object; public;
+  begin
+    case VarType(v.n1.n2.vt) of
+      VarType.VT_NULL, VarType.VT_EMPTY: exit nil;
+      VarType.VT_BOOL: exit Boolean(v.n1.n2.n3.boolVal);
+      VarType.VT_BSTR: exit String.FromPChar(v.n1.n2.n3.bstrVal);
+      VarType.VT_I1: exit v.n1.n2.n3.bVal;
+      VarType.VT_I2: exit v.n1.n2.n3.iVal;
+      VarType.VT_I4: exit v.n1.n2.n3.lVal;
+      VarType.VT_I8: exit v.n1.n2.n3.llVal;
+      VarType.VT_R4: exit v.n1.n2.n3.fltVal;
+      VarType.VT_R8: exit v.n1.n2.n3.dblVal;
+      VarType.VT_DATE: exit DateTime.FromOleDate(v.n1.n2.n3.date);
+    else
+       raise new ArgumentException('Variant type not supported');
+    end;
+  end;
 end.
