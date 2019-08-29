@@ -421,6 +421,8 @@ type
         end;
         if &Type = typeOf(array of Byte) then
           exit ByteArrayGetter(ReadMethod)(aInst);
+        if &Type = typeof(DateTime) then
+          exit DateTimeGetter(ReadMethod)(aInst);
       end;
       var lRead := &Read;
       if lRead = nil then raise new Exception('No read accessor for this property!');
@@ -450,6 +452,10 @@ type
         end;
         if &Type = typeOf(array of Byte) then begin
           ByteArraySetter(WriteMethod)(aInst, array of Byte(aValue));
+          exit
+        end;
+        if &Type = typeOf(DateTime) then begin
+          DateTimeSetter(WriteMethod)(aInst, DateTime(aValue));
           exit
         end;
       end;
@@ -1506,6 +1512,7 @@ type
   DoubleSetter = procedure(aInst: Object; v: Double);
   StringSetter = procedure(aInst: Object; v: String);
   ByteArraySetter = procedure(aInst: Object; v: array of Byte);
+  DateTimeSetter = procedure(aInst: Object; v: DateTime);
 
   BooleanGetter = function(aInst: Object): Boolean;
   CharGetter = function(aInst: Object): Char;
@@ -1523,5 +1530,6 @@ type
   DoubleGetter = function(aInst: Object): Double;
   StringGetter = function(aInst: Object): String;
   ByteArrayGetter = function(aInst: Object): array of Byte;
+  DateTimeGetter = function(aInst: Object): DateTime;
 
 end.

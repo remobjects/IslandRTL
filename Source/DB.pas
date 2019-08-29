@@ -49,6 +49,7 @@ type
         TypeCodes.UIntPtr,
         TypeCodes.String: exit true;
       end;
+      if aType = typeOf(DateTime) then exit true;
       if aType = typeOf(array of Byte) then exit true;
       exit false;
     end;
@@ -99,7 +100,11 @@ type
             var lRes := new T;
             for i: Integer := 0 to lMap.Length -1 do begin
               if lMap[i] = -1 then continue;
-              lMapper[lMap[i]].SetValue(lRes, nil, lReader[i]);
+              var lTar := lMapper[lMap[i]];
+              var lVal := lReader[i];
+              if (lTar.Type = typeOf(DateTime)) and (lVal is Int64)  then
+                lVal := new DateTime(Int64(lVal));
+              lTar.SetValue(lRes, nil, lVal);
             end;
             yield lRes;
           end;
