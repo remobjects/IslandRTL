@@ -17,6 +17,7 @@
     <Platform Condition="'$(Platform)' == ''">AnyCPU</Platform>
     <GenerateDebugInfo>True</GenerateDebugInfo>
     <DefineConstants>WINDOWS</DefineConstants>
+    <Optimize>False</Optimize>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)' == 'Debug'">
     <OutputPath>Bin\Debug</OutputPath>
@@ -51,6 +52,7 @@
     <Compile Include="WindowsHelpers.pas" />
     <Compile Include="Windows_FFI_x64.pas" />
     <Compile Include="Windows_FFI_x86.pas" />
+    <Compile Include="OleVariant.pas" />
   </ItemGroup>
   <ItemGroup>
     <Reference Include="gc" />
