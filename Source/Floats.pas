@@ -37,19 +37,19 @@ type
     class method IsNegativeInfinity(Value: Single): Boolean;
 
     method &Equals(other: Single): Boolean;
-    begin 
+    begin
       exit other = self;
     end;
 
     method CompareTo(a: Object): Integer;
-    begin 
-      if a is Single then 
+    begin
+      if a is Single then
         exit CompareTo(Single(a));
       exit CompareTo(Convert.ToSingle(a));
     end;
 
     method CompareTo(a: Single): Integer;
-    begin 
+    begin
       if self < a then exit -1;
       if self > a then exit 1;
       if self = a then exit 0;
@@ -84,7 +84,7 @@ type
     method ToString: String; override;
     method ToString(aLocale: Locale): String;
     method ToString(aNumberOfDecimalDigits: UInt32): String; inline;
-    method ToString(aNumberOfDecimalDigits: UInt32; aLocale: Locale): String; 
+    method ToString(aNumberOfDecimalDigits: UInt32; aLocale: Locale): String;
     class method Parse(s: String): Double;
     class method Parse(s: String; aLocale: Locale): Double;
     class method TryParse(s: String; out Value: Double): Boolean;
@@ -103,21 +103,21 @@ type
     class method IsPositiveInfinity(Value: Double): Boolean;
     class method IsNegativeInfinity(Value: Double): Boolean;
 
-    
+
     method &Equals(other: Double): Boolean;
-    begin 
+    begin
       exit other = self;
     end;
 
     method CompareTo(a: Object): Integer;
-    begin 
-      if a is Double then 
+    begin
+      if a is Double then
         exit CompareTo(Double(a));
       exit CompareTo(Convert.ToDouble(a));
     end;
 
     method CompareTo(a: Double): Integer;
-    begin 
+    begin
       if self < a then exit -1;
       if self > a then exit 1;
       if self = a then exit 0;
@@ -230,7 +230,7 @@ end;
 
 class method Double.Parse(s: String): Double;
 begin
-  if not DoTryParse(s, Locale.Invariant, out result, true) then Convert.RaiseFormatException;
+  if not DoTryParse(s, Locale.Current, out result, true) then Convert.RaiseFormatException;
 end;
 
 class method Double.Parse(s: String; aLocale: Locale): Double;
@@ -241,7 +241,7 @@ end;
 
 class method Double.TryParse(s: String; out Value: Double): Boolean;
 begin
-  exit DoTryParse(s, Locale.Invariant, out Value, false);
+  exit DoTryParse(s, Locale.Current, out Value, false);
 end;
 
 class method Double.TryParse(s: String; aLocale: Locale; out Value: Double): Boolean;
@@ -251,12 +251,12 @@ end;
 
 class method Double.DoTryParse(s: String; aLocale: Locale; out Value: Double; aRaiseOverflowException: Boolean): Boolean;
 begin
-  exit Convert.TryParseDouble(s, out Value, aRaiseOverflowException);
+  exit Convert.TryParseDouble(s, aLocale, out Value, aRaiseOverflowException);
 end;
 
 method Single.ToString: String;
 begin
-  exit ToString(Locale.Current);  
+  exit ToString(Locale.Current);
 end;
 
 method Single.ToString(aLocale: Locale): String;
@@ -339,7 +339,7 @@ end;
 
 class method Single.Parse(s: String): Single;
 begin
-  if not DoTryParse(s, Locale.Invariant, out result, true) then Convert.RaiseFormatException;
+  if not DoTryParse(s, Locale.Current, out result, true) then Convert.RaiseFormatException;
 end;
 
 class method Single.Parse(s: String; aLocale: Locale): Single;
@@ -349,7 +349,7 @@ end;
 
 class method Single.TryParse(s: String; out Value: Single): Boolean;
 begin
-  exit DoTryParse(s, Locale.Invariant, out Value, false);
+  exit DoTryParse(s, Locale.Current, out Value, false);
 end;
 
 class method Single.TryParse(s: String; aLocale: Locale; out Value: Single): Boolean;
@@ -458,7 +458,7 @@ begin
     var ldata : array[0..maxpos] of Byte;
     ldata[0] := 1;
     ldata[1] := 0;
-    memcpy(@ldata[2], @data[1], maxpos-1);    
+    memcpy(@ldata[2], @data[1], maxpos-1);
     data := ldata;
     inc(exponent);
     is_fraction_present := False;
@@ -513,7 +513,7 @@ begin
       var ldata : array[0..maxpos] of Byte;
       ldata[0] := 1;
       ldata[1] := 0;
-      memcpy(@ldata[2], @data[1], maxpos-1);    
+      memcpy(@ldata[2], @data[1], maxpos-1);
       data := ldata;
       inc(exponent);
       is_fraction_present := False;
@@ -647,7 +647,7 @@ begin
   end;
   {$ENDREGION}
 
-  {$REGION process .#### } 
+  {$REGION process .#### }
   var t_orig:= lValue mod 1;
   if (t_orig <> 0) and (cur_position < maxpos) then begin
     var fl:= true;
@@ -675,12 +675,12 @@ begin
     var ldata : array[0..maxpos+1] of Byte;
     ldata[0] := 1;
     ldata[1] := 0;
-    memcpy(@ldata[2], @data[1], maxpos-1);    
+    memcpy(@ldata[2], @data[1], maxpos-1);
     data := ldata;
-    inc(exp);    
+    inc(exp);
     inc(nexp);
   end;
-*)  
+*)
   var buf:= new array of Char(nexp + aNumberOfDecimalDigits + 2) ;
   var bufpos:= 0;
   if not is_positive_value then begin

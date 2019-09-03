@@ -353,6 +353,12 @@ type
     constructor; empty;
   end;  
 
+  [AttributeUsage(AttributeTargets.Field)]
+  BitPackingAttribute = public class(Attribute)
+  public
+    constructor(aBitPack: Integer); empty;
+  end;
+
 
   [AttributeUsage(AttributeTargets.Method or AttributeTargets.Event or AttributeTargets.Property or AttributeTargets.Constructor)]
   PublishedAttribute = public class(Attribute)

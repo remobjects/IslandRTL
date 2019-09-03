@@ -54,6 +54,7 @@ type
       if aValue is IslandWrappedCocoaObject then exit IslandWrappedCocoaObject(aValue).Value;
       if aValue is IslandWrappedSwiftObject then exit CocoaWrappedSwiftObject.FromValue(IslandWrappedSwiftObject(aValue).Value);
       if aValue is IslandWrappedCocoaException then exit IslandWrappedCocoaException(aValue).InnerException;
+      if aValue is String then exit NSString(String(aValue));
       exit new CocoaWrappedIslandObject(aValue);
     end;
 

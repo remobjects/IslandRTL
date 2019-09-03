@@ -309,6 +309,11 @@ type
 	end;
 	MSVCCleanup = public procedure();
 
+method HResultCheck(aVal: rtl.HRESULT); public;
+begin
+	if aVal = rtl.S_OK then exit;
+	raise new ArgumentException('HResult error: '+aVal);
+end;
 
 
 [SymbolName('__elements_entry_point'), &Weak]
@@ -319,7 +324,7 @@ method DllMain(aModule: rtl.HMODULE; aReason: rtl.DWORD; aReserved: ^Void): Bool
 
 // This is needed by anything msvc compiled; it's the offset in fs for the tls array
 var
-  [Used, StaticallyInitializedField]
+	[Used, StaticallyInitializedField]
 	_dllmain: DllMainType := @DllMain;public;
 	[SymbolName('_tls_index'), Used, StaticallyInitializedField]
 	_tls_index: Cardinal; public;

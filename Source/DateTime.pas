@@ -213,6 +213,20 @@ type
     end;
 {$ENDIF}
 
+
+    const DATE_DELTA: Double = 693594.00; private;
+    const TICKS_PER_DAY: Double = 864000000000.0; private;
+
+    class method FromOleDate(aDate: Double): DateTime;
+    begin
+      exit  new DateTime(Int64(((DATE_DELTA + aDate) * TICKS_PER_DAY / 1000) * 1000));
+    end;
+
+    class method ToOleDate(aDate: DateTime): Double;
+    begin
+      exit ((aDate.Ticks - DATE_DELTA * TICKS_PER_DAY) / TICKS_PER_DAY);
+    end;
+
     constructor;
     begin
       fTicks := 0;

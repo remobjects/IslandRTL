@@ -301,8 +301,12 @@ module ElementsWebAssembly {
             }
             var v = handletable[thisval];
             var org = v;
-            if (name != null && name != 0)
-                v = v[readStringFromMemory(name)];
+            if (name != null && name != 0) {
+                var realname = readStringFromMemory(name);
+                if (v == null || typeof(v) == "undefined") throw "Calling " + realname + " on null object";
+                v = v[realname];
+                if (v == null || typeof (v) == "undefined") throw "Member " + realname + " on "+org+" does not exist";
+            }
             return createHandle((v as Function).apply(org, nargs));
         };
         imp.env.__island_set = function(thisval, name, value: number, releaseArgs: boolean) {

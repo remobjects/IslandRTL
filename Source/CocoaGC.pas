@@ -29,12 +29,13 @@ type
 
 method DefaultBlockDestroy(Dest: ^ObjcBlock);
 begin 
-  ForeignBoehmGC.Release(var ^ForeignBoehmGC(@Dest^.MData)^);
+  ForeignBoehmGC.Release(Dest^.MData);
 end;
 
 method DefaultBlockCopy(Dest, Source: ^ObjcBlock);
 begin 
-  ForeignBoehmGC.Copy(var ^ForeignBoehmGC(@Dest^.MData)^, var ^ForeignBoehmGC(@Source^.MData)^);
+  Dest^.MData := Source.MData;
+  ForeignBoehmGC.AddRef(Dest^.MData);
 end;
 
 
@@ -59,8 +60,8 @@ type
     begin
       var lTmp := new ObjcBlock;
       lTmp.Ptr := aPtr;
-      ForeignBoehmGC.Assign(var ^ForeignBoehmGC(@lTmp.MData)^, var ^ForeignBoehmGC(@aData)^);
-      exit objc_autoreleaseReturnValue(objc_retainBlock(IntPtr(@lTmp)));
+      lTmp.MData := aData;
+      exit objc_retainBlock(IntPtr(@lTmp));
     end;
 
     [SymbolName('objc_retainBlock')]

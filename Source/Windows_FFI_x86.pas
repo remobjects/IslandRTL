@@ -146,7 +146,7 @@ type
           if (lInst.fVarData = nil) and (aParameterFlags[I] in [ArgumentMode.Var, ArgumentMode.Out]) then lInst.fVarData := new Object[length(aParams)];
           lInst.PushParameter(aParams[I], I, aParameterTypes[I], aParameterFlags[I]);
         end;
-        lInst.fCallData.StackData := @lInst.fStack[length(lInst.fStack)-4];
+        lInst.fCallData.StackData := if length(lInst.fStack) = 0 then nil else @lInst.fStack[length(lInst.fStack)-4];
         lInst.fCallData.StackDataLength := length(lInst.fStack) / 4;
         lInst.fCallData.Address := aAddress;
         if aCallingConv in [CallingConvention.Cdecl, CallingConvention.Default] then

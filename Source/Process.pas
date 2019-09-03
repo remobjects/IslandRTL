@@ -64,6 +64,39 @@ type
     property OnFinished: block(ExitCode: Integer) read fFinishedBlock;
     property OnOutputData: block(aLine: String) read fOutputDataBlock;
     property OnErrorData: block(aLine: String) read fErrorDataBlock;
+
+    class method LoadLibrary(aLibrary: String): IntPtr;
+    begin
+      {$IFDEF WINDOWS}
+      exit IntPtr(rtl.LoadLibrary(aLibrary));
+      {$ELSEIF POSIX}
+      exit IntPtr(rtl.dlopen(aLibrary, 0));
+      {$ELSE}
+      raise new NotSupportedException;
+      {$ENDIF}
+    end;
+
+    class method GetProcAddress(aLibrary: IntPtr; aProc: String): IntPtr;
+    begin
+      {$IFDEF WINDOWS}
+      exit IntPtr(^Void(rtl.GetProcAddress(rtl.HModule(aLibrary), aProc)));
+      {$ELSEIF POSIX}
+      exit IntPtr(rtl.dlsym(^Void(aLibrary), aProc));
+      {$ELSE}
+      raise new NotSupportedException;
+      {$ENDIF}
+    end;
+
+    class method FreeLibrary(aLibrary: IntPtr);
+    begin
+      {$IFDEF WINDOWS}
+      rtl.FreeLibrary(rtl.HModule(aLibrary));
+      {$ELSEIF POSIX}
+      rtl.dlclose(^Void(aLibrary));
+      {$ELSE}
+      raise new NotSupportedException;
+      {$ENDIF}
+    end;
   end;
 
 implementation
