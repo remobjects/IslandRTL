@@ -111,13 +111,14 @@ type
 				var lTmp1 := str2;
 				var lTmp2 := str1;
 				loop begin
-					if lTmp2^ = #0 then exit str2;
+					if lTmp1^ = #0 then exit str1;
+					if lTmp2^ = #0 then exit nil;
 					if lTmp2^ <> lTmp1^ then break;
 					inc(lTmp1);
 					inc(lTmp2);
 				end;
 			end;
-			str2 := str2 + 1;
+			str1 := str1 + 1;
 		end;
 		exit nil;
 	end;
@@ -191,9 +192,10 @@ type
 		tmdest^.tm_hour := DT.Hour;
 		tmdest^.tm_mday := DT.Day;
 		tmdest^.tm_wday := DT.DayOfWeek;
-		tmdest^.tm_mon := DT.Month;
-		tmdest^.tm_year := DT.Year;
-		tmdest^.tm_yday := (new DateTime(DT.Year, 1,1).Ticks - DT.Date.Ticks) / DateTime.TicksPerDay;
+		tmdest^.tm_mon := DT.Month - 1;
+		tmdest^.tm_year := DT.Year - 1900;
+		var lD := (DT.Date.Ticks - new DateTime(DT.Year, 1,1).Ticks);
+		tmdest^.tm_yday := lD / DateTime.TicksPerDay;
 	end;
 
 
