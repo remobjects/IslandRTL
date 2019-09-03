@@ -164,7 +164,9 @@ type
     class method GetCocoaObjectToString(aObj: Foundation.NSObject): ^WideChar;
     begin
       if aObj = nil then exit nil;
-      var s := String(aObj:debugDescription()):ToCharArray(true);
+      var s: array of Char;
+      if aObj is Foundation.NSString then s := String(Foundation.NSString(aObj)):ToCharArray(true)
+      else s := String(aObj:debugDescription()):ToCharArray(true);
       exit @s[0];
     end;
     {$ENDIF}
