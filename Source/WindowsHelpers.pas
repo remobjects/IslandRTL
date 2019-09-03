@@ -3,6 +3,9 @@
 interface
 
 type
+	FILEHANDLE = GCHandle;
+	BeginThreadFunc = public procedure(aVal: ^Void);
+
 	VersionResourceAttribute = public class(Attribute)
 	public
 		property Copyright: String;
@@ -32,6 +35,260 @@ type
 			exit fModuleHandle;
 		end;
 	public
+
+
+
+		[SymbolName('_beginthread')]
+		class method _beginthread( // NATIVE CODE
+		start: BeginThreadFunc;
+		stack: Integer;
+		arg: ^Void): rtl.HANDLE;
+		begin
+			var lStart: Object := new Tuple<BeginThreadFunc, ^Void>(start, arg);
+			exit rtl.CreateThread(nil, stack, method (lpThreadParameter: rtl.LPVOID): rtl.DWORD
+				begin
+					BoehmGC.RegisterThread();
+					var lVal := Tuple<BeginThreadFunc, ^Void>(InternalCalls.Cast<Object>(lpThreadParameter));
+					lVal.Item1(lVal.Item2);
+				end, InternalCalls.Cast(lStart), 0, nil);
+		end;
+	{$IFDEF I386}
+		[SymbolName(#1'__allmul'), CallingConvention(CallingConvention.Stdcall)]
+		class method __allmul(aVal: rtl.ULONGLONG; aVal2: rtl.ULONGLONG): rtl.LONGLONG;
+		begin
+			exit aVal * aVal2;
+		end;
+
+
+		[SymbolName(#1'__allshl'), CallingConvention(CallingConvention.Stdcall), InlineAsmAttribute("
+		pushl %ecx
+		pushl %edx
+		pushl %eax
+		calll org__allshl
+		ret", '', false, false)]
+		class method _allshl(aVal: rtl.LONGLONG; aVal2: rtl.LONG): rtl.LONGLONG; external;
+
+		[SymbolName(#1'__allshr'), CallingConvention(CallingConvention.Stdcall), InlineAsmAttribute("
+		pushl %ecx
+		pushl %edx
+		pushl %eax
+		calll org__allshr
+		ret", '', false, false)]
+		class method _allshr(aVal: rtl.LONGLONG; aVal2: rtl.LONG): rtl.LONGLONG; external;
+
+	[SymbolName(#1'__aullshr'), CallingConvention(CallingConvention.Stdcall), InlineAsmAttribute("
+	pushl %ecx
+	pushl %edx
+	pushl %eax
+	calll org__aullshr
+	ret", '', false, false)]
+	class method _aullshr(aVal: rtl.ULONGLONG; aVal2: rtl.LONG): rtl.ULONGLONG; external;
+
+	[SymbolName(#1'org__allshl'), CallingConvention(CallingConvention.Stdcall)]
+	class method org_allshl(aVal: rtl.LONGLONG; aVal2: rtl.LONG): rtl.LONGLONG;
+	begin
+		exit aVal shl Byte(aVal2);
+	end;
+
+	[SymbolName(#1'org__allshr'), CallingConvention(CallingConvention.Stdcall)]
+	class method org_allshr(aVal: rtl.LONGLONG; aVal2: rtl.LONG): rtl.LONGLONG;
+	begin
+		exit aVal shr Byte(aVal2);
+	end;
+
+	[SymbolName(#1'org__aullshr'), CallingConvention(CallingConvention.Stdcall)]
+	class method org_aullshr(aVal: rtl.ULONGLONG; aVal2: rtl.LONG): rtl.ULONGLONG;
+	begin
+		exit aVal shr Byte(aVal2);
+	end;
+	{$ENDIF}
+	[SymbolName('strstr')]
+	class method strstr(str1, str2: ^AnsiChar): ^AnsiChar;
+	begin
+		if str1 = nil then exit nil;
+		while str2 <> nil do begin
+			if str2^ = str1^ then begin
+				var lTmp1 := str2;
+				var lTmp2 := str1;
+				loop begin
+					if lTmp2^ = #0 then exit str2;
+					if lTmp2^ <> lTmp1^ then break;
+					inc(lTmp1);
+					inc(lTmp2);
+				end;
+			end;
+			str2 := str2 + 1;
+		end;
+		exit nil;
+	end;
+	[SymbolName('__GSHandlerCheck')]
+	class method _GSHandlerCheck;
+	begin
+		raise new NotSupportedException;
+	end;
+
+
+	[SymbolName('fclose')]
+	class method fclose(afn: FILEHANDLE);
+	begin
+		afn.Dispose();
+	end;
+	[SymbolName('__stdio_common_vfprintf')]
+	class method ___stdio_common_vfprintf(
+	_Options: UInt64;
+	_Stream: FILEHANDLE;
+	_Format: ^AnsiChar;
+	_Locale: ^Void;
+	_ArgList: ^Void): Integer;
+	begin
+		raise new NotSupportedException();
+	end;
+
+	[SymbolName('__security_check_cookie'), Inlineasm('ret', '', false, false)]
+	class method __security_check_cookie(_StackCookie: UIntPtr);  external;
+
+	[SymbolName('__stdio_common_vsnprintf_s')]
+	class method __stdio_common_vsnprintf_s(
+	_Options: UInt64;
+	_Buffer: ^AnsiChar;
+	_BufferCount: IntPtr;
+	_MaxCount: IntPtr;
+	_Format: ^AnsiChar;
+	_Locale: ^Void;
+	_ArgList: ^Void): Integer;
+	begin
+		memcpy(_Buffer, _Format, Math.Min(ExternalCalls.strlen(_Format), Integer(_BufferCount)));
+	end;
+
+	[SymbolName('__acrt_iob_func')]
+	class method __acrt_iob_func(a: Integer): FILEHANDLE;
+	begin
+
+		case a of
+			0: exit GCHandle.Allocate(new FileStream(rtl.GetStdHandle(rtl.STD_INPUT_HANDLE), FileAccess.Read));
+			1: exit GCHandle.Allocate(new FileStream(rtl.GetStdHandle(rtl.STD_OUTPUT_HANDLE), FileAccess.Write));
+			2: exit GCHandle.Allocate(new FileStream(rtl.GetStdHandle(rtl.STD_ERROR_HANDLE), FileAccess.Write));
+		end;
+		exit &default(FILEHANDLE);
+	end;
+
+	[SymbolName('_time64')]
+	class method _time64(aVal: ^Int64): Int64;
+	begin
+		result := (DateTime.UtcNow.Ticks - DateTime.Now.UnixDateOffset) / DateTime.TicksPerSecond;
+		if aVal <> nil then
+			aVal^ := result;
+	end;
+
+	[SymbolName('_gmtime64_s')]
+	class method _gmtime64_s(tmdest: ^__struct_tm; aVal: ^Int64): Integer;
+	begin
+		var lValue := aVal^;
+		var DT := new DateTime(lValue * DateTime.TicksPerSecond + DateTime.UnixDateOffset);
+
+		tmdest^.tm_sec := DT.Second;
+		tmdest^.tm_min := DT.Minute;
+		tmdest^.tm_hour := DT.Hour;
+		tmdest^.tm_mday := DT.Day;
+		tmdest^.tm_wday := DT.DayOfWeek;
+		tmdest^.tm_mon := DT.Month;
+		tmdest^.tm_year := DT.Year;
+		tmdest^.tm_yday := (new DateTime(DT.Year, 1,1).Ticks - DT.Date.Ticks) / DateTime.TicksPerDay;
+	end;
+
+
+	[SymbolName('ferror')]
+	class method ferror: Integer; empty;
+
+
+	[SymbolName('fopen')]
+	class method fopen(afn: ^AnsiChar; aMode: ^AnsiChar): FILEHANDLE;
+	begin
+		var lMode := FileMode.Open;
+		var lAcc := FileAccess.ReadWrite;
+		var lModeStr := String.FromPAnsiChars(aMode);
+		if lModeStr.Contains('w') then begin
+			lMode := FileMode.OpenOrCreate;
+		end else begin
+			lMode := FileMode.Open;
+			lAcc := FileAccess.Read;
+		end;
+
+		try
+			var lFN := new FileStream(String.FromPAnsiChars(afn), lMode, lAcc);
+			if lModeStr.Contains('a') then
+				lFN.Seek(0, SeekOrigin.End);
+			exit GCHandle.Allocate(lFN);
+		except
+			exit default(GCHandle);
+		end;
+	end;
+
+	[SymbolName('fwrite')]
+	class method fwrite(aPtr: ^Byte; aSize: IntPtr; aCount: IntPtr; aFS: GCHandle): IntPtr;
+	begin
+		exit FileStream(aFS.Target).Write(aPtr, aSize * aCount);
+	end;
+
+
+	[SymbolName('fread')]
+	class method fread(aPtr: ^Byte; aSize: IntPtr; aCount: IntPtr; aFS: GCHandle): IntPtr;
+	begin
+		exit FileStream(aFS.Target).Read(aPtr, aSize * aCount);
+	end;
+
+
+	[SymbolName('fgets')]
+	class method fgets(aStr: ^Byte; aNum: Integer; aFS: GCHandle): ^Byte;
+	begin
+		dec(aNum);
+		var lRes := FileStream(aFS.Target).Read(aStr, aNum);
+		if lRes = 0 then exit nil;
+
+		aStr[lRes] := 0;
+
+		exit aStr;
+	end;
+
+
+	[SymbolName('fseek')]
+	class method fseek(aFS: GCHandle; aOffset: IntPtr; aOrg: Integer): IntPtr;
+	begin
+		exit FileStream(aFS.Target).Seek(aOffset, if aOrg = rtl.SEEK_SET then SeekOrigin.Begin else if aOrg = rtl.SEEK_END then SeekOrigin.End else SeekOrigin.Current);
+	end;
+
+
+	[SymbolName('ftell')]
+	class method ftell(aFS: GCHandle): IntPtr;
+	begin
+		exit FileStream(aFS.Target).Position;
+	end;
+
+	class var fRan: Random := new Random();
+
+	[SymbolName('rand')]
+	class method rand: Integer;
+	begin
+		exit fRan.Random();
+	end;
+
+
+	[SymbolName(#1'@__security_check_cookie@4'), CallingConvention(CallingConvention.Stdcall), Inlineasm('ret', '', false, false)]
+	class method __security_check_cookie(v: Integer); external;
+
+	[SymbolName('__report_rangecheckfailure')]
+	method __report_rangecheckfailure();
+	begin
+		raise new Exception('Range check failure!');
+	end;
+
+	[SymbolName('calloc')]
+	class method calloc(anum, asize: IntPtr): ^Void;
+	begin
+		result := malloc(anum * asize);
+		memset(result, 0, anum * asize);
+	end;
+
 		[SymbolName('getenv')]
 		class method getenv(name: ^AnsiChar): ^AnsiChar; empty;
 		[SymbolName('atoi')]
@@ -224,6 +481,7 @@ type
 {$G+}
 {$HIDE H7}{$HIDE H6}
 	__struct_tm = public record
+	public
 		tm_sec,
 		tm_min,
 		tm_hour,
