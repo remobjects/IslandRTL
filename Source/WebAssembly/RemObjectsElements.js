@@ -344,10 +344,12 @@ var ElementsWebAssembly;
             var v = handletable[thisval];
             var org = v;
             if (name != null && name != 0) {
-                name = readStringFromMemory(name);
-                if (v == null || typeof(v) == "undefined") throw "Calling " + name + " on null object";
-                v = v[name];
-                if (v == null || typeof (v) == "undefined") throw "Member " + name + " on "+org+" does not exist";
+                var realname = readStringFromMemory(name);
+                if (v == null || typeof (v) == "undefined")
+                    throw "Calling " + realname + " on null object";
+                v = v[realname];
+                if (v == null || typeof (v) == "undefined")
+                    throw "Member " + realname + " on " + org + " does not exist";
             }
             return createHandle(v.apply(org, nargs));
         };
@@ -383,6 +385,12 @@ var ElementsWebAssembly;
         };
         imp.env.__island_createTextNode = function (name) {
             return createHandle(document.createTextNode(readStringFromMemory(name)));
+        };
+        imp.env.__island_new_XMLHttpRequest = function () {
+            return createHandle(new XMLHttpRequest());
+        };
+        imp.env.__island_new_WebSocket = function (name) {
+            return createHandle(new WebSocket(readStringFromMemory(name)));
         };
         imp.env.__island_createObject = function () {
             var obj = {};

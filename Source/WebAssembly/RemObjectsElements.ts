@@ -340,6 +340,12 @@ module ElementsWebAssembly {
         imp.env.__island_createTextNode = function(name: number): number {
             return createHandle(document.createTextNode(readStringFromMemory(name)));
         };
+        imp.env.__island_new_XMLHttpRequest  = function(): number {
+            return createHandle(new XMLHttpRequest());
+        };
+        imp.env.__island_new_WebSocket = function(name: number): number {
+            return createHandle(new WebSocket(readStringFromMemory(name)));
+        };
         imp.env.__island_createObject = function(): number {
             var obj = {};
             return createHandle(obj);
