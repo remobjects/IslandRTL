@@ -121,10 +121,12 @@ type
     method Receive(aBuffer: array of Byte; aOffset: Integer; aSize: Integer; aFlags: SocketFlags): Integer;
     method Receive(aBuffer: array of Byte; aSize: Integer; aFlags: SocketFlags): Integer;
     method Receive(aBuffer: array of Byte): Integer;
+    method Receive(aBuffer: Span<Byte>; aFlags: SocketFlags): Integer;
 
     method Send(aBuffer: array of Byte; aOffset: Integer; aSize: Integer; aFlags: SocketFlags): Integer;
     method Send(aBuffer: array of Byte; aSize: Integer; aFlags: SocketFlags): Integer;
     method Send(aBuffer: array of Byte): Integer;
+    method Send(aBuffer:ImmutableSpan<Byte>; aFlags: SocketFlags): Integer;
 
     method ReceiveFrom(aBuffer: array of Byte; aOffset: Integer; aSize: Integer; aFlags: SocketFlags; var remoteEP: EndPoint): Integer;
     method SendTo(aBuffer: array of Byte; aOffset: Integer; aSize: Integer; aFlags: SocketFlags; remoteEP: EndPoint): Integer;
@@ -147,6 +149,52 @@ type
     property SocketType: SocketType;
     property LocalEndPoint: EndPoint;
     property RemoteEndPoint: EndPoint;
+  end;
+
+  NetworkStream = public class(Stream)
+  private
+    fSocket: Socket;
+  public
+    constructor(aSocket: Socket);
+    begin
+      fSocket := aSocket;
+    end;
+
+    property CanRead: Boolean read true; override;
+    property CanWrite: Boolean read true; override;
+    property CanSeek: Boolean read false; override;
+
+    method Close; override;
+    begin
+      if fSocket.Connected then
+        fSocket:Shutdown(SocketShutdown.Both);
+      disposeAndNil(fSocket);
+    end;
+
+    method Seek(Offset: Int64; Origin: SeekOrigin): Int64; override;
+    begin
+      raise new NotSupportedException;
+    end;
+
+    method &Read(aSpan: Span<Byte>): Integer; override;
+    begin
+      result := fSocket.Receive(aSpan, SocketFlags.None);
+    end;
+
+    method &Write(aSpan: ImmutableSpan<Byte>): Integer; override;
+    begin
+      result := fSocket.Send(aSpan, SocketFlags.None);
+    end;
+
+    method Flush; override;
+    begin
+    end;
+
+    method IsValid: Boolean; override;
+    begin
+      exit (fSocket <> nil) and (fSocket.Connected);
+    end;
+
   end;
 
  implementation
@@ -701,6 +749,12 @@ begin
     raise new Exception("Error calling to listen function");
 end;
 
+
+method Socket.Receive(aBuffer: Span<Byte>; aFlags: SocketFlags): Integer;
+begin
+  result := rtl.recv(fHandle, ^AnsiChar(aBuffer.Pointer), aBuffer.Length, Integer(aFlags));
+end;
+
 method Socket.Receive(aBuffer: array of Byte; aOffset: Integer; aSize: Integer; aFlags: SocketFlags): Integer;
 begin
   var lPointer: ^Void;
@@ -716,6 +770,11 @@ end;
 method Socket.Receive(aBuffer: array of Byte): Integer;
 begin
   result := Receive(aBuffer, 0, length(aBuffer), SocketFlags.None);
+end;
+
+method Socket.Send(aBuffer:ImmutableSpan<Byte>; aFlags: SocketFlags): Integer;
+begin
+  result := rtl.send(fHandle, ^AnsiChar(aBuffer.Pointer), aBuffer.Length, Integer(aFlags));
 end;
 
 method Socket.Send(aBuffer: array of Byte; aOffset: Integer; aSize: Integer; aFlags: SocketFlags): Integer;

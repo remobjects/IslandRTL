@@ -232,6 +232,12 @@ type
 
     [DllImport('', EntryPoint := '__island_responseBinaryTextToArray')]
     class method ResponseBinaryTextToArray(aSource: IntPtr; aTarget: ^Byte): Int32; external;
+    
+    [DllImport('', EntryPoint := '__island_new_XMLHttpRequest')]
+    class method New_XMLHttpRequest(): IntPtr; external;
+
+    [DllImport('', EntryPoint := '__island_new_WebSocket')]
+    class method New_WebSocket(s: String): IntPtr; external;
   end;
 
   KnownTypesEnumerator = public procedure (aData: Object; aRTTI: ^Byte);
@@ -489,6 +495,16 @@ type
   public
     property Global: dynamic := new EcmaScriptObject(-1); lazy;
     property Object: dynamic := EcmaScriptObject(&Global)['Object']; lazy;
+    
+    class method NewXMLHttpRequest(): dynamic; 
+    begin 
+      exit new EcmaScriptObject(WebAssemblyCalls.New_XMLHttpRequest());
+    end;
+    
+    class method NewWebSocket(s: String): dynamic; 
+    begin 
+      exit new EcmaScriptObject(WebAssemblyCalls.New_WebSocket(s));
+    end;
 
     class method CreateProxy(o: Object): EcmaScriptObject;
     begin
