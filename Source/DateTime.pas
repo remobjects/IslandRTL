@@ -63,7 +63,7 @@ type
           if temp = 4 then temp := 3;  // 4*DaysPerYear != DaysPer4Years
           y := y + temp; // = 400*x1 + 100*x2 + 4*x3 + 1*x4
           if &Index = DateTimePart.Year then exit y;
-          ltotal := ltotal - (temp * DaysPerYear);
+          ltotal := ltotal - (temp * DaysPerYear)+1; // day is started from 1, so 0 ticks is `1 Jan 0001`
           var lisleap := isLeapYear(y);
           for i: Integer := 1 to 12 do begin
             if ltotal <= GetDaysPerMonth(lisleap, i) then begin
@@ -162,7 +162,7 @@ type
 
     const FileTimeOffset      : Int64 = DaysTo1601 * TicksPerDay; // = 504911232000000000
     const DoubleDateOffset    : Int64 = DaysTo1899 * TicksPerDay; // = 599264352000000000
-    const UnixDateOffset      : Int64 = DaysTo1970 * TicksPerDay + TicksPerDay; // = 621356832000000000
+    const UnixDateOffset      : Int64 = DaysTo1970 * TicksPerDay; // = 621355968000000000	
     const MaxMillis           : Int64 = DaysTo10000/10000 * TicksPerDay; // = 315537897600000; ticks per 1 year
     const MaxYear             : Int32 = 10000;
 
@@ -213,18 +213,14 @@ type
     end;
 {$ENDIF}
 
-
-    const DATE_DELTA: Double = 693594.00; private;
-    const TICKS_PER_DAY: Double = 864000000000.0; private;
-
     class method FromOleDate(aDate: Double): DateTime;
     begin
-      exit  new DateTime(Int64(((DATE_DELTA + aDate) * TICKS_PER_DAY / 1000) * 1000));
+      exit new DateTime(DoubleDateOffset + Math.Round(aDate * TicksPerDay));
     end;
 
     class method ToOleDate(aDate: DateTime): Double;
     begin
-      exit ((aDate.Ticks - DATE_DELTA * TICKS_PER_DAY) / TICKS_PER_DAY);
+      exit (Double(aDate.Ticks - DoubleDateOffset)  / TicksPerDay);
     end;
 
     constructor;
@@ -255,7 +251,7 @@ type
     constructor(aYear, aMonth, aDay, anHour, aMinute, aSecond, aMillisecond: Integer);
     begin
       if (aYear < 1) or (aYear > MaxYear) then raise new Exception("invalid year");
-      if (aMonth < 1) or (Month >12) then raise new Exception("invalid month");
+      if (aMonth < 1) or (aMonth >12) then raise new Exception("invalid month");
       var lisleap := isLeapYear(aYear);
       if (aDay < 1) or (aDay > GetDaysPerMonth(lisleap, aMonth)) then raise new Exception("invalid day");
       if (anHour < 0) or (anHour > 23) then raise new Exception("invalid hour");
@@ -266,7 +262,7 @@ type
       var lDays := aDay;
       for i: Integer := 0 to aMonth -1 do lDays := lDays + GetDaysPerMonth(lisleap, i);
       var lYear := aYear-1;
-      fTicks := Int64((lYear*365 + lYear div 4 - lYear div 100 + lYear div 400 + lDays)*TicksPerDay +
+      fTicks := Int64((lYear*365 + lYear div 4 - lYear div 100 + lYear div 400 + lDays-1)*TicksPerDay +
                  anHour*TicksPerHour + aMinute*TicksPerMinute + aSecond*TicksPerSecond + aMillisecond*TicksPerMillisecond);
     end;
 
@@ -295,11 +291,11 @@ type
       var lYear := Year + (Value div 12);
       var lMonth:= Month + (Value mod 12);
 
-      if (lMonth < 0) then begin
+      if (lMonth < 1) then begin
         lYear := lYear - 1;
         lMonth := lMonth + 12;
       end
-      else if lMonth > 11 then begin
+      else if lMonth > 12 then begin
         lYear := lYear + 1;
         lMonth := lMonth - 12;
       end;

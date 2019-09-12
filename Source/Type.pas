@@ -656,7 +656,7 @@ type
     Final = 64,
     ExtensionMethod = 128,
     StaticExtension = 256);
-
+  [Used]
   &Type = public class
    private
      method get_COMGuids: sequence of Guid; iterator;
