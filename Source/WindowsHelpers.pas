@@ -266,11 +266,12 @@ type
 		exit FileStream(aFS.Target).Position;
 	end;
 
-	class var fRan: Random := new Random();
+	class var fRan: Random;
 
 	[SymbolName('rand')]
 	class method rand: Integer;
 	begin
+		if fRan = nil then fRan := new Random();
 		exit fRan.Random();
 	end;
 

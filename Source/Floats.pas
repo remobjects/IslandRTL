@@ -681,7 +681,7 @@ begin
     inc(nexp);
   end;
 *)
-  var buf:= new array of Char(nexp + aNumberOfDecimalDigits + 2) ;
+  var buf:= new array of Char(nexp + aNumberOfDecimalDigits + 15) ;
   var bufpos:= 0;
   if not is_positive_value then begin
     buf[bufpos] := '-';
