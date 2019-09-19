@@ -128,7 +128,7 @@ type
 
     [SymbolName('__elements_init'), Used]
     method init(_nargs: Integer; _args: ^^AnsiChar; _envp: ^^AnsiChar): Integer;
-    [SymbolName('__elements_fini'), Used]
+    [SymbolName('__elements_fini'), Used, GlobalDestructor(0)]
     method fini;
 
     method Parselsda(aAction: rtl._Unwind_Action; aNative, aObjc: Boolean; aEx: ^rtl.__struct__Unwind_Exception; aCtx: ^Void;

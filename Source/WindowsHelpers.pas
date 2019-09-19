@@ -26,7 +26,7 @@ type
 	end;
 	ExternalCalls = public static class
 	private
-		class var atexitlist: ^atexitrec;
+		class var atexitlist: ^atexitrec; assembly;
 		class var processheap: rtl.HANDLE;
 		class var fModuleHandle: rtl.HMODULE; assembly;
 		class method getModuleHandle: rtl.HMODULE;
@@ -1421,7 +1421,11 @@ begin
 	var args_s := new String[cnt-1];
 	for i: Integer := 1 to cnt-1 do
 		args_s[i-1] := String.FromPChar(args[i]);
-	exit UserEntryPoint(args_s);
+	result := UserEntryPoint(args_s);
+	while ExternalCalls.atexitlist <> nil do begin
+		ExternalCalls.atexitlist^.func();
+		ExternalCalls.atexitlist := ExternalCalls.atexitlist^.next;
+	end;
 end;
 
 method mainCRTStartup: Integer;
@@ -1447,7 +1451,13 @@ begin
 		if lMain^ = nil then exit true;
 		exit lMain^(aModule, aReason, aReserved);
 	finally
-		if (aReason = rtl.DLL_PROCESS_DETACH) then BoehmGC.UnloadGC;
+		if (aReason = rtl.DLL_PROCESS_DETACH) then begin
+			while ExternalCalls.atexitlist <> nil do begin
+				ExternalCalls.atexitlist^.func();
+				ExternalCalls.atexitlist := ExternalCalls.atexitlist^.next;
+			end;
+			BoehmGC.UnloadGC;
+		end;
 	end;
 end;
 
