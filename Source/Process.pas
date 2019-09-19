@@ -13,6 +13,8 @@ type
     {$IF WINDOWS}
     fStartUpInfo: rtl.STARTUPINFO;
     fProcessInfo: rtl.PROCESS_INFORMATION;
+    fInputHandle: rtl.HANDLE;
+    fInputReadHandle: rtl.HANDLE;
     fOutputHandle: rtl.HANDLE;
     fOutputReadHandle: rtl.HANDLE;
     fErrorHandle: rtl.HANDLE;
@@ -25,6 +27,7 @@ type
     fOutput: String := '';
     fErr: String := '';
     fProcessId: {$IF MACOS}rtl.pid_t{$ELSE}rtl.__pid_t{$ENDIF};
+    fInputPipe: array[0..1] of Int32;
     fOutPipe: array[0..1] of Int32;
     fErrPipe: array[0..1] of Int32;
     method StartAsync(aStdOutCallback: block(aLine: String); aErrorCallback: block(aLine: String); aFinishedCallback: block(ExitCode: Integer));
@@ -37,8 +40,11 @@ type
     {$ENDIF}
     method Prepare;
     method GetIsRunning: Boolean;
+    method GetStandardInputStream: Stream;
     method GetStandardOutput: String;
+    method GetStandardOutputStream: Stream;
     method GetStandardError: String;
+    method GetStandardErrorStream: Stream;
     method GetExitCode: Integer;
     method CleanUp;
   public
@@ -56,8 +62,12 @@ type
     property Arguments: ImmutableList<String>;
     property Environment: ImmutableDictionary<String, String>;
     property WorkingDirectory: String read fWorkingDirectory;
+    property StandardInputStream: Stream read GetStandardInputStream;
     property StandardOutput: String read GetStandardOutput;
+    property StandardOutputStream: Stream read GetStandardOutputStream;
     property StandardError: String read GetStandardError;
+    property StandardErrorStream: Stream read GetStandardErrorStream;
+    property RedirectInput: Boolean := false;
     property RedirectOutput: Boolean := false;
     property Id: Integer read fId;
     // for RunAsync
@@ -122,26 +132,39 @@ begin
   fStartUpInfo.lpReserved := nil;
   fStartUpInfo.lpTitle := nil;
 
-  if RedirectOutput then begin
+  if RedirectInput or RedirectOutput then begin
     var lSec: rtl.SECURITY_ATTRIBUTES;
     lSec.nLength := sizeOf(lSec);
     lSec.bInheritHandle := true;
     lSec.lpSecurityDescriptor := nil;
-    rtl.CreatePipe(@fOutputReadHandle, @fOutputHandle, @lSec, 0);
-    rtl.CreatePipe(@fErrorReadHandle, @fErrorHandle, @lSec, 0);
-    fStartUpInfo.dwFlags := rtl.STARTF_USESTDHANDLES;
-    fStartUpInfo.hStdInput := rtl.GetStdHandle(rtl.STD_INPUT_HANDLE);
-    fStartUpInfo.hStdOutput := fOutputHandle;
-    fStartUpInfo.hStdError := fErrorHandle;
-  end
-  else begin
-    fOutputHandle := rtl.HANDLE(-1);
-    fErrorHandle := rtl.HANDLE(-1);
+
+    if RedirectOutput then begin
+      rtl.CreatePipe(@fOutputReadHandle, @fOutputHandle, @lSec, 0);
+      rtl.CreatePipe(@fErrorReadHandle, @fErrorHandle, @lSec, 0);
+      fStartUpInfo.dwFlags := rtl.STARTF_USESTDHANDLES;
+      fStartUpInfo.hStdInput := rtl.GetStdHandle(rtl.STD_INPUT_HANDLE);
+      fStartUpInfo.hStdOutput := fOutputHandle;
+      fStartUpInfo.hStdError := fErrorHandle;
+    end
+    else begin
+      fOutputHandle := rtl.HANDLE(-1);
+      fErrorHandle := rtl.HANDLE(-1);
+    end;
+    if RedirectInput then begin
+      rtl.CreatePipe(@fInputReadHandle, @fInputHandle, @lSec, 0);
+      fStartUpInfo.hStdInput := fInputReadHandle;
+    end
+    else
+      fInputReadHandle := rtl.HANDLE(-1);
   end;
   {$ELSEIF POSIX AND NOT IOS}
   if RedirectOutput then begin
-    if rtl.pipe(fOutPipe) = -1 then
+    if (rtl.pipe(fOutPipe) = -1) or (rtl.pipe(fErrPipe) = -1) then
       raise new Exception('Can not create handles to redirect output');
+  end;
+  if RedirectInput then begin
+    if (rtl.pipe(fInputPipe) = -1) then
+      raise new Exception('Can not create handles to redirect input');
   end;
   {$ENDIF}
 end;
@@ -152,6 +175,15 @@ begin
   result := rtl.WaitForSingleObject(fProcessInfo.hProcess, 0) = rtl.WAIT_TIMEOUT;
   {$ELSEIF POSIX AND NOT IOS}
   result := rtl.kill(fProcessId, 0) = 0;
+  {$ENDIF}
+end;
+
+method Process.GetStandardInputStream: Stream;
+begin
+  {$IF WINDOWS}
+  result := new FileStream(fInputReadHandle, FileAccess.Write);
+  {$ELSEIF POSIX AND NOT IOS}
+  result := new FileStream(PlatformHandle(fOutPipe[1]), FileAccess.Write);
   {$ENDIF}
 end;
 
@@ -192,6 +224,15 @@ begin
   {$ENDIF}
 end;
 
+method Process.GetStandardOutputStream: Stream;
+begin
+  {$IF WINDOWS}
+  result := new FileStream(fOutputHandle, FileAccess.Read);
+  {$ELSEIF POSIX AND NOT IOS}
+  result := new FileStream(PlatformHandle(fOutPipe[0]), FileAccess.Read);
+  {$ENDIF}
+end;
+
 method Process.GetStandardError: String;
 begin
   {$IF WINDOWS}
@@ -226,6 +267,15 @@ begin
     end;
   end;
   result := fErr;
+  {$ENDIF}
+end;
+
+method Process.GetStandardErrorStream: Stream;
+begin
+  {$IF WINDOWS}
+  result := new FileStream(fErrorHandle, FileAccess.Read);
+  {$ELSEIF POSIX AND NOT IOS}
+  result := new FileStream(PlatformHandle(fErrPipe[0]), FileAccess.Read);
   {$ENDIF}
 end;
 
@@ -338,6 +388,10 @@ begin
 
   fProcessId := rtl.fork();
   if fProcessId = 0 then begin
+    if RedirectInput then begin
+      rtl.dup2(fOutPipe[0], rtl.STDIN_FILENO);
+      rtl.close(fOutPipe[1]);
+    end;
     if RedirectOutput then begin
       rtl.dup2(fOutPipe[1], rtl.STDOUT_FILENO);
       rtl.close(fOutPipe[0]);
@@ -350,6 +404,9 @@ begin
   end
   else begin
     fId := fProcessId;
+    if RedirectInput then
+      rtl.close(fInputPipe[0]);
+
     if RedirectOutput then begin
       rtl.close(fOutPipe[1]);
       rtl.close(fErrPipe[1]);
@@ -374,6 +431,10 @@ begin
     rtl.UnregisterWait(fWaitHandle);
   rtl.CloseHandle(fProcessInfo.hProcess);
   rtl.CloseHandle(fProcessInfo.hThread);
+  if RedirectInput then begin
+    rtl.CloseHandle(fInputHandle);
+    rtl.CloseHandle(fInputReadHandle);
+  end;
   if RedirectOutput then begin
     rtl.CloseHandle(fOutputHandle);
     rtl.CloseHandle(fOutputReadHandle);
@@ -381,6 +442,9 @@ begin
     rtl.CloseHandle(fErrorReadHandle);
   end;
   {$ELSEIF POSIX AND NOT IOS}
+  if RedirectInput then
+    rtl.close(fInputPipe[1]);
+
   if RedirectOutput then begin
     rtl.close(fOutPipe[0]);
     rtl.close(fErrPipe[0]);
