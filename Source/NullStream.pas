@@ -1,7 +1,7 @@
 ﻿namespace RemObjects.Elements.System;
 
 type
-  NulSltream = public class(Stream)
+  NullStream = public class(Stream)
   protected
 
     method IsValid: Boolean; override;
@@ -11,7 +11,7 @@ type
 
   public
     constructor; empty;
-    class property Instance: NulStream := new NulStream; lazy; readonly;
+    class property Instance: NullStream := new NullStream; lazy; readonly;
 
     property CanRead: Boolean read true; override;
     property CanSeek: Boolean read true; override;
