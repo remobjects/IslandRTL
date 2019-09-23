@@ -1,7 +1,7 @@
 ﻿namespace RemObjects.Elements.System;
 
 type
-  NulStream = public class(Stream)
+  NulSltream = public class(Stream)
   protected
 
     method IsValid: Boolean; override;
