@@ -386,7 +386,7 @@ type
 		method ExceptionHandler([InReg]inmsvcinfo: ^MSVCExceptionInfo; arec: ^rtl.EXCEPTION_RECORD; aOrgregFrame: ^ElementsRegistrationFrame;
 			context: rtl.PCONTEXT; dispatcher: ^Void): Integer;
 		{$ENDIF}
-		[SymbolName('ElementsRaiseException')]
+		[SymbolName('ElementsRaiseException'), DllExport]
 		class method RaiseException(aRaiseAddress: ^Void; aRaiseFrame: ^Void; aRaiseObject: Object);
 
 		class property ModuleHandle: rtl.HMODULE read fModuleHandle;
