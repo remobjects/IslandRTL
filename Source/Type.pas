@@ -421,7 +421,7 @@ type
         end;
         if &Type = typeOf(array of Byte) then
           exit ByteArrayGetter(ReadMethod)(aInst);
-        if &Type = typeof(DateTime) then
+        if &Type = typeOf(DateTime) then
           exit DateTimeGetter(ReadMethod)(aInst);
       end;
       var lRead := &Read;
