@@ -417,7 +417,7 @@ begin
   var lPtr: rtl.PADDRINFOW := nil;
 
   InitSockets;
-  if rtl.GetAddrInfo(aHost.FirstChar, nil, nil, @lAddrInfo) <> 0 then
+  if rtl.GetAddrInfo(aHost.ToLPCWSTR, nil, nil, @lAddrInfo) <> 0 then
     exit;
 
   result.HostName := String.FromPChar(lAddrInfo^.ai_canonname);
