@@ -101,7 +101,11 @@ type
   Socket = public class(IDisposable)
   private
     fHandle: PlatformSocketHandle;
+    fLocalEndPoint: EndPoint;
+    fRemoteEndPoint: EndPoint;
     constructor(aHandle: PlatformSocketHandle);
+    method GetLocalEndPoint: EndPoint;
+    method GetRemoteEndPoint: EndPoint;
     class constructor;
     method InternalSetSocketOption(aOptionLevel: SocketOptionLevel; aOptionName: SocketOptionName; aOptionValue: ^Void; aOptionValueLength: Int32);
   public
@@ -147,8 +151,8 @@ type
     property Connected: Boolean;
     property ProtocolType: ProtocolType;
     property SocketType: SocketType;
-    property LocalEndPoint: EndPoint;
-    property RemoteEndPoint: EndPoint;
+    property LocalEndPoint: EndPoint read GetLocalEndPoint;
+    property RemoteEndPoint: EndPoint read GetRemoteEndPoint;
   end;
 
   NetworkStream = public class(Stream)
@@ -684,7 +688,7 @@ begin
   if rtl.bind(fHandle, lPointer, lSize) <> 0 then
     raise new Exception("Error calling bind function");
   {$ENDIF}
-  LocalEndPoint := lEndPoint;
+  fLocalEndPoint := lEndPoint;
 end;
 
 method Socket.Connect(aEndPoint: EndPoint);
@@ -717,6 +721,7 @@ begin
   if lRes <> 0 then
     raise new Exception("Error connecting socket");
 
+  fRemoteEndPoint := aEndPoint;
   Connected := true;
 end;
 
@@ -974,6 +979,67 @@ begin
   Close;
 end;
 
+method Socket.GetRemoteEndPoint: EndPoint;
+begin
+  if fRemoteEndPoint = nil then begin
+    var lIPEndPoint := new IPEndPoint(IPAddress.Parse('0.0.0.0'), 0);
+    var lRes := 0;
+    {$IF ANDROID OR DARWIN}
+    var lAddr := new Byte[sizeOf(rtl.__struct_sockaddr_in6)];
+    var lSize: rtl.socklen_t := sizeOf(lAddr);
+    lRes := rtl.getpeername(fHandle, ^rtl.__struct_sockaddr(@lAddr[0]), @lSize);
+    {$ELSEIF POSIX}
+    var lAddr: rtl.__SOCKADDR_ARG;
+    var lSize: rtl.socklen_t := sizeOf(lAddr);
+    lRes := rtl.getpeername(fHandle, lAddr, @lSize);
+    {$ELSEIF WINDOWS}
+    var lSize := sizeOf(sockaddr_in6);
+    var lAddr := new Byte[lSize];
+    lRes := rtl.getpeername(fHandle, @lAddr[0], @lSize);
+    {$ENDIF}
+    if lRes < 0 then
+      raise new Exception('Error in getpeername');
+
+    {$IF ANDROID OR DARWIN OR WINDOWS}
+    IPNativeToEndPoint(@lAddr[0], var lIPEndPoint);
+    {$ELSE}
+    IPNativeToEndPoint(@lAddr, var lIPEndPoint);
+    {$ENDIF}
+    fRemoteEndPoint := lIPEndPoint;
+  end;
+  result := fRemoteEndPoint;
+end;
+
+method Socket.GetLocalEndPoint: EndPoint;
+begin
+  if fLocalEndPoint = nil then begin
+    var lIPEndPoint := new IPEndPoint(IPAddress.Parse('0.0.0.0'), 0);
+    var lRes := 0;
+    {$IF ANDROID OR DARWIN}
+    var lAddr := new Byte[sizeOf(rtl.__struct_sockaddr_in6)];
+    var lSize: rtl.socklen_t := sizeOf(lAddr);
+    lRes := rtl.getsockname(fHandle, ^rtl.__struct_sockaddr(@lAddr[0]), @lSize);
+    {$ELSEIF POSIX}
+    var lAddr: rtl.__SOCKADDR_ARG;
+    var lSize: rtl.socklen_t := sizeOf(lAddr);
+    lRes := rtl.getsockname(fHandle, lAddr, @lSize);
+    {$ELSEIF WINDOWS}
+    var lSize := sizeOf(sockaddr_in6);
+    var lAddr := new Byte[lSize];
+    lRes := rtl.getsockname(fHandle, @lAddr[0], @lSize);
+    {$ENDIF}
+    if lRes < 0 then
+      raise new Exception('Error in getpeername');
+
+    {$IF ANDROID OR DARWIN OR WINDOWS}
+    IPNativeToEndPoint(@lAddr[0], var lIPEndPoint);
+    {$ELSE}
+    IPNativeToEndPoint(@lAddr, var lIPEndPoint);
+    {$ENDIF}
+    fLocalEndPoint := lIPEndPoint;
+  end;
+  result := fLocalEndPoint;
+end;
 {$ENDIF}
 
 end.
