@@ -745,9 +745,9 @@ type
        SortTypes(lTypes);
      end;
     {$ELSE}
-    [SymbolName('__start_ELRTTLRR')]
+    [SymbolName('_elements_start_ELRTTLRR')]
     class var fStart: ^IslandTypeInfo; external;
-    [SymbolName('__stop_ELRTTLRR')]
+    [SymbolName('_elements_stop_ELRTTLRR')]
     class var fEnd: ^IslandTypeInfo;external;
 
      class method LoadTypes;
@@ -769,9 +769,8 @@ type
       lTypes[n] := @CocoaClassRTTI; inc(n);
       lTypes[n] := @SwiftClassRTTI; inc(n);
       SortTypes(lTypes);
-    end;
+     end;
     {$ENDIF}
-
 
     class var fMethods: array of IslandMethodUIDInfo;
     class var fTypes: array of ^IslandTypeInfo;
@@ -878,9 +877,9 @@ type
        SortMethods(lMethods);
      end;
     {$ELSE}
-    [SymbolName('__start_ELRTMLRR')]
+    [SymbolName('_elements_start_ELRTMLRR')]
     class var fStartM: IslandMethodUIDInfo; external;
-    [SymbolName('__stop_ELRTMLRR')]
+    [SymbolName('_elements_stop_ELRTMLRR')]
     class var fEndM: IslandMethodUIDInfo;external;
 
     [DisableInlining]
