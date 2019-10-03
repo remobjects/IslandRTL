@@ -96,7 +96,10 @@ type
       if aLength < 0 then raise new ArgumentOutOfRangeException('aLength < 0');
       if (aStart < 0) or (Cardinal(aStart + aLength) > Cardinal(aArray.Length)) then new ArgumentOutOfRangeException('aStart < 0 or aStart + Length >= aArray.Length');
       fObject := aArray;
-      fPointer := @aArray[aStart];
+      if aLength = 0 then
+        fPointer := nil
+      else
+        fPointer := @aArray[aStart];
       fLength := aLength;
     end;
 
