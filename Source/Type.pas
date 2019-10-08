@@ -745,9 +745,9 @@ type
        SortTypes(lTypes);
      end;
     {$ELSE}
-    [SymbolName('_elements_start_ELRTTLRR')]
+    [SymbolName('__start_ELRTTLRR')]
     class var fStart: ^IslandTypeInfo; external;
-    [SymbolName('_elements_stop_ELRTTLRR')]
+    [SymbolName('__stop_ELRTTLRR')]
     class var fEnd: ^IslandTypeInfo;external;
 
      class method LoadTypes;
@@ -877,9 +877,9 @@ type
        SortMethods(lMethods);
      end;
     {$ELSE}
-    [SymbolName('_elements_start_ELRTMLRR')]
+    [SymbolName('__start_ELRTMLRR')]
     class var fStartM: IslandMethodUIDInfo; external;
-    [SymbolName('_elements_stop_ELRTMLRR')]
+    [SymbolName('__stop_ELRTMLRR')]
     class var fEndM: IslandMethodUIDInfo;external;
 
     [DisableInlining]
