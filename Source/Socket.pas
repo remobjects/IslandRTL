@@ -308,7 +308,7 @@ begin
   var lAddrInfo: ^rtl.__struct_addrinfo;
   var lSockAddr: ^rtl.__struct_sockaddr_in6;
   var lRes := 0;
-  lRes := rtl.getaddrinfo(^AnsiChar(lString.FirstChar), nil, nil, @lAddrInfo);
+  lRes := rtl.getaddrinfo(@lString.ToAnsiChars(true)[0], nil, nil, @lAddrInfo);
   if lRes <> 0 then
     exit false;
   lSockAddr := ^rtl.__struct_sockaddr_in6(lAddrInfo^.ai_addr);
@@ -316,7 +316,7 @@ begin
   var lAddrInfo: rtl.PADDRINFOW;
   var lSockAddr: ^sockaddr_in6;
 
-  if rtl.GetAddrInfo(lString.FirstChar, nil, nil, @lAddrInfo) <> 0 then
+  if rtl.GetAddrInfo(lString.ToLPCWSTR, nil, nil, @lAddrInfo) <> 0 then
     exit false;
 
   lSockAddr := ^sockaddr_in6(lAddrInfo^.ai_addr);
@@ -449,7 +449,7 @@ begin
   var lSockAddr6: ^rtl.__struct_sockaddr_in6;
   var lPtr: ^rtl.__struct_addrinfo := nil;
   var lRes := 0;
-  lRes := rtl.getaddrinfo(^AnsiChar(aHost.FirstChar), nil, nil, @lAddrInfo);
+  lRes := rtl.getaddrinfo(@aHost.ToAnsiChars(true)[0], nil, nil, @lAddrInfo);
   if lRes <> 0 then
     exit;
 
@@ -1029,7 +1029,7 @@ begin
     lRes := rtl.getsockname(fHandle, @lAddr[0], @lSize);
     {$ENDIF}
     if lRes < 0 then
-      raise new Exception('Error in getpeername');
+      raise new Exception('Error in getsockname');
 
     {$IF ANDROID OR DARWIN OR WINDOWS}
     IPNativeToEndPoint(@lAddr[0], var lIPEndPoint);
