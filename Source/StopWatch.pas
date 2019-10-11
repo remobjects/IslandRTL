@@ -1,4 +1,4 @@
-﻿namespace Stopwatch;
+﻿namespace RemObjects.Elements.System;
 
 interface
 

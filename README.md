@@ -14,4 +14,4 @@ The code for this library is open source and available under a liberal license. 
 * [RemObjects Elements Homepage](http://www.elementscompiler.com/)
 * [RemObjects Elements Docs](http://docs.elementscompiler.com/)
 * [Island RTL](http://docs.elementscompiler.com/API/IslandRTL/) on docs.elementscompiler.com
-* [Island](http://docs.elementscompiler.com/Platforms/Island/) on docs.elementscompiler.com
+* [Platforms](https://docs.elementscompiler.com/Platforms/) on docs.elementscompiler.com

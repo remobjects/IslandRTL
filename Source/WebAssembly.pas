@@ -28,23 +28,6 @@ type
     class var LastPtr: ^Byte;
     class var SpaceLeft: Integer;
 
-    class method mmap(addr: ^Void; size: IntPtr; prot, flags: Integer; handle, offset: IntPtr): ^Void;
-    begin
-      if LastPtr = nil then begin
-        var lNew := ((size + 65535) / 65536);
-        LastPtr := ^Byte(WebAssemblyCalls.GrowMemory(0, lNew)  * 65536);
-        SpaceLeft := ((size + 65535) / 65536) * 65536;
-      end else if size > SpaceLeft then begin
-        var lNew := (size - SpaceLeft + 65535) / 65536;
-        WebAssemblyCalls.GrowMemory(0, lNew);
-        SpaceLeft := SpaceLeft + (lNew * 65536);
-      end;
-      assert(size <= SpaceLeft);
-      result := LastPtr;
-      LastPtr := LastPtr + size;
-      SpaceLeft := SpaceLeft - size;
-    end;
-
     class method sysconf(i: Integer): IntPtr;
     begin
       if i = _SC_PAGESIZE then
@@ -81,7 +64,24 @@ type
     begin
       exit (if InternalCalls.CompareExchange(var (val)^, newval, oldval^) = oldval^ then (1) else (0));
     end;
-
+  public
+    [SymbolName('mmap')]
+    class method mmap(addr: ^Void; size: IntPtr; prot, flags: Integer; handle, offset: IntPtr): ^Void;
+    begin
+      if LastPtr = nil then begin
+        var lNew := ((size + 65535) / 65536);
+        LastPtr := ^Byte(WebAssemblyCalls.GrowMemory(0, lNew)  * 65536);
+        SpaceLeft := ((size + 65535) / 65536) * 65536;
+      end else if size > SpaceLeft then begin
+        var lNew := (size - SpaceLeft + 65535) / 65536;
+        WebAssemblyCalls.GrowMemory(0, lNew);
+        SpaceLeft := SpaceLeft + (lNew * 65536);
+      end;
+      assert(size <= SpaceLeft);
+      result := LastPtr;
+      LastPtr := LastPtr + size;
+      SpaceLeft := SpaceLeft - size;
+    end;
 
   end;
   WebAssemblyCalls = public static class

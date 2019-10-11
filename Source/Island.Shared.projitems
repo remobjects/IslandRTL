@@ -39,8 +39,12 @@
     <Compile Include="File.pas" />
     <Compile Include="Folder.pas" />
     <Compile Include="Path.pas" />
-    <Compile Include="MemoryStream.pas" />
-    <Compile Include="Stream.pas" />
+    <Compile Include="MemoryStream.pas">
+      <VirtualFolder>Streams</VirtualFolder>
+    </Compile>
+    <Compile Include="Stream.pas">
+      <VirtualFolder>Streams</VirtualFolder>
+    </Compile>
     <Compile Include="FileStream.pas" />
     <Compile Include="Tuples.pas" />
     <Compile Include="Dictionary.pas" />
@@ -84,5 +88,13 @@
     <Compile Include="$(MSBuildThisFileDirectory)VersionHelpers.pas" />
     <Compile Include="$(MSBuildThisFileDirectory)StopWatch.pas" />
     <Compile Include="$(MSBuildThisFileDirectory)DB.pas" />
+    <Compile Include="$(MSBuildThisFileDirectory)NullStream.pas">
+      <VirtualFolder>Streams</VirtualFolder>
+    </Compile>
+  </ItemGroup>
+  <ItemGroup>
+    <Folder Include="Streams">
+      <Virtual>True</Virtual>
+    </Folder>
   </ItemGroup>
 </Project>

@@ -421,7 +421,7 @@ type
         end;
         if &Type = typeOf(array of Byte) then
           exit ByteArrayGetter(ReadMethod)(aInst);
-        if &Type = typeof(DateTime) then
+        if &Type = typeOf(DateTime) then
           exit DateTimeGetter(ReadMethod)(aInst);
       end;
       var lRead := &Read;
@@ -769,9 +769,8 @@ type
       lTypes[n] := @CocoaClassRTTI; inc(n);
       lTypes[n] := @SwiftClassRTTI; inc(n);
       SortTypes(lTypes);
-    end;
+     end;
     {$ENDIF}
-
 
     class var fMethods: array of IslandMethodUIDInfo;
     class var fTypes: array of ^IslandTypeInfo;
