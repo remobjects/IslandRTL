@@ -9,6 +9,7 @@
     <Import_RootNamespace>Island.Tests.Shared</Import_RootNamespace>
   </PropertyGroup>
   <ItemGroup>
+    <Compile Include="$(MSBuildThisFileDirectory)BitConverterTest.pas" />
     <Compile Include="$(MSBuildThisFileDirectory)Datetime.pas" />
     <Compile Include="$(MSBuildThisFileDirectory)Double_Parse.pas" />
     <Compile Include="$(MSBuildThisFileDirectory)Math_Pow.pas" />
