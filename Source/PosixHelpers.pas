@@ -452,7 +452,7 @@ begin
     exit InternalCalls.Cast(new IslandWrappedCocoaException(lObj));
   end;
   {$ENDIF}
-  exit @lRecord^.Object;
+  exit InternalCalls.Cast(lRecord^.Object);
 end;
 
 method ExternalCalls.ElementsEndCatch;
