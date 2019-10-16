@@ -49,6 +49,7 @@
     <Compile Include="ManagedThreadPool.pas" />
     <Compile Include="PosixHelpers.pas" />
     <Compile Include="DarwinNumbers.pas" />
+    <Compile Include="Swift.pas" />
   </ItemGroup>
   <ItemGroup>
     <Reference Include="gc" />

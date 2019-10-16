@@ -51,6 +51,7 @@
     <Compile Include="PosixHelpers.pas" />
     <Compile Include="DarwinNumbers.pas" />
     <Compile Include="DarwinNumbers.inc" />
+    <Compile Include="Swift.pas" />
   </ItemGroup>
   <ItemGroup>
     <Reference Include="gc" />
