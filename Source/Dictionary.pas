@@ -280,17 +280,13 @@ type
     {$ENDIF}
 
     [&Sequence]
-    method GetSequence: sequence of KeyValuePair<T,U>;
+    method GetSequence: sequence of KeyValuePair<T,U>; iterator;
     begin
-      var r := new array of KeyValuePair<T,U>(fCount);
-      var k: Integer := 0;
       for i:Integer := 0 to fMaxUsedIndex-1 do begin
         if fEntriesTable[i].HashCode <> EMPTYHASH then begin
-          r[k]:= new KeyValuePair<T,U>(fEntriesTable[i].Key,fEntriesTable[i].Value);
-          inc(k);
+          yield new KeyValuePair<T,U>(fEntriesTable[i].Key,fEntriesTable[i].Value);
         end;
       end;
-      exit r;
     end;
 
     method TryGetValue(aKey: T; out aValue: U): Boolean;
@@ -316,8 +312,11 @@ type
 
     method ForEach(Action: Action<KeyValuePair<T, U>>);
     begin
-      for i: Integer := 0 to fCount - 1 do
-        Action(new KeyValuePair<T,U>(fEntriesTable[i].Key,fEntriesTable[i].Value));
+      for i:Integer := 0 to fMaxUsedIndex-1 do begin
+        if fEntriesTable[i].HashCode <> EMPTYHASH then begin
+          Action(new KeyValuePair<T,U>(fEntriesTable[i].Key,fEntriesTable[i].Value));
+        end;
+      end;
     end;
 
     property Item[Key: T]: U read GetItem protected write SetItem; virtual; default;
