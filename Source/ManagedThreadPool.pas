@@ -66,7 +66,7 @@ type
       locking fLock do begin
         fQueue.Add(aCallback);
         if fThreads.Count = 0 then StartThread;
-        if (fQueue.Count > 1) and (fThreads.Count < fMaxThreads) then StartThread;
+        if (fQueue.Count > 0) and (fThreads.Count < fMaxThreads) then StartThread;
       end;
       fWakeup.Set;
     end;
