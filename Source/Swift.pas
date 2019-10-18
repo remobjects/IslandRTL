@@ -1,5 +1,5 @@
 ﻿namespace RemObjects.Elements.System;
-
+{$IFDEF DISABLED}
 type
   SwiftStrong<T> = public lifetimestrategy (SwiftStrong) T;
   OnceCallback = public procedure(ctx: ^Void);
@@ -86,5 +86,5 @@ type
       Release(var self);
     end;
   end;
-
+{$ENDIF}
 end.
