@@ -1,4 +1,8 @@
 /// <reference path="webassembly.es6.d.ts" />
+export declare function __elements_debug_setglobal(id: string, value: any): void;
+export declare function __elements_debug_getglobal(id: string): any;
+export declare function __elements_debug_wasm_toHexString(orgByteArray: ArrayBuffer, start: number, len: number): string;
+export declare function __elements_debug_wasm_fromHexString(orgByteArray: ArrayBuffer, start: number, val: string): void;
 export declare module ElementsWebAssembly {
     function createHandle(o: any): number;
     function releaseHandle(handle: number): void;

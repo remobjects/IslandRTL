@@ -7,17 +7,17 @@ function __elements_debug_wasm_loaded(url: string, bytes: ArrayBuffer, data: Web
 
 var __elements_debug_globals = []; // needed for debugging purposes.
 
-function __elements_debug_setglobal(id: string, value: any)
+export function __elements_debug_setglobal(id: string, value: any)
 {
     __elements_debug_globals[id] = value
 }
 
-function __elements_debug_getglobal(id: string)
+export function __elements_debug_getglobal(id: string)
 {
     return __elements_debug_globals[id];
 }
 
-function __elements_debug_wasm_toHexString(orgByteArray: ArrayBuffer, start: number, len: number) {
+export function __elements_debug_wasm_toHexString(orgByteArray: ArrayBuffer, start: number, len: number) {
     var byteArray = new Int8Array(orgByteArray);
     var s = "";
     var ch = "";
@@ -35,7 +35,7 @@ function __elements_debug_wasm_toHexString(orgByteArray: ArrayBuffer, start: num
     return s;
 }
 
-function __elements_debug_wasm_fromHexString(orgByteArray: ArrayBuffer, start: number, val: string) {
+export function __elements_debug_wasm_fromHexString(orgByteArray: ArrayBuffer, start: number, val: string) {
     var byteArray = new Int8Array(orgByteArray);
     if (!start) start = 0;
     var len = val.length;

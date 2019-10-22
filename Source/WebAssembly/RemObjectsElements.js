@@ -19,9 +19,11 @@
     function __elements_debug_setglobal(id, value) {
         __elements_debug_globals[id] = value;
     }
+    exports.__elements_debug_setglobal = __elements_debug_setglobal;
     function __elements_debug_getglobal(id) {
         return __elements_debug_globals[id];
     }
+    exports.__elements_debug_getglobal = __elements_debug_getglobal;
     function __elements_debug_wasm_toHexString(orgByteArray, start, len) {
         var byteArray = new Int8Array(orgByteArray);
         var s = "";
@@ -42,6 +44,7 @@
         s += ch;
         return s;
     }
+    exports.__elements_debug_wasm_toHexString = __elements_debug_wasm_toHexString;
     function __elements_debug_wasm_fromHexString(orgByteArray, start, val) {
         var byteArray = new Int8Array(orgByteArray);
         if (!start)
@@ -166,6 +169,7 @@
             start++;
         }
     }
+    exports.__elements_debug_wasm_fromHexString = __elements_debug_wasm_fromHexString;
     var ElementsWebAssembly;
     (function (ElementsWebAssembly) {
         var inst;
