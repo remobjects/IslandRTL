@@ -1,0 +1,25 @@
+<?xml version="1.0" encoding="utf-8"?>
+<Project DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <PropertyGroup>
+    <AssemblyName>Compiler</AssemblyName>
+    <Configuration Condition="'$(Configuration)' == ''">Release</Configuration>
+    <Mode>Echoes</Mode>
+    <TargetFrameworkVersion>v4.5</TargetFrameworkVersion>
+    <WarnOnCaseMismatch>False</WarnOnCaseMismatch>
+    <OutputPath>.</OutputPath>
+  </PropertyGroup>
+  <ItemGroup>
+    <Reference Include="mscorlib.dll">
+      <Name></Name>
+    </Reference>
+    <Reference Include="System.dll">
+      <Name></Name>
+    </Reference>
+    <Reference Include="System.Windows.Forms.dll">
+      <Name></Name>
+    </Reference>
+  </ItemGroup>
+  <ItemGroup>
+    <Compile Include="Compiler.pas" />
+  </ItemGroup>
+</Project>

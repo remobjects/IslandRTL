@@ -96,7 +96,7 @@ function __elements_debug_wasm_fromHexString(orgByteArray: ArrayBuffer, start: n
 }
 
 
-module ElementsWebAssembly {
+export module ElementsWebAssembly {
     var inst: any;
     var result: WebAssembly.ResultObject;
     var mem: WebAssembly.Memory;
@@ -480,15 +480,20 @@ module ElementsWebAssembly {
     }
 
 
-    export function fetchAndInstantiate(url: string, importObject: any, memorySize: number = 64, tableSize: number = 4096): Promise<WebAssembly.ResultObject> {
+    export function fetchAndInstantiate(url: any, importObject: any, memorySize: number = 64, tableSize: number = 4096): Promise<WebAssembly.ResultObject> {
         if (!importObject) importObject = {};
         if (!importObject.env) importObject.env = {};
-        var bytedata: ArrayBuffer;
-        return fetch(url).then(response => {
-            if (response.status >= 400)
-                throw new Error("Invalid response to request: " + response.statusText);
-            return response.arrayBuffer();
-        }).then(bytes => {
+        var bytedata: Uint8Array;
+        var input: Promise<Uint8Array>;
+        if (url instanceof Uint8Array)
+            input = Promise.resolve(url);
+        else 
+            input = fetch(url).then(response => {
+                if (response.status >= 400)
+                    throw new Error("Invalid response to request: " + response.statusText);
+                return response.arrayBuffer() as any;
+        });
+        return input.then(bytes => {
             bytedata = bytes;
             defineElementsSystemFunctions(importObject);
             if (!importObject.env.memory)
@@ -505,7 +510,7 @@ module ElementsWebAssembly {
             return WebAssembly.instantiate(bytes, importObject);
         }
         ).then(results => {
-            __elements_debug_wasm_loaded(url, bytedata, results, importObject, importObject.env.memory);
+            __elements_debug_wasm_loaded(url, bytedata as any, results, importObject, importObject.env.memory);
             mem = importObject.env.memory;
             result = results;
             inst = importObject;
