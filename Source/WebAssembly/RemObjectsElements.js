@@ -16,6 +16,11 @@
     }
     // Globals needed for debugging purposes
     var __elements_debug_globals = []; // needed for debugging purposes.
+    var glob;
+    if (typeof window === 'undefined')
+        glob = global;
+    else
+        glob = window;
     function __elements_debug_setglobal(id, value) {
         __elements_debug_globals[id] = value;
     }
@@ -300,7 +305,7 @@
             };
             imp.env.__island_crypto_safe_random = function (target, len) {
                 var tmp = new Uint8Array(imp.env.memory.buffer, target, len);
-                window.crypto.getRandomValues(tmp);
+                glob.crypto.getRandomValues(tmp);
             };
             imp.env.__island_getutctime = function () { return Date.now(); };
             imp.env.__island_getlocaltime = function () { return Date.now(); };
@@ -416,14 +421,18 @@
                 var obj = [];
                 return createHandle(obj);
             };
+            imp.env.__island_require = function (name) {
+                var obj = [];
+                return createHandle(require(readStringFromMemory(name)));
+            };
             imp.env.__island_setTimeout = function (fn, timeout) {
-                return window.setTimeout(createDelegate(fn), timeout);
+                return glob.setTimeout(createDelegate(fn), timeout);
             };
             imp.env.__island_setInterval = function (fn, timeout) {
-                return window.setInterval(createDelegate(fn), timeout);
+                return glob.setInterval(createDelegate(fn), timeout);
             };
             imp.env.__island_ClearInterval = function (handle) {
-                window.clearInterval(handle);
+                glob.clearInterval(handle);
             };
             imp.env.__island_DefineValueProperty = function (obj, name, value, flags) {
                 Object.defineProperty(handletable[obj], readStringFromMemory(name), {
@@ -495,7 +504,7 @@
                     return createHandle(navigator.language);
             };
             imp.env.__island_alert = function (message, messageLen) {
-                window.alert(readCharsFromMemory(message, messageLen));
+                glob.alert(readCharsFromMemory(message, messageLen));
             };
             imp.env.__island_getWindow = function () {
                 return createHandle(window);
@@ -582,4 +591,9 @@
         }
         ElementsWebAssembly.fetchAndInstantiate = fetchAndInstantiate;
     })(ElementsWebAssembly = exports.ElementsWebAssembly || (exports.ElementsWebAssembly = {}));
+    // this is required for the debugger to function
+    glob.__elements_debug_setglobal = __elements_debug_setglobal;
+    glob.__elements_debug_getglobal = __elements_debug_getglobal;
+    glob.__elements_debug_wasm_toHexString = __elements_debug_wasm_toHexString;
+    glob.__elements_debug_wasm_fromHexString = __elements_debug_wasm_fromHexString;
 });

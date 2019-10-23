@@ -6,6 +6,13 @@ function __elements_debug_wasm_loaded(url: string, bytes: ArrayBuffer, data: Web
 // Globals needed for debugging purposes
 
 var __elements_debug_globals = []; // needed for debugging purposes.
+declare var global: any;
+var glob: any;
+declare function require(id: string): any;
+if (typeof window === 'undefined') 
+    glob = global;
+else 
+    glob = window;
 
 export function __elements_debug_setglobal(id: string, value: any)
 {
@@ -243,7 +250,7 @@ export module ElementsWebAssembly {
         imp.env.__island_crypto_safe_random = function(target: number, len: number) 
         {
             var tmp = new Uint8Array(imp.env.memory.buffer, target, len);
-            window.crypto.getRandomValues(tmp);
+            glob.crypto.getRandomValues(tmp);
         };
         imp.env.__island_getutctime = function(): number { return Date.now(); }
         imp.env.__island_getlocaltime = function(): number { return Date.now(); }
@@ -354,14 +361,18 @@ export module ElementsWebAssembly {
             var obj = [];
             return createHandle(obj);
         };
+        imp.env.__island_require = function(name: number): number {
+            var obj = [];
+            return createHandle(require(readStringFromMemory(name)));
+        };
         imp.env.__island_setTimeout = function(fn, timeout: number): number {
-            return window.setTimeout(createDelegate(fn), timeout);
+            return glob.setTimeout(createDelegate(fn), timeout);
         };
         imp.env.__island_setInterval = function(fn, timeout: number): number {
-            return window.setInterval(createDelegate(fn), timeout);
+            return glob.setInterval(createDelegate(fn), timeout);
         };
         imp.env.__island_ClearInterval = function(handle: number) {
-             window.clearInterval(handle);
+            glob.clearInterval(handle);
         };
         imp.env.__island_DefineValueProperty = function (obj: number, name: number, value: number, flags: number) {
             Object.defineProperty(handletable[obj], readStringFromMemory(name),
@@ -440,7 +451,7 @@ export module ElementsWebAssembly {
                 return createHandle(navigator.language);
         };
         imp.env.__island_alert = function (message: number, messageLen: number) {
-            window.alert(readCharsFromMemory(message, messageLen));
+            glob.alert(readCharsFromMemory(message, messageLen));
         };
         imp.env.__island_getWindow = function (): number {
             return createHandle(window);
@@ -526,3 +537,9 @@ export module ElementsWebAssembly {
     }
 
 }
+
+// this is required for the debugger to function
+glob.__elements_debug_setglobal = __elements_debug_setglobal;
+glob.__elements_debug_getglobal = __elements_debug_getglobal;
+glob.__elements_debug_wasm_toHexString = __elements_debug_wasm_toHexString;
+glob.__elements_debug_wasm_fromHexString = __elements_debug_wasm_fromHexString;
