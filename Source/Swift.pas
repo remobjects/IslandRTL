@@ -9,12 +9,60 @@ type
   SwiftInitApi = public function(aMD: ^Void; aRequiredSize, aRequiredAlignmentMask: IntPtr): ^Void;
   SwiftBeginAccessApi = public procedure(pointer: ^Void; buffer: ^Void; flags: UIntPtr; pc: ^Void);
 
+  SwiftType = public record
+  public
+    &Type: IntPtr;
+  end;
+
+  SwiftRefcounted = public record
+  public
+    &Type: ^SwiftType;
+    RefCount: IntPtr;
+  end;
+
+  SwiftBlock = public record
+  public
+    &Self: SwiftRefcounted;
+    Obj: Object;
+  end;
+
+  SwiftReflectionDeclarator = public record
+  public
+    a,
+    b,
+    c,
+    d: Integer;
+  end;
+
+  SwiftDestructor = public procedure (aRef: ^SwiftRefcounted);
+
+  SwiftReflectionMetadata = public record
+  public
+    Destructor: SwiftDestructor;
+    Witness: ^^Byte;
+    &Type: IntPtr;
+    StartOfFirstField: Int32;
+    Descriptor: ^SwiftReflectionDeclarator;
+  end;
+
   SwiftStrong = public record(ILifetimeStrategy<SwiftStrong>)
   assembly
     fInst: IntPtr;
   public
+
+    [SymbolName("new_swift_block_delegate")]
+    class method NewBlockDelegate(aPtr: ^Void; aData: Object): IntPtr; // returns arp
+    begin
+      var lTmp := new ObjcBlock;
+      result := IntPtr(swift_allocObject(^Void(@SwiftBlockData.Type), sizeOf(^Void) * 3, {$IFDEF CPU64}7{$ELSE}3{$ENDIF}));
+      ForeignBoehmGC.Assign(var ^ForeignBoehmGC(@^SwiftBlock(result)^. Obj)^,
+                            var ^ForeignBoehmGC(@aData)^);
+    end;
+
     class constructor;
     begin
+
+
       var lDLL := rtl.dlopen('libswiftCore.dylib', 0);
       if lDLL = nil then raise new Exception('libswiftCore.dylib not present!');
 
@@ -91,5 +139,24 @@ type
       Release(var self);
     end;
   end;
+
+
+  method DefaultSwiftBlockDestroy(Dest: ^SwiftRefcounted);
+  begin
+    ForeignBoehmGC.Release(^SwiftBlock(Dest)^.Obj);
+  end;
+
+  [SymbolName('symbolic SPySiG'), LinkOnceAttribute, StaticallyInitializedFieldAttribute, SectionName('__TEXT,__swift5_typeref, regular, no_dead_strip')] // symbolic SPySiG
+  var PtrToIntType: array[0..6] of AnsiChar := ['S','P','y','S','i','G',#0]; readonly;
+  [SectionName('__TEXT,__swift5_capture, regular, no_dead_strip'), StaticallyInitializedFieldAttribute]
+  var SwiftBlockDataRecl: SwiftReflectionDeclarator := new SwiftReflectionDeclarator(a := 1, d := Int64(@PtrToIntType) - Int64(@SwiftBlockDataRecl.d)); readonly;
+  [StaticallyInitializedFieldAttribute]
+  var SwiftBlockData: SwiftReflectionMetadata := new SwiftReflectionMetadata(
+    Destructor := @DefaultSwiftBlockDestroy,
+    Witness := nil,
+    &Type := 1024,
+    StartOfFirstField := {$IFDEF CPU64}16{$ELSE}8{$ENDIF},
+    Descriptor:= @SwiftBlockDataRecl
+  ); readonly;
 
 end.
