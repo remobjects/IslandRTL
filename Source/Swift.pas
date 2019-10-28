@@ -26,6 +26,12 @@ type
     Obj: Object;
   end;
 
+  SwiftBlockPtr = public record
+  public
+    &Method: IntPtr;
+    Obj: ^SwiftBlock;
+  end;
+
   SwiftReflectionDeclarator = public record
   public
     a,
@@ -51,11 +57,11 @@ type
   public
 
     [SymbolName("new_swift_block_delegate")]
-    class method NewBlockDelegate(aPtr: ^Void; aData: Object): IntPtr; // returns arp
+    class method NewBlockDelegate(aPtr: ^Void; aData: Object; var Res: SwiftBlockPtr); // returns arp
     begin
-      var lTmp := new ObjcBlock;
-      result := IntPtr(swift_allocObject(^Void(@SwiftBlockData.Type), sizeOf(^Void) * 3, {$IFDEF CPU64}7{$ELSE}3{$ENDIF}));
-      ForeignBoehmGC.Assign(var ^ForeignBoehmGC(@^SwiftBlock(result)^. Obj)^,
+      Res.Method := IntPtr(aPtr);
+      Res.Obj := ^SwiftBlock(swift_allocObject(^Void(@SwiftBlockData.Type), sizeOf(^Void) * 3, {$IFDEF CPU64}7{$ELSE}3{$ENDIF}));
+      ForeignBoehmGC.Assign(var ^ForeignBoehmGC(@^SwiftBlock(Res.Obj)^. Obj)^,
                             var ^ForeignBoehmGC(@aData)^);
     end;
 
@@ -144,6 +150,7 @@ type
   method DefaultSwiftBlockDestroy(Dest: ^SwiftRefcounted);
   begin
     ForeignBoehmGC.Release(^SwiftBlock(Dest)^.Obj);
+    SwiftStrong.swift_deallocClassInstance(Dest, sizeOf(^Void) * 3, {$IFDEF CPU64}7{$ELSE}3{$ENDIF});
   end;
 
   [SymbolName('symbolic SPySiG'), LinkOnceAttribute, StaticallyInitializedFieldAttribute, SectionName('__TEXT,__swift5_typeref, regular, no_dead_strip')] // symbolic SPySiG
