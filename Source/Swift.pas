@@ -51,18 +51,204 @@ type
     Descriptor: ^SwiftReflectionDeclarator;
   end;
 
+  // swift protocol WITHOUT any AnyObject constraint
+  SwiftProtocol = public record
+  public
+    Data: array[0..23] of Byte;
+    &Type: ^SwiftType;
+    WitnessTable: ^^Byte;
+  end;
+
+  // Swift protocol WITH an AnyObject constraint
+  SwiftClassProtocol = public record
+  public
+    Instance: ^SwiftRefcounted;
+    WitnessTable: ^^Byte;
+  end;
+
+  SwiftVWTinitializeBufferWithCopyOfBuffer = public function(dest, src: IntPtr; aSelf: ^Swifttype): IntPtr;
+  SwiftVWTdestroy = public procedure(obj: IntPtr; aSelf: ^SwiftType);
+  SwiftVWTgetEnumTagSinglePayload = public function(anEnum: IntPtr; emptyCases: UInt32): UInt32;
+  SwiftVWTstoreEnumTagSinglePayload = public procedure(anEnum: IntPtr; whichCase, emptyCases: UInt32);
+  SwiftVWTgetEnumTag = public function(obj: IntPtr; aSelf: ^SwiftValueWitnessTable): UInt32;
+  SwiftVWTdestructiveProjectEnumData = public procedure(obj: IntPtr; aSelf: ^SwiftValueWitnessTable);
+  SwiftVWTdestructiveInjectEnumTag = public procedure(obj: IntPtr; tag: UInt32; aSelf: ^SwiftValueWitnessTable);
+  SwiftValueWitnessTable = public record
+  public
+    // Given an invalid buffer, initialize it as a copy of the
+    // object in the source buffer.
+    initializeBufferWithCopyOfBuffer: SwiftVWTinitializeBufferWithCopyOfBuffer;
+    // Given a valid object of this type, destroy it, leaving it as an
+    // invalid object.  This is useful when generically destroying
+    // an object which has been allocated in-line, such as an array,
+    // struct, or tuple element.
+    destroy: SwiftVWTdestroy;
+    // Given an invalid object of this type, initialize it as a copy of
+    // the source object.  Returns the dest object.
+    initializeWithCopy: SwiftVWTinitializeBufferWithCopyOfBuffer;
+    // Given a valid object of this type, change it to be a copy of the
+    // source object.  Returns the dest object.
+    assignWithCopy: SwiftVWTinitializeBufferWithCopyOfBuffer; // 3
+    // Given an invalid object of this type, initialize it by taking
+    // the value of the source object.  The source object becomes
+    // invalid.  Returns the dest object.
+    initializeWithTake: SwiftVWTinitializeBufferWithCopyOfBuffer;
+    // Given a valid object of this type, change it to be a copy of the
+    // source object.  The source object becomes invalid.  Returns the
+    // dest object.
+    assignWithTake: SwiftVWTinitializeBufferWithCopyOfBuffer;
+    // unsigned (*getEnumTagSinglePayload)(const T* enum, UINT_TYPE emptyCases)
+    // Given an instance of valid single payload enum with a payload of this
+    // witness table's type (e.g Optional<ThisType>) , get the tag of the enum.
+    getEnumTagSinglePayload: SwiftVWTgetEnumTagSinglePayload;
+    // Given uninitialized memory for an instance of a single payload enum with a
+    // payload of this witness table's type (e.g Optional<ThisType>), store the
+    // tag.
+    storeEnumTagSinglePayload: SwiftVWTstoreEnumTagSinglePayload;
+    // The required storage size of a single object of this type.
+    size: IntPtr;
+    // The required size per element of an array of this type. It is at least
+    // one, even for zero-sized types, like the empty tuple.
+    stride: IntPtr;
+    // The ValueWitnessAlignmentMask bits represent the required
+    // alignment of the first byte of an object of this type, expressed
+    // as a mask of the low bits that must not be set in the pointer.
+    // This representation can be easily converted to the 'alignof'
+    // result by merely adding 1, but it is more directly useful for
+    // performing dynamic structure layouts, and it grants an
+    // additional bit of precision in a compact field without needing
+    // to switch to an exponent representation.
+    //
+    // The ValueWitnessIsNonPOD bit is set if the type is not POD.
+    //
+    // The ValueWitnessIsNonInline bit is set if the type cannot be
+    // represented in a fixed-size buffer or if it is not bitwise takable.
+    //
+    // The ExtraInhabitantsMask bits represent the number of "extra inhabitants"
+    // of the bit representation of the value that do not form valid values of
+    // the type.
+    //
+    // The Enum_HasSpareBits bit is set if the type's binary representation
+    // has unused bits.
+    //
+    // The HasEnumWitnesses bit is set if the type is an enum type.
+    &flags: Int32;
+    // The number of extra inhabitants in the type.
+    ExtraInhabitantCount: Int32;
+    // The following are for ENUMS only:
+
+
+    /// Given a valid object of this enum type, extracts the tag value indicating
+    /// which case of the enum is inhabited. Returned values are in the range
+    /// [0..NumElements-1].
+    getenumTag: SwiftVWTgetEnumTag;
+    ///   void (*destructiveProjectEnumData)(T *obj, M *self);
+    /// Given a valid object of this enum type, destructively extracts the
+    /// associated payload.
+    destructiveProjectEnumData: SwiftVWTdestructiveProjectEnumData;
+    /// Given an enum case tag and a valid object of case's payload type,
+    /// destructively inserts the tag into the payload. The given tag value
+    /// must be in the range [-ElementsWithPayload..ElementsWithNoPayload-1].
+    destructiveInjectEnumTag: SwiftVWTdestructiveInjectEnumTag;
+
+    // flags:
+    const
+      TagAlignmentMask =    $000000FF;
+      IsNonPOD =            $00010000;
+      IsNonInline =         $00020000;
+
+      HasSpareBits =        $00080000;
+      IsNonBitwiseTakable = $00100000;
+      HasEnumWitnesses =    $00200000;
+      Incomplete =          $00400000;
+  end;
+
   SwiftStrong = public record(ILifetimeStrategy<SwiftStrong>)
   assembly
     fInst: IntPtr;
   public
+    class method CopyProtocol(var aDest, aSource: SwiftProtocol; aReleaseOld: Boolean);
+    begin
+      if (@aDest) = (@aSource) then exit; // don't copy to ourselves.
+      if aSource.WitnessTable = nil then begin
+        // Source is empty
+        if aReleaseOld and (aDest.Type <> nil) then begin
+          var lVWT := ^SwiftValueWitnessTable(@aDest.Type[-1]);
+          if 0 = (lVWT^.flags and SwiftValueWitnessTable.IsNonInline) then begin
+            swift_release(IntPtr(^^SwiftRefcounted(@aDest.Data)^));
+          end else begin
+            lVWT^.destroy(IntPtr(@aDest.Data), aDest.Type);
+          end;
+
+        end;
+
+        aDest.Type := nil;
+        aDest.WitnessTable := nil;
+        exit;
+      end;
+
+      if aReleaseOld and (aDest.Type <> nil) then begin
+        var lVWT := ^SwiftValueWitnessTable(@aDest.Type[-1]);
+        if 0 = (lVWT^.flags and SwiftValueWitnessTable.IsNonInline) then begin
+          swift_release(IntPtr(^^SwiftRefcounted(@aDest.Data)^));
+        end else begin
+          lVWT^.destroy(IntPtr(@aDest.Data), aDest.Type);
+        end;
+      end;
+      var lVWT := ^SwiftValueWitnessTable(@aSource.Type[-1]);
+      lVWT^.initializeBufferWithCopyOfBuffer(IntPtr(@aDest.Data), IntPtr(@aSource.Data), aSource.Type);
+    end;
+
+    class method AdjustProtocolSelf(var aDest: SwiftProtocol): ^SwiftRefcounted;
+    begin
+      var lVWT := ^SwiftValueWitnessTable(@aDest.Type[-1]);
+      if 0 = (lVWT^.flags and SwiftValueWitnessTable.IsNonInline) then begin
+        // It's inline; so we can use the value at aDest
+        exit ^^SwiftRefcounted(@aDest.Data)^;
+      end;
+      var lAlign := lVWT^.flags and SwiftValueWitnessTable.TagAlignmentMask;
+      exit ^SwiftRefcounted(@aDest.Data[(lAlign + 16) and (not lAlign)]);
+    end;
+
+    class method ReleaseProtocol(var aDest: SwiftProtocol);
+    begin
+      if (aDest.Type <> nil) then begin
+        var lVWT := ^SwiftValueWitnessTable(@aDest.Type[-1]);
+        if 0 = (lVWT^.flags and SwiftValueWitnessTable.IsNonInline) then begin
+          swift_release(IntPtr(^^SwiftRefcounted(@aDest.Data)^));
+        end else begin
+          lVWT^.destroy(IntPtr(@aDest.Data), aDest.Type);
+        end;
+      end;
+      aDest.Type := nil;
+      aDest.WitnessTable := nil;
+    end;
+
+    class method CopyClassProtocol(var aDest, aSource: SwiftClassProtocol; aReleaseOld: Boolean);
+    begin
+      if (@aDest) = (@aSource) then exit;
+      var lNew := swift_retain(IntPtr(aSource.Instance));
+      if aReleaseOld then
+        swift_release(IntPtr(aDest.Instance));
+      aDest.Instance := ^SwiftRefcounted(lNew);
+      aDest.WitnessTable := aSource.WitnessTable;
+    end;
+
+    class method ReleaseClassProtocol(var aDest: SwiftClassProtocol);
+    begin
+      var lOld := InternalCalls.Exchange(var aDest.Instance, nil);
+      swift_release(IntPtr(lOld));
+      aDest.WitnessTable := nil;
+    end;
+
 
     [SymbolName("new_swift_block_delegate")]
     class method NewBlockDelegate(aPtr: ^Void; aData: Object; var Res: SwiftBlockPtr); // returns arp
     begin
+      ForeignBoehmGC.AddRef(aData);
       Res.Method := IntPtr(aPtr);
       Res.Obj := ^SwiftBlock(swift_allocObject(^Void(@SwiftBlockData.Type), sizeOf(^Void) * 3, {$IFDEF CPU64}7{$ELSE}3{$ENDIF}));
-      ForeignBoehmGC.Assign(var ^ForeignBoehmGC(@^SwiftBlock(Res.Obj)^. Obj)^,
-                            var ^ForeignBoehmGC(@aData)^);
+      Res.Obj^.Obj := aData;
     end;
 
     class constructor;
@@ -83,6 +269,7 @@ type
       swift_initStackObject := SwiftInitApi(rtl.dlsym(lDLL, 'swift_initStackObject'));
       swift_initStaticObject := SwiftInitApi(rtl.dlsym(lDLL, 'swift_initStaticObject'));
       swift_beginAccess := SwiftBeginAccessApi(rtl.dlsym(lDLL, 'swift_beginAccess'));
+      swift_getObjectType := SwiftIntPtrApi(rtl.dlsym(lDLL, 'swift_getObjectType'));
     end;
 
     class var swift_getInitializedObjCClass: SwiftIntPtrApi;
@@ -96,6 +283,7 @@ type
     class var swift_initStackObject: SwiftInitApi;
     class var swift_initStaticObject: SwiftInitApi;
     class var swift_beginAccess: SwiftBeginAccessApi;
+    class var swift_getObjectType: SwiftIntPtrApi;
 
 
     class method &New(aTTY: ^Void; aSize: NativeInt): ^Void;
