@@ -204,7 +204,7 @@ type
       var lVWT := ^SwiftValueWitnessTable(@aDest.Type[-1]);
       if 0 = (lVWT^.flags and SwiftValueWitnessTable.IsNonInline) then begin
         // It's inline; so we can use the value at aDest
-        exit ^^SwiftRefcounted(@aDest.Data)^;
+        exit ^SwiftRefcounted(@aDest.Data);
       end;
       var lAlign := lVWT^.flags and SwiftValueWitnessTable.TagAlignmentMask;
       exit ^SwiftRefcounted(@aDest.Data[(lAlign + 16) and (not lAlign)]);
