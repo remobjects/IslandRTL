@@ -107,7 +107,7 @@ type
     method GetLocalEndPoint: EndPoint;
     method GetRemoteEndPoint: EndPoint;
     class constructor;
-    method InternalSetSocketOption(aOptionLevel: SocketOptionLevel; aOptionName: SocketOptionName; aOptionValue: ^Void; aOptionValueLength: Int32);
+    method InternalSetSocketOption(aOptionLevel: SocketOptionLevel; aOptionName: SocketOptionName; aOptionValue: ^Void; aOptionValueLength: Int32): Boolean;
   public
     constructor(anAddressFamily: AddressFamily; aSocketType: SocketType; aProtocol: ProtocolType);
 
@@ -604,10 +604,9 @@ begin
 end;
 {$ENDIF}
 
-method Socket.InternalSetSocketOption(aOptionLevel: SocketOptionLevel; aOptionName: SocketOptionName; aOptionValue: ^Void; aOptionValueLength: Int32);
+method Socket.InternalSetSocketOption(aOptionLevel: SocketOptionLevel; aOptionName: SocketOptionName; aOptionValue: ^Void; aOptionValueLength: Int32): Boolean;
 begin
-  if rtl.setsockopt(fHandle, Integer(aOptionLevel), Integer(aOptionName), ^AnsiChar(aOptionValue), aOptionValueLength) <> 0 then
-    raise new Exception("Can not change socket option");
+  result := rtl.setsockopt(fHandle, Integer(aOptionLevel), Integer(aOptionName), ^AnsiChar(aOptionValue), aOptionValueLength) <> 0;
 end;
 
 constructor Socket(aHandle: PlatformSocketHandle);
