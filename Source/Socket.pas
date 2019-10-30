@@ -990,6 +990,12 @@ begin
     lRes := rtl.getpeername(fHandle, ^rtl.__struct_sockaddr(@lAddr[0]), @lSize);
     {$ELSEIF POSIX}
     var lAddr: rtl.__SOCKADDR_ARG;
+    var sock_addr: rtl.__struct_sockaddr;
+    var sockaddr_in: rtl.__struct_sockaddr_in;
+    var sockaddr_in6: rtl.__struct_sockaddr_in6;
+    lAddr.__sockaddr_in__ := @sockaddr_in;
+    lAddr.__sockaddr_in6__ := @sockaddr_in6;
+    lAddr.__sockaddr__ := @sock_addr;
     var lSize: rtl.socklen_t := sizeOf(lAddr);
     lRes := rtl.getpeername(fHandle, lAddr, @lSize);
     {$ELSEIF WINDOWS}
@@ -1021,6 +1027,12 @@ begin
     lRes := rtl.getsockname(fHandle, ^rtl.__struct_sockaddr(@lAddr[0]), @lSize);
     {$ELSEIF POSIX}
     var lAddr: rtl.__SOCKADDR_ARG;
+    var sock_addr: rtl.__struct_sockaddr;
+    var sockaddr_in: rtl.__struct_sockaddr_in;
+    var sockaddr_in6: rtl.__struct_sockaddr_in6;
+    lAddr.__sockaddr_in__ := @sockaddr_in;
+    lAddr.__sockaddr_in6__ := @sockaddr_in6;
+    lAddr.__sockaddr__ := @sock_addr;
     var lSize: rtl.socklen_t := sizeOf(lAddr);
     lRes := rtl.getsockname(fHandle, lAddr, @lSize);
     {$ELSEIF WINDOWS}
