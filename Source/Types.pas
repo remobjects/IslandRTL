@@ -3,19 +3,34 @@
 interface
 
 type
+  va_list = public record
+  public
+    {$IF WINDOWS}
+    val: ^Void;
+    {$ELSEIF AARCH64 and not DARWIN}
+    __stack, __gr_top, __vr_top: ^Void;
+    __gr_offs, __vr_offs: Integer;
+    {$ELSEIF x86_64}
+    gp_offset, fp_offset: Integer;
+    overflow_arg_area: ^Void;
+    reg_save_area: ^Void;
+    {$ELSE}
+    val: ^Void;
+    {$ENDIF}
+  end;
   ValueType = public abstract class
   end;
 
   DummyEnum = class(&Enum) public fValue: Integer; end;
 
   &Enum = public abstract class
-  public 
-    property EnumSize: Integer 
+  public
+    property EnumSize: Integer
       read self.GetType.SizeOfType;
     method GetHashCode: Integer; override;
-    begin 
+    begin
       var lSelf := InternalCalls.Cast<DummyEnum>(InternalCalls.Cast(self));
-      case EnumSize of 
+      case EnumSize of
         1: exit ^Byte(@lSelf.fValue)^;
         2: exit ^Word(@lSelf.fValue)^;
         4, 8: exit ^Int32(@lSelf.fValue)^;
@@ -23,9 +38,9 @@ type
     end;
 
     method ToInt64: Int64;
-    begin 
+    begin
       var lSelf := InternalCalls.Cast<DummyEnum>(InternalCalls.Cast(self));
-      case EnumSize of 
+      case EnumSize of
         1: exit ^Byte(@lSelf.fValue)^;
         2: exit ^Word(@lSelf.fValue)^;
         8: exit ^Int64(@lSelf.fValue)^;
@@ -34,12 +49,12 @@ type
     end;
 
     method &Equals(aOther: Object): Boolean; override;
-    begin 
+    begin
       if aOther = nil then exit false;
       if aOther.GetType <> GetType then exit false;
       var lSelf := InternalCalls.Cast<DummyEnum>(InternalCalls.Cast(self));
       var lOther := InternalCalls.Cast<DummyEnum>(InternalCalls.Cast(aOther));
-      case EnumSize of 
+      case EnumSize of
         1: exit ^Byte(@lSelf.fValue)^ = ^Byte(@lOther.fValue)^;
         2: exit ^Int16(@lSelf.fValue)^ = ^Int16(@lOther.fValue)^;
         4: exit ^Int32(@lSelf.fValue)^ = ^Int32(@lOther.fValue)^;
@@ -48,10 +63,10 @@ type
     end;
 
     method ToString: String; override;
-    begin 
+    begin
       var lSelf := InternalCalls.Cast<DummyEnum>(InternalCalls.Cast(self));
       var lValue: Int64 := 0;
-      case EnumSize of 
+      case EnumSize of
         1: lValue := ^Byte(@lSelf.fValue)^;
         2: lValue := ^Word(@lSelf.fValue)^;
         4: lValue := ^Int32(@lSelf.fValue)^;
