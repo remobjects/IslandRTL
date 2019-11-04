@@ -20,7 +20,7 @@ type
     fErrorHandle: rtl.HANDLE;
     fErrorReadHandle: rtl.HANDLE;
     fWaitHandle: rtl.HANDLE := rtl.HANDLE(-1);
-    method StartAsync(aStdOutCallback: block(aLine: String); aErrorCallback: block(aLine: String); aFinishedCallback: block(ExitCode: Integer));
+    method StartAsync(aStdOutCallback: block(aLine: String); aErrorCallback: block(aLine: String); aFinishedCallback: block(aExitCode: Integer));
     method GetCurrentOutput(StdOutput: Boolean): String;
     class method WaitHandler(aObject: ^Void; TimerOrEnd: Byte); static;
     {$ELSEIF POSIX AND NOT IOS}
@@ -30,7 +30,7 @@ type
     fInputPipe: array[0..1] of Int32;
     fOutPipe: array[0..1] of Int32;
     fErrPipe: array[0..1] of Int32;
-    method StartAsync(aStdOutCallback: block(aLine: String); aErrorCallback: block(aLine: String); aFinishedCallback: block(ExitCode: Integer));
+    method StartAsync(aStdOutCallback: block(aLine: String); aErrorCallback: block(aLine: String); aFinishedCallback: block(aExitCode: Integer));
     method WaitForAsync;
     {$ENDIF}
     {$IF WINDOWS OR (POSIX AND NOT IOS)}
@@ -71,7 +71,7 @@ type
     property RedirectOutput: Boolean := false;
     property Id: Integer read fId;
     // for RunAsync
-    property OnFinished: block(ExitCode: Integer) read fFinishedBlock;
+    property OnFinished: block(aExitCode: Integer) read fFinishedBlock;
     property OnOutputData: block(aLine: String) read fOutputDataBlock;
     property OnErrorData: block(aLine: String) read fErrorDataBlock;
 
@@ -453,7 +453,7 @@ begin
 end;
 
 {$IF WINDOWS}
-method Process.StartAsync(aStdOutCallback: block(aLine: String); aErrorCallback: block(aLine: String); aFinishedCallback: block(ExitCode: Integer));
+method Process.StartAsync(aStdOutCallback: block(aLine: String); aErrorCallback: block(aLine: String); aFinishedCallback: block(aExitCode: Integer));
 begin
   fFinishedBlock := aFinishedCallback;
   fOutputDataBlock := aStdOutCallback;
