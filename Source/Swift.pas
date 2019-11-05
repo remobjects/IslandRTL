@@ -66,7 +66,7 @@ type
     WitnessTable: ^^Byte;
   end;
 
-  SwiftVWTinitializeBufferWithCopyOfBuffer = public function(dest, src: IntPtr; aSelf: ^Swifttype): IntPtr;
+  SwiftVWTinitializeBufferWithCopyOfBuffer = public function(dest, src: IntPtr; aSelf: ^SwiftType): IntPtr;
   SwiftVWTdestroy = public procedure(obj: IntPtr; aSelf: ^SwiftType);
   SwiftVWTgetEnumTagSinglePayload = public function(anEnum: IntPtr; emptyCases: UInt32): UInt32;
   SwiftVWTstoreEnumTagSinglePayload = public procedure(anEnum: IntPtr; whichCase, emptyCases: UInt32);
