@@ -8,6 +8,7 @@ type
     fLength: NativeInt;
     fData: array[0..0] of IntPtr;
   end;
+
   &Array = public abstract class(IEnumerable)
   assembly
     // WARNING: Do not change without also changing the compiler! these are compiler created!
@@ -42,16 +43,22 @@ type
       Sort(aVal, 0, aVal.Length -1, Comparison);
     end;
 
+    class method SubArray<T>(aSource: array of T; aStart, aCount: Integer): array of T;
+    begin
+      result := new array of T(aCount);
+      Copy(aSource, aStart, result, 0, aCount);
+    end;
+
     class method BinarySearch<T, V>(aVal: array of T; aInput: V; aComparer: Func<T, V, Integer>): Integer;
-    begin 
+    begin
       var min := 0;
       var max := aVal.Length -1;
       while min <= max do begin
         var  middle := min + ((max - min) shr 1);
-                
+
         result := aComparer(aVal[middle], aInput);
         if result = 0  then exit middle;
-        if result < 0 then 
+        if result < 0 then
           min := middle + 1
         else
           max := middle - 1;
@@ -153,7 +160,9 @@ type
         if EqualityComparer.Equals(Item[i], val) then exit true;
       exit false;
     end;
+
   public
+
     property Item[I: Integer]: T read (@fFirstItem)[I] write (@fFirstItem)[I];
     method Get(i: Integer): Object; override;
     begin
@@ -165,12 +174,25 @@ type
       Item[i] := T(v);
     end;
 
-
     method GetEnumerator: IEnumerator<T>; iterator;
     begin
       for i: Integer := 0 to fLength -1 do
         yield (@fFirstItem)[i];
     end;
+
+    method SubArray(aStart, aCount: Integer): array of T;
+    begin
+      result := SubArray(self, aStart, aCount);
+    end;
+
+    method SubArray(aRange: Range): array of T;
+    begin
+      var aLength := fLength;
+      var aStart := aRange.fStart.GetOffset(aLength);
+      var aEnd := aRange.fEnd.GetOffset(aLength);
+      result := SubArray(self, aStart, aEnd-aStart);
+    end;
+
   end;
 
 end.

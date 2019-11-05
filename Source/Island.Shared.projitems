@@ -91,6 +91,7 @@
     <Compile Include="$(MSBuildThisFileDirectory)NullStream.pas">
       <VirtualFolder>Streams</VirtualFolder>
     </Compile>
+    <Compile Include="$(MSBuildThisFileDirectory)Range.pas" />
   </ItemGroup>
   <ItemGroup>
     <Folder Include="Streams">
