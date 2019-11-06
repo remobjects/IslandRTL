@@ -55,6 +55,9 @@ type
     //begin
       //result := new Range(aStart, aEnd);
     //end;
+    
+    property Start: &Index read fStart;
+    property &End: &Index read fEnd;
 
   assembly
     fStart: &Index;
