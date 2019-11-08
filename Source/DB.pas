@@ -35,7 +35,7 @@ type
       case aType.Code of
         TypeCodes.Boolean,
         TypeCodes.Char,
-        TypeCodes.SByte,
+      TypeCodes.SByte,
         TypeCodes.Byte,
         TypeCodes.Int16,
         TypeCodes.UInt16,
@@ -59,7 +59,7 @@ type
       OpenIfNeeded;
       using lResult := CreateCommand(aTransaction, aCommand) do begin
         if aArgs <> nil then begin
-          for each el in aArgs.GetType().Properties.Where(a -> not a.IsStatic and assigned(a.ReadMethod) and assigned(a.WriteMethod) and CompatibleType(a.Type) and (a.Arguments.Count = 0)) do begin
+          for each el in aArgs.GetType().Properties.Where(a -> not a.IsStatic and assigned(a.ReadMethod) and CompatibleType(a.Type) and (a.Arguments.Count = 0)) do begin
             lResult.AddParameter(el.Name, el.GetValue(aArgs, nil));
           end;
         end;
