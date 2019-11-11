@@ -33,9 +33,19 @@ type
       {$ELSE}{$ERROR}{$ENDIF}
     end;
 
+    class method Delete(aFolder: String);
+    begin
+      new Folder(aFolder).Delete;
+    end;
+
     method Exists: Boolean;override;
     begin
       exit FileUtils.FolderExists(fFullName);
+    end;
+
+    class method Exists(aFolder: String): Boolean;
+    begin
+      exit FileUtils.FolderExists(aFolder);
     end;
 
     method Rename(NewName: String): Folder;

@@ -12,14 +12,45 @@ type
     method &Copy(NewFile: not nullable File);
     method &Copy(FullPathName: not nullable String): not nullable File;
     method &Copy(Destination: not nullable Folder; NewName: not nullable String): not nullable File;
+
+    class method Copy(aSource: String; aDest: String);
+    begin
+      new File(aSource).Copy(aDest);
+    end;
+
     method Delete; override;
+
+    class method Delete(aFile: String);
+    begin
+      new File(aFile).Delete;
+    end;
+
     method Exists: Boolean; override;
+
+
+    class method Exists(aFile: String): Boolean;
+    begin
+      exit FileUtils.FileExists(aFile);
+    end;
+
     method Move(NewFile: not nullable File);
     method Move(FullPathName: not nullable String): not nullable File;
     method Move(DestinationFolder: not nullable Folder; NewName: not nullable String): not nullable File;
+
+    method Move(aSource, aDest: String);
+    begin
+      new File(aSource).Move(aDest);
+    end;
+
     method Rename(NewName: not nullable String): not nullable File;
 
+    method Rename(aSource, aDest: String);
+    begin
+      new File(aSource).Rename(aDest);
+    end;
+
     property Length: Int64 read GetLength;
+
     method ReadBytes: array of Byte;
   end;
 {$ENDIF}

@@ -135,7 +135,7 @@ end;
 method Path.GetFullPath(RelativePath: not nullable String): not nullable String;
 begin
   {$IFDEF WINDOWS}
-  var lname := RelativePath.ToFileName;
+  var lname := RelativePath.ToLPCWSTR;
   var len: rtl.DWORD := rtl.MAX_PATH;
   var buf:= new array of Char(len);
   len := rtl.GetFullPathNameW(lname,len,rtl.LPWSTR(@buf[0]), nil);
