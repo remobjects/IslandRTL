@@ -96,7 +96,7 @@ type
     constructor(aAddress: NativeInt); empty;
   end;
 
- 
+
   [AttributeUsage(AttributeTargets.Enum)]
   FlagsAttribute = public class(Attribute)
   public
@@ -231,15 +231,15 @@ type
 
   [AttributeUsage(AttributeTargets.Method or AttributeTargets.Field or AttributeTargets.Property or AttributeTargets.Event or AttributeTargets.Struct or AttributeTargets.Class or AttributeTargets.Enum or AttributeTargets.Delegate)]
   DllExportAttribute = public class(Attribute)
-  private 
+  private
     fName: String;
   public
-    constructor; empty;  
+    constructor; empty;
     constructor(aName: String);
-    begin 
+    begin
       fName := aName;
     end;
-    
+
     property Name: String read fName;
   end;
 
@@ -345,13 +345,13 @@ type
   public
     constructor(aSource, aLifetimeType: &Type); empty;
   end;
-  
+
 
   [AttributeUsage(AttributeTargets.Field)]
   StaticallyInitializedFieldAttribute = public class(Attribute)
   public
     constructor; empty;
-  end;  
+  end;
 
   [AttributeUsage(AttributeTargets.Field)]
   BitPackingAttribute = public class(Attribute)
@@ -364,6 +364,15 @@ type
   PublishedAttribute = public class(Attribute)
   public
     constructor; empty;
-  end;  
-  
+  end;
+
+  // Like DLL import but uses LoadLibrary/GetProcAddress.
+  [AttributeUsage(AttributeTargets.Method)]
+  DelayLoadDllImportAttribute = public class(Attribute)
+  public
+    constructor(aDllName: String; aEntryPoint: String := nil);
+    begin
+    end;
+  end;
+
 end.

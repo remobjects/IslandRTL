@@ -124,4 +124,10 @@ type
   InvalidStateException = public class(Exception)
   end;
 
+  LibraryNotFoundException = public class(Exception)
+  end;
+
+  EntrypointNotFoundException = public class(Exception)
+  end;
+
 end.

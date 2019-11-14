@@ -107,6 +107,26 @@ type
       raise new NotSupportedException;
       {$ENDIF}
     end;
+
+    class var fLibraryCache: Dictionary<String, IntPtr> := new Dictionary<String, IntPtr>; private;
+    class var fLibraryCacheLock: Monitor := new Monitor; private;
+
+    class method GetCachedProcAddress(aLibrary, aSymbol: String): IntPtr;
+    begin
+      var lLib: IntPtr;
+      locking fLibraryCacheLock do begin
+        if not fLibraryCache.TryGetValue(aLibrary, out lLib) then lLib := 0;
+      end;
+      if lLib = 0 then begin
+        lLib := LoadLibrary(aLibrary);
+        if lLib = 0 then raise new LibraryNotFoundException(aLibrary+' could not be found');
+      end;
+      locking fLibraryCacheLock do begin
+        fLibraryCache[aLibrary] := lLib;
+      end;
+      result := GetProcAddress(lLib, aSymbol);
+      if result = 0 then raise new EntrypointNotFoundException('Library entrypoint '+aSymbol+' not found in '+aLibrary);
+    end;
   end;
 
 implementation
