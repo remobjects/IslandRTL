@@ -13,7 +13,6 @@ type
   CocoaString = public Foundation.NSString;
   CocoaException = public Foundation.NSException;
   SwiftObject = public Foundation.NSObject; // hack for now
-  SwiftString = public Foundation.NSString; // hack for now
   SeiftException = public Foundation.NSException; // hack for now
 
   RemObjects.Elements.System.Island.Object = public System.Object;
@@ -282,10 +281,11 @@ type
       exit new SwiftWrappedCocoaObject(aValue);
     end;
 
+    /*
     method description: SwiftString; override;
     begin
       result := Value.description() as SwiftString;
-    end;
+    end;*/
 
     method hash: NSUInteger; override;
     begin
@@ -341,10 +341,12 @@ type
       result := new CocoaWrappedSwiftObject(aValue);
     end;
 
+    /*
     method description: SwiftString; override;
     begin
       result := Value.description() as SwiftString;
     end;
+    */
 
     method hash: NSUInteger; override;
     begin
