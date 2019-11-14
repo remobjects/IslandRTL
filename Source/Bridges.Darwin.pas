@@ -13,7 +13,7 @@ type
   CocoaString = public Foundation.NSString;
   CocoaException = public Foundation.NSException;
   SwiftObject = public Foundation.NSObject; // hack for now
-  SeiftException = public Foundation.NSException; // hack for now
+  SwiftException = public Foundation.NSException; // hack for now
 
   RemObjects.Elements.System.Island.Object = public System.Object;
   RemObjects.Elements.System.Island.String = public System.String;
