@@ -285,6 +285,10 @@ type
 {$ENDIF}
     // Returns the raw typeinfo for T
     class method GetTypeInfo<T>(): ^Void; external;
+    class method GetIslandTypeInfo<T>(): ^Void; external;
+    {$IFDEF DARWIN}
+    class method GetSwiftTypeInfo<T>(): ^Void; external;
+    {$ENDIF}
     // Casts an object to ^Void and back. Doesn't do any error checking!
     class method Cast(o: Object): ^Void; external;
     class method Cast(o: Manual<Object>): ^Void; external;

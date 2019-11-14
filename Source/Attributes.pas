@@ -249,6 +249,13 @@ type
     constructor(); empty;
   end;
 
+
+  [AttributeUsage(AttributeTargets.Parameter)]
+  SwiftSelfAttribute = public class(Attribute)
+  public
+    constructor(); empty;
+  end;
+
   [AttributeUsage(AttributeTargets.Interface, AllowMultiple := false)]
   GuidAttribute = public class(Attribute)
   private
