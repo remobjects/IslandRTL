@@ -9,6 +9,59 @@ type
   SwiftInitApi = public function(aMD: ^Void; aRequiredSize, aRequiredAlignmentMask: IntPtr): ^Void;
   SwiftBeginAccessApi = public procedure(pointer: ^Void; buffer: ^Void; flags: UIntPtr; pc: ^Void);
 
+
+   _SwiftArrayBodyStorage = public record
+   public
+     count: IntPtr;
+    _capacityAndFlags: UIntPtr;
+  end;
+
+  _SwiftEmptyArrayStorage = public record
+  public
+    header: SwiftRefcounted;
+    body: _SwiftArrayBodyStorage;
+  end;
+
+
+  _SwiftDictionaryBodyStorage = public record
+  public
+     count: IntPtr;
+     capacity: IntPtr;
+    _scale: Byte;
+    _reservedScale: Byte;
+     extra: Int16;
+     age: Int32;
+     seed: IntPtr;
+    rawKeys: ^Void;
+    rawValues: ^Void;
+  end;
+
+  _SwiftSetBodyStorage = public record
+  public
+     count: IntPtr;
+     capacity: IntPtr;
+      scale: Byte;
+      reservedScale: Byte;
+     extra: Int16;
+     age: Int32;
+     seed: IntPtr;
+    rawElements:^Void;
+  end;
+
+  _SwiftEmptyDictionarySingleton = public record
+  public
+    header: SwiftRefcounted;
+    body: _SwiftDictionaryBodyStorage;
+    metadata: UIntPtr;
+  end;
+
+  _SwiftEmptySetSingleton = public record
+  public
+    header: SwiftRefcounted;
+    body: _SwiftSetBodyStorage;
+    metadata: UIntPtr;
+  end;
+
   SwiftType = public record
   public
     &Type: IntPtr;
