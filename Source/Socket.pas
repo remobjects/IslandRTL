@@ -427,7 +427,7 @@ begin
   result.HostName := String.FromPChar(lAddrInfo^.ai_canonname);
   lPtr := lAddrInfo;
   while lPtr <> nil do begin
-    case lPtr^.ai_family of
+    case AddressFamily(lPtr^.ai_family) of
       AddressFamily.InterNetwork: begin
         lSockAddr4 := ^rtl.SOCKADDR_IN(lPtr^.ai_addr);
         lIPList.Add(new IPAddress(lSockAddr4^.sin_addr.S_un.S_addr));
@@ -456,7 +456,7 @@ begin
   result.HostName := String.FromPAnsiChars(lAddrInfo^.ai_canonname);
   lPtr := lAddrInfo;
   while lPtr <> nil do begin
-    case lPtr^.ai_family of
+    case AddressFamily(lPtr^.ai_family) of
       AddressFamily.InterNetwork: begin
         lSockAddr4 := ^rtl.__struct_sockaddr_in(lPtr^.ai_addr);
         lIPList.Add(new IPAddress(lSockAddr4^.sin_addr.s_addr));
