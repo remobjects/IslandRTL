@@ -232,7 +232,7 @@ type
 
     [DllImport('', EntryPoint := '__island_responseBinaryTextToArray')]
     class method ResponseBinaryTextToArray(aSource: IntPtr; aTarget: ^Byte): Int32; external;
-    
+
     [DllImport('', EntryPoint := '__island_new_XMLHttpRequest')]
     class method New_XMLHttpRequest(): IntPtr; external;
 
@@ -495,16 +495,6 @@ type
   public
     property Global: dynamic := new EcmaScriptObject(-1); lazy;
     property Object: dynamic := EcmaScriptObject(&Global)['Object']; lazy;
-    
-    class method NewXMLHttpRequest(): dynamic; 
-    begin 
-      exit new EcmaScriptObject(WebAssemblyCalls.New_XMLHttpRequest());
-    end;
-    
-    class method NewWebSocket(s: String): dynamic; 
-    begin 
-      exit new EcmaScriptObject(WebAssemblyCalls.New_WebSocket(s));
-    end;
 
     class method CreateProxy(o: Object): EcmaScriptObject;
     begin
@@ -636,20 +626,6 @@ type
         WebAssemblyCalls.FreeHandle(handle);
     end;
 
-    class method GetElementById(id: String): dynamic;
-    begin
-      var lRes := WebAssemblyCalls.GetElementById(id);
-      if lRes = 0 then exit nil;
-      exit new EcmaScriptObject(lRes);
-    end;
-
-    class method GetElementByName(id: String): dynamic;
-    begin
-      var lRes := WebAssemblyCalls.GetElementByName(id);
-      if lRes = 0 then exit nil;
-      exit new EcmaScriptObject(lRes);
-    end;
-
     class method SetTimeout(aFN: WebAssemblyDelegate; aTimeOut: Integer): Integer;
     begin
       exit WebAssemblyCalls.SetTimeout(aFN, aTimeOut);
@@ -665,6 +641,33 @@ type
       WebAssemblyCalls.ClearInterval(aVal);
     end;
 
+    class method CreateObject: dynamic;
+    begin
+      exit new EcmaScriptObject(WebAssemblyCalls.CreateObject);
+    end;
+
+    class method CreateArray: dynamic;
+    begin
+      exit new EcmaScriptObject(WebAssemblyCalls.CreateArray);
+    end;
+  end;
+
+  Browser = public static class
+  public
+    class method GetElementById(id: String): dynamic;
+    begin
+      var lRes := WebAssemblyCalls.GetElementById(id);
+      if lRes = 0 then exit nil;
+      exit new EcmaScriptObject(lRes);
+    end;
+
+    class method GetElementByName(id: String): dynamic;
+    begin
+      var lRes := WebAssemblyCalls.GetElementByName(id);
+      if lRes = 0 then exit nil;
+      exit new EcmaScriptObject(lRes);
+    end;
+
     class method CreateElement(aName: String): dynamic;
     begin
       exit new EcmaScriptObject(WebAssemblyCalls.CreateElement(aName));
@@ -675,16 +678,6 @@ type
       exit new EcmaScriptObject(WebAssemblyCalls.CreateTextNode(aName));
     end;
 
-    class method CreateObject: dynamic;
-    begin
-      exit new EcmaScriptObject(WebAssemblyCalls.CreateObject);
-    end;
-
-    class method CreateArray: dynamic;
-    begin
-      exit new EcmaScriptObject(WebAssemblyCalls.CreateArray);
-    end;
-
     class method GetWindowObject: dynamic;
     begin
       exit new EcmaScriptObject(WebAssemblyCalls.GetWindowObject);
@@ -692,7 +685,7 @@ type
 
     class method AjaxRequest(url: String): String;
     begin
-      exit GetStringFromHandle(WebAssemblyCalls.AjaxRequest(@url.fFirstChar, url.Length));
+      exit WebAssembly.GetStringFromHandle(WebAssemblyCalls.AjaxRequest(@url.fFirstChar, url.Length));
     end;
 
     class method AjaxRequestBinary(url: String): array of Byte;
@@ -701,6 +694,16 @@ type
       var lTotal := WebAssemblyCalls.GetStringLength(lArray);
       result := new Byte[lTotal];
       WebAssemblyCalls.ResponseBinaryTextToArray(lArray, @result[0]);
+    end;
+
+    class method NewXMLHttpRequest(): dynamic;
+    begin
+      exit new EcmaScriptObject(WebAssemblyCalls.New_XMLHttpRequest());
+    end;
+
+    class method NewWebSocket(s: String): dynamic;
+    begin
+      exit new EcmaScriptObject(WebAssemblyCalls.New_WebSocket(s));
     end;
   end;
 
@@ -888,7 +891,7 @@ type
 
     [SymbolName('__elements_get_stack_pointer'), Used, DllExport]
     method GetStackPointer: IntPtr;
-    begin 
+    begin
       exit IntPtr(@result);
     end;
 
