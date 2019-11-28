@@ -600,6 +600,7 @@ type
       if aVal = nil then exit 0;
       if aVal is EcmaScriptObject then begin {var lPtr := InternalCalls.Cast(aVal);} var lObject := EcmaScriptObject(aVal); {lObject['__elements_handle'] := NativeInt(lPtr);} exit WebAssemblyCalls.CloneHandle(lObject.Handle); end;
       if aVal is Integer then exit WebAssemblyCalls.CreateInteger(aVal as Integer);
+      if aVal is NativeInt then exit WebAssemblyCalls.CreateInteger(aVal as NativeInt);
       if aVal is Boolean then exit WebAssemblyCalls.CreateBoolean(aVal as Boolean);
       if aVal is Double then exit WebAssemblyCalls.CreateDouble(aVal as Double);
       if aVal is Int64 then exit WebAssemblyCalls.CreateDouble(aVal as Int64);
