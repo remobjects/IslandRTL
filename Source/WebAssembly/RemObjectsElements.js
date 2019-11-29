@@ -541,6 +541,9 @@
                     }
                 }
             };
+            imp.env.__island_node_require = function (str) {
+                return createHandle(require(readStringFromMemory(str)));
+            };
         }
         function fetchAndInstantiate(url, importObject, memorySize, tableSize) {
             if (memorySize === void 0) { memorySize = 64; }

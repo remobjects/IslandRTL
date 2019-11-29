@@ -238,6 +238,9 @@ type
 
     [DllImport('', EntryPoint := '__island_new_WebSocket')]
     class method New_WebSocket(s: String): IntPtr; external;
+
+    [DllImport('', EntryPoint := '__island_node_require')]
+    class method &Require(aMod: String): IntPtr; external;
   end;
 
   KnownTypesEnumerator = public procedure (aData: Object; aRTTI: ^Byte);
@@ -706,6 +709,22 @@ type
     begin
       exit new EcmaScriptObject(WebAssemblyCalls.New_WebSocket(s));
     end;
+  end;
+
+  Node = public static class
+  public
+    class method &require(aModule: String): dynamic;
+    begin
+      exit WebAssembly.GetObjectForHandle(WebAssemblyCalls.Require(aModule));
+    end;
+
+    //class property __dirname: dynamic read WebAssembly.Global.__dirname;
+    //class property __filename: dynamic read WebAssembly.Global.__filename;
+    class property console: dynamic read WebAssembly.Global.console;
+    class property exports: dynamic read WebAssembly.Global.exports;
+    class property &module: dynamic read WebAssembly.Global.module;
+    class property process: dynamic read WebAssembly.Global.process;
+    class property &global: dynamic read WebAssembly.Global.global;
   end;
 
   WebAssemblyType = public enum (Null, Undefined, String, Number, &Function, Symbol, Object, Boolean);

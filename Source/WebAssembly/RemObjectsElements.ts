@@ -487,6 +487,9 @@ export module ElementsWebAssembly {
                     func(obj, val.value);
                 }
             }
+        };
+        imp.env.__island_node_require = function(str: number): number {
+            return createHandle(require(readStringFromMemory(str)));
         }
     }
 
