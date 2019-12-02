@@ -563,7 +563,7 @@ type
         WebAssemblyType.Undefined, WebAssemblyType.Null: exit nil;
         WebAssemblyType.String: result := GetStringFromHandle(aHandle);
         WebAssemblyType.Number: result := WebAssemblyCalls.GetDoubleValue(aHandle);
-        WebAssemblyType.Boolean: result := WebAssemblyCalls.GetIntValue(aHandle);
+        WebAssemblyType.Boolean: result := Convert.ToBoolean(WebAssemblyCalls.GetIntValue(aHandle));
         else begin
           result := new EcmaScriptObject(aHandle);
           var val := EcmaScriptObject(result)['__elements_handle'];
