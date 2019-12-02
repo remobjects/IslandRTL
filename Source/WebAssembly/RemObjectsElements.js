@@ -541,6 +541,33 @@
                     }
                 }
             };
+            imp.env.__island_node_new_TextEncoder = function () {
+                // TextEncoder and TextDecoder are globals in Node >= 11
+                var util = require('util');
+                if (util)
+                    return createHandle(new util.TextEncoder());
+            };
+            imp.env.__island_node_new_TextDecoder = function (str) {
+                var util = require('util');
+                if (util) {
+                    var par1 = readStringFromMemory(str);
+                    if (par1 == '')
+                        return createHandle(new util.TextDecoder());
+                    else
+                        return createHandle(new util.TextDecoder(par1));
+                }
+            };
+            imp.env.__island_node_new_URL = function (str, str2) {
+                var url = require('url');
+                if (url) {
+                    var par1 = readStringFromMemory(str);
+                    var par2 = readStringFromMemory(str2);
+                    if (par2 == '')
+                        return createHandle(new URL(par1));
+                    else
+                        return createHandle(new URL(par1, par2));
+                }
+            };
             imp.env.__island_node_require = function (str) {
                 return createHandle(require(readStringFromMemory(str)));
             };

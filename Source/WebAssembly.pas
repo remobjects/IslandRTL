@@ -241,6 +241,15 @@ type
 
     [DllImport('', EntryPoint := '__island_node_require')]
     class method &Require(aMod: String): IntPtr; external;
+
+    [DllImport('', EntryPoint := '__island_node_new_TextEncoder')]
+    class method New_TextEncoder: IntPtr; external;
+
+    [DllImport('', EntryPoint := '__island_node_new_TextDecoder')]
+    class method New_TextDecoder(s: String): IntPtr; external;
+
+    [DllImport('', EntryPoint := '__island_node_new_URL')]
+    class method New_URL(s: String; s2: String): IntPtr; external;
   end;
 
   KnownTypesEnumerator = public procedure (aData: Object; aRTTI: ^Byte);
@@ -718,8 +727,34 @@ type
       exit WebAssembly.GetObjectForHandle(WebAssemblyCalls.Require(aModule));
     end;
 
+    class method NewTextEncoder: dynamic;
+    begin
+      exit new EcmaScriptObject(WebAssemblyCalls.New_TextEncoder());
+    end;
+
+    class method NewTextDecoder: dynamic;
+    begin
+      exit new EcmaScriptObject(WebAssemblyCalls.New_TextDecoder(''));
+    end;
+
+    class method NewTextDecoder(aEncoding: String): dynamic;
+    begin
+      exit new EcmaScriptObject(WebAssemblyCalls.New_TextDecoder(aEncoding));
+    end;
+
+    class method NewURL(aInput: String): dynamic;
+    begin
+      exit new EcmaScriptObject(WebAssemblyCalls.New_URL(aInput, ''));
+    end;
+
+    class method NewURL(aInput: String; aBase: String): dynamic;
+    begin
+      exit new EcmaScriptObject(WebAssemblyCalls.New_URL(aInput, aBase));
+    end;
+
     //class property __dirname: dynamic read WebAssembly.Global.__dirname;
     //class property __filename: dynamic read WebAssembly.Global.__filename;
+    class property Buffer: dynamic read WebAssembly.Global.Buffer;
     class property console: dynamic read WebAssembly.Global.console;
     class property exports: dynamic read WebAssembly.Global.exports;
     class property &module: dynamic read WebAssembly.Global.module;

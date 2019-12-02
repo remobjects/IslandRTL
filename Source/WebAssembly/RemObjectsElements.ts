@@ -488,6 +488,33 @@ export module ElementsWebAssembly {
                 }
             }
         };
+        imp.env.__island_node_new_TextEncoder = function(): number {
+            // TextEncoder and TextDecoder are globals in Node >= 11
+            let util = require('util');
+            if (util)
+                return createHandle(new util.TextEncoder());
+        };
+        imp.env.__island_node_new_TextDecoder = function(str: number): number {
+            let util = require('util');
+            if (util) {
+                var par1 = readStringFromMemory(str);
+                if (par1 == '')
+                    return createHandle(new util.TextDecoder())
+                else
+                    return createHandle(new util.TextDecoder(par1))
+            }
+        };
+        imp.env.__island_node_new_URL = function(str: number, str2: number): number {
+            let url = require('url');
+            if (url) {
+                var par1 = readStringFromMemory(str);
+                var par2 = readStringFromMemory(str2);
+                if (par2 == '')
+                    return createHandle(new URL(par1));
+                else
+                    return createHandle(new URL(par1, par2));
+            }
+        };
         imp.env.__island_node_require = function(str: number): number {
             return createHandle(require(readStringFromMemory(str)));
         }
