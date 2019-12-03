@@ -389,4 +389,22 @@ type
     end;
   end;
 
+  [AttributeUsage(AttributeTargets.Interface)]
+  DynamicInterface = public class(Attribute)
+  public
+    constructor(aType: &Type; aCheckType: String);
+    begin
+      &Type := aType;
+      CheckType := aCheckType;
+    end;
+
+    constructor(aType: &Type);
+    begin
+      &Type := aType;
+    end;
+
+    property &Type: &Type; readonly;
+    property CheckType: String; readonly;
+  end;
+
 end.

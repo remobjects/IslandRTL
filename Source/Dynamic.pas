@@ -533,6 +533,10 @@ type
     method Invoke(aName: String; aGetFlags: Integer; aArgs: array of Object): Object;
     method Unary(aOp: DynamicUnaryOperator; out aResult: Object): Boolean;
     method Binary(aOther: Object; aSelfIsLeftSide: Boolean; aOp: DynamicBinaryOperator; out aResult: Object): Boolean;
+    method IsType(aType: String): Boolean;
+    begin
+      exit false;
+    end;
   end;
 
   DynamicMethodGroup = public class
