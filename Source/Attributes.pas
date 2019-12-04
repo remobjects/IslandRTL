@@ -390,7 +390,7 @@ type
   end;
 
   [AttributeUsage(AttributeTargets.Interface)]
-  DynamicInterface = public class(Attribute)
+  DynamicInterfaceAttribute = public class(Attribute)
   public
     constructor(aType: &Type; aCheckType: String);
     begin
