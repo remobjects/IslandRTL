@@ -101,8 +101,8 @@ type
     /// <summary>Select a list element by index</summary>
     method SelectListElement(aIndex: Integer; out aHint: &Type): DeserializerType; abstract;
 
-    method Read<T>(): T; 
-    begin 
+    method Read<T>(): T;
+    begin
       var lType := typeOf(T);
       case lType.Code of
         TypeCodes.Boolean,
@@ -127,7 +127,7 @@ type
         IDeserializable(result).Deserialize(DeserializerType.None, self);
         exit;
       end;
-      if result is IList then 
+      if result is IList then
         exit &Read(lType, DeserializerType.List, result) as T;
 
       exit &Read(lType, DeserializerType.Object, result) as T;
@@ -135,7 +135,7 @@ type
 
 
     method Skip; virtual; protected;
-    begin 
+    begin
       raise new NotSupportedException;
     end;
 
@@ -149,7 +149,7 @@ type
     begin
       if aDT = DeserializerType.None then exit nil;
       if aDT <> DeserializerType.Simple then begin
-        if aType.IsSubclassOf(typeOf(&Array)) then 
+        if aType.IsSubclassOf(typeOf(&Array)) then
           aDest := coalesce(aDest, new List<Object>)
         else
           aDest := coalesce(aDest, aType.Instantiate);
@@ -203,10 +203,10 @@ type
           inc(lIndex);
         end;
         EndList;
-        if aType.IsSubclassOf(typeOf(&Array)) and (result is List<Object>) then begin 
+        if aType.IsSubclassOf(typeOf(&Array)) and (result is List<Object>) then begin
           var lSub := aType.GenericArguments.FirstOrDefault;
           var lRes := InternalCalls.Cast<&Array>(Utilities.NewArray(aType.RTTI, if lSub.IsValueType then  lSub.SizeOfType else sizeOf(^Void), List<Object>(result).Count));
-          for i: Integer := 0 to List<Object>(result).Count -1 do 
+          for i: Integer := 0 to List<Object>(result).Count -1 do
             lRes.&Set(i, List<Object>(result)[i]);
 
           exit lRes;
@@ -217,14 +217,14 @@ type
       if aDT <> DeserializerType.Object then  raise new SerializationException('Object serialization type expected');
 
       StartObject;
-      if ReaderProvidesNameAndType then begin 
-        loop begin 
+      if ReaderProvidesNameAndType then begin
+        loop begin
           ReadNext(out var lName, out var lType);
           if lType = DeserializerType.None then break;
           var el := aType.Properties.FirstOrDefault(a -> not a.IsStatic and (a.Name = lName) and (a.ReadMethod <> nil) and (a.Access <> MemberAccess.Private) and not a.Attributes.Any(b -> b.Type = typeOf(NotSerializable)));
-          if el = nil then 
+          if el = nil then
             &Skip
-          else begin 
+          else begin
             if (lType <> DeserializerType.List) and (el.WriteMethod = nil) then continue;
             var lValue := Read(el.Type, lType, if (lType = DeserializerType.List) and ((el.WriteMethod = nil) or (el.Write.Access = MemberAccess.Private)) then el.GetValue(result, []));
             if lValue = nil then continue;
@@ -265,29 +265,29 @@ type
     var fSB: StringBuilder := new StringBuilder;
   public
     method EndList; override;
-    begin 
+    begin
       fSB.Append(']');
     end;
 
     method EndObject; override;
-    begin 
+    begin
       fSB.Append('}');
     end;
 
     method StartObject; override;
-    begin 
+    begin
       fSB.Append('{');
     end;
 
     method StartList; override;
-    begin 
+    begin
       fSB.Append('[');
     end;
 
     method ToHexString(c:  Int64; len: Integer): String;
-    begin 
-      while len > 0 do begin 
-        result := case c and $f of 
+    begin
+      while len > 0 do begin
+        result := case c and $f of
           0: '0';
           1: '1';
           2: '2';
@@ -311,7 +311,7 @@ type
     end;
 
     method WriteString(Value: String);
-    begin 
+    begin
       fSB.Append('"');
       for i: Int32 := 0 to Value.Length-1 do begin
         var c := Value[i];
@@ -326,7 +326,7 @@ type
           #32..#33,
           #35..#91,
           #93..#127: fSB.Append(c);
-          else 
+          else
             fSB.Append('\u'+ToHexString(Int32(c), 4));
         end;
       end;
@@ -334,29 +334,29 @@ type
     end;
 
     method StartListEntry(aFirst: Boolean); override;
-    begin 
-      if not aFirst then 
+    begin
+      if not aFirst then
         fSB.Append(',');
     end;
 
     method SelectProperty(aFirst: Boolean;aProperty: PropertyInfo); override;
     begin
-      if not aFirst then 
+      if not aFirst then
         fSB.Append(',');
       WriteString(aProperty.Name);
       fSB.Append(':');
     end;
-    
-    method SelectProperty(aFirst: Boolean;aProperty: String); 
+
+    method SelectProperty(aFirst: Boolean;aProperty: String);
     begin
-      if not aFirst then 
+      if not aFirst then
         fSB.Append(',');
       WriteString(aProperty);
       fSB.Append(':');
     end;
 
     method WriteValue(aValue: Object); override;
-    begin 
+    begin
       if aValue = nil then fSB.Append('null')
       else if aValue is String then WriteString(String(aValue))
       else if aValue is Double then fSB.Append(Double(aValue).ToString(Locale.Invariant))
@@ -367,14 +367,14 @@ type
     end;
 
     method ToString: String; override;
-    begin 
+    begin
       exit fSB.ToString;
     end;
   end;
 
   JsonTokenKind = assembly enum(EOF, String, Number, Null, &True, &False, ArrayStart, ArrayEnd, ObjectStart, ObjectEnd, NameSeperator, ValueSeperator, Identifier, SyntaxError);
 
-  JsonException = public class(Exception) 
+  JsonException = public class(Exception)
   end;
   JsonDeserializer = public class(Deserializer)
   private
@@ -421,123 +421,123 @@ type
     end;
   public
     method ReadNext(out aName: String; out aType: DeserializerType); override;
-    begin 
-      if fTok = JsonTokenKind.ObjectEnd then begin 
+    begin
+      if fTok = JsonTokenKind.ObjectEnd then begin
         aName := nil;
         aType := DeserializerType.None;
         exit;
       end;
-      if not fAtElementStart then begin 
-        if fTok <> JsonTokenKind.ValueSeperator then 
+      if not fAtElementStart then begin
+        if fTok <> JsonTokenKind.ValueSeperator then
           raise new JsonException(', expected');
         Next;
       end;
-      if fTok = JsonTokenKind.Identifier then 
+      if fTok = JsonTokenKind.Identifier then
         aName := fTokVal
-      else if fTok = JsonTokenKind.String then 
+      else if fTok = JsonTokenKind.String then
         aName := DecodeString(fTokVal)
-      else 
+      else
         raise new JsonException('String or Identifier expected');
       Next;
-      if fTok <> JsonTokenKind.NameSeperator then 
+      if fTok <> JsonTokenKind.NameSeperator then
         raise new JsonException(': expected after property name');
       Next;
-      case fTok of 
+      case fTok of
         JsonTokenKind.ObjectStart: aType := DeserializerType.Object;
         JsonTokenKind.ArrayStart: aType := DeserializerType.List;
         JsonTokenKind.False, JsonTokenKind.True, JsonTokenKind.Null, JsonTokenKind.Number, JsonTokenKind.String: aType := DeserializerType.Simple;
-      else 
+      else
         raise new JsonException('Value expected');
       end;
     end;
 
     method StartObject; override;
-    begin 
+    begin
       Next;
       fAtElementStart := true;
     end;
 
     method StartList; override;
-    begin 
+    begin
       Next;
       fAtElementStart := true;
     end;
 
     method Next; assembly;
-    begin 
+    begin
       fAtElementStart := false;
       fPos := fPos + fLength;
       restart:;
-      if fPos = length(fInput) then begin 
+      if fPos = length(fInput) then begin
         fTok := JsonTokenKind.EOF;
         fLength := 0;
         exit;
       end;
       fTokVal := nil;
-      case fInput[fPos] of 
-        #9, #32: begin 
+      case fInput[fPos] of
+        #9, #32: begin
           fLength := 1;
           goto restart;
         end;
-        '[': begin 
+        '[': begin
           fTok := JsonTokenKind.ArrayStart;
           fLength := 1;
         end;
-        ']': begin 
+        ']': begin
           fTok := JsonTokenKind.ArrayEnd;
           fLength := 1;
         end;
-        '{': begin 
+        '{': begin
           fTok := JsonTokenKind.ObjectStart;
           fLength := 1;
         end;
-        '}': begin 
+        '}': begin
           fTok := JsonTokenKind.ObjectEnd;
           fLength := 1;
         end;
-        ':': begin 
+        ':': begin
           fTok := JsonTokenKind.NameSeperator;
           fLength := 1;
         end;
-        ',': begin 
+        ',': begin
           fTok := JsonTokenKind.ValueSeperator;
           fLength := 1;
         end;
-        '.', '0'..'9': begin 
+        '.', '0'..'9': begin
           var lPos := fPos + 1;
           var lGotDot := fInput[fPos] = '.';
-          while lPos < fInput.Length do begin 
-            if (fInput[lPos] in ['0'..'9']) then 
+          while lPos < fInput.Length do begin
+            if (fInput[lPos] in ['0'..'9']) then
               inc (lPos)
-            else if not lGotDot and (fInput[lPos] ='.') then begin 
+            else if not lGotDot and (fInput[lPos] ='.') then begin
               inc(lPos);
               lGotDot := true;
             end else break;
           end;
           fTok := JsonTokenKind.Number;
           fLength := lPos - fPos;
-          fTokVal := fInput.SubString(fPos, fLength);
+          fTokVal := fInput.Substring(fPos, fLength);
         end;
-        'a'..'z', '_', 'A'..'Z': begin 
+        'a'..'z', '_', 'A'..'Z': begin
           var lPos := fPos + 1;
-          while lPos < fInput.Length do begin 
-            if (fInput[lPos] in ['a'..'z', '_', 'A'..'Z', '0'..'9']) then 
+          while lPos < fInput.Length do begin
+            if (fInput[lPos] in ['a'..'z', '_', 'A'..'Z', '0'..'9']) then
               inc (lPos)
             else break;
           end;
           fTok := JsonTokenKind.Identifier;
           fLength := lPos - fPos;
-          fTokVal := fInput.SubString(fPos, fLength);
-          if fTokVal = 'null' then fTok := JsonTokenKind. Null else 
-            if fTokVal = 'true' then fTok := JsonTokenKind. True else 
+          fTokVal := fInput.Substring(fPos, fLength);
+          if fTokVal = 'null' then fTok := JsonTokenKind. Null else
+            if fTokVal = 'true' then fTok := JsonTokenKind. True else
               if fTokVal = 'false' then fTok := JsonTokenKind. &False;
         end;
-        '"': begin 
+        '"': begin
           var lPos := fPos + 1;
-          while lPos < fInput.Length do begin 
-            if (lPos+1 < fInput.Length) and (fInput[lPos] = '\') and (fInput[lPos+1]='"') then 
+          while lPos < fInput.Length do begin
+            if (lPos+1 < fInput.Length) and (fInput[lPos] = '\') and (fInput[lPos+1]='"') then
               inc (lPos, 2)
-            else if fInput[lPos] = '"' then begin 
+            else if fInput[lPos] = '"' then begin
               inc (lPos);
               break;
             end
@@ -546,43 +546,43 @@ type
           end;
           fTok := JsonTokenKind.String;
           fLength := lPos - fPos;
-          fTokVal := fInput.SubString(fPos, fLength);          
+          fTokVal := fInput.Substring(fPos, fLength);
         end;
         // JsonTokenKind = assembly enum(String, NullSyntaxError);
-        else begin 
+        else begin
           fLength := 0;
           fTok := JsonTokenKind.SyntaxError;
         end;
       end;
     end;
 
-    property ReaderProvidesNameAndType: Boolean read true; override; 
+    property ReaderProvidesNameAndType: Boolean read true; override;
     constructor(aInput: String);
-    begin 
+    begin
       fInput := aInput;
       Next;
     end;
 
     method EndList; override;
-    begin 
+    begin
       if fTok <> JsonTokenKind.ArrayEnd then raise new JsonException('] expected');
       Next;
     end;
 
     method EndObject; override;
-    begin 
+    begin
       if fTok <> JsonTokenKind.ObjectEnd then raise new JsonException('} expected');
       Next;
     end;
 
     method SelectProperty(aProp: PropertyInfo; out aHint: &Type): DeserializerType; override;
-    begin 
+    begin
       raise new JsonException('Invalid state');
     end;
 
     method ReadValue(): Object; override;
-    begin 
-      case fTok of 
+    begin
+      case fTok of
         JsonTokenKind.String: begin result := DecodeString(fTokVal); Next end;
         JsonTokenKind.Number: begin result := if fTokVal.Contains('.') then Double.Parse(fTokVal, Locale.Invariant) else Int64.Parse(fTokVal); Next end;
         JsonTokenKind.Null: begin result := nil; Next end;
@@ -593,14 +593,14 @@ type
     end;
 
     method SelectListElement(aIndex: Int32; out aHint: &Type): DeserializerType; override;
-    begin 
+    begin
       if fTok = JsonTokenKind.ArrayEnd then exit DeserializerType.None;
-      if not fAtElementStart then begin 
-        if fTok <> JsonTokenKind.ValueSeperator then 
+      if not fAtElementStart then begin
+        if fTok <> JsonTokenKind.ValueSeperator then
           raise new JsonException(', expected');
         Next;
       end;
-      case fTok of 
+      case fTok of
         JsonTokenKind.False, JsonTokenKind.True, JsonTokenKind.Null,
         JsonTokenKind.Number, JsonTokenKind.String: exit DeserializerType.Simple;
         JsonTokenKind.ArrayStart: exit DeserializerType.List;

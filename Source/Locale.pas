@@ -217,7 +217,7 @@ begin
   if lTemp.Length > 0 then
      lDecimalSep := lTemp[0];
   lTotal := rtl.GetLocaleInfo(fLocaleID, rtl.LOCALE_STHOUSAND, @lBuffer[0], lBuffer.Length);
-  lTemp := String.FromPChar(@lBuffer[0], lTotal).SubString(0, 1);
+  lTemp := String.FromPChar(@lBuffer[0], lTotal).Substring(0, 1);
   if lTemp.Length > 0 then
   lThousandsSep := lTemp[0];
   {$ELSEIF LINUX AND NOT ANDROID}
@@ -237,7 +237,7 @@ begin
   if lTemp <> nil then begin
     var lTempString := String.FromPAnsiChars(lTemp) as not nullable;
     if lTempString.Length > 1 then
-      lCurrency := lTempString.SubString(1);
+      lCurrency := lTempString.Substring(1);
   end;
   {$ELSEIF DARWIN}
   var lData := CFLocaleGetValue(aLocaleID, kCFLocaleDecimalSeparator);

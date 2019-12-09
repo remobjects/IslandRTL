@@ -75,7 +75,7 @@ type
               break;
             end;
           end else
-          if not lPars[j].Type.isAssignableFrom(aArgs[j].GetType)  then begin
+          if not lPars[j].Type.IsAssignableFrom(aArgs[j].GetType)  then begin
             if lPars[j].Type.IsFloat and aArgs[j].GetType.IsIntegerOrFloat then begin
             end else if lPars[j].Type.IsInteger and aArgs[j].GetType.IsInteger then begin
             end else if lPars[j].Type.IsEnum and aArgs[j].GetType.IsInteger then begin
@@ -87,7 +87,7 @@ type
         end;
         if lPars <> nil then begin
           for j: Integer := 0 to lPars.Length -1 do begin
-            if not lPars[j].Type.isAssignableFrom(aArgs[j].GetType)  then begin
+            if not lPars[j].Type.IsAssignableFrom(aArgs[j].GetType)  then begin
               case lPars[j].Type.Code of
                 TypeCodes.SByte: aArgs[j] := Convert.ToSByte(aArgs[j]);
                 TypeCodes.Byte: aArgs[j] := Convert.ToByte(aArgs[j]);
@@ -247,10 +247,10 @@ type
         raise new DynamicInvokeException('No overload with these parameters');
       if MethodFlags.Constructor in lMethod.Flags then begin
         result := InternalCalls.Cast<Object>(DefaultGC.New(lMethod.DeclaringType.RTTI, lMethod.DeclaringType.SizeOfType));
-        lMethod.invoke(result, aArgs);
+        lMethod.Invoke(result, aArgs);
         exit;
       end;
-      exit lMethod.invoke(if lGroup.Inst is &Type then nil else lGroup.Inst, aArgs);
+      exit lMethod.Invoke(if lGroup.Inst is &Type then nil else lGroup.Inst, aArgs);
     end;
 
     method Binary(aLeft, aRight: Object; aOp: Integer): Object;
@@ -268,9 +268,9 @@ type
             var lR := aRight.GetType;
             if lL.IsInteger and lR.IsInteger then
               if lL.IsSigned and lR.IsSigned then
-                exit Convert.Toint64(aLeft) + Convert.ToInt64(aRight)
+                exit Convert.ToInt64(aLeft) + Convert.ToInt64(aRight)
               else
-                exit Convert.ToUint64(aLeft) + Convert.ToUInt64(aRight);
+                exit Convert.ToUInt64(aLeft) + Convert.ToUInt64(aRight);
             if lL.IsIntegerOrFloat and lR.IsIntegerOrFloat then
               exit Convert.ToDouble(aLeft) + Convert.ToDouble(aRight);
             if (lL.Code = TypeCodes.String) or (lR.Code = TypeCodes.String) then
@@ -283,9 +283,9 @@ type
             var lR := aRight.GetType;
             if lL.IsInteger and lR.IsInteger then
               if lL.IsSigned and lR.IsSigned then
-                exit Convert.Toint64(aLeft) - Convert.ToInt64(aRight)
+                exit Convert.ToInt64(aLeft) - Convert.ToInt64(aRight)
               else
-                exit Convert.ToUint64(aLeft) - Convert.ToUInt64(aRight);
+                exit Convert.ToUInt64(aLeft) - Convert.ToUInt64(aRight);
             if lL.IsIntegerOrFloat and lR.IsIntegerOrFloat then
               exit Convert.ToDouble(aLeft) - Convert.ToDouble(aRight);
         end;
@@ -297,9 +297,9 @@ type
             var lR := aRight.GetType;
             if lL.IsInteger and lR.IsInteger then
               if lL.IsSigned and lR.IsSigned then
-                exit Convert.Toint64(aLeft) * Convert.ToInt64(aRight)
+                exit Convert.ToInt64(aLeft) * Convert.ToInt64(aRight)
               else
-                exit Convert.ToUint64(aLeft) * Convert.ToUInt64(aRight);
+                exit Convert.ToUInt64(aLeft) * Convert.ToUInt64(aRight);
             if lL.IsIntegerOrFloat and lR.IsIntegerOrFloat then
               exit Convert.ToDouble(aLeft) * Convert.ToDouble(aRight);
           end;
@@ -312,9 +312,9 @@ type
             var lR := aRight.GetType;
             if lL.IsInteger and lR.IsInteger then
               if lL.IsSigned and lR.IsSigned then
-                exit Convert.Toint64(aLeft) / Convert.ToInt64(aRight)
+                exit Convert.ToInt64(aLeft) / Convert.ToInt64(aRight)
               else
-                exit Convert.ToUint64(aLeft) / Convert.ToUInt64(aRight);
+                exit Convert.ToUInt64(aLeft) / Convert.ToUInt64(aRight);
             if lL.IsIntegerOrFloat and lR.IsIntegerOrFloat then
               exit Convert.ToDouble(aLeft) / Convert.ToDouble(aRight);
           end;
@@ -326,9 +326,9 @@ type
             var lR := aRight.GetType;
             if lL.IsInteger and lR.IsInteger then
               if lL.IsSigned and lR.IsSigned then
-                exit Convert.Toint64(aLeft) mod Convert.ToInt64(aRight)
+                exit Convert.ToInt64(aLeft) mod Convert.ToInt64(aRight)
               else
-                exit Convert.ToUint64(aLeft) mod Convert.ToUInt64(aRight);
+                exit Convert.ToUInt64(aLeft) mod Convert.ToUInt64(aRight);
             if lL.IsIntegerOrFloat and lR.IsIntegerOrFloat then
               exit Convert.ToDouble(aLeft) mod Convert.ToDouble(aRight);
           end;
@@ -340,9 +340,9 @@ type
             var lR := aRight.GetType;
             if lL.IsInteger and lR.IsInteger then
               if lL.IsSigned and lR.IsSigned then
-                exit Convert.Toint64(aLeft) shl Convert.ToInt64(aRight)
+                exit Convert.ToInt64(aLeft) shl Convert.ToInt64(aRight)
               else
-                exit Convert.ToUint64(aLeft) shl Convert.ToUInt64(aRight);
+                exit Convert.ToUInt64(aLeft) shl Convert.ToUInt64(aRight);
           end;
         DynamicBinaryOperator.Shr:
         begin
@@ -351,9 +351,9 @@ type
             var lR := aRight.GetType;
             if lL.IsInteger and lR.IsInteger then
               if lL.IsSigned and lR.IsSigned then
-                exit Convert.Toint64(aLeft) shr Convert.ToInt64(aRight)
+                exit Convert.ToInt64(aLeft) shr Convert.ToInt64(aRight)
               else
-                exit Convert.ToUint64(aLeft) shr Convert.ToUInt64(aRight);
+                exit Convert.ToUInt64(aLeft) shr Convert.ToUInt64(aRight);
           end;
         DynamicBinaryOperator.And:
         begin
@@ -400,9 +400,9 @@ type
             var lR := aRight.GetType;
             if lL.IsInteger and lR.IsInteger then
               if lL.IsSigned and lR.IsSigned then
-                exit Convert.Toint64(aLeft) < Convert.ToInt64(aRight)
+                exit Convert.ToInt64(aLeft) < Convert.ToInt64(aRight)
               else
-                exit Convert.ToUint64(aLeft) < Convert.ToUInt64(aRight);
+                exit Convert.ToUInt64(aLeft) < Convert.ToUInt64(aRight);
             if lL.IsIntegerOrFloat and lR.IsIntegerOrFloat then
               exit Convert.ToDouble(aLeft) < Convert.ToDouble(aRight);
             if (lL.Code = TypeCodes.String) or (lR.Code = TypeCodes.String) then
@@ -414,9 +414,9 @@ type
             var lR := aRight.GetType;
             if lL.IsInteger and lR.IsInteger then
               if lL.IsSigned and lR.IsSigned then
-                exit Convert.Toint64(aLeft) >= Convert.ToInt64(aRight)
+                exit Convert.ToInt64(aLeft) >= Convert.ToInt64(aRight)
               else
-                exit Convert.ToUint64(aLeft) >= Convert.ToUInt64(aRight);
+                exit Convert.ToUInt64(aLeft) >= Convert.ToUInt64(aRight);
             if lL.IsIntegerOrFloat and lR.IsIntegerOrFloat then
               exit Convert.ToDouble(aLeft) >= Convert.ToDouble(aRight);
             if (lL.Code = TypeCodes.String) or (lR.Code = TypeCodes.String) then
@@ -428,9 +428,9 @@ type
             var lR := aRight.GetType;
             if lL.IsInteger and lR.IsInteger then
               if lL.IsSigned and lR.IsSigned then
-                exit Convert.Toint64(aLeft) <= Convert.ToInt64(aRight)
+                exit Convert.ToInt64(aLeft) <= Convert.ToInt64(aRight)
               else
-                exit Convert.ToUint64(aLeft) <= Convert.ToUInt64(aRight);
+                exit Convert.ToUInt64(aLeft) <= Convert.ToUInt64(aRight);
             if lL.IsIntegerOrFloat and lR.IsIntegerOrFloat then
               exit Convert.ToDouble(aLeft) <= Convert.ToDouble(aRight);
             if (lL.Code = TypeCodes.String) or (lR.Code = TypeCodes.String) then
@@ -442,9 +442,9 @@ type
             var lR := aRight.GetType;
             if lL.IsInteger and lR.IsInteger then
               if lL.IsSigned and lR.IsSigned then
-                exit Convert.Toint64(aLeft) < Convert.ToInt64(aRight)
+                exit Convert.ToInt64(aLeft) < Convert.ToInt64(aRight)
               else
-                exit Convert.ToUint64(aLeft) > Convert.ToUInt64(aRight);
+                exit Convert.ToUInt64(aLeft) > Convert.ToUInt64(aRight);
             if lL.IsIntegerOrFloat and lR.IsIntegerOrFloat then
               exit Convert.ToDouble(aLeft) > Convert.ToDouble(aRight);
             if (lL.Code = TypeCodes.String) or (lR.Code = TypeCodes.String) then
@@ -456,9 +456,9 @@ type
             var lR := aRight.GetType;
             if lL.IsInteger and lR.IsInteger then
               if lL.IsSigned and lR.IsSigned then
-                exit Convert.Toint64(aLeft) = Convert.ToInt64(aRight)
+                exit Convert.ToInt64(aLeft) = Convert.ToInt64(aRight)
               else
-                exit Convert.ToUint64(aLeft) = Convert.ToUInt64(aRight);
+                exit Convert.ToUInt64(aLeft) = Convert.ToUInt64(aRight);
             if lL.IsIntegerOrFloat and lR.IsIntegerOrFloat then
               exit Convert.ToDouble(aLeft) = Convert.ToDouble(aRight);
             if (lL.Code in [TypeCodes.Char, TypeCodes.String]) or (lR.Code in [TypeCodes.Char, TypeCodes.String]) then
@@ -472,9 +472,9 @@ type
             var lR := aRight.GetType;
             if lL.IsInteger and lR.IsInteger then
               if lL.IsSigned and lR.IsSigned then
-                exit Convert.Toint64(aLeft) <> Convert.ToInt64(aRight)
+                exit Convert.ToInt64(aLeft) <> Convert.ToInt64(aRight)
               else
-                exit Convert.ToUint64(aLeft) <> Convert.ToUInt64(aRight);
+                exit Convert.ToUInt64(aLeft) <> Convert.ToUInt64(aRight);
             if lL.IsIntegerOrFloat and lR.IsIntegerOrFloat then
               exit Convert.ToDouble(aLeft) <> Convert.ToDouble(aRight);
             if (lL.Code in [TypeCodes.Char, TypeCodes.String]) or (lR.Code in [TypeCodes.Char, TypeCodes.String]) then

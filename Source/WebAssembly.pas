@@ -282,7 +282,7 @@ type
 
     method GetMember(aName: String; aGetFlags: Integer; aArgs: array of Object): Object;
     begin
-      if (aArgs.Length = 1) and (not String.IsNullOrempty(aName)) then begin
+      if (aArgs.Length = 1) and (not String.IsNullOrEmpty(aName)) then begin
         var lNew := GetMember(aName, 0, []);
         if (aArgs[0] is String) and not Int32.TryParse(String(aArgs[0]), out var dummy) then
           exit EcmaScriptObject(lNew).Items[String(aArgs[0])]
@@ -297,7 +297,7 @@ type
 
     method SetMember(aName: String; aGetFlags: Integer; aArgs: array of Object): Object;
     begin
-      if (aArgs.Length = 2) and (not String.IsNullOrempty(aName)) then begin
+      if (aArgs.Length = 2) and (not String.IsNullOrEmpty(aName)) then begin
         var lNew := GetMember(aName, 0, []);
         if (aArgs[0] is String) and not Int32.TryParse(String(aArgs[0]), out var dummy) then
           EcmaScriptObject(lNew).Items[String(aArgs[0])] := aArgs[1]

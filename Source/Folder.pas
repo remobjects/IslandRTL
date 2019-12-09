@@ -75,7 +75,7 @@ type
       if hFind = rtl.INVALID_HANDLE_VALUE then
         exit lResult;
       repeat
-        if FileUtils.isFile(find.dwFileAttributes) then
+        if FileUtils.IsFile(find.dwFileAttributes) then
           lResult.Add(new File(Path.Combine(FullName,String.FromPChar(@find.cFileName[0]))));
       until (not rtl.FindNextFileW(hFind, @find));
       {$ELSEIF POSIX}
@@ -95,7 +95,7 @@ type
           try
             var statbuf: rtl.__struct_stat;
             if rtl.fstat(ffd,@statbuf) <> 0 then continue;
-            if FileUtils.isFile(statbuf.st_mode) then lResult.Add(new File(Path.Combine(FullName,fn)));
+            if FileUtils.IsFile(statbuf.st_mode) then lResult.Add(new File(Path.Combine(FullName,fn)));
           finally
             rtl.close(ffd);
           end;
@@ -121,7 +121,7 @@ type
       if hFind = rtl.INVALID_HANDLE_VALUE then
         exit lResult;
       repeat
-        if FileUtils.isFolder(find.dwFileAttributes) then begin
+        if FileUtils.IsFolder(find.dwFileAttributes) then begin
           var fn := String.FromPChar(@find.cFileName[0]);
           // skip `.` and `..`
           if (fn='.') or (fn='..') then continue;
@@ -146,7 +146,7 @@ type
           try
             var statbuf: rtl.__struct_stat;
             if rtl.fstat(ffd,@statbuf) <> 0 then continue;
-            if FileUtils.isFolder(statbuf.st_mode) then lResult.Add(new Folder(Path.Combine(FullName,fn)));
+            if FileUtils.IsFolder(statbuf.st_mode) then lResult.Add(new Folder(Path.Combine(FullName,fn)));
           finally
             rtl.close(ffd);
           end;
