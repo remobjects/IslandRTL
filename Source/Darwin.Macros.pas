@@ -50,9 +50,9 @@ function htons(n: UInt16): UInt16; inline; public;
 function ntohl(n: UInt32): UInt32; inline; public;
 function htonl(n: UInt32): UInt32; inline; public;
 
-function _OSSwapInt32(a: uint32_t): uint32_t;public;
-function _OSSwapInt16(a: uint16_t): uint16_t;public;
-function _OSSwapInt64(a: uint64_t): uint64_t;public;
+function _OSSwapInt32(a: uint32_t): uint32_t; public;
+function _OSSwapInt16(a: uint16_t): uint16_t; public;
+function _OSSwapInt64(a: uint64_t): uint64_t; public;
 
 function __builtin_constant_p(o: id): Boolean; inline; public;
 

@@ -83,7 +83,7 @@ type
     end;
   end;
 
-  method __elements_Default_AddRef(aObj: Object; var aRefCount: Integer; var aGCHandle: GCHandle): ULONG;public;
+  method __elements_Default_AddRef(aObj: Object; var aRefCount: Integer; var aGCHandle: GCHandle): ULONG; public;
   begin
     result := InternalCalls.Increment(var aRefCount) + 1;
     if result = 1 then begin
@@ -91,7 +91,7 @@ type
       if InternalCalls.CompareExchange(var ^NativeInt(@aGCHandle)^, ^NativeInt(@lHandle)^, 0) <> 0 then lHandle.Dispose;
     end;
   end;
-  method __elements_Default_Release(aObj: Object; var aRefCount: Integer; var aGCHandle: GCHandle): ULONG;public;
+  method __elements_Default_Release(aObj: Object; var aRefCount: Integer; var aGCHandle: GCHandle): ULONG; public;
   begin
     result := InternalCalls.Decrement(var aRefCount) - 1;
     if result = 0 then begin
@@ -103,7 +103,7 @@ type
 
   // Bridge methods; These call
   [CallingConvention(CallingConvention.Stdcall)]
-  method IUnknown_VMTImpl_QueryInterface(aSelf: ^ElementsCOMInterface; riid: ^rtl.GUID; ppvObject: ^^Void): rtl.HRESULT;public;static;
+  method IUnknown_VMTImpl_QueryInterface(aSelf: ^ElementsCOMInterface; riid: ^rtl.GUID; ppvObject: ^^Void): rtl.HRESULT; public;static;
   begin
     var g := ^Guid(riid)^;
     if ICOMInterface(^ElementsCOMInterface(aSelf)^.Object).QueryInterface(var g, out ppvObject^) then

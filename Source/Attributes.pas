@@ -286,9 +286,9 @@ type
       SideEffects := aSideEffects;
       Align := aAlign;
     end;
-    property Asm: String;readonly;
-    property Constraints: String;readonly;
-    property SideEffects: Boolean;readonly;
+    property Asm: String; readonly;
+    property Constraints: String; readonly;
+    property SideEffects: Boolean; readonly;
     property Align: Boolean; readonly;
   end;
 
@@ -320,7 +320,7 @@ type
     begin
       Define := aDefine;
     end;
-    property Define: String;readonly;
+    property Define: String; readonly;
   end;
 
   [AttributeUsage(AttributeTargets.Assembly)]

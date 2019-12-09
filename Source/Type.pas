@@ -1323,7 +1323,7 @@ type
     InterfaceVMT := nil,
     Hash1 := Int64($cbb97d02e4749c92),
     Hash2 := Int64($b48e4f27c4374719)
-  );public;
+  ); public;
   [SymbolName("__cocoainterface_rtti"), Used, StaticallyInitializedField]
   CocoaClassRTTI: IslandTypeInfo := new IslandTypeInfo (
     Ext := @CococaClassExt,
@@ -1332,7 +1332,7 @@ type
     InterfaceVMT := nil,
     Hash1 := Int64($49987f1cfb738353),
     Hash2 := Int64($733406f403e14ced)
-  );public;
+  ); public;
   [SymbolName("__swiftinterface_rtti"), Used, StaticallyInitializedField]
   SwiftClassRTTI: IslandTypeInfo := new IslandTypeInfo (
     Ext := @SwiftClasseExt,
@@ -1341,7 +1341,7 @@ type
     InterfaceVMT := nil,
     Hash1 := Int64($62eb5fa6785f90c9),
     Hash2 := Int64($3599d954c1778e2f)
-  );public;
+  ); public;
   [StaticallyInitializedField]
   ComInterfaceExt: IslandExtTypeInfo := new IslandExtTypeInfo(
     &Flags := IslandTypeFlags.ComInterface,

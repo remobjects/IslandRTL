@@ -375,11 +375,11 @@ end;
 [SymbolName('__stack_chk_guard')]
 var __stack_chk_guard: ^Void := ^Void($DEADBEEF);  public;
 [SymbolNameAttribute('__sprintf_chk')]
-method __sprintf_chk;public; begin end;
+method __sprintf_chk; public; begin end;
 [SymbolNameAttribute('__snprintf_chk')]
-method _snprintf_chk;public; begin end;
+method _snprintf_chk; public; begin end;
 [SymbolNameAttribute('__vsnprintf_chk')]
-method __vsnprintf_chk;public; begin end;
+method __vsnprintf_chk; public; begin end;
 {$ENDIF}
 
 [SymbolName("__builtin_inf")]

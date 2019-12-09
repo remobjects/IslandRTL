@@ -19,13 +19,16 @@ type
   end;
 
   atexitfunc = public procedure();
+
   atexitrec = record
   public
     func: atexitfunc;
     next: ^atexitrec;
   end;
+
   ExternalCalls = public static class
   private
+
     class var atexitlist: ^atexitrec; assembly;
     class var processheap: rtl.HANDLE;
     class var fModuleHandle: rtl.HMODULE; assembly;
@@ -34,6 +37,7 @@ type
       if fModuleHandle = nil then fModuleHandle := rtl.GetModuleHandleW(nil);
       exit fModuleHandle;
     end;
+
   public
 
     [SymbolName('_beginthread')]
@@ -50,13 +54,13 @@ type
           lVal.Item1(lVal.Item2);
         end, InternalCalls.Cast(lStart), 0, nil);
     end;
-  {$IFDEF I386}
+
+    {$IFDEF I386}
     [SymbolName(#1'__allmul'), CallingConvention(CallingConvention.Stdcall)]
     class method __allmul(aVal: rtl.ULONGLONG; aVal2: rtl.ULONGLONG): rtl.LONGLONG;
     begin
       exit aVal * aVal2;
     end;
-
 
     [SymbolName(#1'__allshl'), CallingConvention(CallingConvention.Stdcall), InlineAsmAttribute("
     pushl %ecx
@@ -100,6 +104,7 @@ type
       exit aVal shr Byte(aVal2);
     end;
     {$ENDIF}
+
     [SymbolName('strstr')]
     class method strstr(str1, str2: ^AnsiChar): ^AnsiChar;
     begin
@@ -120,18 +125,19 @@ type
       end;
       exit nil;
     end;
+
     [SymbolName('__GSHandlerCheck')]
     class method _GSHandlerCheck;
     begin
       raise new NotSupportedException;
     end;
 
-
     [SymbolName('fclose')]
     class method fclose(afn: FILEHANDLE);
     begin
       afn.Dispose();
     end;
+
     [SymbolName('__stdio_common_vfprintf')]
     class method ___stdio_common_vfprintf(
     _Options: UInt64;
@@ -147,14 +153,7 @@ type
     class method __security_check_cookie(_StackCookie: UIntPtr);  external;
 
     [SymbolName('__stdio_common_vsnprintf_s')]
-    class method __stdio_common_vsnprintf_s(
-    _Options: UInt64;
-    _Buffer: ^AnsiChar;
-    _BufferCount: IntPtr;
-    _MaxCount: IntPtr;
-    _Format: ^AnsiChar;
-    _Locale: ^Void;
-    _ArgList: ^Void): Integer;
+    class method __stdio_common_vsnprintf_s( _Options: UInt64; _Buffer: ^AnsiChar; _BufferCount: IntPtr; _MaxCount: IntPtr; _Format: ^AnsiChar; _Locale: ^Void; _ArgList: ^Void): Integer;
     begin
       memcpy(_Buffer, _Format, Math.Min(ExternalCalls.strlen(_Format), Integer(_BufferCount)));
     end;
@@ -162,7 +161,6 @@ type
     [SymbolName('__acrt_iob_func')]
     class method __acrt_iob_func(a: Integer): FILEHANDLE;
     begin
-
       case a of
         0: exit GCHandle.Allocate(new FileStream(rtl.GetStdHandle(rtl.STD_INPUT_HANDLE), FileAccess.Read));
         1: exit GCHandle.Allocate(new FileStream(rtl.GetStdHandle(rtl.STD_OUTPUT_HANDLE), FileAccess.Write));
@@ -196,10 +194,8 @@ type
       tmdest^.tm_yday := lD / DateTime.TicksPerDay;
     end;
 
-
     [SymbolName('ferror')]
     class method ferror: Integer; empty;
-
 
     [SymbolName('fopen')]
     class method fopen(afn: ^AnsiChar; aMode: ^AnsiChar): FILEHANDLE;
@@ -237,7 +233,6 @@ type
       exit FileStream(aFS.Target).Read(aPtr, aSize * aCount);
     end;
 
-
     [SymbolName('fgets')]
     class method fgets(aStr: ^Byte; aNum: Integer; aFS: GCHandle): ^Byte;
     begin
@@ -249,7 +244,6 @@ type
 
       exit aStr;
     end;
-
 
     [SymbolName('fseek')]
     class method fseek(aFS: GCHandle; aOffset: IntPtr; aOrg: Integer): IntPtr;
@@ -272,7 +266,6 @@ type
       if fRan = nil then fRan := new Random();
       exit fRan.Random();
     end;
-
 
     [SymbolName(#1'@__security_check_cookie@4'), CallingConvention(CallingConvention.Stdcall), Inlineasm('ret', '', false, false)]
     class method __security_check_cookie(v: Integer); external;
@@ -305,13 +298,7 @@ type
     [SymbolName('_fltused'), Used]
     class var _fltused: Integer;
     [SymbolName('_beginthreadex')]
-    class method _beginthreadex(
-    security: ^Void;
-    stack_size: Int32;
-    proc: rtl.PTHREAD_START_ROUTINE;
-    arglist: ^Void;
-    initflag: Cardinal;
-    thrdaddr: rtl.LPDWORD): rtl.HANDLE;
+    class method _beginthreadex( security: ^Void; stack_size: Int32; proc: rtl.PTHREAD_START_ROUTINE; arglist: ^Void; initflag: Cardinal; thrdaddr: rtl.LPDWORD): rtl.HANDLE;
     [SymbolName('_endthreadex')]
     class method _endthreadex(aval: Cardinal);
     [SymbolName('atexit')]
@@ -379,19 +366,17 @@ type
     {$IFDEF _WIN64}
     [SymbolName('_elements_exception_handler'), DisableInliningAttribute] // 32bits windows only!!
     method ExceptionHandler(arec: ^rtl.EXCEPTION_RECORD; EstablisherFrame: UInt64; context: rtl.PCONTEXT; dispatcher: rtl.PDISPATCHER_CONTEXT ): Integer;
-      {$ELSE}
+    {$ELSE}
     [SymbolName('_elements_exception_handler'), CallingConvention(CallingConvention.Stdcall), DisableInliningAttribute] // 32bits windows only!!
-    method ExceptionHandler([InReg]inmsvcinfo: ^MSVCExceptionInfo; arec: ^rtl.EXCEPTION_RECORD; aOrgregFrame: ^ElementsRegistrationFrame;
-    context: rtl.PCONTEXT; dispatcher: ^Void): Integer;
-  {$ENDIF}
+    method ExceptionHandler([InReg]inmsvcinfo: ^MSVCExceptionInfo; arec: ^rtl.EXCEPTION_RECORD; aOrgregFrame: ^ElementsRegistrationFrame; context: rtl.PCONTEXT; dispatcher: ^Void): Integer;
+    {$ENDIF}
+
     [SymbolName('ElementsRaiseException'), DllExport]
     class method RaiseException(aRaiseAddress: ^Void; aRaiseFrame: ^Void; aRaiseObject: Object);
 
     class property ModuleHandle: rtl.HMODULE read fModuleHandle;
 
-
     const ElementsExceptionCode = $E0428819;
-
 
     [SymbolName('strcmp')]
     class method strcmp(a, b: ^AnsiChar): Integer;
@@ -406,6 +391,7 @@ type
         inc(b);
       end;
     end;
+
     [SymbolName('strncmp')]
     class method strncmp(a, b: ^AnsiChar; num: NativeInt): Integer;
     begin
@@ -455,6 +441,7 @@ type
 
     class var fRandom: Random; volatile;
     class var fRandomLock: Integer;
+
     [SymbolName('rand_s')]
     class method rand_s(out x: UInt32): Integer;
     begin
@@ -468,19 +455,23 @@ type
       Utilities.SpinLockExit(var fRandomLock);
       exit 0;
     end;
+
     [SymbolName('_byteswap_ulong')]
     class method _byteswap_ulong(i: UInt32): UInt32;
     begin
       exit (i shl 24) or (i shr 24) or ((i shr 8) and $FF00) or ((i shl 8) and $FF0000);
     end;
+
     [SymbolName('_byteswap_ushort')]
     class method _byteswap_ushort(i: UInt16): UInt16;
     begin
       exit (i shl 8) or (i shr 8);
     end;
+
   end;
-{$G+}
-{$HIDE H7}{$HIDE H6}
+
+  {$G+}
+  {$HIDE H7}{$HIDE H6}
   __struct_tm = public record
   public
     tm_sec,
@@ -493,14 +484,16 @@ type
     tm_yday,
     tm_isdst: Integer;
   end;
-{$SHOW H7}{$SHOW H6}
+  {$SHOW H7}{$SHOW H6}
 
   DllMainType = public method (aModule: rtl.HMODULE; aReason: rtl.DWORD; aReserved: ^Void): Boolean;
+
   ThreadRec = public class
   public
     property Call: rtl.PTHREAD_START_ROUTINE;
     property Arg: ^Void;
   end;
+
   ElementsRegistrationFrame = public record
   public
     ESP: ^Void;
@@ -508,6 +501,7 @@ type
     Handler: ^Void;
     TryLevel: Cardinal;
   end;
+
   MSVCExceptionInfo = public record
   public
     MagicNumber: UInt32; // 429065506
@@ -521,7 +515,7 @@ type
     UnwindHelp: UInt32;
     ESTypeList: ^Void;
     EHFlags: Int32;
-   {$ENDIF}
+    {$ENDIF}
     // From LLVM
     //   uint32_t           IPMapEntries; // always 0 for x86
     //   IPToStateMapEntry *IPToStateMap; // always 0 for x86
@@ -532,18 +526,20 @@ type
     // EHFlags & 1 -> Synchronous exceptions only, no async exceptions.
     // EHFlags & 2 -> ???
     // EHFlags & 4 -> The function is noexcept(true), unwinding can't continue.
-
   end;
+
   MSVCIpToSate = public record
   public
     IP: UInt32;
     State: Integer;
   end;
+
   MSVCUnwindMap = public record
   public
     ToState: Int32;
     Cleanup: {$IFDEF _WIN64}Int32{$ELSE}MSVCCleanup{$ENDIF};
   end;
+
   MSVCTryMap = public record
   public
     TryLow,
@@ -552,12 +548,15 @@ type
     NumCatches: Int32;
     HandlerType: {$IFDEF _WIN64}Int32{$ELSE}^MSVCHandlerType{$ENDIF};
   end;
+
   ElementsExceptionType = public record
   public
     &Type: ^Void;
     &Filter: ElementsFilter;
   end;
+
   ElementsFilter = public function(FP: ^Void): Boolean;
+
   MSVCHandlerType = public record
   public
     Adjectives: Int32; // from the exception record
@@ -566,6 +565,7 @@ type
     Handler: {$IFDEF _WIN64}Int32{$ELSE}MSVCCleanup{$ENDIF};
     {$IFDEF _WIN64}ParentFrameOffset: Int32;{$ENDIF}
   end;
+
   MSVCCleanup = public procedure();
 
   method HResultCheck(aVal: rtl.HRESULT); public;
@@ -574,98 +574,95 @@ type
     raise new ArgumentException('HResult error: '+aVal);
   end;
 
-
   [SymbolName('__elements_entry_point'), &Weak]
   method UserEntryPoint(args: array of String): Integer; external;
 
   [SymbolName('__elements_dll_main'), &Weak]
   method DllMain(aModule: rtl.HMODULE; aReason: rtl.DWORD; aReserved: ^Void): Boolean; external;
 
-  // This is needed by anything msvc compiled; it's the offset in fs for the tls array
-  var
+// This is needed by anything msvc compiled; it's the offset in fs for the tls array
+var
   [Used, StaticallyInitializedField]
-  _dllmain: DllMainType := @DllMain;public;
+  _dllmain: DllMainType := @DllMain; public;
   [SymbolName('_tls_index'), Used, StaticallyInitializedField]
   _tls_index: Cardinal; public;
   [SectionName('.tls'), SymbolName('_tls_start'), StaticallyInitializedField]
-  _tls_start: NativeInt := 0;public;
+  _tls_start: NativeInt := 0; public;
   [SectionName('.tls$ZZZ'), SymbolName('_tls_end'), StaticallyInitializedField]
   _tls_end: NativeInt := 0; public;
 
   [SectionName(".CRT$XLA"), SymbolName('__xl_a'), StaticallyInitializedField]
-  __xl_a: rtl.PIMAGE_TLS_CALLBACK := nil;public;
+  __xl_a: rtl.PIMAGE_TLS_CALLBACK := nil; public;
   [SectionName(".CRT$XLEL"), SymbolName('__elements_tls_callback'), Used(), StaticallyInitializedField]
-  __elements_tls_callback: rtl.PIMAGE_TLS_CALLBACK := @elements_tls_callback;public;
+  __elements_tls_callback: rtl.PIMAGE_TLS_CALLBACK := @elements_tls_callback; public;
   [SectionName(".CRT$XLZ"), SymbolName('__xl_z'), StaticallyInitializedField]
-  __xl_z: rtl.PIMAGE_TLS_CALLBACK := nil;public;
+  __xl_z: rtl.PIMAGE_TLS_CALLBACK := nil; public;
 
   [SectionName('.rdata$T'), SymbolName('_tls_used'), Used, StaticallyInitializedField]
   _tls_used: {$IFDEF _WIN64}rtl.IMAGE_TLS_DIRECTORY64{$ELSE}rtl.IMAGE_TLS_DIRECTORY {$ENDIF}:=
-  new {$IFDEF _WIN64}rtl.IMAGE_TLS_DIRECTORY64{$ELSE}rtl.IMAGE_TLS_DIRECTORY {$ENDIF}(
-  StartAddressOfRawData := NativeUInt(@_tls_start),
-  EndAddressOfRawData := NativeUInt (@_tls_end),
-  AddressOfIndex := NativeUInt(@_tls_index),
-  AddressOfCallBacks := NativeInt(^NativeInt(@__xl_a)+1),
-  SizeOfZeroFill := 0
-  ); readonly;public;
-{$IFDEF _WIN64}
-[Used, SymbolName('_load_config_used'), StaticallyInitializedField]
-_load_config_used: rtl.IMAGE_LOAD_CONFIG_DIRECTORY :=
-new rtl.IMAGE_LOAD_CONFIG_DIRECTORY(
-size := sizeOf(rtl.IMAGE_LOAD_CONFIG_DIRECTORY),
-SecurityCookie := UIntPtr(^UIntPtr(@__security_cookie)),
-//GuardCFCheckFunctionPointer := UIntPtr(^UIntPtr(@__guard_check_icall_fptr)),
-//GuardCFDispatchFunctionPointer := UIntPtr(^UIntPtr(@__guard_dispatch_icall_fptr)),
-GuardCFFunctionTable := UIntPtr(^UIntPtr(@__guard_fids_table)),
-GuardCFFunctionCount := UIntPtr(^UIntPtr(@__guard_fids_count)),
-//GuardFlags := UIntPtr(^UIntPtr(@__guard_flags)),
-GuardAddressTakenIatEntryTable := UIntPtr(^UIntPtr(@__guard_iat_table)),
-GuardAddressTakenIatEntryCount := UIntPtr(^UIntPtr(@__guard_iat_count)),
-GuardLongJumpTargetTable := UIntPtr(^UIntPtr(@__guard_longjmp_table)),
-GuardLongJumpTargetCount := UIntPtr(^UIntPtr(@__guard_longjmp_count))
-);readonly;public;
-{$else}
-[Used, SymbolName('_load_config_used'), StaticallyInitializedField]
-_load_config_used: rtl.IMAGE_LOAD_CONFIG_DIRECTORY :=
-new rtl.IMAGE_LOAD_CONFIG_DIRECTORY(
-Size := sizeOf(rtl.IMAGE_LOAD_CONFIG_DIRECTORY),
-SecurityCookie := UIntPtr(^UIntPtr(@__security_cookie)),
-SEHandlerTable := UIntPtr(^UIntPtr(@__safe_se_handler_table)),
-SEHandlerCount := UIntPtr(^UIntPtr(@__safe_se_handler_count)),
-//GuardCFCheckFunctionPointer := UIntPtr(^UIntPtr(@__guard_check_icall_fptr)),
-GuardCFDispatchFunctionPointer := 0, // amd64: __guard_dispatch_icall_fptr
-GuardCFFunctionTable := UIntPtr(^UIntPtr(@__guard_fids_table)),
-GuardCFFunctionCount := UIntPtr(^UIntPtr(@__guard_fids_count)),
-//GuardFlags := UIntPtr(^UIntPtr(@__guard_flags)),
-GuardAddressTakenIatEntryTable := UIntPtr(^UIntPtr(@__guard_iat_table)),
-GuardAddressTakenIatEntryCount := UIntPtr(^UIntPtr(@__guard_iat_count)),
-GuardLongJumpTargetTable := UIntPtr(^UIntPtr(@__guard_longjmp_table)),
-GuardLongJumpTargetCount := UIntPtr(^UIntPtr(@__guard_longjmp_count))
-); readonly;public;
-{$ENDIF}
+    new {$IFDEF _WIN64}rtl.IMAGE_TLS_DIRECTORY64{$ELSE}rtl.IMAGE_TLS_DIRECTORY {$ENDIF}(
+    StartAddressOfRawData := NativeUInt(@_tls_start),
+    EndAddressOfRawData := NativeUInt (@_tls_end),
+    AddressOfIndex := NativeUInt(@_tls_index),
+    AddressOfCallBacks := NativeInt(^NativeInt(@__xl_a)+1 ),
+    SizeOfZeroFill := 0
+    ); readonly; public;
 
-[SymbolName('__security_cookie'), StaticallyInitializedField] var __security_cookie: Integer := $12345678;
-//[SymbolName('__guard_check_icall_fptr')] var __guard_check_icall_fptr: Integer; external;
-{$IFDEF _WIN64}
-//[SymbolName('__guard_dispatch_icall_fptr')] var __guard_dispatch_icall_fptr: Integer; external;
-{$ELSE}
-[SymbolName('__safe_se_handler_table'), StaticallyInitializedField] var __safe_se_handler_table: Integer; external;
-[SymbolName('__safe_se_handler_count'), StaticallyInitializedField] var __safe_se_handler_count: Integer; external;
-{$ENDIF}
+  {$IFDEF _WIN64}
+  [Used, SymbolName('_load_config_used'), StaticallyInitializedField]
+  _load_config_used: rtl.IMAGE_LOAD_CONFIG_DIRECTORY :=
+    new rtl.IMAGE_LOAD_CONFIG_DIRECTORY(
+    size := sizeOf(rtl.IMAGE_LOAD_CONFIG_DIRECTORY),
+    SecurityCookie := UIntPtr(^UIntPtr(@__security_cookie)),
+    //GuardCFCheckFunctionPointer := UIntPtr(^UIntPtr(@__guard_check_icall_fptr)),
+    //GuardCFDispatchFunctionPointer := UIntPtr(^UIntPtr(@__guard_dispatch_icall_fptr)),
+    GuardCFFunctionTable := UIntPtr(^UIntPtr(@__guard_fids_table)),
+    GuardCFFunctionCount := UIntPtr(^UIntPtr(@__guard_fids_count)),
+    //GuardFlags := UIntPtr(^UIntPtr(@__guard_flags)),
+    GuardAddressTakenIatEntryTable := UIntPtr(^UIntPtr(@__guard_iat_table)),
+    GuardAddressTakenIatEntryCount := UIntPtr(^UIntPtr(@__guard_iat_count)),
+    GuardLongJumpTargetTable := UIntPtr(^UIntPtr(@__guard_longjmp_table)),
+    GuardLongJumpTargetCount := UIntPtr(^UIntPtr(@__guard_longjmp_count))
+    ); readonly; public;
+  {$else}
+  [Used, SymbolName('_load_config_used'), StaticallyInitializedField]
+  _load_config_used: rtl.IMAGE_LOAD_CONFIG_DIRECTORY :=
+    new rtl.IMAGE_LOAD_CONFIG_DIRECTORY(
+    Size := sizeOf(rtl.IMAGE_LOAD_CONFIG_DIRECTORY),
+    SecurityCookie := UIntPtr(^UIntPtr(@__security_cookie)),
+    SEHandlerTable := UIntPtr(^UIntPtr(@__safe_se_handler_table)),
+    SEHandlerCount := UIntPtr(^UIntPtr(@__safe_se_handler_count)),
+    //GuardCFCheckFunctionPointer := UIntPtr(^UIntPtr(@__guard_check_icall_fptr)),
+    GuardCFDispatchFunctionPointer := 0, // amd64: __guard_dispatch_icall_fptr
+    GuardCFFunctionTable := UIntPtr(^UIntPtr(@__guard_fids_table)),
+    GuardCFFunctionCount := UIntPtr(^UIntPtr(@__guard_fids_count)),
+    //GuardFlags := UIntPtr(^UIntPtr(@__guard_flags)),
+    GuardAddressTakenIatEntryTable := UIntPtr(^UIntPtr(@__guard_iat_table)),
+    GuardAddressTakenIatEntryCount := UIntPtr(^UIntPtr(@__guard_iat_count)),
+    GuardLongJumpTargetTable := UIntPtr(^UIntPtr(@__guard_longjmp_table)),
+    GuardLongJumpTargetCount := UIntPtr(^UIntPtr(@__guard_longjmp_count))
+    ); readonly; public;
+  {$ENDIF}
 
+  [SymbolName('__security_cookie'), StaticallyInitializedField] var __security_cookie: Integer := $12345678;
+  //[SymbolName('__guard_check_icall_fptr')] var __guard_check_icall_fptr: Integer; external;
+  {$IFDEF _WIN64}
+  //[SymbolName('__guard_dispatch_icall_fptr')] var __guard_dispatch_icall_fptr: Integer; external;
+  {$ELSE}
+  [SymbolName('__safe_se_handler_table'), StaticallyInitializedField] var __safe_se_handler_table: Integer; external;
+  [SymbolName('__safe_se_handler_count'), StaticallyInitializedField] var __safe_se_handler_count: Integer; external;
+  {$ENDIF}
 
-[SymbolName('__guard_fids_table')] var __guard_fids_table: Integer; external;
-[SymbolName('__guard_fids_count')] var __guard_fids_count: Integer; external;
-//[SymbolName('__guard_flags')] var __guard_flags: Integer; external;
-[SymbolName('__guard_iat_table')] var __guard_iat_table: Integer; external;
-[SymbolName('__guard_iat_count')] var __guard_iat_count: Integer; external;
-[SymbolName('__guard_longjmp_table')] var __guard_longjmp_table: Integer; external;
-[SymbolName('__guard_longjmp_count')] var __guard_longjmp_count: Integer; external;
-
-
+  [SymbolName('__guard_fids_table')] var __guard_fids_table: Integer; external;
+  [SymbolName('__guard_fids_count')] var __guard_fids_count: Integer; external;
+  //[SymbolName('__guard_flags')] var __guard_flags: Integer; external;
+  [SymbolName('__guard_iat_table')] var __guard_iat_table: Integer; external;
+  [SymbolName('__guard_iat_count')] var __guard_iat_count: Integer; external;
+  [SymbolName('__guard_longjmp_table')] var __guard_longjmp_table: Integer; external;
+  [SymbolName('__guard_longjmp_count')] var __guard_longjmp_count: Integer; external;
 
 [SymbolName('__elements_tls_callback_method'), Used, CallingConvention(CallingConvention.Stdcall)]
-method elements_tls_callback(aHandle: ^Void; aReason: rtl.DWORD; aReserved: ^Void);public;
+method elements_tls_callback(aHandle: ^Void; aReason: rtl.DWORD; aReserved: ^Void); public;
 [SymbolName('main')]
 method main: Integer;
 
@@ -680,10 +677,8 @@ method DllMainCRTStartup(aModule: rtl.HMODULE; aReason: rtl.DWORD; aReserved: ^V
 
 method ElementsThreadHelper(aParam: ^Void): rtl.DWORD;
 
-
 method CheckForIOError(value: Boolean);
 method CheckForLastError(aMessage: String := '');
-
 
 method malloc(size: NativeInt): ^Void; inline;
 begin
@@ -699,8 +694,6 @@ method free(v: ^Void);inline;
 begin
   ExternalCalls.free(v);
 end;
-
-
 
 implementation
 
@@ -1458,6 +1451,5 @@ type
       end;
     end;
   end;
-
 
 end.
