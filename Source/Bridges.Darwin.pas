@@ -12,18 +12,18 @@ type
   CocoaObject = public Foundation.NSObject;
   CocoaString = public Foundation.NSString;
   CocoaException = public Foundation.NSException;
-  SwiftObject = public Foundation.NSObject; // hack for now
+  [Swift] SwiftObject = public class end;
   SwiftException = public Foundation.NSException; // hack for now
 
-  RemObjects.Elements.System.Island.Object = public System.Object;
-  RemObjects.Elements.System.Island.String = public System.String;
-  RemObjects.Elements.System.Island.Exception = public System.Exception;
-  RemObjects.Elements.System.Cocoa.Object = public Foundation.NSObject;
-  RemObjects.Elements.System.Cocoa.String = public Foundation.NSString;
-  RemObjects.Elements.System.Cocoa.Exception = public Foundation.NSException;
-  RemObjects.Elements.System.Swift.Object = public Foundation.NSObject; // hack for now
-  RemObjects.Elements.System.Swift.String = public Foundation.NSString; // hack for now
-  RemObjects.Elements.System.Swift.Exception = public Foundation.NSException; // hack for now
+  RemObjects.Elements.System.Island.Object = public IslandObject;
+  RemObjects.Elements.System.Island.String = public IslandString;
+  RemObjects.Elements.System.Island.Exception = public IslandException;
+  RemObjects.Elements.System.Cocoa.Object = public CocoaObject;
+  RemObjects.Elements.System.Cocoa.String = public CocoaString;
+  RemObjects.Elements.System.Cocoa.Exception = public CocoaException;
+  RemObjects.Elements.System.Swift.Object = public SwiftObject;
+  RemObjects.Elements.System.Swift.String = public SwiftString;
+  RemObjects.Elements.System.Swift.Exception = public SwiftException;
 
   Swift.Comparable = public interface // hack for now
   end;
