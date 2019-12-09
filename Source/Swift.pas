@@ -496,6 +496,17 @@ type
     begin
       exit aVal.ToString;
     end;
+
+    class operator implicit(aVal: CocoaString): SwiftString;
+    begin
+      exit new SwiftString(aVal);
+    end;
+
+    class operator implicit(aVal: SwiftString): CocoaString;
+    begin
+      exit aVal.ToString;
+    end;
+
   end;
 
   SwiftMetadataResponse = public record
