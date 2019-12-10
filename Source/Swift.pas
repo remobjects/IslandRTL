@@ -408,6 +408,7 @@ type
   ); readonly;
 
 type
+  //[Swift]
   SwiftUTF16View = record
   public
   {$HIDE H8}
@@ -431,6 +432,7 @@ type
     class method UTF16GetChar(aIndex: Int64; aVal1: UInt64; aVal2: ^Void): Char; external;
   end;
 
+  //[Swift]
   SwiftString = public record
   private
     _countAndFlagsBits: UInt64;
@@ -470,7 +472,7 @@ type
       end;
     end;
 
-    method ToString: String; override;
+    method ToString: String; 
     begin
       var lView := UTF16View(_countAndFlagsBits, _object);
       var lCount := SwiftUTF16View.UTF16Count(lView._countAndFlagsBits, lView._object);
@@ -526,6 +528,17 @@ type
   SwiftMutatorData = public array[0..31] of Byte;
   SwiftMutatorDispose = procedure(par0: ^SwiftMutatorData; par1: Boolean);
 
+  [AttributeUsage(AttributeTargets.Struct)]
+  SwiftEnumAttribute = public class(Attribute) end;
+
+  [SwiftEnum]
+  SwiftOptional<T> = public record
+  public
+    method none; empty;
+    method some(out aVal: T); empty;
+  end;
+
+  //[Swift]
   SwiftArray<T> = public record
   assembly
     fArray: IntPtr;
@@ -622,6 +635,12 @@ type
     end;
 
   end;
+
+  [DelayLoadDllImport('libswiftCore.dylib', 'swift_getEnumCaseMultiPayload')]
+  method swift_getEnumCaseMultiPayload(aVal: ^Void; aTypeInfo: ^Void): Integer; external;
+
+  [DelayLoadDllImport('libswiftCore.dylib', 'swift_storeEnumTagMultiPayload')]
+  method swift_storeEnumTagMultiPayload(aVal: ^Void; aTypeInfo: ^Void; aEnumVal: Integer); external;
 
   [DelayLoadDllImport('libswiftCore.dylib', '$sS2ayxGycfC'), CallingConvention(CallingConvention.Swift)]
   method SwiftAllocateArray(aType: ^Void): IntPtr; external; assembly;
