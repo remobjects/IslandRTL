@@ -408,7 +408,7 @@ type
   ); readonly;
 
 type
-  [Swift]
+  //[Swift]
   SwiftUTF16View = record
   public
   {$HIDE H8}
@@ -432,7 +432,7 @@ type
     class method UTF16GetChar(aIndex: Int64; aVal1: UInt64; aVal2: ^Void): Char; external;
   end;
 
-  [Swift]
+  //[Swift]
   SwiftString = public record
   private
     _countAndFlagsBits: UInt64;
@@ -538,7 +538,7 @@ type
     method some(out aVal: T); empty;
   end;
 
-  [Swift]
+  //[Swift]
   SwiftArray<T> = public record
   assembly
     fArray: IntPtr;
