@@ -267,12 +267,11 @@ type
       var str:= new StringBuilder(len);
       var pos := aOffset;
       var last := len + aOffset;
+
       // skip BOM
-      if len>2 then begin
-        if (aValue[0] = $EF) and
-           (aValue[1] = $BB) and
-           (aValue[2] = $BF) then pos := 3;
-      end;
+      if len > pos+2 then
+        if (aValue[pos] = $EF) and (aValue[pos+1] = $BB) and (aValue[pos+2] = $BF) then inc(pos, 3);
+
       while pos < last do begin
         var ch := aValue[pos];
         {$REGION 4 bytes Char}

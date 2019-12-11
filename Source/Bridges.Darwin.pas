@@ -232,6 +232,7 @@ type
 
     method ToString: IslandString; override;
     begin
+      //result := coalesce(Swift.CustomStringConvertible(Value):description, Value.GetMetaClass.ToString) as IslandString;
       result := coalesce(Swift.CustomStringConvertible(Value):description, Value.GetType.ToString) as IslandString;
     end;
 
