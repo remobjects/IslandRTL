@@ -64,7 +64,9 @@ type
 
   SwiftType = public record
   public
-    &Type: IntPtr;
+    //&Type: IntPtr;
+
+    property VWT: ^SwiftValueWitnessTable read ^^SwiftValueWitnessTable(@self)[-1];
   end;
 
   SwiftRefcounted = public record
@@ -112,6 +114,189 @@ type
     WitnessTable: ^^Byte;
   end;
 
+  SwiftEnum = public record
+  private
+    fType: ^SwiftType;
+    fData: ^Void;
+  public
+    property &Type: ^SwiftType;
+    constructor(aType: ^SwiftType);
+    begin
+      fType := aType;
+    end;
+
+    property Tag: Integer read if fData = nil then -1 else fType^.VWT^.getenumTag(IntPtr(fData), fType);
+    property TagValue: ^Void read ^Void(fData);
+
+    method SetValueWithTag(aValue: ^Void; aValueType: ^SwiftType; aTag: Integer; aTakeOwnership: Boolean);
+    begin
+      if fData = nil then begin
+        fData := malloc(fType^.VWT^.size);
+        if aTakeOwnership then
+          aValueType^.VWT^.initializeWithTake(IntPtr(fData), IntPtr(aValue), aValueType)
+        else
+          aValueType^.VWT^.initializeWithCopy(IntPtr(fData), IntPtr(aValue), aValueType);
+
+        fType^.VWT^.destructiveInjectEnumTag(IntPtr(fData), aTag, fType);
+        exit;
+      end;
+      var lData := InternalCalls.Alloca(fType^.VWT^.size);
+      if aTakeOwnership then
+        aValueType^.VWT^.initializeWithTake(IntPtr(lData), IntPtr(aValue), aValueType)
+      else
+        aValueType^.VWT^.initializeWithCopy(IntPtr(lData), IntPtr(aValue), aValueType);
+
+      fType^.VWT^.destructiveInjectEnumTag(IntPtr(fData), aTag, fType);
+      fType^.VWT^.assignWithTake(IntPtr(fData), IntPtr(lData), fType);
+    end;
+
+    method SetTag(aTag: Integer); // Don't call this for tags with value.
+    begin
+      var lSize := fType^.VWT^.size;
+      if fData = nil then begin
+        fData := malloc(lSize);
+        fType^.VWT^.destructiveInjectEnumTag(IntPtr(fData), aTag, fType);
+        exit;
+      end;
+      var lData := InternalCalls.Alloca(lSize);
+      fType^.VWT^.destructiveInjectEnumTag(IntPtr(lData), aTag, fType);
+      fType^.VWT^.assignWithTake(IntPtr(fData), IntPtr(lData), fType);
+    end;
+
+    class operator implicit(aInput: SwiftEnum): SwiftAny;
+    begin
+      if aInput.Type = nil then exit default(SwiftAny);
+      exit new SwiftAny(aInput.fData, aInput.Type, false);
+    end;
+
+    class method FromAny(const var aInput: SwiftAny; aType: ^SwiftType): SwiftEnum;
+    begin
+      if (aType = nil) or (aInput.Type <> aType) then
+        exit default(SwiftEnum);
+      result.fType := aType;
+      result.fData := malloc(aType^.VWT^.size);
+      aType^.VWT^.initializeWithCopy(IntPtr(result.fData), IntPtr(aInput.UnboxedData), aType);
+    end;
+
+
+    constructor Copy(var aValue: SwiftEnum);
+    begin
+      fType := aValue.Type;
+      fData := malloc(fType^.VWT^.size);
+      fType^.VWT^.initializeWithCopy(IntPtr(fData), IntPtr(aValue.fData), fType);
+    end;
+
+    class operator Assign(var aDest: SwiftEnum; var aSource: SwiftEnum);
+    begin
+
+      if aDest.fData <> nil then begin
+        aDest.fType^.VWT^.destroy(IntPtr(aDest.fData), aDest.fType);
+        free(aDest.fData);
+      end;
+      if aSource.fData = nil then begin
+        aDest.fData := nil;
+        aDest.fType := nil;
+        exit;
+      end;
+      aDest.fType := aSource.Type;
+      aDest.fData := malloc(aDest.fType^.VWT^.size);
+      aDest.fType^.VWT^.initializeWithCopy(IntPtr(aDest.fData), IntPtr(aSource.fData), aDest.fType);
+    end;
+
+    finalizer;
+    begin
+      if fData <> nil then begin
+        fType^.VWT^.destroy(IntPtr(fData), fType);
+        free(fData);
+      end;
+    end;
+  end;
+
+  SwiftAny = public record
+  private
+    fData: array[0..23] of Byte; // This is a guess; we need to target a 32bits target to know for sure.
+    fType: ^SwiftType;
+  public
+    property Data: ^Byte read @fData;
+    property &Type: ^SwiftType read fType;
+    property UnboxedData: ^Byte read if fType = nil then nil else if 0 = (fType^.VWT^.flags and SwiftValueWitnessTable.IsNonInline) then ^Byte(swift_projectBox(^^SwiftRefcounted(@fData)^)) else @fData[0];
+    // swift_projectBox
+
+    constructor(aValue: ^Void; aInputType: ^SwiftType; aTakeOwnership: Boolean);
+    begin
+      if aInputType = nil then exit;
+      SwiftAllocateBoxIfNeeded(@fData, aValue, aInputType, aTakeOwnership);
+    end;
+
+    method Release;
+    begin
+      if fType = nil then exit;
+      var lVWT := fType^.VWT;
+      if 0 = (lVWT^.flags and SwiftValueWitnessTable.IsNonInline) then begin
+        SwiftStrong.swift_release(IntPtr(^^SwiftRefcounted(@fData)^));
+      end else begin
+        lVWT^.destroy(IntPtr(@fData), fType);
+      end;
+
+      fType := nil;
+    end;
+
+    method &Set(aValue: ^Void; aInputType: ^SwiftType; aTakeOwnership: Boolean);
+    begin
+      Release;
+      if aInputType = nil then exit;
+      SwiftAllocateBoxIfNeeded(@fData, aValue, aInputType, aTakeOwnership);
+    end;
+
+    class method CopyAny(var aDest, aSource: SwiftAny; aReleaseOld: Boolean);
+    begin
+      if (@aDest) = (@aSource) then exit; // don't copy to ourselves.
+      if aSource.Type = nil then begin
+        // Source is empty
+        if aReleaseOld and (aDest.Type <> nil) then begin
+          var lVWT := ^SwiftValueWitnessTable(@aDest.Type[-1]);
+          if 0 = (lVWT^.flags and SwiftValueWitnessTable.IsNonInline) then begin
+            SwiftStrong.swift_release(IntPtr(^^SwiftRefcounted(@aDest.fData)^));
+          end else begin
+            lVWT^.destroy(IntPtr(@aDest.fData), aDest.Type);
+          end;
+
+        end;
+
+        aDest.fType := nil;
+        exit;
+      end;
+
+      if aReleaseOld and (aDest.Type <> nil) then begin
+        var lVWT := ^SwiftValueWitnessTable(@aDest.Type[-1]);
+        if 0 = (lVWT^.flags and SwiftValueWitnessTable.IsNonInline) then begin
+          SwiftStrong.swift_release(IntPtr(^^SwiftRefcounted(@aDest.fData)^));
+        end else begin
+          lVWT^.destroy(IntPtr(@aDest.fData), aDest.Type);
+        end;
+      end;
+      aDest.fType := aSource.fType;
+      var lVWT := ^SwiftValueWitnessTable(@aSource.Type[-1]);
+      lVWT^.initializeBufferWithCopyOfBuffer(IntPtr(@aDest.fData), IntPtr(@aSource.fData), aSource.Type);
+    end;
+
+
+    constructor Copy(var aValue: SwiftAny);
+    begin
+      CopyAny(var Self, var aValue, false);
+    end;
+
+    class operator Assign(var aDest: SwiftAny; var aSource: SwiftAny);
+    begin
+      CopyAny(var aDest, var aSource, true);
+    end;
+
+    finalizer;
+    begin
+      Release;
+    end;
+  end;
+
   // Swift protocol WITH an AnyObject constraint
   SwiftClassProtocol = public record
   public
@@ -123,9 +308,9 @@ type
   SwiftVWTdestroy = public procedure(obj: IntPtr; aSelf: ^SwiftType);
   SwiftVWTgetEnumTagSinglePayload = public function(anEnum: IntPtr; emptyCases: UInt32): UInt32;
   SwiftVWTstoreEnumTagSinglePayload = public procedure(anEnum: IntPtr; whichCase, emptyCases: UInt32);
-  SwiftVWTgetEnumTag = public function(obj: IntPtr; aSelf: ^SwiftValueWitnessTable): UInt32;
-  SwiftVWTdestructiveProjectEnumData = public procedure(obj: IntPtr; aSelf: ^SwiftValueWitnessTable);
-  SwiftVWTdestructiveInjectEnumTag = public procedure(obj: IntPtr; tag: UInt32; aSelf: ^SwiftValueWitnessTable);
+  SwiftVWTgetEnumTag = public function(obj: IntPtr; aSelf: ^SwiftType): UInt32;
+  SwiftVWTdestructiveProjectEnumData = public procedure(obj: IntPtr; aSelf: ^SwiftType);
+  SwiftVWTdestructiveInjectEnumTag = public procedure(obj: IntPtr; tag: UInt32; aSelf: ^SwiftType);
   SwiftValueWitnessTable = public record
   public
     // Given an invalid buffer, initialize it as a copy of the
@@ -250,6 +435,9 @@ type
       end;
       var lVWT := ^SwiftValueWitnessTable(@aSource.Type[-1]);
       lVWT^.initializeBufferWithCopyOfBuffer(IntPtr(@aDest.Data), IntPtr(@aSource.Data), aSource.Type);
+
+      aDest.Type := aSource.Type;
+      aDest.WitnessTable := aSource.WitnessTable;
     end;
 
     class method AdjustProtocolSelf(var aDest: SwiftProtocol): ^SwiftRefcounted;
@@ -472,7 +660,7 @@ type
       end;
     end;
 
-    method ToString: String; 
+    method ToString: String;
     begin
       var lView := UTF16View(_countAndFlagsBits, _object);
       var lCount := SwiftUTF16View.UTF16Count(lView._countAndFlagsBits, lView._object);
@@ -636,10 +824,40 @@ type
 
   end;
 
-  [DelayLoadDllImport('libswiftCore.dylib', 'swift_getEnumCaseMultiPayload')]
+  SwiftBoxResult = public record
+  public
+    rc: ^SwiftRefCounted;
+    data: ^Void;
+  end;
+
+  method SwiftAllocateBoxIfNeeded(aTarget: ^Byte; aInput: ^Void; aInputType: ^SwiftType; aTakeOwnership: Boolean); // Presumes the target is already freed if needed.
+  begin
+    var lVWT := aInputType^.VWT;
+    var lTar: ^Void;
+    if 0 = (lVWT^.flags and SwiftValueWitnessTable.IsNonInline) then begin
+      // Store it inline;
+      lTar := ^Void(aTarget);
+    end else begin
+      var lDest := swift_allocBox(aInputType);
+      lTar := lDest.data;
+      ^^SwiftRefcounted(aTarget)^ := lDest.rc;
+    end;
+    if aTakeOwnership then
+      lVWT^.assignWithTake(IntPtr(lTar), IntPtr(aInput), aInputType)
+    else
+      lVWT^.assignWithCopy(IntPtr(lTar), IntPtr(aInput), aInputType);
+  end;
+
+  [DelayLoadDllImport('libswiftCore.dylib', 'swift_allocBox'), CallingConvention(CallingConvention.Swift)]
+  method swift_allocBox(aType: ^SwiftType): SwiftBoxResult; external;
+
+  [DelayLoadDllImport('libswiftCore.dylib', 'swift_projectBox'), CallingConvention(CallingConvention.Swift)]
+  method swift_projectBox(aInput: ^SwiftRefcounted): ^Void; external;
+
+  [DelayLoadDllImport('libswiftCore.dylib', 'swift_getEnumCaseMultiPayload'), CallingConvention(CallingConvention.Swift)]
   method swift_getEnumCaseMultiPayload(aVal: ^Void; aTypeInfo: ^Void): Integer; external;
 
-  [DelayLoadDllImport('libswiftCore.dylib', 'swift_storeEnumTagMultiPayload')]
+  [DelayLoadDllImport('libswiftCore.dylib', 'swift_storeEnumTagMultiPayload'), CallingConvention(CallingConvention.Swift)]
   method swift_storeEnumTagMultiPayload(aVal: ^Void; aTypeInfo: ^Void; aEnumVal: Integer); external;
 
   [DelayLoadDllImport('libswiftCore.dylib', '$sS2ayxGycfC'), CallingConvention(CallingConvention.Swift)]

@@ -299,6 +299,9 @@ type
 
     class method GuidOf<T>: Guid; external;
 
+    // Low level; allocates stack space; **do not use in iterator/async methods**
+    class method Alloca(aSize: Integer): ^Byte; external;
+
     // Inline asm
     class method VoidAsm(aAsm: String; aConstraints: String; aSideEffects, aAlign: Boolean; params aArgs: array of Object); external;
     class method Asm(aAsm: String; aConstraints: String; aSideEffects, aAlign: Boolean; params aArgs: array of Object): NativeInt; external;
