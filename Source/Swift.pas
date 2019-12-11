@@ -125,6 +125,18 @@ type
       fType := aType;
     end;
 
+    class method CreateWithTag(aType: ^SwiftType; aTag: Integer): SwiftEnum;
+    begin
+      result := new SwiftEnum(aType);
+      result.SetTag(aTag);
+    end;
+
+    class method CreateWithTag(aType: ^SwiftType; aValue: ^Void; aValueType: ^SwiftType; aTag: Integer; aTakeOwnership: Boolean): SwiftEnum;
+    begin
+      result := new SwiftEnum(aType);
+      result.SetValueWithTag(aValue, aValueType, aTag, aTakeOwnership);
+    end;
+
     property Tag: Integer read if fData = nil then -1 else fType^.VWT^.getenumTag(IntPtr(fData), fType);
     property TagValue: ^Void read ^Void(fData);
 
@@ -629,7 +641,7 @@ type
     class var fTypeInfo: IntPtr := Process.GetCachedProcAddress('libswiftCore.dylib', '$sSSN');
     class property VWT: ^SwiftValueWitnessTable read ^^SwiftValueWitnessTable(fTypeInfo)[-1];
 
-    [DelayLoadDllImport('libswiftFoundation.dylib', '$sSS10FoundationE14utf16CodeUnits5countSSSPys6UInt16VG_SitcfC'), CallingConvention(CallingConvention.Swift)]
+    [DelayLoadDllImport('/usr/lib/swift/libswiftFoundation.dylib', '$sSS10FoundationE14utf16CodeUnits5countSSSPys6UInt16VG_SitcfC'), CallingConvention(CallingConvention.Swift)]
     class method StringFromUTF16(aVal: ^Char; aLength: IntPtr): SwiftUTF16View; external;
 
     [DelayLoadDllImport('libswiftCore.dylib', '$sSS5utf16SS9UTF16ViewVvg'), CallingConvention(CallingConvention.Swift)]
@@ -861,35 +873,35 @@ type
   method swift_storeEnumTagMultiPayload(aVal: ^Void; aTypeInfo: ^Void; aEnumVal: Integer); external;
 
   [DelayLoadDllImport('libswiftCore.dylib', '$sS2ayxGycfC'), CallingConvention(CallingConvention.Swift)]
-  method SwiftAllocateArray(aType: ^Void): IntPtr; external; assembly;
+  method SwiftAllocateArray(aType: ^Void): IntPtr; external; public;
 
   [DelayLoadDllImport('libswiftCore.dylib', '$sSayxSicig'), CallingConvention(CallingConvention.Swift)]
-  method SwiftArrayGet([SRet] aValue: IntPtr; aIndex: IntPtr; aSelf: IntPtr; aType: IntPtr); external; assembly;
+  method SwiftArrayGet([SRet] aValue: IntPtr; aIndex: IntPtr; aSelf: IntPtr; aType: IntPtr); external; public;
 
   [DelayLoadDllImport('libswiftCore.dylib', '$sSayxSiciM'), CallingConvention(CallingConvention.Swift)]
-  method SwiftArrayModify(aStorage: ^SwiftMutatorData; aIndex: IntPtr; aType: IntPtr; [SwiftSelf] aSelf: IntPtr): SwiftMutatorResult; external; assembly;
+  method SwiftArrayModify(aStorage: ^SwiftMutatorData; aIndex: IntPtr; aType: IntPtr; [SwiftSelf] aSelf: IntPtr): SwiftMutatorResult; external; public;
 
   [DelayLoadDllImport('libswiftCore.dylib', '$sSaMa'), CallingConvention(CallingConvention.Swift)]
-  method SwiftArrayType(aCode: IntPtr; aSubType: IntPtr): SwiftMetadataResponse; external; assembly;
+  method SwiftArrayType(aCode: IntPtr; aSubType: IntPtr): SwiftMetadataResponse; external; public;
 
 
   [DelayLoadDllImport('libswiftCore.dylib', '$sSmsSKRzrlE10removeLast7ElementSTQzyF'), CallingConvention(CallingConvention.Swift)]
-  method SwiftArrayRemoveLast([SRet]aResult: ^IntPtr; aType: IntPtr; aWTBidir, aWTRange: IntPtr;[SwiftSelf] aSelf: IntPtr); external; assembly;
+  method SwiftArrayRemoveLast([SRet]aResult: ^IntPtr; aType: IntPtr; aWTBidir, aWTRange: IntPtr;[SwiftSelf] aSelf: IntPtr); external; public;
 
 
   [DelayLoadDllImport('libswiftCore.dylib', '$sSmsE11removeFirst7ElementQzyF'), CallingConvention(CallingConvention.Swift)]
-  method SwiftArrayRemoveFirst([SRet]aResult: ^IntPtr; aType: IntPtr; aWT: IntPtr;[SwiftSelf] aSelf: IntPtr); external; assembly;
+  method SwiftArrayRemoveFirst([SRet]aResult: ^IntPtr; aType: IntPtr; aWT: IntPtr;[SwiftSelf] aSelf: IntPtr); external; public;
 
 
   [DelayLoadDllImport('libswiftCore.dylib', '$sSa6remove2atxSi_tF'), CallingConvention(CallingConvention.Swift)]
-  method SwiftArrayRemoveAt([SRet]aRest: ^IntPtr; aIndex: IntPtr; aType: IntPtr; [SwiftSelf] aSelf: IntPtr); external; assembly;
+  method SwiftArrayRemoveAt([SRet]aRest: ^IntPtr; aIndex: IntPtr; aType: IntPtr; [SwiftSelf] aSelf: IntPtr); external; public;
 
 
   [DelayLoadDllImport('libswiftCore.dylib', '$sSa6appendyyxnF'), CallingConvention(CallingConvention.Swift)]
-  method SwiftArrayAppend(aValue: IntPtr; aType: IntPtr; [SwiftSelf] aSelf: IntPtr); external; assembly;
+  method SwiftArrayAppend(aValue: IntPtr; aType: IntPtr; [SwiftSelf] aSelf: IntPtr); external; public;
 
   [DelayLoadDllImport('libswiftCore.dylib', 'swift_getWitnessTable')]
-  method swift_getWitnessTable(aPD: IntPtr; aType: IntPtr; aVal: IntPtr): IntPtr; external; assembly;
+  method swift_getWitnessTable(aPD: IntPtr; aType: IntPtr; aVal: IntPtr): IntPtr; external; public;
 
 
   var ProtocolDescriptorForBidirectionalCollection: IntPtr; assembly;
