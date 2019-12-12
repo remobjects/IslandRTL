@@ -114,11 +114,152 @@ type
     WitnessTable: ^^Byte;
   end;
 
-  SwiftEnum = public abstract class
+
+  // This affects the marshalling logic
+  [AttributeUsage(AttributeTargets.Struct or AttributeTargets.Class)]
+  SwiftFixedLayoutAttribute = public class(Attribute)
+  public
+  end;
+
+  [SwiftTypeInfo('$sSqMa', 'libswiftCore.dylib'), SwiftFixedLayout]
+  SwiftOptional<T> = public record(ISwiftObject)
+   where T is ISwiftObject;
+  private
+    fData: ^Void;
+
+    class var fType: ^SwiftType := SwiftHelpers.GetTypeInfo(typeOf(SwiftOptional<T>), 0);
+  public
+    property &Type: ^SwiftType read fType;
+    property Data: ^Void read fData;
+
+    property HasValue: Boolean read (fData <> nil) and (fType^.VWT^.getenumTag(IntPtr(fData), fType) <> 0);
+    property Value: T read -> begin
+      if HasValue then
+        exit SwiftHelpers.Construct<T>(fData)
+      else
+        raise new InvalidStateException('Cannot get value for null optional');
+    end;
+
+    class operator IsNil(const var aVal: SwiftOptional<T>): Boolean;
+    begin
+      exit not aVal.HasValue;
+    end;
+  end;
+
+  ISwiftObject = public interface
+    property Data: ^Void read;
+    property &Type: ^SwiftType read;
+  end;
+
+  [AttributeUsage(AttributeTargets.Struct or AttributeTargets.Class)]
+  SwiftTypeInfoAttribute = public class(Attribute)
+  public
+    constructor(aSymbol, aLibrary: String);
+    begin
+      Library := aLibrary;
+      Symbol := aSymbol;
+    end;
+
+    property Library: String read assembly write;
+    property Symbol: String read assembly write;
+  end;
+
+  [CallingConvention(CallingConvention.Swift)]
+  SwiftTypeInfoCB = public method(i: Int64): SwiftMetadataResponse;
+  [CallingConvention(CallingConvention.Swift)]
+  SwiftTypeInfoCB1 = public method(i: Int64; aT1: ^SwiftType): SwiftMetadataResponse;
+  [CallingConvention(CallingConvention.Swift)]
+  SwiftTypeInfoCB2 = public method(i: Int64; aT1, aT2: ^SwiftType): SwiftMetadataResponse;
+  [CallingConvention(CallingConvention.Swift)]
+  SwiftTypeInfoCB3 = public method(i: Int64; aT1, aT2, aT3: ^SwiftType): SwiftMetadataResponse;
+  [CallingConvention(CallingConvention.Swift)]
+  SwiftTypeInfoCB4 = public method(i: Int64; aT1, aT2, aT3, aT4: ^SwiftType): SwiftMetadataResponse;
+  [CallingConvention(CallingConvention.Swift)]
+  SwiftTypeInfoCB5 = public method(i: Int64; aT1, aT2, aT3, aT4, aT5: ^SwiftType): SwiftMetadataResponse;
+  [CallingConvention(CallingConvention.Swift)]
+  SwiftTypeInfoCB6 = public method(i: Int64; aT1, aT2, aT3, aT4, aT5, aT6: ^SwiftType): SwiftMetadataResponse;
+  [CallingConvention(CallingConvention.Swift)]
+  SwiftTypeInfoCB7 = public method(i: Int64; aT1, aT2, aT3, aT4, aT5, aT6, aT7: ^SwiftType): SwiftMetadataResponse;
+  [CallingConvention(CallingConvention.Swift)]
+  SwiftTypeInfoCB8 = public method(i: Int64; aT1, aT2, aT3, aT4, aT5, aT6, aT7, aT8: ^SwiftType): SwiftMetadataResponse;
+  [CallingConvention(CallingConvention.Swift)]
+  SwiftTypeInfoCB9 = public method(i: Int64; aT1, aT2, aT3, aT4, aT5, aT6, aT7, aT8, aT9: ^SwiftType): SwiftMetadataResponse;
+
+  SwiftHelpers = public static class
+  private
+    class var fLock: Monitor := new Monitor;
+    class var fCache: Dictionary<&Tuple<&Type, Int64>, ^SwiftType> := new Dictionary<&Tuple<&Type, Int64>, ^SwiftType>;
+    class method GetBaseTypeInfo(aType: &Type; aCode: Int64): ^Void;
+    begin
+      if aType = nil then exit nil;
+      locking fLock do begin
+        if fCache.TryGetValue(Tuple.New<&Type, &Int64>(aType, aCode), out var lResult) then exit ^Void(lResult);
+        var lAtt := aType.Attributes.FirstOrDefault(a -> a.Type = typeOf(SwiftTypeInfoAttribute));
+        if lAtt = nil then raise new InvalidStateException('Swift class has no SwiftTypeInfoAttribute');
+        var lResult2 := ^Void(Process.GetCachedProcAddress(String(lAtt.Arguments[1].Value), String(lAtt.Arguments[0].Value)));
+        if lResult2 = nil then
+          raise new InvalidStateException('Cannot find '+String(lAtt.Arguments[1].Value) + ' ' + String(lAtt.Arguments[0].Value));
+        fCache.Add(Tuple.New<&Type, &Int64>(aType, aCode), ^SwiftType(lResult2));
+        exit lResult;
+      end;
+    end;
+  public
+
+    class method Construct<T>(aVal: ^Void): T; where T is ISwiftObject;
+    begin
+      var lMethod := typeOf(T).Methods.FirstOrDefault(a -> (MethodFlags.Constructor in  a.Flags) and (a.Arguments.Count = 2) and (a.Arguments.First.Type = typeOf(^Void))and (a.Arguments.Skip(1).First.Type = typeOf(Boolean)));
+      var lCB := SingleMethodCtorHelper(lMethod.Pointer);
+      if typeOf(T).IsValueType then begin
+        lCB(InternalCalls.Cast<Object>(@result), aVal, true);
+      end else begin
+        ^^Void(@result)^ := DefaultGC.New(typeOf(T).RTTI, typeOf(T).SizeOfType);
+        lCB(^Object(@result)^, aVal, true);
+      end;
+    end;
+
+    class method GetTypeInfo(aType: &Type; aCode: Int64): ^SwiftType;
+    begin
+      if aType = nil then exit nil;
+      locking fLock do begin
+        if fCache.TryGetValue(Tuple.New<&Type, &Int64>(aType, aCode), out result) then exit;
+        if IslandTypeFlags.Generic in aType.Flags then begin
+          var lArgs := aType.GenericArguments.Select(a -> GetTypeInfo(a, aCode)).ToArray;
+          case lArgs.Length of
+            1: result := ^SwiftType(SwiftTypeInfoCB1(GetBaseTypeInfo(aType.SubType, aCode))(aCode, lArgs[0]).fMetadata);
+            2: result := ^SwiftType(SwiftTypeInfoCB2(GetBaseTypeInfo(aType.SubType, aCode))(aCode, lArgs[0], lArgs[1]).fMetadata);
+            3: result := ^SwiftType(SwiftTypeInfoCB3(GetBaseTypeInfo(aType.SubType, aCode))(aCode, lArgs[0], lArgs[1], lArgs[2]).fMetadata);
+            4: result := ^SwiftType(SwiftTypeInfoCB4(GetBaseTypeInfo(aType.SubType, aCode))(aCode, lArgs[0], lArgs[1], lArgs[2], lArgs[3]).fMetadata);
+            5: result := ^SwiftType(SwiftTypeInfoCB5(GetBaseTypeInfo(aType.SubType, aCode))(aCode, lArgs[0], lArgs[1], lArgs[2], lArgs[3], lArgs[4]).fMetadata);
+            6: result := ^SwiftType(SwiftTypeInfoCB6(GetBaseTypeInfo(aType.SubType, aCode))(aCode, lArgs[0], lArgs[1], lArgs[2], lArgs[3], lArgs[4], lArgs[5]).fMetadata);
+            7: result := ^SwiftType(SwiftTypeInfoCB7(GetBaseTypeInfo(aType.SubType, aCode))(aCode, lArgs[0], lArgs[1], lArgs[2], lArgs[3], lArgs[4], lArgs[5], lArgs[6]).fMetadata);
+            8: result := ^SwiftType(SwiftTypeInfoCB8(GetBaseTypeInfo(aType.SubType, aCode))(aCode, lArgs[0], lArgs[1], lArgs[2], lArgs[3], lArgs[4], lArgs[5], lArgs[6], lArgs[7]).fMetadata);
+            9: result := ^SwiftType(SwiftTypeInfoCB9(GetBaseTypeInfo(aType.SubType, aCode))(aCode, lArgs[0], lArgs[1], lArgs[2], lArgs[3], lArgs[4], lArgs[5], lArgs[6], lArgs[7], lArgs[8]).fMetadata);
+
+          else
+            raise new InvalidStateException('Invalid number of generic arguments');
+          end;
+          fCache.Add(Tuple.New<&Type, &Int64>(aType, aCode), result);
+          exit;
+        end;
+        var lAtt := aType.Attributes.FirstOrDefault(a -> a.Type = typeOf(SwiftTypeInfoAttribute));
+        if lAtt = nil then raise new InvalidStateException('Swift class has no SwiftTypeInfoAttribute');
+        var lResult := ^Void(Process.GetCachedProcAddress(String(lAtt.Arguments[1].Value), String(lAtt.Arguments[0].Value)));
+        if lResult = nil then
+          raise new InvalidStateException('Cannot find '+String(lAtt.Arguments[1].Value) + ' ' + String(lAtt.Arguments[0].Value));
+
+        result := ^SwiftType(SwiftTypeInfoCB(lResult)(aCode).fMetadata);
+
+        fCache.Add(Tuple.New<&Type, &Int64>(aType, aCode), result);
+      end;
+    end;
+  end;
+
+  SwiftEnum = public class(ISwiftObject)
   private
     fData: ^Void;
   public
-    property &Type: ^SwiftType read; abstract;
+    property &Type: ^SwiftType read SwiftHelpers.GetTypeInfo(GetType(), 0); virtual;
+    property Data: ^Void read fData;
 
     constructor(aData: ^Void; aCopy: Boolean);
     begin
@@ -229,15 +370,27 @@ type
     end;
   end;
 
-  SwiftAny = public record
+  [SwiftFixedLayout]
+  SwiftAny = public record(ISwiftObject)
   private
     fData: array[0..23] of Byte; // This is a guess; we need to target a 32bits target to know for sure.
     fType: ^SwiftType;
+
+    property IntData: ^Void read UnboxedData;implements ISwiftObject.Data;
   public
     property Data: ^Byte read @fData;
     property &Type: ^SwiftType read fType;
     property UnboxedData: ^Byte read if fType = nil then nil else if 0 = (fType^.VWT^.flags and SwiftValueWitnessTable.IsNonInline) then ^Byte(swift_projectBox(^^SwiftRefcounted(@fData)^)) else @fData[0];
     // swift_projectBox
+    constructor(aValue: ^Void;  aTakeOwnership: Boolean);
+    begin
+      if aTakeOwnership then begin
+        fData := ^SwiftAny(aValue).fData;
+        fType := ^SwiftAny(aValue).fType;
+      end else begin
+        SwiftAny.CopyAny(var self, var ^SwiftAny(aValue)^, false);
+      end;
+    end;
 
     constructor(aValue: ^Void; aInputType: ^SwiftType; aTakeOwnership: Boolean);
     begin
@@ -636,9 +789,8 @@ type
     [DelayLoadDllImport('libswiftCore.dylib', '$sSS9UTF16ViewVys6UInt16VSS5IndexVcig'), CallingConvention(CallingConvention.Swift)]
     class method UTF16GetChar(aIndex: Int64; aVal1: UInt64; aVal2: ^Void): Char; external;
   end;
-
-  //[Swift]
-  SwiftString = public record
+  [SwiftTypeInfo('$sSMa', 'libswiftCore.dylib'), SwiftFixedLayout]
+  SwiftString = public record(ISwiftObject)
   private
     _countAndFlagsBits: UInt64;
     _object: ^Void;
@@ -652,10 +804,23 @@ type
     [DelayLoadDllImport('libswiftCore.dylib', '$sSS5utf16SS9UTF16ViewVvg'), CallingConvention(CallingConvention.Swift)]
     class method UTF16View(aVal: UInt64; aVal2: ^Void): SwiftUTF16View; external;
 
+    property Data: ^Void read @_countAndFlagsBits;
+    property &Type: ^SwiftType read ^SwiftType(fTypeInfo);
+
   public
     finalizer;
     begin
       VWT^.destroy(IntPtr(@self), ^SwiftType(fTypeInfo));
+    end;
+
+    constructor(aVal: ^Void; aCopy: Boolean);
+    begin
+      if aCopy then begin
+        VWT^.initializeWithCopy(IntPtr(@self), IntPtr(aVal), ^SwiftType(fTypeInfo));
+      end else begin
+        self._countAndFlagsBits := ^SwiftString(aVal)^._countAndFlagsBits;
+        self._object := ^SwiftString(aVal)^._object;
+      end;
     end;
 
     constructor Copy(var aValue: SwiftString);
@@ -677,7 +842,7 @@ type
       end;
     end;
 
-    method ToString: String;
+    method ToString: String; override;
     begin
       var lView := UTF16View(_countAndFlagsBits, _object);
       var lCount := SwiftUTF16View.UTF16Count(lView._countAndFlagsBits, lView._object);
@@ -733,20 +898,14 @@ type
   SwiftMutatorData = public array[0..31] of Byte;
   SwiftMutatorDispose = procedure(par0: ^SwiftMutatorData; par1: Boolean);
 
-  [AttributeUsage(AttributeTargets.Struct)]
-  SwiftEnumAttribute = public class(Attribute) end;
 
-  [SwiftEnum]
-  SwiftOptional<T> = public record
-  public
-    method none; empty;
-    method some(out aVal: T); empty;
-  end;
-
-  //[Swift]
-  SwiftArray<T> = public record
+  [SwiftTypeInfo('$sSaMa', 'libswiftCore.dylib'), SwiftFixedLayout]
+  SwiftArray<T> = public record(ISwiftObject)
   assembly
     fArray: IntPtr;
+
+    property Data: ^Void read ^Void(fArray);
+    property &Type: ^SwiftType read ^SwiftType(fType);
 
     method get_Item(i: IntPtr): T;
     begin
@@ -770,16 +929,16 @@ type
 
     class constructor;
     begin
-      fSubType := IntPtr(InternalCalls.GetSwiftTypeInfo<T>());
-      fType := SwiftArrayType(0, fSubType).fMetadata;
+      fSubType := IntPtr(SwiftHelpers.GetTypeInfo(typeOf(T), 0));
+      fType :=  IntPtr(SwiftHelpers.GetTypeInfo(typeOf(SwiftArray<T>), 0));
     end;
 
   public
-    constructor(aFromArray: IntPtr; aTakeOwnership: Boolean := true);
+    constructor(aFromArray: ^Void; aTakeOwnership: Boolean := true);
     begin
       if not aTakeOwnership then
-        aFromArray := SwiftStrong.swift_bridgeObjectRetain(aFromArray);
-      fArray := aFromArray;
+        aFromArray := ^Void(SwiftStrong.swift_bridgeObjectRetain(IntPtr(aFromArray)));
+      fArray := IntPtr(aFromArray);
     end;
 
     constructor();
@@ -800,9 +959,9 @@ type
     method removeLast: T;
     begin
       if fArrayProtocolDescriptorForBidirectionalCollection = 0 then
-        fArrayProtocolDescriptorForBidirectionalCollection := swift_getWitnessTable(GetProtocolDescriptorForBidirectionalCollection, SwiftArrayType(255, fSubType).fMetadata, nil);
+        fArrayProtocolDescriptorForBidirectionalCollection := swift_getWitnessTable(GetProtocolDescriptorForBidirectionalCollection,  IntPtr(SwiftHelpers.GetTypeInfo(typeOf(T), 255)), nil);
       if fArrayProtocolDescriptorForRangeReplaceableCollection = 0 then
-        fArrayProtocolDescriptorForRangeReplaceableCollection := swift_getWitnessTable(GetProtocolDescriptorForRangeReplaceableCollection, SwiftArrayType(255, fSubType).fMetadata, nil);
+        fArrayProtocolDescriptorForRangeReplaceableCollection := swift_getWitnessTable(GetProtocolDescriptorForRangeReplaceableCollection,  IntPtr(SwiftHelpers.GetTypeInfo(typeOf(T), 255)), nil);
       SwiftArrayRemoveLast(^IntPtr(@result), fType, fArrayProtocolDescriptorForBidirectionalCollection, fArrayProtocolDescriptorForRangeReplaceableCollection, IntPtr(@fArray));
     end;
 
@@ -810,7 +969,7 @@ type
     method removeFirst: T;
     begin
       if fArrayProtocolDescriptorForRangeReplaceableCollection = 0 then
-        fArrayProtocolDescriptorForRangeReplaceableCollection := swift_getWitnessTable(GetProtocolDescriptorForRangeReplaceableCollection, SwiftArrayType(255, fSubType).fMetadata, nil);
+        fArrayProtocolDescriptorForRangeReplaceableCollection := swift_getWitnessTable(GetProtocolDescriptorForRangeReplaceableCollection,  IntPtr(SwiftHelpers.GetTypeInfo(typeOf(T), 255)), nil);
       SwiftArrayRemoveFirst(^IntPtr(@result), fType, fArrayProtocolDescriptorForRangeReplaceableCollection, IntPtr(@fArray));
     end;
 
@@ -843,7 +1002,7 @@ type
 
   SwiftBoxResult = public record
   public
-    rc: ^SwiftRefCounted;
+    rc: ^SwiftRefcounted;
     data: ^Void;
   end;
 
@@ -933,7 +1092,7 @@ type
 type
   SingleMethodCtorHelper = procedure(aSelf: Object; aArg: ^Void; aCopy: Boolean);
 
-  SwiftWrapper = public abstract class
+  SwiftWrapper = public abstract class(ISwiftObject)
   private
     fData: ^Void;
   public
@@ -942,13 +1101,13 @@ type
     constructor(aData: ^Void; aCopy: Boolean);
     begin
       if aCopy then begin
-        fData := malloc(TypeInfo^.VWT^.size);
-        TypeInfo^.VWT^.assignWithCopy(IntPtr(fData), IntPtr(aData), TypeInfo);
+        fData := malloc(&Type^.VWT^.size);
+        &Type^.VWT^.assignWithCopy(IntPtr(fData), IntPtr(aData), &Type);
       end else
         fData := aData;
     end;
 
-    property TypeInfo: ^SwiftType read; abstract;
+    property &Type: ^SwiftType read SwiftHelpers.GetTypeInfo(GetType(), 0); virtual;
 
     class method Allocate(aType: ^SwiftType): ^Void;
     begin
@@ -957,18 +1116,18 @@ type
 
     method Copy: Object;
     begin
-      var lMethod := self.GetType().Methods.FirstOrDefault(a -> (MethodFlags.Constructor in  a.Flags) and (a.Arguments.Count = 1) and (a.Arguments.First.Type = typeOf(^Void)));
+      var lMethod := GetType().Methods.FirstOrDefault(a -> (MethodFlags.Constructor in  a.Flags) and (a.Arguments.Count = 2) and (a.Arguments.First.Type = typeOf(^Void))and (a.Arguments.Skip(1).First.Type = typeOf(Boolean)));
       result := InternalCalls.Cast<Object>(DefaultGC.New(GetType.RTTI, GetType.SizeOfType));
       var lCB := SingleMethodCtorHelper(lMethod.Pointer);
 
-      var lData := malloc(TypeInfo^.VWT^.size);
-      TypeInfo^.VWT^.initializeWithCopy(IntPtr(lData), IntPtr(fData), TypeInfo);
+      var lData := malloc(&Type^.VWT^.size);
+      &Type^.VWT^.initializeWithCopy(IntPtr(lData), IntPtr(fData), &Type);
       lCB(result, lData, false);
     end;
 
     class operator implicit(aVal: SwiftWrapper): SwiftAny;
     begin
-      exit new SwiftAny(aVal.fData, aVal.TypeInfo, false);
+      exit new SwiftAny(aVal.fData, aVal.&Type, false);
     end;
 
     class method FromAny(aVal: SwiftAny; aType: &Type): SwiftWrapper;
@@ -981,7 +1140,7 @@ type
 
     finalizer;
     begin
-      TypeInfo^.VWT^.destroy(IntPtr(fData), TypeInfo);
+      &Type^.VWT^.destroy(IntPtr(fData), &Type);
     end;
   end;
 
