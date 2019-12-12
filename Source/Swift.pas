@@ -114,65 +114,86 @@ type
     WitnessTable: ^^Byte;
   end;
 
-  SwiftEnum = public record
+  SwiftEnum = public abstract class
   private
-    fType: ^SwiftType;
     fData: ^Void;
   public
-    property &Type: ^SwiftType;
-    constructor(aType: ^SwiftType);
+    property &Type: ^SwiftType read; abstract;
+
+    constructor(aData: ^Void; aCopy: Boolean);
     begin
-      fType := aType;
+      if aCopy then begin
+        fData := malloc(&Type^.VWT^.size);
+        &Type^.VWT^.initializeWithCopy(IntPtr(fData), IntPtr(aData), &Type);
+      end else begin
+        fData := aData;
+      end;
     end;
 
-    class method CreateWithTag(aType: ^SwiftType; aTag: Integer): SwiftEnum;
+    constructor;
     begin
-      result := new SwiftEnum(aType);
+    end;
+
+    class method CreateWithTag(aType: &Type; aTag: Integer): SwiftEnum;
+    begin
+      result := aType.Instantiate as SwiftEnum;
       result.SetTag(aTag);
     end;
 
-    class method CreateWithTag(aType: ^SwiftType; aValue: ^Void; aValueType: ^SwiftType; aTag: Integer; aTakeOwnership: Boolean): SwiftEnum;
+    class method CreateWithTag(aType: &Type; aValue: ^Void; aValueType: ^SwiftType; aTag: Integer; aTakeOwnership: Boolean): SwiftEnum;
     begin
-      result := new SwiftEnum(aType);
+      result := aType.Instantiate as SwiftEnum;
       result.SetValueWithTag(aValue, aValueType, aTag, aTakeOwnership);
     end;
 
-    property Tag: Integer read if fData = nil then -1 else fType^.VWT^.getenumTag(IntPtr(fData), fType);
+    class method CreateWithTag<T>(aTag: Integer): T; where T is SwiftEnum;
+    begin
+      result := typeOf(T).Instantiate as T;
+      result.SetTag(aTag);
+    end;
+
+    class method CreateWithTag<T>(aValue: ^Void; aValueType: ^SwiftType; aTag: Integer; aTakeOwnership: Boolean): T; where T is SwiftEnum;
+    begin
+      result := typeOf(T).Instantiate as T;
+      result.SetValueWithTag(aValue, aValueType, aTag, aTakeOwnership);
+    end;
+
+    property Tag: Integer read if fData = nil then -1 else &Type^.VWT^.getenumTag(IntPtr(fData), &Type);
     property TagValue: ^Void read ^Void(fData);
 
     method SetValueWithTag(aValue: ^Void; aValueType: ^SwiftType; aTag: Integer; aTakeOwnership: Boolean);
     begin
       if fData = nil then begin
-        fData := malloc(fType^.VWT^.size);
+        fData := malloc(&Type^.VWT^.size);
         if aTakeOwnership then
           aValueType^.VWT^.initializeWithTake(IntPtr(fData), IntPtr(aValue), aValueType)
         else
           aValueType^.VWT^.initializeWithCopy(IntPtr(fData), IntPtr(aValue), aValueType);
 
-        fType^.VWT^.destructiveInjectEnumTag(IntPtr(fData), aTag, fType);
+        &Type^.VWT^.destructiveInjectEnumTag(IntPtr(fData), aTag, &Type);
         exit;
       end;
-      var lData := InternalCalls.Alloca(fType^.VWT^.size);
+      var lData := InternalCalls.Alloca(&Type^.VWT^.size);
       if aTakeOwnership then
         aValueType^.VWT^.initializeWithTake(IntPtr(lData), IntPtr(aValue), aValueType)
       else
         aValueType^.VWT^.initializeWithCopy(IntPtr(lData), IntPtr(aValue), aValueType);
 
-      fType^.VWT^.destructiveInjectEnumTag(IntPtr(fData), aTag, fType);
-      fType^.VWT^.assignWithTake(IntPtr(fData), IntPtr(lData), fType);
+      &Type^.VWT^.destructiveInjectEnumTag(IntPtr(fData), aTag, &Type);
+      &Type^.VWT^.assignWithTake(IntPtr(fData), IntPtr(lData), &Type);
     end;
 
     method SetTag(aTag: Integer); // Don't call this for tags with value.
     begin
-      var lSize := fType^.VWT^.size;
+      var lSize := &Type^.VWT^.size;
       if fData = nil then begin
         fData := malloc(lSize);
-        fType^.VWT^.destructiveInjectEnumTag(IntPtr(fData), aTag, fType);
+        &Type^.VWT^.destructiveInjectEnumTag(IntPtr(fData), aTag, &Type);
         exit;
       end;
       var lData := InternalCalls.Alloca(lSize);
-      fType^.VWT^.destructiveInjectEnumTag(IntPtr(lData), aTag, fType);
-      fType^.VWT^.assignWithTake(IntPtr(fData), IntPtr(lData), fType);
+      &Type^.VWT^.destructiveInjectEnumTag(IntPtr(lData), aTag, &Type);
+      &Type^.VWT^.assignWithTake(IntPtr(fData), IntPtr(lData), &Type);
     end;
 
     class operator implicit(aInput: SwiftEnum): SwiftAny;
@@ -185,40 +206,24 @@ type
     begin
       if (aType = nil) or (aInput.Type <> aType) then
         exit default(SwiftEnum);
-      result.fType := aType;
       result.fData := malloc(aType^.VWT^.size);
       aType^.VWT^.initializeWithCopy(IntPtr(result.fData), IntPtr(aInput.UnboxedData), aType);
     end;
 
-
-    constructor Copy(var aValue: SwiftEnum);
+    method Clone: Object;
     begin
-      fType := aValue.Type;
-      fData := malloc(fType^.VWT^.size);
-      fType^.VWT^.initializeWithCopy(IntPtr(fData), IntPtr(aValue.fData), fType);
+      if fData = nil then exit nil;
+      var lRes := SwiftEnum(GetType().Instantiate);
+      lRes.fData := malloc(&Type^.VWT^.size);
+      &Type^.VWT^.initializeWithCopy(IntPtr(lRes.fData), IntPtr(fData), &Type);
+      exit lRes;
     end;
 
-    class operator Assign(var aDest: SwiftEnum; var aSource: SwiftEnum);
-    begin
-
-      if aDest.fData <> nil then begin
-        aDest.fType^.VWT^.destroy(IntPtr(aDest.fData), aDest.fType);
-        free(aDest.fData);
-      end;
-      if aSource.fData = nil then begin
-        aDest.fData := nil;
-        aDest.fType := nil;
-        exit;
-      end;
-      aDest.fType := aSource.Type;
-      aDest.fData := malloc(aDest.fType^.VWT^.size);
-      aDest.fType^.VWT^.initializeWithCopy(IntPtr(aDest.fData), IntPtr(aSource.fData), aDest.fType);
-    end;
 
     finalizer;
     begin
       if fData <> nil then begin
-        fType^.VWT^.destroy(IntPtr(fData), fType);
+        &Type^.VWT^.destroy(IntPtr(fData), &Type);
         free(fData);
       end;
     end;
@@ -922,6 +927,61 @@ type
     if result = 0 then begin
       ProtocolDescriptorForRangeReplaceableCollection := Process.GetCachedProcAddress('libswiftCore.dylib', '$sSayxGSmsMc');
       result := ProtocolDescriptorForRangeReplaceableCollection;
+    end;
+  end;
+
+type
+  SingleMethodCtorHelper = procedure(aSelf: Object; aArg: ^Void; aCopy: Boolean);
+
+  SwiftWrapper = public abstract class
+  private
+    fData: ^Void;
+  public
+    property Data: ^Void read fData;
+
+    constructor(aData: ^Void; aCopy: Boolean);
+    begin
+      if aCopy then begin
+        fData := malloc(TypeInfo^.VWT^.size);
+        TypeInfo^.VWT^.assignWithCopy(IntPtr(fData), IntPtr(aData), TypeInfo);
+      end else
+        fData := aData;
+    end;
+
+    property TypeInfo: ^SwiftType read; abstract;
+
+    class method Allocate(aType: ^SwiftType): ^Void;
+    begin
+      exit malloc(aType^.VWT^.size);
+    end;
+
+    method Copy: Object;
+    begin
+      var lMethod := self.GetType().Methods.FirstOrDefault(a -> (MethodFlags.Constructor in  a.Flags) and (a.Arguments.Count = 1) and (a.Arguments.First.Type = typeOf(^Void)));
+      result := InternalCalls.Cast<Object>(DefaultGC.New(GetType.RTTI, GetType.SizeOfType));
+      var lCB := SingleMethodCtorHelper(lMethod.Pointer);
+
+      var lData := malloc(TypeInfo^.VWT^.size);
+      TypeInfo^.VWT^.initializeWithCopy(IntPtr(lData), IntPtr(fData), TypeInfo);
+      lCB(result, lData, false);
+    end;
+
+    class operator implicit(aVal: SwiftWrapper): SwiftAny;
+    begin
+      exit new SwiftAny(aVal.fData, aVal.TypeInfo, false);
+    end;
+
+    class method FromAny(aVal: SwiftAny; aType: &Type): SwiftWrapper;
+    begin
+      var lMethod := aType.Methods.FirstOrDefault(a -> (MethodFlags.Constructor in  a.Flags) and (a.Arguments.Count = 1) and (a.Arguments.First.Type = typeOf(^Void)));
+      result := InternalCalls.Cast<SwiftWrapper>(DefaultGC.New(aType.RTTI, aType.SizeOfType));
+      var lCB := SingleMethodCtorHelper(lMethod.Pointer);
+      lCB(result, aVal.UnboxedData, true);
+    end;
+
+    finalizer;
+    begin
+      TypeInfo^.VWT^.destroy(IntPtr(fData), TypeInfo);
     end;
   end;
 
