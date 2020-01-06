@@ -235,6 +235,29 @@ type
         ^Byte(p)^ := 0;
       end;
     end;
+
+    [SymbolName('__bzero')]
+    class method __bzero(p: ^Void; s: size_t); public;
+    begin
+      while s ≥ 8 do begin
+        ^Int64(p)^ := 0;
+        p := ^Void(^Byte(p) + 8);
+        dec(s, 8);
+      end;
+      if s ≥ 4 then begin
+        ^Int32(p)^ := 0;
+        p := ^Void(^Byte(p) + 4);
+        dec(s, 4);
+      end;
+      if s ≥ 2 then begin
+        ^Int16(p)^ := 0;
+        p := ^Void(^Byte(p) + 2);
+        dec(s, 2);
+      end;
+      if s ≥ 1 then begin
+        ^Byte(p)^ := 0;
+      end;
+    end;
     {$ENDIF}
 
     {$IFDEF DARWIN}
