@@ -614,7 +614,7 @@ begin
     atexitlist^.func();
     atexitlist := atexitlist^.next;
   end;
-
+  BoehmGC.UnloadGC;
 end;
 
 method ReadTarget2Value(p: IntPtr): ^Void;

@@ -114,6 +114,7 @@ type
     {$SHOW H6}
     class var fFinalizer: ^Void;
     class var fLoaded: Integer; assembly;
+    class var fLocal: Boolean;
     class var fLock: Integer;
     {$IFDEF POSIX}[LinkOnce]{$ENDIF}
     class var fSharedMemory: SharedMemory; assembly;
@@ -122,6 +123,7 @@ type
     [SkipDebug]
     class method LocalGC; private;
     begin
+      fLocal := true;
       GC_init;
       GC_allow_register_threads();
       fSharedMemory.collect := @GC_gcollect;
@@ -224,6 +226,12 @@ type
       GC_register_finalizer_no_order(aVal, nil, nil, nil, nil);
     end;
 
+    class method SuppressFinalize(o: Object);
+    begin
+      if o = nil then exit;
+      fSharedMemory.unsetfinalizer(InternalCalls.Cast(o));
+    end;
+
     class method GC_my_register_my_thread: Integer;
     begin
       {$IFDEF WINDOWS}
@@ -286,6 +294,10 @@ type
     class method Release(var Dest: BoehmGC); empty;
     class method UnloadGC;
     begin
+      if fLocal then begin
+        gc.GC_gcollect_and_unmap();
+        gc.GC_deinit();
+      end;
       Utilities.SpinLockEnter(var fLock);
       try
         {$IFDEF WINDOWS}

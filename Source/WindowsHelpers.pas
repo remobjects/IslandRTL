@@ -1422,13 +1422,17 @@ end;
 method mainCRTStartup: Integer;
 begin
   ExternalCalls.fModuleHandle := rtl.GetModuleHandle(nil);
-  ExternalCalls.exit(main);
+  var lMain := main;
+  BoehmGC.UnloadGC;
+  ExternalCalls.exit(lMain);
 end;
 
 method WinMainCRTStartup: Integer;
 begin
   ExternalCalls.fModuleHandle := rtl.GetModuleHandle(nil);
-  ExternalCalls.exit(main);
+  var lMain := main;
+  BoehmGC.UnloadGC;
+  ExternalCalls.exit(lMain);
 end;
 
 type
