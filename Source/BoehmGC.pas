@@ -295,8 +295,8 @@ type
     class method UnloadGC;
     begin
       if fLocal then begin
-        gc.GC_gcollect_and_unmap();
-        gc.GC_deinit();
+        GC_gcollect_and_unmap();
+        GC_deinit();
       end;
       Utilities.SpinLockEnter(var fLock);
       try
