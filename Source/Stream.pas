@@ -5,11 +5,12 @@ interface
 type
   SeekOrigin = public enum (&Begin, Current, &End);
 
-  Stream = public abstract class
+  Stream = public abstract class(IDisposable)
   private
     method GetLength: Int64;
     method SetPosition(value: Int64);
     method GetPosition: Int64;
+    method Dispose;
   protected
     method IsValid: Boolean; abstract;
   public
@@ -23,14 +24,14 @@ type
     method &Write(aSpan: ImmutableSpan<Byte>): Int32; abstract;
     method &Read(Buffer: array of Byte; Offset: Int32; Count: Int32): Int32;
     method &Write(Buffer: array of Byte; Offset: Int32; Count: Int32): Int32;
- 
-    method &Read(const buf: ^Void; Count: Int32): Int32; 
-    begin 
+
+    method &Read(const buf: ^Void; Count: Int32): Int32;
+    begin
       exit &Read(new Span<Byte>(^Byte(buf), Count));
     end;
 
-    method &Write(const buf: ^Void; Count: Int32): Int32; 
-    begin 
+    method &Write(const buf: ^Void; Count: Int32): Int32;
+    begin
       exit &Write(new ImmutableSpan<Byte>(^Byte(buf), Count));
     end;
 
@@ -64,6 +65,11 @@ end;
 method Stream.SetLength(value: Int64);
 begin
   raise new NotSupportedException;
+end;
+
+method Stream.Dispose;
+begin
+  Close;
 end;
 
 method Stream.CopyTo(Destination: Stream);
