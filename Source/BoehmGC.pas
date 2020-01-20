@@ -226,7 +226,7 @@ type
       GC_register_finalizer_no_order(aVal, nil, nil, nil, nil);
     end;
 
-    class method SuppressFinalize(o: Object);
+    class method SuppressFinalize(o: Object); public;
     begin
       if o = nil then exit;
       fSharedMemory.unsetfinalizer(InternalCalls.Cast(o));
@@ -324,6 +324,11 @@ type
     class method Collect(c: Integer);
     begin
       BoehmGC.Collect(c);
+    end;
+
+    class method SuppressFinalize(c: Object);
+    begin
+      BoehmGC.SuppressFinalize(c);
     end;
   end;
 
