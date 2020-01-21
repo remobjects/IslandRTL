@@ -50,6 +50,10 @@
     <Compile Include="PosixHelpers.pas" />
     <Compile Include="DarwinNumbers.pas" />
     <Compile Include="Swift.pas" />
+    <Compile Include="SwiftObject.pas" />
+    <Compile Include="SwiftAny.pas" />
+    <Compile Include="SwiftArray.pas" />
+    <Compile Include="SwiftString.pas" />
   </ItemGroup>
   <ItemGroup>
     <Reference Include="gc" />
