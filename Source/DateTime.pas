@@ -344,8 +344,8 @@ type
 			var k := rtl.GetDateFormatEx(l1,0,@sysdate,nil,nil,0, nil);
 			if k = 0 then CheckForLastError;
 			var buf:= new array of Char(k+1);
-			var k1 := rtl.GetDateFormatEx(l1,0,@sysdate,nil,rtl.LPWSTR(@buf[0]),k+1, nil);
-			exit String.FromPChar(@buf[0],k1).TrimEnd;
+			var k1 := rtl.GetDateFormatEx(l1,0,@sysdate,nil,rtl.LPWSTR(@buf[0]),k, nil);
+			exit String.FromPChar(@buf[0],k1).TrimEnd([#0]);
 			{$ELSEIF POSIX or WEBASSEMBLY}
 			exit String.Format('{0}-{1}-{2}',[Year.ToString,TwoCharStr(Month),TwoCharStr(Day)]);
 			{$ELSE}{$ERROR}
