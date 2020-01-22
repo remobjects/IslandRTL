@@ -505,6 +505,8 @@ type
 
 // aliases for Swift importing.
 type
+  Contacts.CNError = public Integer;
+  CloudKit.CKError = public Integer;
   Swift.Int = public RemObjects.Oxygene.System.IntPtr;
   Builtin.UInt8 = public RemObjects.Oxygene.System.Byte;
   Builtin.Int8 = public RemObjects.Oxygene.System.SByte;
@@ -551,4 +553,35 @@ type
   Dispatch.DispatchSourceUserDataReplace = public rtl.OS_dispatch_source;
   Dispatch.DispatchTime = public rtl.OS_dispatch_source;
   Dispatch.__DispatchData = public rtl.dispatch_data_t;
+  ObjectiveC.NSObject = public Foundation.NSObject;
+  ObjectiveC.NSObjectProtocol = public Foundation.INSObject;
+  Swift.OSLogType  = public rtl.os_log_type_t;
+  Swift.OSLog = public Foundation.NSObject; //
+  Swift.OSSignpostType = public rtl.os_signpost_type_t;
+  simd.simd_float2x2 = public rtl.simd_float2x2;
+  simd.simd_float3x2 = public rtl.simd_float3x2;
+  simd.simd_float4x2 = public rtl.simd_float4x2;
+
+  simd.simd_float2x3 = public rtl.simd_float2x3;
+  simd.simd_float3x3 = public rtl.simd_float3x3;
+  simd.simd_float4x3 = public rtl.simd_float4x3;
+
+  simd.simd_float2x4 = public rtl.simd_float2x4;
+  simd.simd_float3x4 = public rtl.simd_float3x4;
+  simd.simd_float4x4 = public rtl.simd_float4x4;
+
+  simd.simd_double2x2 = public rtl.simd_double2x2;
+  simd.simd_double3x2 = public rtl.simd_double3x2;
+  simd.simd_double4x2 = public rtl.simd_double4x2;
+
+  simd.simd_double2x3 = public rtl.simd_double2x3;
+  simd.simd_double3x3 = public rtl.simd_double3x3;
+  simd.simd_double4x3 = public rtl.simd_double4x3;
+
+  simd.simd_double2x4 = public rtl.simd_double2x4;
+  simd.simd_double3x4 = public rtl.simd_double3x4;
+  simd.simd_double4x4 = public rtl.simd_double4x4;
+  simd.simd_quatf = public rtl.simd_quatf;
+  simd.simd_quatd = public rtl.simd_quatd;
+
 end.
