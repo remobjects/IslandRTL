@@ -15,7 +15,7 @@ type
   SwiftException = public Foundation.NSException; // hack for now
 
   //[Swift]
-{$IFNDEF WATCHOS}
+{$IF not WATCHOS and not TVOS}
   SwiftObject = public abstract class
   public
     constructor; empty;
@@ -70,7 +70,7 @@ type
       if aValue = nil then exit nil;
       if aValue is IIslandGetCocoaWrapper then exit IIslandGetCocoaWrapper(aValue).«$__CreateCocoaWrapper»();
       if aValue is IslandWrappedCocoaObject then exit IslandWrappedCocoaObject(aValue).Value;
-      {$IFNDEF WATCHOS}
+      {$IF not WATCHOS and not TVOS}
       if aValue is IslandWrappedSwiftObject then exit CocoaWrappedSwiftObject.FromValue(IslandWrappedSwiftObject(aValue).Value);
       {$ENDIF}
       if aValue is IslandWrappedCocoaException then exit IslandWrappedCocoaException(aValue).InnerException;
@@ -124,7 +124,7 @@ type
       if aValue is ICocoaGetIslandWrapper then exit ICocoaGetIslandWrapper(aValue).«$__CreateIslandWrapper»();
       if aValue is NSString then exit String(NSString(aValue));
       if aValue is CocoaWrappedIslandObject then exit CocoaWrappedIslandObject(aValue).Value;
-      {$IFNDEF WATCHOS}
+      {$IF not WATCHOS and not TVOS}
       if aValue is CocoaWrappedSwiftObject then exit IslandWrappedSwiftObject.FromValue(CocoaWrappedSwiftObject(aValue).Value);
       {$ENDIF}
       if aValue is NSException then exit new IslandWrappedCocoaException(NSException(aValue));
@@ -166,7 +166,7 @@ type
 
   end;
 
-{$IFNDEF WATCHOS}
+{$IF not WATCHOS and not TVOS}
   //
   // Island <-> Swift
   //

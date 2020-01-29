@@ -1,5 +1,5 @@
 ﻿namespace RemObjects.Elements.System;
-{$IFNDEF WATCHOS}
+{$IF not WATCHOS and not TVOS}
 type
   SwiftStrong<T> = public lifetimestrategy (SwiftStrong) T;
   OnceCallback = public procedure(ctx: ^Void);
