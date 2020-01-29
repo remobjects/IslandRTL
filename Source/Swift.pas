@@ -507,7 +507,7 @@ type
 type
   Contacts.CNError = public Integer;
   CloudKit.CKError = public Integer;
-  Swift.Int = public RemObjects.Oxygene.System.IntPtr;
+  //Swift.Int = public RemObjects.Oxygene.System.IntPtr;
   Builtin.UInt8 = public RemObjects.Oxygene.System.Byte;
   Builtin.Int8 = public RemObjects.Oxygene.System.SByte;
   Builtin.Word = public RemObjects.Oxygene.System.UInt16;
