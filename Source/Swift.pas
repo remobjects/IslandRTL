@@ -530,7 +530,7 @@ type
   Builtin.FPIEEE64 = public RemObjects.Oxygene.System.Double;
   Builtin.FPIEEE80 = public RemObjects.Oxygene.System.Double;
   Builtin.FPIEEE32 = public RemObjects.Oxygene.System.Single;
-  Swift.Bool = public RemObjects.Oxygene.System.Boolean;
+  //Swift.Bool = public RemObjects.Oxygene.System.Boolean;
   Swift.CodeUnit = public RemObjects.Oxygene.System.UInt16;
   SwiftShims._SwiftArrayBodyStorage = public RemObjects.Elements.System._SwiftArrayBodyStorage;
   Swift.extern_proc = public RemObjects.Elements.System.extern_proc;
