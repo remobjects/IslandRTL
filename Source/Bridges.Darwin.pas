@@ -15,20 +15,11 @@ type
   SwiftException = public Foundation.NSException; // hack for now
 
   //[Swift]
+{$IFNDEF WATCHOS}
   SwiftObject = public abstract class
   public
     constructor; empty;
   end;
-
-  RemObjects.Elements.System.Island.Object = public IslandObject;
-  RemObjects.Elements.System.Island.String = public IslandString;
-  RemObjects.Elements.System.Island.Exception = public IslandException;
-  RemObjects.Elements.System.Cocoa.Object = public CocoaObject;
-  RemObjects.Elements.System.Cocoa.String = public CocoaString;
-  RemObjects.Elements.System.Cocoa.Exception = public CocoaException;
-  RemObjects.Elements.System.Swift.Object = public SwiftObject;
-  RemObjects.Elements.System.Swift.String = public SwiftString;
-  RemObjects.Elements.System.Swift.Exception = public SwiftException;
 
   //[Swift]
   RemObjects.Elements.System.Swift.CustomStringConvertible = public interface // hack for now
@@ -44,6 +35,17 @@ type
   RemObjects.Elements.System.Swift.Hashable = public interface(Swift.Equatable) // hack for now
     property hashValue: Integer read;
   end;
+  RemObjects.Elements.System.Swift.Object = public SwiftObject;
+  RemObjects.Elements.System.Swift.String = public SwiftString;
+  RemObjects.Elements.System.Swift.Exception = public SwiftException;
+{$ENDIF}
+
+  RemObjects.Elements.System.Island.Object = public IslandObject;
+  RemObjects.Elements.System.Island.String = public IslandString;
+  RemObjects.Elements.System.Island.Exception = public IslandException;
+  RemObjects.Elements.System.Cocoa.Object = public CocoaObject;
+  RemObjects.Elements.System.Cocoa.String = public CocoaString;
+  RemObjects.Elements.System.Cocoa.Exception = public CocoaException;
 
   //Swift.Error = public record // hack for now
   //public
@@ -68,7 +70,9 @@ type
       if aValue = nil then exit nil;
       if aValue is IIslandGetCocoaWrapper then exit IIslandGetCocoaWrapper(aValue).«$__CreateCocoaWrapper»();
       if aValue is IslandWrappedCocoaObject then exit IslandWrappedCocoaObject(aValue).Value;
+      {$IFNDEF WATCHOS}
       if aValue is IslandWrappedSwiftObject then exit CocoaWrappedSwiftObject.FromValue(IslandWrappedSwiftObject(aValue).Value);
+      {$ENDIF}
       if aValue is IslandWrappedCocoaException then exit IslandWrappedCocoaException(aValue).InnerException;
       if aValue is String then exit NSString(String(aValue));
       exit new CocoaWrappedIslandObject(aValue);
@@ -120,7 +124,9 @@ type
       if aValue is ICocoaGetIslandWrapper then exit ICocoaGetIslandWrapper(aValue).«$__CreateIslandWrapper»();
       if aValue is NSString then exit String(NSString(aValue));
       if aValue is CocoaWrappedIslandObject then exit CocoaWrappedIslandObject(aValue).Value;
+      {$IFNDEF WATCHOS}
       if aValue is CocoaWrappedSwiftObject then exit IslandWrappedSwiftObject.FromValue(CocoaWrappedSwiftObject(aValue).Value);
+      {$ENDIF}
       if aValue is NSException then exit new IslandWrappedCocoaException(NSException(aValue));
       result := new IslandWrappedCocoaObject(aValue);
     end;
@@ -151,10 +157,6 @@ type
             //81175: Darwin: cannot call compareTo: after casting to id
             //exit id(Value).compareTo(IslandWrappedCocoaObject(aOther).Value);
           end;
-        IslandWrappedSwiftObject: begin
-            //81175: Darwin: cannot call compareTo: after casting to id
-            //exit id(Value).compareTo(IslandWrappedSwiftObject(aOther).Value);
-          end
         else begin
             //81175: Darwin: cannot call compareTo: after casting to id
             //exit id(Value).compareTo(aOther);
@@ -164,6 +166,7 @@ type
 
   end;
 
+{$IFNDEF WATCHOS}
   //
   // Island <-> Swift
   //
@@ -324,7 +327,6 @@ type
       //end;
     end;
   end;
-
   CocoaWrappedSwiftObject = public class(CocoaObject)
   private
 
@@ -383,6 +385,7 @@ type
     //end;
 
   end;
+  {$ENDIF}
 {$ENDIF}
 
 end.
