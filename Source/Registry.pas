@@ -79,8 +79,7 @@ type
           end;
         end;
       end;
-      if res <> rtl.ERROR_SUCCESS then
-        raise new Exception('error code is '+res.ToString);
+      if res <> rtl.ERROR_SUCCESS then exit defaultValue;
     end;
 
     method GetValue(KeyName: String; ValueName: String; defaultValue: Object): Object;
