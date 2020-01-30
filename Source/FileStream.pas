@@ -56,7 +56,7 @@ begin
   var lAccess: UInt32 :=  case Access of
                             FileAccess.Read: rtl.GENERIC_READ;
                             FileAccess.Write: rtl.GENERIC_WRITE;
-                            FileAccess.ReadWrite: rtl.GENERIC_READ and rtl.GENERIC_WRITE;
+                            FileAccess.ReadWrite: rtl.GENERIC_READ or rtl.GENERIC_WRITE;
                           end;
 
   var lmode: UInt32 :=    case Mode of
