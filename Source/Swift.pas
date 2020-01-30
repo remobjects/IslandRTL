@@ -507,7 +507,7 @@ type
 type
   Contacts.CNError = public Integer;
   CloudKit.CKError = public Integer;
-  Swift.Int = public RemObjects.Oxygene.System.IntPtr;
+  //Swift.Int = public RemObjects.Oxygene.System.IntPtr;
   Builtin.UInt8 = public RemObjects.Oxygene.System.Byte;
   Builtin.Int8 = public RemObjects.Oxygene.System.SByte;
   Builtin.Word = public RemObjects.Oxygene.System.UInt16;
@@ -530,7 +530,7 @@ type
   Builtin.FPIEEE64 = public RemObjects.Oxygene.System.Double;
   Builtin.FPIEEE80 = public RemObjects.Oxygene.System.Double;
   Builtin.FPIEEE32 = public RemObjects.Oxygene.System.Single;
-  Swift.Bool = public RemObjects.Oxygene.System.Boolean;
+  //Swift.Bool = public RemObjects.Oxygene.System.Boolean;
   Swift.CodeUnit = public RemObjects.Oxygene.System.UInt16;
   SwiftShims._SwiftArrayBodyStorage = public RemObjects.Elements.System._SwiftArrayBodyStorage;
   Swift.extern_proc = public RemObjects.Elements.System.extern_proc;
