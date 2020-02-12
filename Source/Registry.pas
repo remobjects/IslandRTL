@@ -177,6 +177,7 @@ type
           else if Value is Int64 then SetValue(KeyName,ValueName,Value,RegistryValueKind.QWord)
           else if Value is array of String then SetValue(KeyName,ValueName,Value,RegistryValueKind.MultiString)
           else if Value is array of Byte then SetValue(KeyName,ValueName,Value,RegistryValueKind.Binary)
+          else if Value = nil then DeleteValue(KeyName,ValueName)
           else raise new Exception('Unsupported Value');
           exit;
         end;
@@ -218,6 +219,16 @@ type
         lResult.Add(String.FromPChar(@lBuffer[0]));
       end;
       result := lResult;
+    end;
+
+    method DeleteValue(KeyName: String; ValueName: String): Boolean;
+    begin
+      var subKeyName: String;
+      var lrootkey := ParseKeyName(KeyName, out subKeyName);
+      var lsubKey := subKeyName.ToLPCWSTR;
+      var res := rtl.RegDeleteKeyValueW(lrootkey, lsubKey, ValueName.ToLPCWSTR);
+      if res <> rtl.ERROR_SUCCESS then
+        raise new Exception('error code is '+res.ToString);
     end;
   end;
 
