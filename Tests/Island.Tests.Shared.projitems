@@ -17,5 +17,6 @@
     <Compile Include="$(MSBuildThisFileDirectory)String_Trim.pas" />
     <Compile Include="$(MSBuildThisFileDirectory)Math_Power.pas" />
     <Compile Include="$(MSBuildThisFileDirectory)TextConvert_utf_tests.pas" />
+    <Compile Include="$(MSBuildThisFileDirectory)String_Substring.pas" />
   </ItemGroup>
 </Project>

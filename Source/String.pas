@@ -389,10 +389,10 @@ end;
 
 method String.Substring(StartIndex: Integer; aLength: Integer): not nullable String;
 begin
+  if aLength = 0 then exit '';
   CheckIndex(StartIndex);
   if aLength > 1 then
     CheckIndex(StartIndex+aLength-1);
-  if aLength = 0 then exit '';
   if (StartIndex = 0) and (aLength = self.Length) then exit self;
   {$HIDE W46}
   exit String.FromPChar(@(@fFirstChar)[StartIndex], aLength);
