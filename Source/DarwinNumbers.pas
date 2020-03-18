@@ -250,7 +250,7 @@ type
     end;
 
     { INSCopying }
-    method copyWithZone(zone: ^NSZone): not nullable id;
+    method copyWithZone(zone: ^NSZone): id;
     begin
       exit self;
     end;
@@ -375,7 +375,8 @@ type
     end;
 
     { INSCopying }
-    method copyWithZone(zone: ^NSZone): not nullable id;override;
+    method copyWithZone(zone: ^NSZone): id;
+override;
     begin
       result := __ElementsBoxedChar.allocWithZone(zone).initWithChar(charValue) as not nullable;
     end;
@@ -386,13 +387,15 @@ type
     end;
 
     { INSCoding }
-    method encodeWithCoder(aCoder: not nullable NSCoder);override;
+    method encodeWithCoder(aCoder: not nullable NSCoder);
+override;
     begin
       var ch := charValue;
       aCoder.encodeBytes(@ch) length(2);
     end;
 
-    method initWithCoder(aDecoder: not nullable NSCoder): nullable InstanceType;override;
+    method initWithCoder(aDecoder: not nullable NSCoder): nullable InstanceType;
+override;
     begin
       var len: NSUInteger;
       var ch: ^Char := ^Char(aDecoder.decodeBytesWithReturnedLength(var len));
@@ -503,7 +506,8 @@ type
     end;
 
     { INSCopying }
-    method copyWithZone(zone: ^NSZone): not nullable id;override;
+    method copyWithZone(zone: ^NSZone): id;
+override;
     begin
       result := __ElementsBoxedAnsiChar.allocWithZone(zone).initWithAnsiChar(ansiCharValue) as not nullable;
     end;
@@ -514,13 +518,15 @@ type
     end;
 
     { INSCoding }
-    method encodeWithCoder(aCoder: not nullable NSCoder);override;
+    method encodeWithCoder(aCoder: not nullable NSCoder);
+override;
     begin
       var ch := ansiCharValue;
       aCoder.encodeBytes(@ch) length(2);
     end;
 
-    method initWithCoder(aDecoder: not nullable NSCoder): nullable InstanceType;override;
+    method initWithCoder(aDecoder: not nullable NSCoder): nullable InstanceType;
+override;
     begin
       var len: NSUInteger;
       var ch: ^AnsiChar := ^AnsiChar(aDecoder.decodeBytesWithReturnedLength(var len));
