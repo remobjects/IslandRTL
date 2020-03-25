@@ -69,6 +69,11 @@ type
         var lPars := lMeth.Arguments.ToArray;
         if length(lPars) <> length(aArgs) then continue;
         for j: Integer := 0 to lPars.Length -1 do begin
+          var lType := lPars[j].Type;
+          if lType = nil then begin
+            lPars := nil;
+            break;
+          end;
           if aArgs[j] = nil then begin
             if lPars[j].Type.IsValueType then begin
               lPars := nil;

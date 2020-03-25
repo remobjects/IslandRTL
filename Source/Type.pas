@@ -161,7 +161,9 @@ type
       var lTy: ProtoReadType;
       while ProtoReadHeader(var lPtr, out lKey, out lTy) do begin
         if (lKey = 2) and (lTy = ProtoReadType.varint) then begin
-          exit new &Type(&Type.ResolveType(fValue^.Ext^.MemberInfoList[ProtoReadVarInt(var lPtr)]));
+          var lType := &Type.ResolveType(fValue^.Ext^.MemberInfoList[ProtoReadVarInt(var lPtr)]);
+          if lType = nil then exit nil;
+          exit new &Type(lType);
         end else
           ProtoSkipValue(var lPtr, lTy);
       end;
