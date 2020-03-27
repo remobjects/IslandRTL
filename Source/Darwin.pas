@@ -353,7 +353,7 @@ begin
     sb.EndList;
   end;
 
-  begin
+  /*begin
     sb.SelectProperty(false, 'protocols');
     sb.StartList;
     //var methodCount: UInt32 := 0;
@@ -365,7 +365,7 @@ begin
     end;
     rtl.free(props);
     sb.EndList;
-  end;
+  end;*/
 
   clz := objc_getMetaClass(class_getName(clz));
 
