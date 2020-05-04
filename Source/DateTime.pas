@@ -107,7 +107,7 @@ type
 			rtl.timespec_get(@ts, rtl.TIME_UTC);
 			exit new DateTime(UnixDateOffset + (ts.tv_sec * TicksPerMillisecond) + (ts.tv_nsec / 100000));
 			{$ELSEIF WEBASSEMBLY}
-			exit new DateTime(Int64(WebAssemblyCalls.GetUTCTime * TicksPerSecond));
+			exit new DateTime(Int64(UnixDateOffset + (WebAssemblyCalls.GetUTCTime * TicksPerMillisecond)));
 			{$ELSE}{$ERROR}
 			{$ENDIF}
 		end;
@@ -129,7 +129,7 @@ type
 			rtl.timespec_get(@ts, rtl.TIME_UTC);
 			exit FromUnixTimeUTC(ts);
 			{$ELSEIF WEBASSEMBLY}
-			exit new DateTime(Int64(WebAssemblyCalls.GetLocalTime * TicksPerSecond));
+			exit new DateTime(Int64(UnixDateOffset + (WebAssemblyCalls.GetLocalTime * TicksPerMillisecond)));
 			{$ELSE}{$ERROR}
 			{$ENDIF}
 		end;

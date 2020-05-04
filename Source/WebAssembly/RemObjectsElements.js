@@ -308,7 +308,7 @@
                 glob.crypto.getRandomValues(tmp);
             };
             imp.env.__island_getutctime = function () { return Date.now(); };
-            imp.env.__island_getlocaltime = function () { return Date.now(); };
+            imp.env.__island_getlocaltime = function () { var lDate = Date.now(); var lLocal = new Date(); return (lDate + (lLocal.getTimezoneOffset() * 60 * 1000 * (-1))); };
             imp.env.__island_eval = function (str) {
                 return createHandle(eval(readStringFromMemory(str)));
             };

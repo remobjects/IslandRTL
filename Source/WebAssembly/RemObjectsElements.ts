@@ -253,7 +253,7 @@ export module ElementsWebAssembly {
             glob.crypto.getRandomValues(tmp);
         };
         imp.env.__island_getutctime = function(): number { return Date.now(); }
-        imp.env.__island_getlocaltime = function(): number { return Date.now(); }
+        imp.env.__island_getlocaltime = function(): number { var lDate = Date.now(); var lLocal = new Date(); return (lDate + (lLocal.getTimezoneOffset() * 60 * 1000 * (-1))); }
         imp.env.__island_eval = function(str: number): number {
             return createHandle(eval(readStringFromMemory(str)));
         };
