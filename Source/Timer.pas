@@ -15,6 +15,8 @@ type
     fTimer: rtl.timer_t;
     {$ELSEIF ISLAND AND DARWIN}
     fTimer: rtl.dispatch_source_t;
+    {$ELSEIF WEBASSEMBLY}
+    fTimer: IntPtr;
     {$ENDIF}
     fElapsed: TimerElapsedBlock;
     fEnabled: Boolean;
@@ -135,6 +137,11 @@ begin
   rtl.dispatch_source_set_timer(fTimer, rtl.dispatch_time(rtl.DISPATCH_TIME_NOW, fInterval * rtl.NSEC_PER_MSEC), lRepeatInterval, 0);
   rtl.dispatch_source_set_event_handler(fTimer, ()->Elapsed(Data));
   rtl.dispatch_resume(fTimer);
+  {$ELSEIF WEBASSEMBLY}
+  if not fRepeat then
+    fTimer := WebAssemblyCalls.SetTimeout(()->Elapsed(Data), fInterval)
+  else
+    fTimer := WebAssemblyCalls.SetInterval(()->Elapsed(Data), fInterval);
   {$ENDIF}
   fEnabled := true;
 end;
@@ -150,6 +157,11 @@ begin
   rtl.timer_delete(fTimer);
   {$ELSEIF ISLAND AND DARWIN}
   rtl.dispatch_source_cancel(fTimer);
+  {$ELSEIF WEBASSEMBLY}
+  if not fRepeat then
+    WebAssembly.Global.clearTimeout(fTimer)
+  else
+    WebAssemblyCalls.ClearInterval(fTimer);
   {$ENDIF}
   fEnabled := false;
 end;
