@@ -15,6 +15,13 @@ type
     const UInt32_PositiveInfinity: UInt32 = $7F800000;
     const UInt32_NegativeInfinity: UInt32 = $FF800000;
     const UInt32_NAN: UInt32              = $FFC00000;
+
+    class method get_MinValue: Single;
+    class method get_MaxValue: Single;
+    class method get_PositiveInfinity: Single;
+    class method get_NegativeInfinity: Single;
+    class method get_NAN: Single;
+
   public
     method ToString: String; override;
     method ToString(aLocale: Locale): String;
@@ -25,11 +32,11 @@ type
     class method TryParse(s: String; out Value: Single): Boolean; inline;
     class method TryParse(s: String; aLocale: Locale; out Value: Single): Boolean; inline;
 
-    class method MinValue: Single;
-    class method MaxValue: Single;
-    class method PositiveInfinity: Single;
-    class method NegativeInfinity: Single;
-    class method NAN: Single;
+    class property MinValue: Single read get_MinValue;
+    class property MaxValue: Single read get_MaxValue;
+    class property PositiveInfinity: Single read get_PositiveInfinity;
+    class property NegativeInfinity: Single read get_NegativeInfinity;
+    class property NaN: Single read get_NaN;
 
     class method IsNaN(Value: Single): Boolean;
     class method IsInfinity(Value: Single): Boolean;
@@ -59,7 +66,15 @@ type
 
   Double = public record(INumber, IComparable, IComparable<Double>, IEquatable<Double>)
   private
+
     class method DoTryParse(s: String; aLocale: Locale; out Value: Double; aRaiseOverflowException: Boolean): Boolean; inline;
+
+    class method get_MinValue: Double;
+    class method get_MaxValue: Double;
+    class method get_PositiveInfinity: Double;
+    class method get_NegativeInfinity: Double;
+    class method get_NAN: Double;
+
   assembly
     const SignificantBitmask: UInt64      = $8000000000000000;
     const ExponentBitmask: UInt64         = $7FF0000000000000;
@@ -92,11 +107,11 @@ type
     method GetHashCode: Integer; override;
     method &Equals(obj: Object): Boolean; override;
 
-    class method MinValue: Double;
-    class method MaxValue: Double;
-    class method PositiveInfinity: Double;
-    class method NegativeInfinity: Double;
-    class method NaN: Double;
+    class property MinValue: Double read get_MinValue;
+    class property MaxValue: Double read get_MaxValue;
+    class property PositiveInfinity: Double read get_PositiveInfinity;
+    class property NegativeInfinity: Double read get_NegativeInfinity;
+    class property NaN: Double read get_NaN;
 
     class method IsNaN(Value: Double): Boolean;
     class method IsInfinity(Value: Double): Boolean;
@@ -180,31 +195,31 @@ begin
   exit ^UInt64(@Value)^ = UInt64_NegativeInfinity;
 end;
 
-class method Double.MinValue: Double;
+class method Double.get_MinValue: Double;
 begin
   var k: UInt64 := UInt64_MinValue;
   exit ^Double(@k)^;
 end;
 
-class method Double.MaxValue: Double;
+class method Double.get_MaxValue: Double;
 begin
   var k: UInt64 := UInt64_MaxValue;
   exit ^Double(@k)^;
 end;
 
-class method Double.PositiveInfinity: Double;
+class method Double.get_PositiveInfinity: Double;
 begin
   var k: UInt64 := UInt64_PositiveInfinity;
   exit ^Double(@k)^;
 end;
 
-class method Double.NegativeInfinity: Double;
+class method Double.get_NegativeInfinity: Double;
 begin
   var k: UInt64 := UInt64_NegativeInfinity;
   exit ^Double(@k)^;
 end;
 
-class method Double.NaN: Double;
+class method Double.get_NaN: Double;
 begin
   var k: UInt64 := UInt64_NAN;
   exit ^Double(@k)^;
@@ -299,31 +314,31 @@ begin
   exit ^UInt32(@Value)^ = UInt32_NegativeInfinity;
 end;
 
-class method Single.MinValue: Single;
+class method Single.get_MinValue: Single;
 begin
   var k: UInt32 := UInt32_MinValue;
   exit ^Single(@k)^;
 end;
 
-class method Single.MaxValue: Single;
+class method Single.get_MaxValue: Single;
 begin
   var k: UInt32 := UInt32_MaxValue;
   exit ^Single(@k)^;
 end;
 
-class method Single.PositiveInfinity: Single;
+class method Single.get_PositiveInfinity: Single;
 begin
   var k: UInt32 := UInt32_PositiveInfinity;
   exit ^Single(@k)^;
 end;
 
-class method Single.NegativeInfinity: Single;
+class method Single.get_NegativeInfinity: Single;
 begin
   var k: UInt32 := UInt32_NegativeInfinity;
   exit ^Single(@k)^;
 end;
 
-class method Single.NAN: Single;
+class method Single.get_NAN: Single;
 begin
   var k: UInt32 := UInt32_NAN;
   exit ^Single(@k)^;
