@@ -470,6 +470,7 @@ type
               exit aLeft.ToString = aRight.ToString;
             if (lL.Code = TypeCodes.Boolean) or (lR.Code = TypeCodes.Boolean) then
               exit Boolean(aLeft) = Boolean(aRight);
+            exit Object.ReferenceEquals(aLeft, aRight);
         end;
         DynamicBinaryOperator.NotEqual: begin
             if (aLeft = nil) or (aRight = nil) then exit not ((aLeft = nil) and (aRight = nil));
@@ -486,6 +487,7 @@ type
               exit aLeft.ToString <> aRight.ToString;
             if (lL.Code = TypeCodes.Boolean) or (lR.Code = TypeCodes.Boolean) then
               exit Boolean(aLeft) <> Boolean(aRight);
+          exit not Object.ReferenceEquals(aLeft, aRight);
         end;
 
       end;
