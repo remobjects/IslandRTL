@@ -136,7 +136,7 @@ type
           for each el in lCL.Fields do begin
             if (not lStatic or el.IsStatic)
              and if DynamicGetFlags.CaseSensitive in DynamicGetFlags(aGetFlags) then el.Name = aName else el.Name.EqualsIgnoreCase(aName) then begin
-               exit el.GetValue(aInstance);
+               exit el.GetValue(if el.IsStatic then nil else aInstance);
             end;
           end;
           if (DynamicGetFlags.CallDefault in DynamicGetFlags(aGetFlags)) and (DynamicGetFlags.FollowedByCall not in DynamicGetFlags(aGetFlags))  then
