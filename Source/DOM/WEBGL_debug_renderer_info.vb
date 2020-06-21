@@ -1,0 +1,5 @@
+﻿'''<Summary>The WEBGL_debug_renderer_info extension is part of the WebGL API and exposes two constants with information about the graphics driver for debugging purposes.</Summary>
+<DynamicInterface(GetType(EcmaScriptObject))>
+Public Interface [WEBGL_debug_renderer_info]
+'Defined on this type 
+End Interface

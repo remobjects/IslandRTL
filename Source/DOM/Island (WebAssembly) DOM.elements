@@ -1,0 +1,9 @@
+﻿<?xml version="1.0" encoding="utf-8" standalone="yes"?>
+<Project ToolsVersion="4.0" DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <PropertyGroup>
+    <ProjectGuid>{A0647181-12AD-45D4-AD23-34FF368B25BA}</ProjectGuid>
+    <RootNamespace>IslandWebAssemblyDOM</RootNamespace>
+  </PropertyGroup>
+  <Import Project="Island (WebAssembly) DOM.projitems" Label="Shared" />
+  <Import Project="$(MSBuildExtensionsPath)\RemObjects Software\Elements\RemObjects.Elements.SharedProject.targets" />
+</Project>

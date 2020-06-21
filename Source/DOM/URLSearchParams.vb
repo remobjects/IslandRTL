@@ -1,0 +1,25 @@
+﻿'''<Summary>The URLSearchParams interface defines utility methods to work with the query string of a URL.</Summary>
+<DynamicInterface(GetType(EcmaScriptObject))>
+Public Interface [URLSearchParams]
+'Defined on this type 
+  '''<Summary>Returns a URLSearchParams object instance.</Summary>
+  Function [URLSearchParams]() As URLSearchParams
+  '''<Summary>Returns an iterator allowing iteration through all key/value pairs contained in this object.</Summary>
+  Function [entries]() As Dynamic
+  '''<Summary>Allows iteration through all values contained in this object via a callback function.</Summary>
+  Function [forEach]([parcallback] As Dynamic, [parcurrentValue] As Dynamic, [parcurrentIndex] As Dynamic, [parlistObj] As Dynamic) As Dynamic
+  '''<Summary>Returns the first value associated with the given search parameter.</Summary>
+  Sub [get]([parname] As Dynamic)
+  '''<Summary>Returns all the values associated with a given search parameter.</Summary>
+  Function [getAll]([parname] As Dynamic) As String
+  '''<Summary>Returns a Boolean indicating if such a given parameter exists.</Summary>
+  Function [has]([parname] As Dynamic) As Boolean
+  '''<Summary>Returns an iterator allowing iteration through all keys of the key/value pairs contained in this object.</Summary>
+  Function [keys]() As Dynamic
+  '''<Summary>Sorts all key/value pairs, if any, by their keys.</Summary>
+  Sub [sort]()
+  '''<Summary>Returns a string containing a query string suitable for use in a URL.</Summary>
+  Function [toString]() As String
+  '''<Summary>Returns an iterator allowing iteration through all values of the key/value pairs contained in this object.</Summary>
+  Function [values]() As Dynamic
+End Interface
