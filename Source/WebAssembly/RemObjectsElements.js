@@ -568,6 +568,18 @@
                         return createHandle(new URL(par1, par2));
                 }
             };
+            imp.env.__island_isArray = function (aArray) {
+                var par1 = handletable[aArray];
+                return par1 instanceof Array;
+            };
+            imp.env.__island_isNodeList = function (aNodeList) {
+                var par1 = handletable[aNodeList];
+                return par1 instanceof NodeList;
+            };
+            imp.env.__island_getNodeListItem = function (aNodeList, aIndex) {
+                var par1 = handletable[aNodeList];
+                return createHandle(par1[aIndex]);
+            };
             imp.env.__island_node_require = function (str) {
                 return createHandle(require(readStringFromMemory(str)));
             };

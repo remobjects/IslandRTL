@@ -515,6 +515,18 @@ export module ElementsWebAssembly {
                     return createHandle(new URL(par1, par2));
             }
         };
+        imp.env.__island_isArray = function(aArray: number): boolean {
+            var par1 = handletable[aArray] as object;
+			return par1 instanceof Array;
+        };		
+        imp.env.__island_isNodeList = function(aNodeList: number): boolean {
+            var par1 = handletable[aNodeList] as object;
+			return par1 instanceof NodeList;
+        };
+        imp.env.__island_getNodeListItem = function(aNodeList: number, aIndex: number): number {
+            var par1 = handletable[aNodeList] as NodeList;
+			return createHandle(par1[aIndex]);
+        };				
         imp.env.__island_node_require = function(str: number): number {
             return createHandle(require(readStringFromMemory(str)));
         }
