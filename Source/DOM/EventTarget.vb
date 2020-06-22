@@ -2,8 +2,6 @@
 <DynamicInterface(GetType(EcmaScriptObject))>
 Public Interface [EventTarget]
 'Defined on this type 
-  '''<Summary>Creates a new EventTarget object instance.</Summary>
-  Function [EventTarget]() As EventTarget
   '''<Summary>Registers an event handler of a specific event type on the EventTarget.</Summary>
   Sub [addEventListener]([partype] As Dynamic, [parlistener] As Dynamic)
   '''<Summary>Registers an event handler of a specific event type on the EventTarget.</Summary>

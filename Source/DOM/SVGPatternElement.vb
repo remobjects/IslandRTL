@@ -11,9 +11,9 @@ Inherits SVGElement, SVGURIReference
   '''<Summary>An SVGAnimatedTransformList corresponding to the patternTransform attribute of the given  element defines a graphics object which can be redrawn at repeated x- and y-coordinate intervals ("tiled") to cover an area.'>&lt;pattern&gt; element.</Summary>
   ReadOnly Property [patternTransform] As Dynamic
   '''<Summary>An SVGAnimatedEnumeration corresponding to the x attribute of the given  element defines a graphics object which can be redrawn at repeated x- and y-coordinate intervals ("tiled") to cover an area.'>&lt;pattern&gt; element.</Summary>
-  ReadOnly Property [x] As Dynamic
+  ReadOnly Property [x] As Double
   '''<Summary>An SVGAnimatedEnumeration corresponding to the y attribute of the given  element defines a graphics object which can be redrawn at repeated x- and y-coordinate intervals ("tiled") to cover an area.'>&lt;pattern&gt; element.</Summary>
-  ReadOnly Property [y] As Dynamic
+  ReadOnly Property [y] As Double
   '''<Summary>An SVGAnimatedEnumeration corresponding to the width attribute of the given  element defines a graphics object which can be redrawn at repeated x- and y-coordinate intervals ("tiled") to cover an area.'>&lt;pattern&gt; element.</Summary>
   ReadOnly Property [width] As Integer
   '''<Summary>An SVGAnimatedEnumeration corresponding to the height attribute of the given  element defines a graphics object which can be redrawn at repeated x- and y-coordinate intervals ("tiled") to cover an area.'>&lt;pattern&gt; element.</Summary>

@@ -4,6 +4,4 @@ Public Interface [FocusEvent]
 'Defined on this type 
   '''<Summary>Is an EventTarget representing a secondary target for this event. In some cases (such as when tabbing in or out a page), this property may be set to null for security reasons.</Summary>
   Property [relatedTarget] As HTMLElement
-  '''<Summary>Creates a FocusEvent event with the given parameters.</Summary>
-  Function [FocusEvent]() As FocusEvent
 End Interface

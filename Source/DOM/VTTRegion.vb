@@ -2,6 +2,4 @@
 <DynamicInterface(GetType(EcmaScriptObject))>
 Public Interface [VTTRegion]
 'Defined on this type 
-  '''<Summary>Returns a newly created VTTRegion object.</Summary>
-  Function [VTTRegion]() As VTTRegion
 End Interface

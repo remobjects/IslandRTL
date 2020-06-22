@@ -12,8 +12,6 @@ Public Interface [AnalyserNode]
   Property [maxDecibels] As Double
   '''<Summary>Is a double value representing the averaging constant with the last analysis frame — basically, it makes the transition between values over time smoother.</Summary>
   Property [smoothingTimeConstant] As Double
-  '''<Summary>Creates a new instance of an AnalyserNode object.</Summary>
-  Function [AnalyserNode]() As AnalyserNode
   '''<Summary>Copies the current frequency data into a Float32Array array passed into it.</Summary>
   Function [getFloatFrequencyData]([pararray] As Dynamic) As Double
   '''<Summary>Copies the current frequency data into a Uint8Array (unsigned byte array) passed into it.</Summary>

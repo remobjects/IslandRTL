@@ -6,6 +6,4 @@ Inherits MediaStream, AudioNode
 'Defined on this type 
   '''<Summary>Is a MediaStream containing a single AudioMediaStreamTrack with the same number of channels as the node itself. You can use this property to get a stream out of the audio graph and feed it into another construct, such as a Media Recorder.</Summary>
   Property [stream] As MediaStream
-  '''<Summary>Creates a new MediaStreamAudioDestinationNode object instance.</Summary>
-  Function [MediaStreamAudioDestinationNode]() As MediaStreamAudioDestinationNode
 End Interface

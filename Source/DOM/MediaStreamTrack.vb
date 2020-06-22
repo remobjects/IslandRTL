@@ -19,13 +19,11 @@ Public Interface [MediaStreamTrack]
   '''<Summary>Returns a Boolean value with a value of true if the track is readonly (such a video file source or a camera that settings can't be modified), false otherwise.</Summary>
   ReadOnly Property [readonly] As Dynamic
   '''<Summary>Returns an enumerated value giving the status of the track. This will be one of the following values:</Summary>
-  ReadOnly Property [readyState] As Double
+  ReadOnly Property [readyState] As String
   '''<Summary>Returns a duplicate of the MediaStreamTrack.</Summary>
   Function [clone]() As MediaStreamTrack
   '''<Summary>Returns the a list of constrainable properties available for the MediaStreamTrack.</Summary>
   Function [getCapabilities]() As Dynamic
   '''<Summary>Returns a MediaTrackSettings object containing the current values of each of the MediaStreamTrack's constrainable properties.</Summary>
   Function [getSettings]() As Dynamic
-  '''<Summary>Stops playing the source associated to the track, both the source and the track are deassociated. The track state is set to ended.</Summary>
-  Sub [stop]([parwhen] As Dynamic)
 End Interface

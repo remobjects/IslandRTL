@@ -8,6 +8,4 @@ Public Interface [Gyroscope]
   ReadOnly Property [y] As Double
   '''<Summary>Returns a double, containing the angular velocity of the device along the device's z axis.</Summary>
   ReadOnly Property [z] As Double
-  '''<Summary>Creates a new Gyroscope object.</Summary>
-  Function [Gyroscope]() As Gyroscope
 End Interface

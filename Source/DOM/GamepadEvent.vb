@@ -2,6 +2,6 @@
 <DynamicInterface(GetType(EcmaScriptObject))>
 Public Interface [GamepadEvent]
 'Defined on this type 
-  '''<Summary>Returns a new GamepadEvent object.</Summary>
-  Function [GamepadEvent]() As GamepadEvent
+  '''<Summary>Returns a Gamepad object, providing access to the associated gamepad data for the event fired.</Summary>
+  ReadOnly Property [gamepad] As Gamepad
 End Interface

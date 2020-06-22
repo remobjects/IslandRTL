@@ -37,7 +37,7 @@ Inherits EventTarget
   '''<Summary>Compares the position of the current node against another node in any other document.</Summary>
   Function [compareDocumentPosition]([parotherNode] As Dynamic) As Integer
   '''<Summary>Returns a Boolean value indicating whether or not a node is a descendant of the calling node.</Summary>
-  Function [contains]([parotherNode] As Dynamic) As Boolean
+  Function [contains]([partoken] As Dynamic) As Boolean
   '''<Summary>Returns the context object's root which optionally includes the shadow root if it is available. </Summary>
   Function [getRootNode]([paroptions] As Dynamic) As Node
   '''<Summary>Returns a Boolean indicating whether or not the element has any child nodes.</Summary>

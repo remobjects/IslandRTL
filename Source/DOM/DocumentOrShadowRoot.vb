@@ -10,6 +10,4 @@ Public Interface [DocumentOrShadowRoot]
   ReadOnly Property [styleSheets] As CSSStyleSheet
   '''<Summary>Returns the topmost element at the specified coordinates.</Summary>
   Function [elementFromPoint]([parx] As Dynamic, [pary] As Dynamic) As Element
-  '''<Summary>Returns a Selection object representing the range of text selected by the user, or the current position of the caret.</Summary>
-  Function [getSelection]() As Dynamic
 End Interface

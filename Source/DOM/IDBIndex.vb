@@ -19,7 +19,7 @@ Public Interface [IDBIndex]
   '''<Summary>Returns an IDBRequest object, and, in a separate thread, finds either the given key or the primary key, if key is an IDBKeyRange.</Summary>
   Function [getKey]([parkey] As Dynamic) As IDBRequest
   '''<Summary>Returns an IDBRequest object, in a separate thread, finds all matching values in the referenced object store that correspond to the given key or are in range, if key is an IDBKeyRange.</Summary>
-  Function [getAll]([parname] As Dynamic) As IDBRequest
+  Function [getAll]([parquery] As Dynamic, [parcount] As Dynamic) As IDBRequest
   '''<Summary>Returns an IDBRequest object, in a separate thread, finds all matching keys in the referenced object store that correspond to the given key or are in range, if key is an IDBKeyRange.</Summary>
   Function [getAllKeys]([parquery] As Dynamic, [parcount] As Dynamic) As IDBRequest
   '''<Summary>Returns an IDBRequest object, and, in a separate thread, creates a cursor over the specified key range.</Summary>

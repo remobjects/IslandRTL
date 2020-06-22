@@ -8,6 +8,4 @@ Public Interface [Magnetometer]
   ReadOnly Property [y] As Double
   '''<Summary>Returns a double containing the magnetic field around the device's z axis.</Summary>
   ReadOnly Property [z] As Double
-  '''<Summary>Creates a new Magnetometer object.</Summary>
-  Function [Magnetometer]() As Magnetometer
 End Interface

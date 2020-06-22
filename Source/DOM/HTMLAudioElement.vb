@@ -2,6 +2,4 @@
 <DynamicInterface(GetType(EcmaScriptObject))>
 Public Interface [HTMLAudioElement]
 'Defined on this type 
-  '''<Summary>Creates and returns a new HTMLAudioElement object, optionally starting the process of loading an audio file into it if the file URL is given.</Summary>
-  Function [Audio]([parurl] As Dynamic) As HTMLAudioElement
 End Interface

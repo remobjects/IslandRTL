@@ -7,5 +7,5 @@ Public Interface [Worker]
   '''<Summary>Is an EventHandler representing the code to be called when the messageerror event is raised.</Summary>
   Property [onmessageerror] As EventListener
   '''<Summary>Sends a message — consisting of any JavaScript object — to the worker's inner scope.</Summary>
-  Function [postMessage]([parmessage] As Dynamic, [partransferList] As Dynamic) As Dynamic
+  Function [postMessage]([paraMessage] As Dynamic, [partransferList] As Dynamic) As Dynamic
 End Interface

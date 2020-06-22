@@ -9,7 +9,7 @@ Public Interface [DedicatedWorkerGlobalScope]
   '''<Summary>Is an EventHandler representing the code to be called when the messageerror event is raised.</Summary>
   Property [onmessageerror] As EventListener
   '''<Summary>Sends a message — which can consist of any JavaScript object — to the parent document that first spawned the worker.</Summary>
-  Function [postMessage]([parmessage] As Dynamic, [partransferList] As Dynamic) As Dynamic
+  Function [postMessage]([paraMessage] As Dynamic, [partransferList] As Dynamic) As Dynamic
   '''<Summary>Imports one or more scripts into the worker's scope. You can specify as many as you'd like, separated by commas. For example: importScripts('foo.js', 'bar.js');</Summary>
   Function [importScripts]() As Dynamic
   '''<Summary>Decodes a string of data which has been encoded using base-64 encoding.</Summary>

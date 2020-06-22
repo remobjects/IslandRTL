@@ -7,7 +7,7 @@ Public Interface [MouseEvent]
   '''<Summary>The button number that was pressed (if applicable) when the mouse event was fired.</Summary>
   ReadOnly Property [button] As Integer
   '''<Summary>The buttons being depressed (if any) when the mouse event was fired.</Summary>
-  ReadOnly Property [buttons] As GamepadButton
+  ReadOnly Property [buttons] As Double
   '''<Summary>The X coordinate of the mouse pointer in local (DOM content) coordinates.</Summary>
   ReadOnly Property [clientX] As Integer
   '''<Summary>The Y coordinate of the mouse pointer in local (DOM content) coordinates.</Summary>
@@ -30,6 +30,4 @@ Public Interface [MouseEvent]
   ReadOnly Property [screenY] As Integer
   '''<Summary>Returns true if the shift key was down when the mouse event was fired.</Summary>
   ReadOnly Property [shiftKey] As Boolean
-  '''<Summary>Creates a MouseEvent object.</Summary>
-  Function [MouseEvent]() As MouseEvent
 End Interface

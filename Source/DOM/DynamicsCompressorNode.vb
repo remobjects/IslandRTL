@@ -16,6 +16,4 @@ Inherits AudioNode
   ReadOnly Property [attack] As AudioParam
   '''<Summary>Is a k-rate AudioParam representing the amount of time, in seconds, required to increase the gain by 10 dB.</Summary>
   ReadOnly Property [release] As AudioParam
-  '''<Summary>Creates a new instance of an DynamicsCompressorNode object.</Summary>
-  Function [DynamicsCompressorNode]() As DynamicsCompressorNode
 End Interface

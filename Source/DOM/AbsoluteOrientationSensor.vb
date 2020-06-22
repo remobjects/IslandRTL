@@ -2,6 +2,4 @@
 <DynamicInterface(GetType(EcmaScriptObject))>
 Public Interface [AbsoluteOrientationSensor]
 'Defined on this type 
-  '''<Summary>Creates a new AbsoluteOrientationSensor object.</Summary>
-  Function [AbsoluteOrientationSensor]() As AbsoluteOrientationSensor
 End Interface

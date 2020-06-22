@@ -4,6 +4,10 @@ Public Interface [SVGUseElement]
 Inherits SVGGraphicsElement, SVGURIReference
 
 'Defined on this type 
+  '''<Summary>An SVGAnimatedLength corresponding to the x attribute of the given element.</Summary>
+  ReadOnly Property [x] As Double
+  '''<Summary>An SVGAnimatedLength corresponding to the y attribute of the given element.</Summary>
+  ReadOnly Property [y] As Double
   '''<Summary>An SVGAnimatedLength corresponding to the width attribute of the given element.</Summary>
   ReadOnly Property [width] As Integer
   '''<Summary>An SVGAnimatedLength corresponding to the height attribute of the given element.</Summary>

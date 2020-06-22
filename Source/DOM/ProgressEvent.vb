@@ -8,6 +8,4 @@ Public Interface [ProgressEvent]
   ReadOnly Property [loaded] As Double
   '''<Summary>Is an unsigned long long representing the total amount of work that the underlying process is in the progress of performing. When downloading a resource using HTTP, this only represent the content itself, not headers and other overhead.</Summary>
   ReadOnly Property [total] As Double
-  '''<Summary>Creates a ProgressEvent event with the given parameters.</Summary>
-  Function [ProgressEvent]() As ProgressEvent
 End Interface

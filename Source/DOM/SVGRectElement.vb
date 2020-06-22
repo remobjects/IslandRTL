@@ -4,6 +4,10 @@ Public Interface [SVGRectElement]
 Inherits SVGGeometryElement
 
 'Defined on this type 
+  '''<Summary>Returns an SVGAnimatedLength corresponding to the x attribute of the given  element is a basic SVG shape that draws rectangles, defined by their position, width, and height. The rectangles may have their corners rounded.">&lt;rect&gt; element.</Summary>
+  ReadOnly Property [x] As Double
+  '''<Summary>Returns an SVGAnimatedLength corresponding to the y attribute of the given  element is a basic SVG shape that draws rectangles, defined by their position, width, and height. The rectangles may have their corners rounded.">&lt;rect&gt; element.</Summary>
+  ReadOnly Property [y] As Double
   '''<Summary>Returns an SVGAnimatedLength corresponding to the width attribute of the given  element is a basic SVG shape that draws rectangles, defined by their position, width, and height. The rectangles may have their corners rounded.">&lt;rect&gt; element.</Summary>
   ReadOnly Property [width] As Integer
   '''<Summary>Returns an SVGAnimatedLength corresponding to the height attribute of the given  element is a basic SVG shape that draws rectangles, defined by their position, width, and height. The rectangles may have their corners rounded.">&lt;rect&gt; element.</Summary>

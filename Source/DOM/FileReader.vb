@@ -20,8 +20,6 @@ Public Interface [FileReader]
   Property [onloadend] As EventListener
   '''<Summary>A handler for the progress event. This event is triggered while reading a Blob content.</Summary>
   Property [onprogress] As EventListener
-  '''<Summary>Returns a newly constructed FileReader.</Summary>
-  Function [FileReader]() As FileReader
   '''<Summary>Starts reading the contents of the specified Blob, once finished, the result attribute contains an ArrayBuffer representing the file's data.</Summary>
   Function [readAsArrayBuffer]([parblob] As Dynamic) As Byte()
   '''<Summary>Starts reading the contents of the specified Blob, once finished, the result attribute contains the raw binary data from the file as a string.</Summary>

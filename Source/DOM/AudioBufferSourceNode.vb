@@ -14,8 +14,6 @@ Public Interface [AudioBufferSourceNode]
   Property [loopEnd] As Double
   '''<Summary>An a-rate AudioParam that defines the speed factor at which the audio asset will be played, where a value of 1.0 is the sound's natural sampling rate. Since no pitch correction is applied on the output, this can be used to change the pitch of the sample. This value is compounded with detune to determine the final playback rate.</Summary>
   Property [playbackRate] As Dynamic
-  '''<Summary>Creates and returns a new AudioBufferSourceNode object. An AudioBufferSourceNode can be instantiated using the AudioContext.createBufferSource() method.</Summary>
-  Function [AudioBufferSourceNode]() As AudioBufferSourceNode
   '''<Summary>Used to schedule playback of the audio data contained in the buffer, or to begin playback immediately.</Summary>
   Sub [start]([parwhen] As Dynamic, [paroffset] As Dynamic, [parduration] As Dynamic)
 End Interface

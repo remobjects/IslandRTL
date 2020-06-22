@@ -2,8 +2,6 @@
 <DynamicInterface(GetType(EcmaScriptObject))>
 Public Interface [IIRFilterNode]
 'Defined on this type 
-  '''<Summary>Creates a new instance of an IIRFilterNode object.</Summary>
-  Function [IIRFilterNode]() As IIRFilterNode
   '''<Summary>Uses the filter's current parameter settings to calculate the response for frequencies specified in the provided array of frequencies.</Summary>
   Sub [getFrequencyResponse]([parfrequencyArray As Dynamic, magResponseOutput As Dynamic, phaseResponseOutput] As Dynamic)
 End Interface

@@ -4,6 +4,4 @@ Public Interface [InstallEvent]
 'Defined on this type 
   '''<Summary>Returns the ServiceWorker that is currently controlling the page.</Summary>
   ReadOnly Property [activeWorker] As ServiceWorker
-  '''<Summary>Creates a new InstallEvent object.</Summary>
-  Function [InstallEvent]() As InstallEvent
 End Interface

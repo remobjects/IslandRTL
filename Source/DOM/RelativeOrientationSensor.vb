@@ -2,6 +2,4 @@
 <DynamicInterface(GetType(EcmaScriptObject))>
 Public Interface [RelativeOrientationSensor]
 'Defined on this type 
-  '''<Summary>Creates a new RelativeOrientationSensor object.</Summary>
-  Function [RelativeOrientationSensor]() As RelativeOrientationSensor
 End Interface

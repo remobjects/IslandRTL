@@ -2,6 +2,4 @@
 <DynamicInterface(GetType(EcmaScriptObject))>
 Public Interface [XRRigidTransform]
 'Defined on this type 
-  '''<Summary>Creates a new XRRigidTransform object which represents a transform that applies a specified position and/or orientation.</Summary>
-  Function [XRRigidTransform]() As XRRigidTransform
 End Interface

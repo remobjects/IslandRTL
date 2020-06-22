@@ -2,8 +2,6 @@
 <DynamicInterface(GetType(EcmaScriptObject))>
 Public Interface [AudioContext]
 'Defined on this type 
-  '''<Summary>Creates and returns a new AudioContext object.</Summary>
-  Function [AudioContext]() As AudioContext
   '''<Summary>Creates a MediaElementAudioSourceNode associated with an HTMLMediaElement. This can be used to play and manipulate audio from ) embeds a media player which supports video playback into the document. You can use &lt;video> for audio content as well, but the &lt;audio> element may provide a more appropriate user experience.">&lt;video&gt; or  element is used to embed sound content in documents. It may contain one or more audio sources, represented using the src attribute or the &lt;source> element: the browser will choose the most suitable one. It can also be the destination for streamed media, using a MediaStream.">&lt;audio&gt; elements.</Summary>
   Function [createMediaElementSource]([parmyMediaElement] As Dynamic) As MediaElementAudioSourceNode
   '''<Summary>Creates a MediaStreamAudioSourceNode associated with a MediaStream representing an audio stream which may come from the local computer microphone or other sources.</Summary>

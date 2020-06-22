@@ -4,6 +4,4 @@ Public Interface [MediaElementAudioSourceNode]
 'Defined on this type 
   '''<Summary>The HTMLMediaElement used when constructing this MediaStreamAudioSourceNode.</Summary>
   ReadOnly Property [mediaElement] As Element
-  '''<Summary>Creates a new MediaElementAudioSourceNode object instance.</Summary>
-  Function [MediaElementAudioSourceNode]() As MediaElementAudioSourceNode
 End Interface

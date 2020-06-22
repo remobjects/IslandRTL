@@ -26,8 +26,6 @@ Public Interface [URL]
   ReadOnly Property [searchParams] As Dynamic
   '''<Summary>A USVString containing the username specified before the domain name.</Summary>
   Property [username] As String
-  '''<Summary>Creates and returns a URL object referencing the URL specified using an absolute URL string, or a relative URL string and a base URL string.</Summary>
-  Function [URL]() As URL
   '''<Summary>Returns a USVString containing the whole URL. It is a synonym for URL.href, though it can't be used to modify the value.</Summary>
   Function [toString]() As String
   '''<Summary>Returns a USVString  containing the whole URL. It returns the same string as the href property.</Summary>

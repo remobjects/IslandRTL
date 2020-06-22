@@ -7,11 +7,9 @@ Public Interface [File]
   '''<Summary>Returns the name of the file referenced by the File object.</Summary>
   ReadOnly Property [name] As String
   '''<Summary>Returns the size of the file in bytes.</Summary>
-  ReadOnly Property [size] As Dynamic
+  ReadOnly Property [size] As Double
   '''<Summary>Returns the MIME type of the file.</Summary>
   ReadOnly Property [type] As Dynamic
-  '''<Summary>Returns a newly constructed File.</Summary>
-  Function [File]() As File
   '''<Summary>Returns a new Blob object containing the data in the specified range of bytes of the source Blob.</Summary>
   Function [slice]([parstart] As Dynamic, [parend] As Dynamic, [parcontentType] As Dynamic) As Dynamic
   '''<Summary>Transforms the File into a ReadableStream that can be used to read the File contents.</Summary>

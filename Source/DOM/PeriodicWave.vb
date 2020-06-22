@@ -2,6 +2,4 @@
 <DynamicInterface(GetType(EcmaScriptObject))>
 Public Interface [PeriodicWave]
 'Defined on this type 
-  '''<Summary>Creates a new PeriodicWave object instance using the default values for all properties. If you wish to establish custom property values at the outset, use the AudioContext.createPeriodicWave() factory method instead.</Summary>
-  Function [PeriodicWave]() As PeriodicWave
 End Interface

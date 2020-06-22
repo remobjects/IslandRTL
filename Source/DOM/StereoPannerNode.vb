@@ -2,6 +2,4 @@
 <DynamicInterface(GetType(EcmaScriptObject))>
 Public Interface [StereoPannerNode]
 'Defined on this type 
-  '''<Summary>Creates a new instance of a StereoPannerNode object.</Summary>
-  Function [StereoPannerNode]() As StereoPannerNode
 End Interface

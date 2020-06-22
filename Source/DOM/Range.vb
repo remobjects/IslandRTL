@@ -6,12 +6,8 @@ Public Interface [Range]
   ReadOnly Property [collapsed] As Boolean
   '''<Summary>Returns the deepest Node that contains the startContainer and endContainer nodes.</Summary>
   ReadOnly Property [commonAncestorContainer] As Node
-  '''<Summary>Returns the Node within which the Range ends.</Summary>
-  ReadOnly Property [endContainer] As Node
   '''<Summary>Returns a number representing where in the endContainer the Range ends.</Summary>
   ReadOnly Property [endOffset] As Double
-  '''<Summary>Returns the Node within which the Range starts.</Summary>
-  ReadOnly Property [startContainer] As Node
   '''<Summary>Returns a number representing where in the startContainer the Range starts.</Summary>
   ReadOnly Property [startOffset] As Double
   '''<Summary>Sets the start position of a Range.</Summary>

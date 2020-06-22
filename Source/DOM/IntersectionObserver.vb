@@ -8,8 +8,6 @@ Public Interface [IntersectionObserver]
   ReadOnly Property [rootMargin] As String
   '''<Summary>A list of thresholds, sorted in increasing numeric order, where each threshold is a ratio of intersection area to bounding box area of an observed target. Notifications for a target are generated when any of the thresholds are crossed for that target. If no value was passed to the constructor, 0 is used.</Summary>
   ReadOnly Property [thresholds] As Double
-  '''<Summary>Creates a new IntersectionObserver object which will execute a specified callback function when it detects that a target element's visibility has crossed one or more thresholds.</Summary>
-  Function [IntersectionObserver]() As IntersectionObserver
   '''<Summary>Stops the IntersectionObserver object from observing any target.</Summary>
   Function [disconnect]([pardestination] As Dynamic, [paroutput] As Dynamic, [parinput] As Dynamic) As Dynamic
   '''<Summary>Returns an array of IntersectionObserverEntry objects for all observed targets.</Summary>

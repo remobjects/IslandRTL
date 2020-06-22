@@ -2,6 +2,4 @@
 <DynamicInterface(GetType(EcmaScriptObject))>
 Public Interface [ChannelSplitterNode]
 'Defined on this type 
-  '''<Summary>Creates a new ChannelSplitterNode object instance.</Summary>
-  Function [ChannelSplitterNode]() As ChannelSplitterNode
 End Interface

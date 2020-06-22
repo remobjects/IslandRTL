@@ -2,10 +2,10 @@
 <DynamicInterface(GetType(EcmaScriptObject))>
 Public Interface [MutationObserver]
 'Defined on this type 
-  '''<Summary>Creates and returns a new MutationObserver which will invoke a specified callback function when DOM changes occur.</Summary>
-  Function [MutationObserver]() As MutationObserver
   '''<Summary>Stops the MutationObserver instance from receiving further notifications until and unless observe() is called again.</Summary>
   Sub [disconnect]([pardestination] As Dynamic, [paroutput] As Dynamic, [parinput] As Dynamic)
+  '''<Summary>Configures the MutationObserver to begin receiving notifications through its callback function when DOM changes matching the given options occur.</Summary>
+  Sub [observe]([partarget] As Dynamic, [paroptions] As Dynamic)
   '''<Summary>Removes all pending notifications from the MutationObserver's notification queue and returns them in a new Array of MutationRecord objects.</Summary>
   Function [takeRecords]() As MutationRecord()
 End Interface

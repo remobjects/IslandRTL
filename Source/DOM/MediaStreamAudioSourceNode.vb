@@ -4,6 +4,4 @@ Public Interface [MediaStreamAudioSourceNode]
 'Defined on this type 
   '''<Summary>The MediaStream used when constructing this MediaStreamAudioSourceNode.</Summary>
   ReadOnly Property [mediaStream] As MediaStream
-  '''<Summary>Creates a new MediaStreamAudioSourceNode object instance with the specified options.</Summary>
-  Function [MediaStreamAudioSourceNode]() As MediaStreamAudioSourceNode
 End Interface

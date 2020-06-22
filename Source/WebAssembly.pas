@@ -8,6 +8,7 @@
 type
   RemObjects.Elements.System.rpmalloc.__Global = public partial class
   assembly
+
     const
       _SC_PAGESIZE = 1;
       MAP_ANONYMOUS = $20;
@@ -20,6 +21,7 @@ type
       memory_order_relaxed = 0;
       memory_order_release = 0;
       memory_order_acquire = 0;
+
     class method munmap(addr: ^Void; size: IntPtr): Integer;
     begin
       //ExternalCalls.trap;
@@ -64,7 +66,9 @@ type
     begin
       exit (if InternalCalls.CompareExchange(var (val)^, newval, oldval^) = oldval^ then (1) else (0));
     end;
+
   public
+
     [SymbolName('mmap')]
     class method mmap(addr: ^Void; size: IntPtr; prot, flags: Integer; handle, offset: IntPtr): ^Void;
     begin
@@ -84,6 +88,7 @@ type
     end;
 
   end;
+
   WebAssemblyCalls = public static class
   public
     [DllImport('', EntryPoint := '__island_consolelogint')]
@@ -331,6 +336,7 @@ type
     end;
 
   public
+
     constructor(aValue: IntPtr);
     begin
       if aValue = 0 then raise new ArgumentNullException('0 not allowed');
@@ -364,7 +370,6 @@ type
       result := val.Handle;
       val.Release;
     end;
-
 
     property Items[s: String]: Object read get_Items write set_Items; default;
     property Items[i: Integer]: Object read get_Items write set_Items; default;
@@ -504,7 +509,9 @@ type
       fProxies.Add(IntPtr(aType.RTTI), lBase);
       exit lBase;
     end;
+
   public
+
     property Global: dynamic := new EcmaScriptObject(-1); lazy;
     property Object: dynamic := EcmaScriptObject(&Global)['Object']; lazy;
 
@@ -669,7 +676,10 @@ type
     end;
   end;
 
-  Browser = public static class
+  [Obsolete("Please use RemObjects.Elements.WebAssembly.Browser instead")]
+  Browser = public RemObjects.Elements.WebAssembly.Browser;
+
+  RemObjects.Elements.WebAssembly.Browser = public static class
   public
     class method GetElementById(id: String): dynamic;//RemObjects.Elements.WebAssembly.DOM.Element>;
     begin
@@ -713,7 +723,7 @@ type
       WebAssemblyCalls.ResponseBinaryTextToArray(lArray, @result[0]);
     end;
 
-    class method NewXMLHttpRequest(): RemObjects.Elements.WebAssembly.DOM.XMLHttpRequest;
+    class method NewXMLHttpRequest: RemObjects.Elements.WebAssembly.DOM.XMLHttpRequest;
     begin
       exit new EcmaScriptObject(WebAssemblyCalls.New_XMLHttpRequest()) as RemObjects.Elements.WebAssembly.DOM.XMLHttpRequest;
     end;
@@ -722,9 +732,18 @@ type
     begin
       exit new EcmaScriptObject(WebAssemblyCalls.New_WebSocket(s)) as RemObjects.Elements.WebAssembly.DOM.WebSocket;
     end;
+
+    // Auto-generated
+
+
+    // Auto-generated end
+
   end;
 
-  Node = public static class
+  [Obsolete("Please use RemObjects.Elements.WebAssembly.NodeJS instead")]
+  Node = public RemObjects.Elements.WebAssembly.NodeJS;
+
+  RemObjects.Elements.WebAssembly.NodeJS = public static class
   public
     class method &require(aModule: String): dynamic;
     begin
@@ -767,6 +786,7 @@ type
   end;
 
   WebAssemblyType = public enum (Null, Undefined, String, Number, &Function, Symbol, Object, Boolean);
+
   ExternalCalls = public static class
   private
   public
@@ -948,10 +968,10 @@ type
     rpmalloc.rpfree(v);
   end;
 
-    [SymbolName('__elements_get_stack_pointer'), Used, DllExport]
-    method GetStackPointer: IntPtr;
-    begin
-      exit IntPtr(@result);
-    end;
+  [SymbolName('__elements_get_stack_pointer'), Used, DllExport]
+  method GetStackPointer: IntPtr;
+  begin
+    exit IntPtr(@result);
+  end;
 
 end.

@@ -14,8 +14,4 @@ Public Interface [Sensor]
   Property [onreading] As EventListener
   '''<Summary>Called when one of the Sensor interface's becomes active.</Summary>
   Property [onactivate] As EventListener
-  '''<Summary>Activates one of the sensors based on Sensor.</Summary>
-  Sub [start]([parwhen] As Dynamic, [paroffset] As Dynamic, [parduration] As Dynamic)
-  '''<Summary>Deactivates one of the sensors based on Sensor.</Summary>
-  Sub [stop]([parwhen] As Dynamic)
 End Interface

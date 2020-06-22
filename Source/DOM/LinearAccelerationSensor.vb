@@ -8,6 +8,4 @@ Public Interface [LinearAccelerationSensor]
   ReadOnly Property [y] As Double
   '''<Summary>Returns a double containing the linear acceleration of the device along the device's z axis.</Summary>
   ReadOnly Property [z] As Double
-  '''<Summary>Creates a new LinearAccelerationSensor object.</Summary>
-  Function [LinearAccelerationSensor]() As LinearAccelerationSensor
 End Interface

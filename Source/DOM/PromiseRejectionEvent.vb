@@ -6,6 +6,4 @@ Public Interface [PromiseRejectionEvent]
   ReadOnly Property [promise] As Dynamic
   '''<Summary>A value or Object indicating why the promise was rejected, as passed to Promise.reject().</Summary>
   ReadOnly Property [reason] As Dynamic
-  '''<Summary>Creates a PromiseRejectionEvent event, given the type of event (unhandledrejection or rejectionhandled) and other details.</Summary>
-  Function [PromiseRejectionEvent]() As PromiseRejectionEvent
 End Interface

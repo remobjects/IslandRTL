@@ -35,9 +35,9 @@ Public Interface [MediaTrackSupportedConstraints]
   '''<Summary>A Boolean value whose value is true if the groupId constraint is supported in the current environment.</Summary>
   Property [groupId] As Integer
   '''<Summary></Summary>
-  Property [cursor] As String
+  Property [cursor] As Boolean
   '''<Summary></Summary>
-  Property [displaySurface] As String
+  Property [displaySurface] As Boolean
   '''<Summary>A Boolean value which is true if the logicalSurface constraint is supported in the current environment.</Summary>
   Property [logicalSurface] As Boolean
 End Interface

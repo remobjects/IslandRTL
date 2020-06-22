@@ -7,7 +7,7 @@ Public Interface [DOMPointInit]
   '''<Summary>An unrestricted floating-point number providing the point's y-coordinate. This is the vertical coordinate, and barring any transforms applied to the coordinate system, positive values are downward and negative values upward toward the top of the screen. The default is 0.</Summary>
   Property [y] As Double
   '''<Summary>An unrestricted floating-point value which gives the point's z-coordinate, which is (assuming no transformations that alter the situation) the depth coordinate; positive values are closer to the user and negative values retreat back into the screen. The default value is 0.</Summary>
-  Property [z] As Double
+  Property [z] As DOMPointInit
   '''<Summary>The point's w perspective value, given as an unrestricted floating-point number. The default is 1.</Summary>
   Property [w] As Double
 End Interface

@@ -8,6 +8,4 @@ Public Interface [MessageChannel]
   ReadOnly Property [port2] As MessagePort
   '''<Summary></Summary>
   Property [MessageChannel] As MessageChannel
-  '''<Summary>	Returns a new MessageChannel object with two new MessagePort objects.	</Summary>
-  Function [MessageChannel]() As MessageChannel
 End Interface

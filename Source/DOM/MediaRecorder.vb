@@ -7,7 +7,7 @@ Public Interface [MediaRecorder]
   '''<Summary>Returns the current state of the MediaRecorder object (inactive, recording, or paused.)</Summary>
   ReadOnly Property [state] As Dynamic
   '''<Summary>Returns the stream that was passed into the constructor when the MediaRecorder was created.</Summary>
-  ReadOnly Property [stream] As Dynamic
+  ReadOnly Property [stream] As MediaRecorder()
   '''<Summary>Indicates whether the MediaRecorder instance will record input when the input MediaStreamTrack is muted. If this attribute is false, MediaRecorder will record silence for audio and black frames for video. The default is false.</Summary>
   Property [ignoreMutedMedia] As Dynamic
   '''<Summary>Called to handle the dataavailable event, which is periodically triggered each time timeslice milliseconds of media have been recorded (or when the entire media has been recorded, if timeslice wasn't specified). The event, of type BlobEvent, contains the recorded media in its data property. You can then collect and act upon that recorded media data using this event handler.</Summary>
@@ -22,14 +22,10 @@ Public Interface [MediaRecorder]
   Property [onstart] As EventListener
   '''<Summary>An EventHandler called to handle the stop event, which occurs when media recording ends, either when the MediaStream ends — or after the MediaRecorder.stop() method is called.</Summary>
   Property [onstop] As EventListener
-  '''<Summary>Creates a new MediaRecorder object, given a MediaStream to record. Options are available to do things like set the container's MIME type (such as "video/webm" or "video/mp4") and the bit rates of the audio and video tracks or a single overall bit rate.</Summary>
-  Function [MediaRecorder]() As MediaRecorder
   '''<Summary>Pauses the recording of media.</Summary>
-  Function [pause]() As Dynamic
+  Sub [pause]()
   '''<Summary>Requests a Blob containing the saved data received thus far (or since the last time requestData() was called. After calling this method, recording continues, but in a new Blob.</Summary>
   Function [requestData]() As Byte()
   '''<Summary>Begins recording media; this method can optionally be passed a timeslice argument with a value in milliseconds. If this is specified, the media will be captured in separate chunks of that duration, rather than the default behavior of recording the media in a single large chunk.</Summary>
   Function [start]([parwhen] As Dynamic, [paroffset] As Dynamic, [parduration] As Dynamic) As Long
-  '''<Summary>Stops recording, at which point a dataavailable event containing the final Blob of saved data is fired. No more recording occurs.</Summary>
-  Sub [stop]([parwhen] As Dynamic)
 End Interface

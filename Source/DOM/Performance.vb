@@ -7,9 +7,9 @@ Public Interface [Performance]
   '''<Summary>Removes the given measure from the browser's performance entry buffer.</Summary>
   Sub [clearMeasures]()
   '''<Summary>Returns a list of PerformanceEntry objects based on the given filter.</Summary>
-  Function [getEntries]([parPerformanceEntryFilterOptions] As Dynamic) As PerformanceEntry()
+  Function [getEntries]() As PerformanceEntry()
   '''<Summary>Returns a list of PerformanceEntry objects based on the given name and entry type.</Summary>
-  Function [getEntriesByName]([parname] As Dynamic, [partype] As Dynamic) As PerformanceEntry()
+  Function [getEntriesByName]([parname As Dynamic, type] As Dynamic) As PerformanceEntry()
   '''<Summary>Returns a list of PerformanceEntry objects of the given entry type.</Summary>
   Function [getEntriesByType]([partype] As Dynamic) As PerformanceEntry()
   '''<Summary>Creates a timestamp in the browser's performance entry buffer with the given name.</Summary>

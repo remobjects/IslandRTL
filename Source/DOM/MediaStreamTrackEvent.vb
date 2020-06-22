@@ -6,6 +6,4 @@ Inherits [Event]
 'Defined on this type 
   '''<Summary>Constructs a new MediaStreamTrackEvent with the specified configuration.</Summary>
   Property [MediaStreamTrackEvent] As MediaStreamTrackEvent
-  '''<Summary>Constructs a new MediaStreamTrackEvent with the specified configuration.</Summary>
-  Function [MediaStreamTrackEvent]() As MediaStreamTrackEvent
 End Interface

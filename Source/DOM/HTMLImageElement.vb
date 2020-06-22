@@ -35,11 +35,9 @@ Public Interface [HTMLImageElement]
   '''<Summary>An integer value that reflects the width HTML attribute, indicating the rendered width of the image in CSS pixels.</Summary>
   Property [width] As Integer
   '''<Summary>An integer indicating the horizontal offset of the left border edge of the image's CSS layout box relative to the origin of the  element represents the root (top-level element) of an HTML document, so it is also referred to as the root element. All other elements must be descendants of this element.">&lt;html&gt; element's containing block.</Summary>
-  ReadOnly Property [x] As HTMLElement
+  ReadOnly Property [x] As Double
   '''<Summary>The integer vertical offset of the top border edge of the image's CSS layout box relative to the origin of the  element represents the root (top-level element) of an HTML document, so it is also referred to as the root element. All other elements must be descendants of this element.">&lt;html&gt; element's containing block.</Summary>
-  ReadOnly Property [y] As HTMLElement
-  '''<Summary>The Image() constructor creates and returns a new HTMLImageElement object representing an HTML  element embeds an image into the document.">&lt;img&gt; element which is not attached to any DOM tree. It accepts optional width and height parameters. When called without parameters, new Image() is equivalent to calling document.createElement("img").</Summary>
-  Function [Image]([parwidth] As Dynamic, [parheight] As Dynamic) As HTMLImageElement
+  ReadOnly Property [y] As Double
   '''<Summary>Returns a Promise that resolves when the image is decoded and it's safe to append the image to the DOM. This prevents rendering of the next frame from having to pause to decode the image, as would happen if an undecoded image were added to the DOM.</Summary>
   Function [decode]() As Dynamic
 End Interface

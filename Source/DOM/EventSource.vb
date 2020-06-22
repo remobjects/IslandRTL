@@ -14,6 +14,6 @@ Public Interface [EventSource]
   Property [onmessage] As EventListener
   '''<Summary>Is an EventHandler called when an open event is received, that is when the connection was just opened.</Summary>
   Property [onopen] As EventListener
-  '''<Summary>Creates a new EventSource to handle receiving server-sent events from a specified URL, optionally in credentials mode.</Summary>
-  Function [EventSource]() As EventSource
+  '''<Summary>Closes the connection, if any, and sets the readyState attribute to CLOSED. If the connection is already closed, the method does nothing.</Summary>
+  Sub [close]()
 End Interface

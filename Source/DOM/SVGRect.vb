@@ -3,9 +3,9 @@
 Public Interface [SVGRect]
 'Defined on this type 
   '''<Summary>The exact effect of this coordinate depends on each element. If the attribute is not specified, the effect is as if a value of 0 were specified.</Summary>
-  Property [x] As Dynamic
+  Property [x] As Double
   '''<Summary>The exact effect of this coordinate depends on each element.If the attribute is not specified, the effect is as if a value of 0 were specified.</Summary>
-  Property [y] As Dynamic
+  Property [y] As Double
   '''<Summary>This represents the width of the rectangle.A value that is negative results to an error. A value of zero disables rendering of the element</Summary>
   Property [width] As Integer
 End Interface

@@ -3,7 +3,7 @@
 Public Interface [IDBFactory]
 'Defined on this type 
   '''<Summary>The current method to request opening a connection to a database.</Summary>
-  Function [open]([parname] As Dynamic) As IDBOpenDBRequest
+  Function [open]() As IDBOpenDBRequest
   '''<Summary>A method to request the deletion of a database.</Summary>
   Function [deleteDatabase]([parname] As Dynamic, [paroptions] As Dynamic) As IDBOpenDBRequest
   '''<Summary>A method that compares two keys and returns a result indicating which one is greater in value.</Summary>

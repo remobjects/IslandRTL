@@ -6,6 +6,4 @@ Public Interface [ConvolverNode]
   Property [buffer] As AudioBuffer
   '''<Summary>A boolean that controls whether the impulse response from the buffer will be scaled by an equal-power normalization when the buffer attribute is set, or not.</Summary>
   Property [normalize] As Boolean
-  '''<Summary>Creates a new ConvolverNode object instance.</Summary>
-  Function [ConvolverNode]() As ConvolverNode
 End Interface

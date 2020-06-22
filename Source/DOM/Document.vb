@@ -58,8 +58,10 @@ Public Interface [Document]
   Property [domain] As Dynamic
   '''<Summary>Returns the date on which the document was last modified.</Summary>
   ReadOnly Property [lastModified] As Date
+  '''<Summary>Returns the URI of the current document.</Summary>
+  ReadOnly Property [location] As Dynamic
   '''<Summary>Returns loading status of the document.</Summary>
-  ReadOnly Property [readyState] As Double
+  ReadOnly Property [readyState] As Dynamic
   '''<Summary>Returns the URI of the page that linked to this page.</Summary>
   ReadOnly Property [referrer] As Dynamic
   '''<Summary>Sets or gets the title of the current document.</Summary>
@@ -76,8 +78,6 @@ Public Interface [Document]
   Property [onreadystatechange] As EventListener
   '''<Summary>Is an EventHandler representing the code to be called when the visibilitychange event is raised.</Summary>
   Property [onvisibilitychange] As EventListener
-  '''<Summary>Creates a new Document object.</Summary>
-  Function [Document]() As Document
   '''<Summary>Adopt node from an external document.</Summary>
   Function [adoptNode]([parexternalNode] As Dynamic) As Node
   '''<Summary>Creates a new Attr object and returns it.</Summary>
@@ -138,6 +138,8 @@ Public Interface [Document]
   resultType As Dynamic,
   result
 ] As Dynamic) As Dynamic
+  '''<Summary>Closes a document stream for writing.</Summary>
+  Function [close]() As Dynamic
   '''<Summary>On an editable document, executes a formating command.</Summary>
   Function [execCommand]([paraCommandName] As Dynamic, [paraShowDefaultUI] As Dynamic, [paraValueArgument] As Dynamic) As Dynamic
   '''<Summary>Returns a list of elements with the given name.</Summary>
@@ -145,7 +147,7 @@ Public Interface [Document]
   '''<Summary>Returns true if the focus is currently located anywhere inside the specified document.</Summary>
   Function [hasFocus]() As Boolean
   '''<Summary>Opens a document stream for writing.</Summary>
-  Function [open]([parname] As Dynamic) As IDBOpenDBRequest
+  Function [open]() As Dynamic
   '''<Summary>Returns true if the formating command can be executed on the current range.</Summary>
   Function [queryCommandEnabled]() As Boolean
   '''<Summary>Returns true if the formating command is in an indeterminate state on the current range.</Summary>
@@ -160,8 +162,6 @@ Public Interface [Document]
   Function [write]([pardata] As Dynamic) As Dynamic
   '''<Summary>Writes a line of text in a document.</Summary>
   Function [writeln]([parline] As Dynamic) As Dynamic
-  '''<Summary>Returns a Selection object representing the range of text selected by the user, or the current position of the caret.</Summary>
-  Function [getSelection]() As Dynamic
   '''<Summary>Returns the topmost element at the specified coordinates.</Summary>
   Function [elementFromPoint]([parx] As Dynamic, [pary] As Dynamic) As Dynamic
 End Interface

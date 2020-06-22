@@ -12,6 +12,4 @@ Public Interface [StaticRange]
   ReadOnly Property [startContainer] As Node
   '''<Summary>Returns an integer value indicating the offset into the node specified by startContainer at which the first character of the range is located.</Summary>
   ReadOnly Property [startOffset] As Integer
-  '''<Summary>Creates a new StaticRange object given the StaticRangeInit dictionary specifying the default values for its properties.</Summary>
-  Function [StaticRange]() As StaticRange
 End Interface

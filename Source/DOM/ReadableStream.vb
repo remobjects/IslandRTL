@@ -4,8 +4,6 @@ Public Interface [ReadableStream]
 'Defined on this type 
   '''<Summary>The locked getter returns whether or not the readable stream is locked to a reader.</Summary>
   ReadOnly Property [locked] As Dynamic
-  '''<Summary>Creates and returns a readable stream object from the given handlers.</Summary>
-  Function [ReadableStream]() As ReadableStream
   '''<Summary>Cancels the stream, signaling a loss of interest in the stream by a consumer. The supplied reason argument will be given to the underlying source, which may or may not use it.</Summary>
   Function [cancel]([parreason] As Dynamic) As Dynamic
   '''<Summary>Creates a ReadableStream async iterator instance and locks the stream to it. While the stream is locked, no other reader can be acquired until this one is released.</Summary>
@@ -14,4 +12,6 @@ Public Interface [ReadableStream]
   Function [getReader]([parmode] As Dynamic) As Dynamic
   '''<Summary>The tee method tees this readable stream, returning a two-element array containing the two resulting branches as new ReadableStream instances. Each of those streams receives the same incoming data.</Summary>
   Function [tee]() As Dynamic
+  '''<Summary>Alias of getIterator method.</Summary>
+  Function [ReadableStream]() As Dynamic
 End Interface

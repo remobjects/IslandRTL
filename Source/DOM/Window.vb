@@ -6,6 +6,8 @@ Public Interface [Window]
   ReadOnly Property [console] As Dynamic
   '''<Summary>returns a reference to the CustomElementRegistry object, which can be used to register new custom elements and get information about previously registered custom elements.</Summary>
   ReadOnly Property [customElements] As Dynamic
+  '''<Summary>Returns the browser crypto object.</Summary>
+  ReadOnly Property [crypto] As Dynamic
   '''<Summary>Gets the arguments passed to the window (if it's a dialog box) at the time window.showModalDialog() was called. This is an nsIArray.</Summary>
   ReadOnly Property [dialogArguments] As Dynamic
   '''<Summary>Returns a reference to the document that the window contains.</Summary>
@@ -18,12 +20,16 @@ Public Interface [Window]
   ReadOnly Property [frames] As Document()
   '''<Summary>This property indicates whether the window is displayed in full screen or not.</Summary>
   Property [fullScreen] As Dynamic
+  '''<Summary>Returns a reference to the history object.</Summary>
+  ReadOnly Property [history] As Dynamic
   '''<Summary>Gets the height of the content area of the browser window including, if rendered, the horizontal scrollbar.</Summary>
   ReadOnly Property [innerHeight] As Integer
   '''<Summary>Gets the width of the content area of the browser window including, if rendered, the vertical scrollbar.</Summary>
   ReadOnly Property [innerWidth] As Integer
   '''<Summary>Returns the number of frames in the window. See also window.frames.</Summary>
   ReadOnly Property [length] As Integer
+  '''<Summary>Gets/sets the location, or current URL, of the window object.</Summary>
+  Property [location] As Dynamic
   '''<Summary>Returns the locationbar object, whose visibility can be toggled in the window.</Summary>
   ReadOnly Property [locationbar] As Dynamic
   '''<Summary>Returns a reference to the local storage object used to store data that may only be accessed by the origin that created it.</Summary>
@@ -120,18 +126,20 @@ Public Interface [Window]
   Property [onvrdisplaypresentchange] As EventListener
   '''<Summary>Displays an alert dialog.</Summary>
   Function [alert]([parmessage] As Dynamic) As Dynamic
+  '''<Summary>Sets focus away from the window.</Summary>
+  Function [blur]() As Dynamic
   '''<Summary>Cancels the repeated execution set using setImmediate.</Summary>
   Function [clearImmediate]([parimmediateID] As Dynamic) As Dynamic
+  '''<Summary>Closes the current window.</Summary>
+  Function [close]() As Dynamic
   '''<Summary>Displays a dialog with a message that the user needs to respond to.</Summary>
   Function [confirm]([parmessage] As Dynamic) As Dynamic
   '''<Summary>Searches for a given string in a window.</Summary>
   Function [find]([parparaString] As Dynamic, [paraCaseSensitive] As Dynamic, [paraBackwards] As Dynamic, [paraWrapAround] As Dynamic, [paraWholeWord] As Dynamic, [paraSearchInFrames] As Dynamic, [paraShowDialog] As Dynamic) As String
   '''<Summary>Sets focus on the current window.</Summary>
-  Function [focus]() As Dynamic
+  Function [focus]([paroptions] As Dynamic, [parpreventScroll] As Dynamic) As Dynamic
   '''<Summary>Gets computed style for the specified element. Computed style indicates the computed values of all CSS properties of the element.</Summary>
   Function [getComputedStyle]([parelement] As Dynamic) As HTMLElement
-  '''<Summary>Returns the selection object representing the selected item(s).</Summary>
-  Function [getSelection]() As Dynamic
   '''<Summary>Returns a MediaQueryList object representing the specified media query string.</Summary>
   Function [matchMedia]([parmediaQueryString] As Dynamic) As Dynamic
   '''<Summary>FIXME: NeedsContents</Summary>
@@ -143,9 +151,9 @@ Public Interface [Window]
   '''<Summary>Moves the window to the specified coordinates.</Summary>
   Function [moveTo]() As Dynamic
   '''<Summary>Opens a new window.</Summary>
-  Function [open]([parname] As Dynamic) As IDBOpenDBRequest
+  Function [open]() As Dynamic
   '''<Summary>Provides a secure means for one window to send a string of data to another window, which need not be within the same domain as the first.</Summary>
-  Function [postMessage]([parmessage] As Dynamic, [partransferList] As Dynamic) As String
+  Function [postMessage]([paraMessage] As Dynamic, [partransferList] As Dynamic) As String
   '''<Summary>Opens the Print Dialog to print the current document.</Summary>
   Function [print]() As Dynamic
   '''<Summary>Returns the text entered by the user in a prompt dialog.</Summary>
@@ -165,11 +173,11 @@ Public Interface [Window]
   '''<Summary>Executes a function after the browser has finished other heavy tasks</Summary>
   Function [setImmediate]([parparfunc] As Dynamic, [parparparam1] As Dynamic, [parparparam2] As Dynamic) As Dynamic
   '''<Summary>This method stops window loading.</Summary>
-  Sub [stop]([parwhen] As Dynamic)
+  Function [stop]([parwhen] As Dynamic) As Dynamic
   '''<Summary>Register an event handler to a specific event type on the window.</Summary>
-  Sub [addEventListener]([partype] As Dynamic, [parlistener] As Dynamic, [paroptions] As Dynamic, [parcapture] As Dynamic, [paronce] As Dynamic, [parpassive] As Dynamic)
+  Function [addEventListener]([partype] As Dynamic, [parlistener] As Dynamic, [paroptions] As Dynamic, [parcapture] As Dynamic, [paronce] As Dynamic, [parpassive] As Dynamic) As Dynamic
   '''<Summary>Used to trigger an event.</Summary>
-  Sub [dispatchEvent]([parevent] As Dynamic)
+  Function [dispatchEvent]([parevent] As Dynamic) As Dynamic
   '''<Summary>Decodes a string of data which has been encoded using base-64 encoding.</Summary>
   Function [atob]([parencodedData] As Dynamic) As String
   '''<Summary>Creates a base-64 encoded ASCII string from a string of binary data.</Summary>

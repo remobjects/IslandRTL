@@ -7,7 +7,7 @@ Public Interface [XRViewport]
   '''<Summary>The width, in pixels, of the viewport.</Summary>
   ReadOnly Property [width] As Integer
   '''<Summary>The offset from the origin of the destination graphics surface (typically a XRWebGLLayer) to the left edge of the viewport, in pixels.</Summary>
-  ReadOnly Property [x] As Integer
+  ReadOnly Property [x] As Double
   '''<Summary>The offset from the origin of the viewport to the bottom edge of the viewport; WebGL's coordinate system places (0, 0) at the bottom left corner of the surface.</Summary>
   ReadOnly Property [y] As Double
 End Interface

@@ -5,7 +5,7 @@ Public Interface [NodeList]
   '''<Summary>The number of nodes in the NodeList.</Summary>
   Property [length] As Integer
   '''<Summary>Returns an item in the list by its index, or null if the index is out-of-bounds.</Summary>
-  Sub [item]([parindex] As Dynamic)
+  Function [item]() As Node()
   '''<Summary>Returns an iterator, allowing code to go through all key/value pairs contained in the collection. (In this case, the keys are numbers starting from 0 and the values are nodes.)</Summary>
   Function [entries]() As Dynamic
   '''<Summary>Executes a provided function once per NodeList element, passing the element as an argument to the function.</Summary>

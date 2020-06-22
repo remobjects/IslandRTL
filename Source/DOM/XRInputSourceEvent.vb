@@ -6,6 +6,4 @@ Public Interface [XRInputSourceEvent]
   ReadOnly Property [frame] As Dynamic
   '''<Summary>An XRInputSource object indicating which input source generated the input event.</Summary>
   ReadOnly Property [inputSource] As Dynamic
-  '''<Summary>Creates and returns a new XRInputSourceEvent object whose properties match those provided in the eventInitDict dictionary provided.</Summary>
-  Function [XRInputSourceEvent]() As XRInputSourceEvent
 End Interface

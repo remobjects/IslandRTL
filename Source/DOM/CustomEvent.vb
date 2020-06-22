@@ -4,8 +4,6 @@ Public Interface [CustomEvent]
 'Defined on this type 
   '''<Summary>Any data passed when initializing the event.</Summary>
   ReadOnly Property [detail] As Dynamic
-  '''<Summary>Creates a CustomEvent.</Summary>
-  Function [CustomEvent]() As CustomEvent
   '''<Summary>Returns the event’s path (objects on which listeners will be invoked). This does not include nodes in shadow trees if the shadow root was created with its ShadowRoot.mode closed.</Summary>
   Function [composedPath]() As Dynamic
   '''<Summary>Cancels the event (if it is cancelable).</Summary>

@@ -1,7 +1,7 @@
 ﻿'''<Summary>The Request interface of the Fetch API represents a resource request.</Summary>
 <DynamicInterface(GetType(EcmaScriptObject))>
 Public Interface [Request]
-'Defined on this type 
+'Defined on this type
   '''<Summary>Contains the cache mode of the request (e.g., default, reload, no-cache).</Summary>
   ReadOnly Property [cache] As Dynamic
   '''<Summary>Contains the credentials of the request (e.g., omit, same-origin, include). The default is same-origin.</Summary>
@@ -15,7 +15,7 @@ Public Interface [Request]
   '''<Summary>Contains the request's method (GET, POST, etc.)</Summary>
   ReadOnly Property [method] As Dynamic
   '''<Summary>Contains the mode of the request (e.g., cors, no-cors, same-origin, navigate.)</Summary>
-  ReadOnly Property [mode] As String
+  ReadOnly Property [mode] As Dynamic
   '''<Summary>Contains the mode for how redirects are handled. It may be one of follow, error, or manual.</Summary>
   ReadOnly Property [redirect] As String
   '''<Summary>Contains the referrer of the request (e.g., client).</Summary>
@@ -24,19 +24,17 @@ Public Interface [Request]
   ReadOnly Property [referrerPolicy] As Dynamic
   '''<Summary>Contains the URL of the request.</Summary>
   ReadOnly Property [url] As String
-  '''<Summary>A simple getter used to expose a ReadableStream of the body contents.</Summary>
-  ReadOnly Property [body] As Dynamic
   '''<Summary>Stores a Boolean that declares whether the body has been used in a response yet.</Summary>
   ReadOnly Property [bodyUsed] As Boolean
-  '''<Summary>Creates a new Request object.</Summary>
-  Function [Request]() As Request
   '''<Summary>Creates a copy of the current Request object.</Summary>
   Function [clone]() As Request
   '''<Summary>Returns a promise that resolves with an ArrayBuffer representation of the request body.</Summary>
   Function [arrayBuffer]() As Byte()
   '''<Summary>Returns a promise that resolves with a Blob representation of the request body.</Summary>
-  Function [blob]() As Byte()
-  '''<Summary>Returns a promise that resolves with a JSON representation of the request body.</Summary>
+  Function [blob]([pararray] As Dynamic, [paroptions] As Dynamic, [partype] As Dynamic, [parendings] As Dynamic) As Byte()
+  '''<Summary>Returns a promise that resolves with a FormData representation of the request body.</Summary>
+  'Function [formData]([par= new FormData(form] As Dynamic) As Dynamic
+  ''''<Summary>Returns a promise that resolves with a JSON representation of the request body.</Summary>
   Function [json]() As Dynamic
   '''<Summary>Returns a promise that resolves with an USVString (text) representation of the request body.</Summary>
   Function [text]() As String

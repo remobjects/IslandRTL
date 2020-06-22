@@ -16,6 +16,4 @@ Public Interface [TouchEvent]
   ReadOnly Property [targetTouches] As TouchList
   '''<Summary>A TouchList of all the Touch objects representing all current points of contact with the surface, regardless of target or changed status.</Summary>
   ReadOnly Property [touches] As TouchList
-  '''<Summary>Creates a TouchEvent object.</Summary>
-  Function [TouchEvent]() As TouchEvent
 End Interface

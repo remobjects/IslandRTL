@@ -2,6 +2,8 @@
 <DynamicInterface(GetType(EcmaScriptObject))>
 Public Interface [WorkerGlobalScope]
 'Defined on this type 
+  '''<Summary>Returns the WorkerLocation associated with the worker. It is a specific location object, mostly a subset of the Location for browsing scopes, but adapted to workers.</Summary>
+  ReadOnly Property [location] As Dynamic
   '''<Summary>Returns the CacheStorage object associated with the current context. This object enables functionality such as storing assets for offline use, and generating custom responses to requests.</Summary>
   ReadOnly Property [caches] As Dynamic
   '''<Summary>Provides a mechanism for applications to asynchronously access capabilities of indexed databases; returns an IDBFactory object.</Summary>
@@ -28,4 +30,6 @@ Public Interface [WorkerGlobalScope]
   Function [setInterval]([parfunc] As Dynamic, [parcode] As Dynamic, [pardelay] As Dynamic, ParamArray args() As Dynamic) As Long
   '''<Summary>Schedules a function to execute in a given amount of time.</Summary>
   Function [setTimeout]([parfunction] As Dynamic, [parcode] As Dynamic, [pardelay] As Dynamic, [pararg1] As Dynamic) As Dynamic
+  '''<Summary>Discards any tasks queued in the WorkerGlobalScope's event loop, effectively closing this particular scope. In newer browser versions, close() is available on DedicatedWorkerGlobalScope and SharedWorkerGlobalScope instead. This change was made to stop close() being available on service workers, as it isn't supposed to be used there and always throws an exception when called (see bug 1336043).</Summary>
+  Function [close]() As Dynamic
 End Interface

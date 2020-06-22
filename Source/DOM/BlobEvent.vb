@@ -6,6 +6,4 @@ Public Interface [BlobEvent]
   ReadOnly Property [data] As Dynamic
   '''<Summary>A DOMHighResTimeStamp indicating the difference between the timestamp of the first chunk in data and the timestamp of the first chunk in the first BlobEvent produced by this recorder. Note that the timecode in the first produced BlobEvent does not need to be zero.</Summary>
   ReadOnly Property [timecode] As Date
-  '''<Summary>Creates a BlobEvent event with the given parameters.</Summary>
-  Function [BlobEvent]() As BlobEvent
 End Interface

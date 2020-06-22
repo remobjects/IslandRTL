@@ -10,6 +10,4 @@ Public Interface [USBEndpoint]
   Property [type] As Dynamic
   '''<Summary>Returns the size of the packets that data sent through this endpoint will be divided into.</Summary>
   Property [packetSize] As Dynamic
-  '''<Summary>Creates a new USBEndpoint object which will be populated with information about the endpoint on the provided USBAltenateInterface with the given endpoint number and transfer direction.</Summary>
-  Function [USBEndpoint]() As USBEndpoint
 End Interface

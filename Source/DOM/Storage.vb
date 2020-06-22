@@ -12,4 +12,6 @@ Public Interface [Storage]
   Sub [setItem]([parkeyName] As Dynamic, [parkeyValue] As Dynamic)
   '''<Summary>When passed a key name, will remove that key from the storage.</Summary>
   Sub [removeItem]([parkeyName] As Dynamic)
+  '''<Summary>When invoked, will empty all keys out of the storage.</Summary>
+  Sub [clear]()
 End Interface

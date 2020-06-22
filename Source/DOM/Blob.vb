@@ -6,8 +6,6 @@ Public Interface [Blob]
   ReadOnly Property [size] As Dynamic
   '''<Summary>A string indicating the MIME type of the data contained in the Blob. If the type is unknown, this string is empty.</Summary>
   ReadOnly Property [type] As Dynamic
-  '''<Summary>Returns a newly created Blob object which contains a concatenation of all of the data in the array passed into the constructor.</Summary>
-  Function [Blob]() As Blob
   '''<Summary>Returns a promise that resolves with an ArrayBuffer containing the entire contents of the Blob as binary data.</Summary>
   Function [arrayBuffer]() As Byte()
   '''<Summary>Returns a new Blob object containing the data in the specified range of bytes of the blob on which it's called.</Summary>

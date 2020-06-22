@@ -8,6 +8,4 @@ Public Interface [CloseEvent]
   ReadOnly Property [reason] As String
   '''<Summary>Returns a Boolean that Indicates whether or not the connection was cleanly closed.</Summary>
   ReadOnly Property [wasClean] As Boolean
-  '''<Summary>Creates a new CloseEvent.</Summary>
-  Function [CloseEvent]() As CloseEvent
 End Interface

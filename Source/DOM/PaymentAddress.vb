@@ -24,6 +24,4 @@ Public Interface [PaymentAddress]
   ReadOnly Property [regionCode] As String
   '''<Summary>A DOMString providing a postal sorting code such as is used in France.</Summary>
   ReadOnly Property [sortingCode] As String
-  '''<Summary>A standard serializer that returns a JSON representation of the PaymentAddress object's properties.</Summary>
-  Function [toJSON]() As DOMPointInit
 End Interface

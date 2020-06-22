@@ -6,6 +6,4 @@ Public Interface [WaveShaperNode]
   Property [curve] As Double
   '''<Summary>Is an enumerated value indicating if oversampling must be used. Oversampling is a technique for creating more samples (up-sampling) before applying the distortion effect to the audio signal.</Summary>
   Property [oversample] As WaveShaperNode
-  '''<Summary>Creates a new instance of an WaveShaperNode object.</Summary>
-  Function [WaveShaperNode]() As WaveShaperNode
 End Interface

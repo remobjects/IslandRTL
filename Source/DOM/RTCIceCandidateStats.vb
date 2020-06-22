@@ -10,6 +10,8 @@ Public Interface [RTCIceCandidateStats]
   Property [deleted] As Boolean
   '''<Summary>A string from the RTCNetworkType enumerated type which indicates the type of interface used for a local candidate. This property is only present for local candidates.</Summary>
   Property [networkType] As Dynamic
+  '''<Summary>The network port number used by the candidate.</Summary>
+  Property [port] As Integer
   '''<Summary>The candidate's priority, corresponding to RTCIceCandidate.priority.</Summary>
   Property [priority] As Integer
   '''<Summary>A string specifying the protocol (tcp or udp) used to transmit data on the port.</Summary>

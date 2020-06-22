@@ -4,6 +4,4 @@ Public Interface [OfflineAudioCompletionEvent]
 'Defined on this type 
   '''<Summary>An AudioBuffer containing the result of processing an OfflineAudioContext.</Summary>
   ReadOnly Property [renderedBuffer] As AudioBuffer
-  '''<Summary>Creates a new OfflineAudioCompletionEvent object instance.</Summary>
-  Function [OfflineAudioCompletionEvent]() As OfflineAudioCompletionEvent
 End Interface

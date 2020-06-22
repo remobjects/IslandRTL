@@ -2,6 +2,4 @@
 <DynamicInterface(GetType(EcmaScriptObject))>
 Public Interface [AudioWorkletProcessor]
 'Defined on this type 
-  '''<Summary>Creates a new instance of an AudioWorkletProcessor object.</Summary>
-  Function [AudioWorkletProcessor]() As AudioWorkletProcessor
 End Interface

@@ -41,5 +41,5 @@ Inherits Element
   '''<Summary>Sends a mouse click event to the element.</Summary>
   Function [click]() As HTMLElement
   '''<Summary>Makes the element the current keyboard focus.</Summary>
-  Function [focus]() As HTMLElement
+  Function [focus]([paroptions] As Dynamic, [parpreventScroll] As Dynamic) As HTMLElement
 End Interface

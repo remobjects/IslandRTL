@@ -12,6 +12,4 @@ Public Interface [ErrorEvent]
   ReadOnly Property [colno] As Integer
   '''<Summary>Creates an ErrorEvent event with the given parameters.</Summary>
   Property [ErrorEvent] As ErrorEvent
-  '''<Summary>Creates an ErrorEvent event with the given parameters.</Summary>
-  Function [ErrorEvent]() As ErrorEvent
 End Interface

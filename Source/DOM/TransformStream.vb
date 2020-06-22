@@ -6,6 +6,4 @@ Public Interface [TransformStream]
   ReadOnly Property [readable] As Dynamic
   '''<Summary>The writable end of a TransformStream.</Summary>
   ReadOnly Property [writable] As Dynamic
-  '''<Summary>Creates and returns a transform stream object from the given handlers.</Summary>
-  Function [TransformStream]() As TransformStream
 End Interface

@@ -21,7 +21,7 @@ Public Interface [RTCPeerConnection]
   '''<Summary>The onsignalingstatechange event handler property of the RTCPeerConnection interface specifies a function to be called when the signalingstatechange event occurs on an RTCPeerConnection interface.</Summary>
   Property [onsignalingstatechange] As EventListener
   '''<Summary>The RTCPeerConnection method addTrack() adds a new media track to the set of tracks which will be transmitted to the other peer.</Summary>
-  Function [addTrack]([partrack] As Dynamic, [parstream] As Dynamic) As Dynamic
+  Function [addTrack]([partrack] As Dynamic) As Dynamic
   '''<Summary>The createOffer() method of the RTCPeerConnection interface initiates the creation of an SDP offer for the purpose of starting a new WebRTC connection to a remote peer.</Summary>
   Function [createOffer]([paroptions] As Dynamic) As Dynamic
   '''<Summary>The generateCertificate() method of the RTCPeerConnection interface creates and stores an X.509 certificate and corresponding private key then returns an RTCCertificate, providing access to it.</Summary>

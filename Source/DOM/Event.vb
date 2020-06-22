@@ -18,6 +18,8 @@ Public Interface [Event]
   ReadOnly Property [eventPhase] As Integer
   '''<Summary>A historical property introduced by Internet Explorer and eventually adopted into the DOM specification in order to ensure existing sites continue to work. Ideally, you should try to use Event.preventDefault() and Event.defaultPrevented instead, but you can use returnValue if you choose to do so.</Summary>
   Property [returnValue] As String
+  '''<Summary>A reference to the target to which the event was originally dispatched.</Summary>
+  ReadOnly Property [target] As EventTarget
   '''<Summary>The time at which the event was created (in milliseconds). By specification, this value is time since epoch—but in reality, browsers' definitions vary. In addition, work is underway to change this to be a DOMHighResTimeStamp instead.</Summary>
   ReadOnly Property [timeStamp] As Long
   '''<Summary>The name of the event. Case-insensitive.</Summary>

@@ -6,6 +6,4 @@ Public Interface [MediaQueryListEvent]
   ReadOnly Property [matches] As Boolean
   '''<Summary> A DOMString representing a serialized media query.</Summary>
   ReadOnly Property [media] As Dynamic
-  '''<Summary> Creates a new MediaQueryListEvent instance.</Summary>
-  Function [MediaQueryListEvent]() As MediaQueryListEvent
 End Interface

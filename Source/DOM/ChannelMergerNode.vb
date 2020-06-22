@@ -2,6 +2,4 @@
 <DynamicInterface(GetType(EcmaScriptObject))>
 Public Interface [ChannelMergerNode]
 'Defined on this type 
-  '''<Summary>Creates a new ChannelMergerNode object instance.</Summary>
-  Function [ChannelMergerNode]() As ChannelMergerNode
 End Interface

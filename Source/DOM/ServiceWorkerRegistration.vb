@@ -19,7 +19,7 @@ Public Interface [ServiceWorkerRegistration]
   '''<Summary>Displays the notification with the requested title.</Summary>
   Function [showNotification]([partitle] As Dynamic, [paroptions] As Dynamic) As Dynamic
   '''<Summary>Checks the server for an updated version of the service worker without consulting caches.</Summary>
-  Function [update]() As Integer
+  Function [update]([parvalue] As Dynamic) As Integer
   '''<Summary>Unregisters the service worker registration and returns a Promise. The service worker will finish any ongoing operations before it is unregistered.</Summary>
   Function [unregister]() As Dynamic
 End Interface

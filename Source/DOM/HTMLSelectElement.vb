@@ -36,12 +36,10 @@ Public Interface [HTMLSelectElement]
   Property [value] As String
   '''<Summary>A Boolean that indicates whether the button is a candidate for constraint validation. It is false if any conditions bar it from constraint validation.</Summary>
   ReadOnly Property [willValidate] As Boolean
-  '''<Summary>Adds an element to the collection of option elements for this select element.</Summary>
-  Sub [add]([partoken] As Dynamic)
   '''<Summary>Checks whether the element has any constraints and whether it satisfies them. If the element fails its constraints, the browser fires a cancelable invalid event at the element (and returns false).</Summary>
   Function [checkValidity]() As Boolean
   '''<Summary>Gets an item from the options collection for this  element represents a control that provides a menu of options">&lt;select&gt; element. You can also access an item by specifying the index in array-style brackets or parentheses, without calling this method explicitly.</Summary>
-  Sub [item]([parindex] As Dynamic)
+  Function [item]() As String()
   '''<Summary>Gets the item in the options collection with the specified name. The name string can match either the id or the name attribute of an option node. You can also access an item by specifying the name in array-style brackets or parentheses, without calling this method explicitly.</Summary>
   Function [namedItem]() As String
   '''<Summary>Removes the element at the specified index from the options collection for this select element.</Summary>

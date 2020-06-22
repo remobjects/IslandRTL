@@ -12,6 +12,4 @@ Public Interface [MessageEvent]
   ReadOnly Property [source] As Window
   '''<Summary>An array of MessagePort objects representing the ports associated with the channel the message is being sent through (where appropriate, e.g. in channel messaging or when sending a message to a shared worker).</Summary>
   ReadOnly Property [ports] As MessagePort()
-  '''<Summary>Creates a new MessageEvent.</Summary>
-  Function [MessageEvent]() As MessageEvent
 End Interface

@@ -26,8 +26,6 @@ Public Interface [Location]
   Function [assign]([parurl] As Dynamic) As String
   '''<Summary>Reloads the resource from the current URL. Its optional unique parameter is a Boolean, which, when it is true, causes the page to always be reloaded from the server. If it is false or not specified, the browser may reload the page from its cache.</Summary>
   Function [reload]() As Boolean
-  '''<Summary>Replaces the current resource with the one at the provided URL. The difference from the assign() method is that after using replace() the current page will not be saved in session History, meaning the user won't be able to use the back button to navigate to it.</Summary>
-  Sub [replace]([paroldToken] As Dynamic, [parnewToken] As Dynamic)
   '''<Summary>Returns a USVString containing the whole URL. It is a synonym for HTMLHyperlinkElementUtils.href, though it can't be used to modify the value.</Summary>
   Function [toString]() As String
 End Interface

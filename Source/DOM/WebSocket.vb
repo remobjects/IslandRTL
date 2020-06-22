@@ -19,9 +19,7 @@ Public Interface [WebSocket]
   '''<Summary>The sub-protocol selected by the server.</Summary>
   ReadOnly Property [protocol] As String
   '''<Summary>The current state of the connection.</Summary>
-  ReadOnly Property [readyState] As Double
+  ReadOnly Property [readyState] As Dynamic
   '''<Summary>The absolute URL of the WebSocket.</Summary>
   ReadOnly Property [url] As String
-  '''<Summary>Returns a newly created WebSocket object.</Summary>
-  Function [WebSocket]() As WebSocket
 End Interface

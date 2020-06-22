@@ -4,8 +4,6 @@ Public Interface [WebGLActiveInfo]
 'Defined on this type 
   '''<Summary>The read-only name of the requested variable.</Summary>
   Property [name] As String
-  '''<Summary>The read-only size of the requested variable.</Summary>
-  Property [size] As Dynamic
   '''<Summary>The read-only type of the requested variable.</Summary>
   Property [type] As Dynamic
 End Interface

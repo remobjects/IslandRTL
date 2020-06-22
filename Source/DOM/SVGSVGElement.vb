@@ -4,6 +4,10 @@ Public Interface [SVGSVGElement]
 Inherits SVGGraphicsElement, SVGZoomAndPan
 
 'Defined on this type 
+  '''<Summary>An SVGAnimatedLength corresponding to the x attribute of the given &lt;svg&gt; element.</Summary>
+  ReadOnly Property [x] As Double
+  '''<Summary>An SVGAnimatedLength corresponding to the y attribute of the given &lt;svg&gt; element.</Summary>
+  ReadOnly Property [y] As Double
   '''<Summary>An SVGAnimatedLength corresponding to the width attribute of the given &lt;svg&gt; element.</Summary>
   ReadOnly Property [width] As Integer
   '''<Summary>An SVGAnimatedLength corresponding to the height attribute of the given &lt;svg&gt; element.</Summary>
@@ -35,7 +39,7 @@ Inherits SVGGraphicsElement, SVGZoomAndPan
   '''<Summary>Returns a NodeList of graphics elements whose rendered content is entirely contained within the supplied rectangle. Each candidate graphics element is to be considered a match only if the same graphics element can be a target of pointer events as defined in pointer-events processing.</Summary>
   Function [getEnclosureList]() As Node
   '''<Summary>Returns true if the rendered content of the given element intersects the supplied rectangle. Each candidate graphics element is to be considered a match only if the same graphics element can be a target of pointer events as defined in pointer-events processing.</Summary>
-  Function [checkIntersection]([parauto] As Dynamic, [parnone] As Dynamic) As Boolean
+  Function [checkIntersection]() As Boolean
   '''<Summary>Returns true if the rendered content of the given element is entirely contained within the supplied rectangle. Each candidate graphics element is to be considered a match only if the same graphics element can be a target of pointer events as defined in pointer-events processing.</Summary>
   Function [checkEnclosure]() As Boolean
   '''<Summary>Unselects any selected objects, including any selections of text strings and type-in bars.</Summary>

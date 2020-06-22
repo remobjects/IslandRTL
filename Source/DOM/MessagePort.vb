@@ -10,6 +10,4 @@ Public Interface [MessagePort]
   Property [message] As EventListener
   '''<Summary>Fired when a MessagePort object receives a message that can't be deserialized. Also available via the onmessageerror property.</Summary>
   Property [messageerror] As EventListener
-  '''<Summary>Starts the sending of messages queued on the port (only needed when using EventTarget.addEventListener; it is implied when using MessagePort.onmessage.)</Summary>
-  Sub [start]([parwhen] As Dynamic, [paroffset] As Dynamic, [parduration] As Dynamic)
 End Interface

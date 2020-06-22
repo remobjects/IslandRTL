@@ -15,7 +15,7 @@ Public Interface [IDBCursor]
   '''<Summary>Sets the number of times a cursor should move its position forward.</Summary>
   Function [advance]([parcount] As Dynamic) As Double
   '''<Summary>Returns an IDBRequest object, and, in a separate thread, deletes the record at the cursor's position, without changing the cursor's position. This can be used to delete specific records.</Summary>
-  Function [delete]([parname] As Dynamic) As IDBRequest
+  Function [delete]() As IDBRequest
   '''<Summary>Returns an IDBRequest object, and, in a separate thread, updates the value at the current position of the cursor in the object store. This can be used to update specific records.</Summary>
-  Function [update]() As Integer
+  Function [update]([parvalue] As Dynamic) As Integer
 End Interface

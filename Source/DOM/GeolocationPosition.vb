@@ -5,5 +5,5 @@ Public Interface [GeolocationPosition]
   '''<Summary>Returns a GeolocationCoordinates object defining the current location.</Summary>
   ReadOnly Property [coords] As Dynamic
   '''<Summary>Returns a DOMTimeStamp representing the time at which the location was retrieved.</Summary>
-  ReadOnly Property [timestamp] As DOMHighResTimeStamp
+  ReadOnly Property [timestamp] As DOMTimeStamp
 End Interface

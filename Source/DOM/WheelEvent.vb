@@ -2,6 +2,4 @@
 <DynamicInterface(GetType(EcmaScriptObject))>
 Public Interface [WheelEvent]
 'Defined on this type 
-  '''<Summary>Creates a WheelEvent object.</Summary>
-  Function [WheelEvent]() As WheelEvent
 End Interface

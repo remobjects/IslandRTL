@@ -12,8 +12,6 @@ Public Interface [BiquadFilterNode]
   ReadOnly Property [gain] As Double
   '''<Summary>Is a string value defining the kind of filtering algorithm the node is implementing.</Summary>
   Property [type] As Dynamic
-  '''<Summary>Creates a new instance of a BiquadFilterNode object.</Summary>
-  Function [BiquadFilterNode]() As BiquadFilterNode
   '''<Summary>From the current filter parameter settings this method calculates the frequency response for frequencies specified in the provided array of frequencies.</Summary>
   Sub [getFrequencyResponse]([parfrequencyArray As Dynamic, magResponseOutput As Dynamic, phaseResponseOutput] As Dynamic)
 End Interface
