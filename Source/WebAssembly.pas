@@ -255,6 +255,15 @@ type
 
     [DllImport('', EntryPoint := '__island_node_new_URL')]
     class method New_URL(s: String; s2: String): IntPtr; external;
+
+    [DllImport('', EntryPoint := '__island_isArray')]
+    class method IsArray(aArray: IntPtr): Boolean; external;
+
+    [DllImport('', EntryPoint := '__island_isNodeList')]
+    class method IsNodeList(aNodeList: IntPtr): Boolean; external;
+
+    [DllImport('', EntryPoint := '__island_getNodeListItem')]
+    class method GetNodeListItem(aNodeList: IntPtr; aIndex: Int32): IntPtr; external;
   end;
 
   KnownTypesEnumerator = public procedure (aData: Object; aRTTI: ^Byte);
@@ -297,6 +306,13 @@ type
 
       if aArgs.Length = 0 then
         exit self.Items[aName];
+
+      if WebAssemblyCalls.IsArray(fHandle) and (aArgs.Length = 1) then
+        exit Items[Convert.ToInt32(aArgs[0])]
+      else
+        if WebAssemblyCalls.IsNodeList(fHandle) and (aArgs.Length = 1) then
+          exit new EcmaScriptObject(WebAssemblyCalls.GetNodeListItem(fHandle, Convert.ToInt32(aArgs[0])));
+
       raise new Exception('Array accessors not allowed in EcmaScript');
     end;
 
