@@ -264,6 +264,9 @@ type
 
     [DllImport('', EntryPoint := '__island_getNodeListItem')]
     class method GetNodeListItem(aNodeList: IntPtr; aIndex: Int32): IntPtr; external;
+
+    [DllImport('', EntryPoint := '__island_reflect_construct')]
+    class method ReflectConstruct(aClassName: String; aArgs: ^IntPtr; aArgCount: IntPtr): IntPtr; external;
   end;
 
   KnownTypesEnumerator = public procedure (aData: Object; aRTTI: ^Byte);
@@ -689,6 +692,15 @@ type
     class method CreateArray: dynamic;
     begin
       exit new EcmaScriptObject(WebAssemblyCalls.CreateArray);
+    end;
+
+    class method ReflectConstruct(aClassName: String; aArgs: array of Object): Object;
+    begin
+      var lData := new IntPtr[length(aArgs)];
+      for i: Integer := 0 to length(aArgs) -1 do
+        lData[i] := WebAssembly.CreateHandle(aArgs[i], true);
+      var c := WebAssemblyCalls.ReflectConstruct(aClassName, @lData[0], lData.Length);
+      exit new EcmaScriptObject(c);
     end;
   end;
 

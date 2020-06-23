@@ -527,6 +527,23 @@ export module ElementsWebAssembly {
             var par1 = handletable[aNodeList] as NodeList;
 			return createHandle(par1[aIndex]);
         };				
+        imp.env.__island_reflect_construct = function (name: number, args: number, argcount: number): number {            
+			var reflect = require("reflect-metadata");
+			var nargs = [];
+            if (argcount > 0) {
+                var data = new Int32Array(mem.buffer, args);
+                for (var i = 0; i < argcount; i++) {
+                    var val = handletable[data[i]];
+                    releaseHandle(data[i]);
+                    if (val instanceof Object && '__elements_handle' in val)
+                        val = val.__elements_handle;
+                    nargs[i] = val;
+                }
+            }
+            var classname = readStringFromMemory(name);
+			var func = eval(classname);
+            return createHandle(reflect.Reflect.construct(func, nargs));
+        };		
         imp.env.__island_node_require = function(str: number): number {
             return createHandle(require(readStringFromMemory(str)));
         }
