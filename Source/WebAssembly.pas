@@ -699,7 +699,8 @@ type
       var lData := new IntPtr[length(aArgs)];
       for i: Integer := 0 to length(aArgs) -1 do
         lData[i] := WebAssembly.CreateHandle(aArgs[i], true);
-      var c := WebAssemblyCalls.ReflectConstruct(aClassName, @lData[0], lData.Length);
+      var lArgs := if length(lData) > 0 then @lData[0] else nil;
+      var c := WebAssemblyCalls.ReflectConstruct(aClassName, lArgs, lData.Length);
       exit new EcmaScriptObject(c);
     end;
   end;
