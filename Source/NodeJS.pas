@@ -2,7 +2,7 @@
 
 type
   [Obsolete("Please use RemObjects.Elements.WebAssembly.NodeJS instead")]
-  RemObjects.Elements.WebAssembly.System.Node = public RemObjects.Elements.WebAssembly.NodeJS;
+  RemObjects.Elements.System.Node = public RemObjects.Elements.WebAssembly.NodeJS;
 
   RemObjects.Elements.WebAssembly.NodeJS = public static class
   public

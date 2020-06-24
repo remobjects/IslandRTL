@@ -4,7 +4,7 @@ property &Global: dynamic read RemObjects.Elements.System.WebAssembly.Global;
 
 type
   [Obsolete("Please use RemObjects.Elements.WebAssembly.Browser instead")]
-  RemObjects.Elements.WebAssembly.System.Browser = public RemObjects.Elements.WebAssembly.Browser;
+  RemObjects.Elements.System.Browser = public RemObjects.Elements.WebAssembly.Browser;
 
   Browser = public static class
   public
