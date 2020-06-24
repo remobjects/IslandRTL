@@ -419,7 +419,9 @@ type
 
   LibCEntryHelper = public method (nargs: Integer; args: ^^AnsiChar; envp: ^^AnsiChar): Integer;
   LibCFinalizerHelper = public method();
-
+  {$IF not exists('rtl.__struct__Unwind_Exception')}
+  rtl.__struct__Unwind_Exception = rtl._Unwind_Exception;
+  {$ENDIF}
   ElementsException = public record
   public
     Unwind: rtl.__struct__Unwind_Exception;
