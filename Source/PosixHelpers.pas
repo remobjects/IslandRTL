@@ -21,6 +21,8 @@ type
 
   {$IFDEF ARM and not ARM64 and not DARWIN}
   rtl.__struct__Unwind_Exception = rtl.__struct__Unwind_Control_Block;
+  {$ELSEIF not exists('rtl.__struct__Unwind_Exception')}
+  rtl.__struct__Unwind_Exception = rtl._Unwind_Exception;
   {$ENDIF}
 
   ExternalCalls = public static class
@@ -419,9 +421,7 @@ type
 
   LibCEntryHelper = public method (nargs: Integer; args: ^^AnsiChar; envp: ^^AnsiChar): Integer;
   LibCFinalizerHelper = public method();
-  {$IF not exists('rtl.__struct__Unwind_Exception')}
-  rtl.__struct__Unwind_Exception = rtl._Unwind_Exception;
-  {$ENDIF}
+
   ElementsException = public record
   public
     Unwind: rtl.__struct__Unwind_Exception;
