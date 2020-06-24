@@ -770,10 +770,17 @@ type
   ExternalCalls = public static class
   private
   public
+    [SymbolName('elements_webassembly_current_exception')]
+    class var CurrentException: Exception; 
     [SymbolName('llvm.trap')]
     class method trap; external;
-    [SymbolName('ElementsRaiseException'), Used, DllExport]
     method RaiseException(aRaiseAddress: ^Void; aRaiseFrame: ^Void; aRaiseObject: Object);
+    begin
+      CurrentException := Exception(aRaiseObject);
+      IntRaiseException(aRaiseAddress, aRaiseFrame, aRaiseObject);
+    end;
+    [SymbolName('ElementsRaiseException'), Used, DllExport]
+    method IntRaiseException(aRaiseAddress: ^Void; aRaiseFrame: ^Void; aRaiseObject: Object);
     begin
       // Not supported atm!
       var s: ^Char := 'Fatal exception in WebAssembly!';
