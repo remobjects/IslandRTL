@@ -1,0 +1,11 @@
+﻿'''<Summary>The MediaStreamConstraints dictionary is used when calling getUserMedia() to specify what kinds of tracks should be included in the returned MediaStream, and, optionally, to establish constraints for those tracks' settings.</Summary>
+<DynamicInterface(GetType(EcmaScriptObject))>
+Public Interface [MediaStreamConstraints]
+'Defined on this type 
+  '''<Summary>Either a Boolean (which indicates whether or not an audio track is requested) or a MediaTrackConstraints object providing the constraints which must be met by the audio track included in the returned MediaStream. If constraints are specified, an audio track is inherently requested.</Summary>
+  Property [audio] As Boolean
+  '''<Summary>Either a Boolean (which indicates whether or not a video track is requested) or a MediaTrackConstraints object providing the constraints which must be met by the video track included in the returned MediaStream. If constraints are specified, a video track is inherently requested.</Summary>
+  Property [video] As Boolean
+  '''<Summary>A DOMString identifying the peer who has sole access to the stream. If this property is specified, only the indicated peer can receive and use the stream. Streams isolated in this way can only be displayed in a media element ( element is used to embed sound content in documents. It may contain one or more audio sources, represented using the src attribute or the &lt;source> element: the browser will choose the most suitable one. It can also be the destination for streamed media, using a MediaStream.">&lt;audio&gt; or ) embeds a media player which supports video playback into the document. You can use &lt;video> for audio content as well, but the &lt;audio> element may provide a more appropriate user experience.">&lt;video&gt;) where the content is protected just as if CORS cross-origin rules were in effect. When a peer identity is set, MediaStreamTracks from that peer have their isolated flag set to true.</Summary>
+  Property [peerIdentity] As String
+End Interface

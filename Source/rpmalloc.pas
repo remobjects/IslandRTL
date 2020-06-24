@@ -1632,7 +1632,7 @@ type
   //  *
   //  * This library is put in the public domain; you can redistribute it and/or modify it without any restrictions.
   //  *
-  //  
+  //
   //  rpmalloc.h  -  Memory allocator  -  Public Domain  -  2016 Mattias Jansson / Rampant Pixels
   //  *
   //  * This library provides a cross-platform lock free thread caching malloc implementation in C11.
@@ -1642,7 +1642,7 @@ type
   //  *
   //  * This library is put in the public domain; you can redistribute it and/or modify it without any restrictions.
   //  *
-  //  
+  //
   // ! Flag to rpaligned_realloc to not preserve content in reallocation
   rpmalloc_global_statistics_t = public record
   private
@@ -1839,7 +1839,7 @@ type
   __struct_span_t = public record
   private
 
-    // !	Heap ID
+    // !  Heap ID
     var heap_id: atomic32_t; public;
     // ! Size class
     var size_class: UInt16; public;

@@ -17,6 +17,7 @@
     <Platform Condition="'$(Platform)' == ''">AnyCPU</Platform>
     <GenerateDebugInfo>True</GenerateDebugInfo>
     <DefineConstants>WEBASSEMBLY;WASM;CPU32;NOTHREADS;NOFILES;ENABLE_UNLIMITED_CACHE</DefineConstants>
+    <DefaultUses>RemObjects.Elements.WebAssembly.DOM</DefaultUses>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)' == 'Debug'">
     <OutputPath>Bin\Debug</OutputPath>
@@ -45,12 +46,14 @@
     <Optimize>True</Optimize>
   </PropertyGroup>
   <ItemGroup>
-    <Compile Include="rpmalloc.pas">
-      <SubType>Code</SubType>
-    </Compile>
+    <Compile Include="rpmalloc.pas" />
     <Compile Include="SimpleGC.pas" />
     <Compile Include="WebAssembly.pas" />
+    <Compile Include="Brower.pas" />
+    <Compile Include="NodeJS.pas" />
+    <None Include="WebAssembly\RemObjectsElements.js" />
   </ItemGroup>
   <Import Project="$(MSBuildExtensionsPath)\RemObjects Software\Elements\RemObjects.Elements.Island.WebAssembly.targets" />
   <Import Project="Island.Shared.projitems" Label="Shared" />
+  <Import Project="DOM\Island (WebAssembly) DOM.projitems" Label="Shared" />
 </Project>

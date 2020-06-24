@@ -1,0 +1,15 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <PropertyGroup>
+    <MSBuildAllProjects>$(MSBuildAllProjects);$(MSBuildThisFileFullPath)</MSBuildAllProjects>
+    <HasSharedItems>true</HasSharedItems>
+    <SharedGUID>A0647181-12AD-45D4-AD23-34FF368B25BA</SharedGUID>
+    <Import_RootNamespace>IslandWebAssemblyDOM</Import_RootNamespace>
+    <ProjectGuid>{A0647181-12AD-45D4-AD23-34FF368B25BA}</ProjectGuid>
+    <DefaultUses>RemObjects.Elements.RTL</DefaultUses>
+    <RootNamespace>RemObjects.Elements.WebAssembly.DOM</RootNamespace>
+  </PropertyGroup>
+  <ItemGroup>
+    <Compile Include="$(MSBuildThisFileDirectory)*.vb" />
+  </ItemGroup>
+</Project>

@@ -21,6 +21,8 @@ type
 
   {$IFDEF ARM and not ARM64 and not DARWIN}
   rtl.__struct__Unwind_Exception = rtl.__struct__Unwind_Control_Block;
+  {$ELSEIF not exists('rtl.__struct__Unwind_Exception')}
+  rtl.__struct__Unwind_Exception = rtl._Unwind_Exception;
   {$ENDIF}
 
   ExternalCalls = public static class
@@ -115,8 +117,81 @@ type
     {$ENDIF}
 
     {$IF NOT EMSCRIPTEN AND NOT ANDROID and not DARWIN}
-    [SymbolName('_start'), Naked]
-    method _start;
+    [SymbolName('_start'), InlineAsm(
+    {$IFDEF ARM64}"
+       mov  x29, #0x0
+       mov  x30, #0x0
+       mov  x5, x0
+       ldr  x1, [sp]
+      add  x2, sp, #0x8
+      mov  x6, sp
+      adrp  x0, __elements_entry_point_helper
+      add x0, x0, :lo12:__elements_entry_point_helper
+      adrp  x3, __elements_init
+      add x3, x3, :lo12:__elements_init
+      adrp  x4, __elements_fini
+      add x4, x4, :lo12:__elements_fini
+      bl  __libc_start_main
+
+      "
+    {$ELSEIF ARM}
+        "
+      // r0 contains the rtld fini
+      // sp contains: argc, argc (data), null, envp (data), null (rev order)
+        mov     fp, #0
+        mov     lr, #0
+
+        pop     {r1}    // argc
+        mov     r2, sp
+        mov     r11, r0
+        ldr     r4, .l4
+    .l4a: // we use GOT/PCREL to accomodate dylib compiling.
+        add     r4, pc, r4
+        ldr     r0, .l1
+        ldr     r0, [r0, r4]
+        ldr     r3, .l2
+        ldr     r3, [r3, r4]
+        ldr     r12, .l3
+        ldr     r12, [r12, r4]
+
+        push    {r2}
+        push    {r11}
+        push    {r12}
+      // main: r0
+      // argc: r1
+      // argc: r2
+      // fini: r3
+      // stacktop: stackfini,
+      /* __libc_start_main (main, argc, argv, init, fini, rtld_fini, stack_end) */
+        bl     __libc_start_main
+        bl abort
+    .l1:
+        .long __elements_entry_point_helper(GOT)
+    .l2:
+        .long __elements_init(GOT)
+    .l3:
+        .long __elements_fini(GOT)
+    .l4:
+        .long   _GLOBAL_OFFSET_TABLE_-(.l4a+8)
+
+      "
+    {$ELSE}
+        "xor %ebp, %ebp
+        movq %rdx, %r9
+        popq %rsi
+        movq %rsp, %rdx
+        and $$0xfffffffffffffff0, %rsp
+        pushq %rax
+        pushq %rsp
+        movq __elements_fini@GOTPCREL(%rip), %r8
+        movq __elements_init@GOTPCREL(%rip), %rcx
+        movq __elements_entry_point_helper@GOTPCREL(%rip), %rdi
+        callq  __libc_start_main@PLT
+        hlt
+      "
+    {$ENDIF}, '', false, false
+    )]
+    method _start; external;
     [SymbolName('__libc_start_main', 'libc.so.6'), &weak]
     method libc_main(main: LibCEntryHelper; argc: Integer; argv: ^^Char; aInit: LibCEntryHelper; aFini: LibCFinalizerHelper); external;
     {$ENDIF}
@@ -495,86 +570,6 @@ begin
 end;
 {$ENDIF}
 
-{$IF NOT EMSCRIPTEN AND NOT ANDROID and not DARWIN}
-method ExternalCalls._start;
-begin
-{$IFDEF ARM64}
-  InternalCalls.VoidAsm("
-   mov  x29, #0x0
-   mov  x30, #0x0
-   mov  x5, x0
-   ldr  x1, [sp]
-  add  x2, sp, #0x8
-  mov  x6, sp
-  adrp  x0, __elements_entry_point_helper
-  add x0, x0, :lo12:__elements_entry_point_helper
-  adrp  x3, __elements_init
-  add x3, x3, :lo12:__elements_init
-  adrp  x4, __elements_fini
-  add x4, x4, :lo12:__elements_fini
-  bl  __libc_start_main
-
-  ", "", false, false);
-{$ELSEIF ARM}
-  InternalCalls.VoidAsm(
-    "
-  // r0 contains the rtld fini
-  // sp contains: argc, argc (data), null, envp (data), null (rev order)
-    mov     fp, #0
-    mov     lr, #0
-
-    pop     {r1}    // argc
-    mov     r2, sp
-    mov     r11, r0
-    ldr     r4, .l4
-.l4a: // we use GOT/PCREL to accomodate dylib compiling.
-    add     r4, pc, r4
-    ldr     r0, .l1
-    ldr     r0, [r0, r4]
-    ldr     r3, .l2
-    ldr     r3, [r3, r4]
-    ldr     r12, .l3
-    ldr     r12, [r12, r4]
-
-    push    {r2}
-    push    {r11}
-    push    {r12}
-  // main: r0
-  // argc: r1
-  // argc: r2
-  // fini: r3
-  // stacktop: stackfini,
-  /* __libc_start_main (main, argc, argv, init, fini, rtld_fini, stack_end) */
-    bl     __libc_start_main
-    bl abort
-.l1:
-    .long __elements_entry_point_helper(GOT)
-.l2:
-    .long __elements_init(GOT)
-.l3:
-    .long __elements_fini(GOT)
-.l4:
-    .long   _GLOBAL_OFFSET_TABLE_-(.l4a+8)
-
-  ", "", false, false);
-{$ELSE}
-  InternalCalls.VoidAsm(
-    "xor %ebp, %ebp
-    movq %rdx, %r9
-    popq %rsi
-    movq %rsp, %rdx
-    and $$0xfffffffffffffff0, %rsp
-    pushq %rax
-    pushq %rsp
-    movq __elements_fini@GOTPCREL(%rip), %r8
-    movq __elements_init@GOTPCREL(%rip), %rcx
-    movq __elements_entry_point_helper@GOTPCREL(%rip), %rdi
-    callq  __libc_start_main@PLT
-    hlt
-  ", "", false, false);
-{$ENDIF}
-end;
-{$ENDIF}
 {$HIDE W27}
 method Entrypoint(argc: Integer; argv: ^^AnsiChar; _envp: ^^AnsiChar): Integer;
 begin

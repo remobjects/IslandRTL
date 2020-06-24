@@ -8,6 +8,7 @@
 type
   RemObjects.Elements.System.rpmalloc.__Global = public partial class
   assembly
+
     const
       _SC_PAGESIZE = 1;
       MAP_ANONYMOUS = $20;
@@ -20,6 +21,7 @@ type
       memory_order_relaxed = 0;
       memory_order_release = 0;
       memory_order_acquire = 0;
+
     class method munmap(addr: ^Void; size: IntPtr): Integer;
     begin
       //ExternalCalls.trap;
@@ -64,7 +66,9 @@ type
     begin
       exit (if InternalCalls.CompareExchange(var (val)^, newval, oldval^) = oldval^ then (1) else (0));
     end;
+
   public
+
     [SymbolName('mmap')]
     class method mmap(addr: ^Void; size: IntPtr; prot, flags: Integer; handle, offset: IntPtr): ^Void;
     begin
@@ -84,6 +88,7 @@ type
     end;
 
   end;
+
   WebAssemblyCalls = public static class
   public
     [DllImport('', EntryPoint := '__island_consolelogint')]
@@ -250,6 +255,18 @@ type
 
     [DllImport('', EntryPoint := '__island_node_new_URL')]
     class method New_URL(s: String; s2: String): IntPtr; external;
+
+    [DllImport('', EntryPoint := '__island_isArray')]
+    class method IsArray(aArray: IntPtr): Boolean; external;
+
+    [DllImport('', EntryPoint := '__island_isNodeList')]
+    class method IsNodeList(aNodeList: IntPtr): Boolean; external;
+
+    [DllImport('', EntryPoint := '__island_getNodeListItem')]
+    class method GetNodeListItem(aNodeList: IntPtr; aIndex: Int32): IntPtr; external;
+
+    [DllImport('', EntryPoint := '__island_reflect_construct')]
+    class method ReflectConstruct(aClassName: String; aArgs: ^IntPtr; aArgCount: IntPtr): IntPtr; external;
   end;
 
   KnownTypesEnumerator = public procedure (aData: Object; aRTTI: ^Byte);
@@ -292,6 +309,13 @@ type
 
       if aArgs.Length = 0 then
         exit self.Items[aName];
+
+      if WebAssemblyCalls.IsArray(fHandle) and (aArgs.Length = 1) then
+        exit Items[Convert.ToInt32(aArgs[0])]
+      else
+        if WebAssemblyCalls.IsNodeList(fHandle) and (aArgs.Length = 1) then
+          exit new EcmaScriptObject(WebAssemblyCalls.GetNodeListItem(fHandle, Convert.ToInt32(aArgs[0])));
+
       raise new Exception('Array accessors not allowed in EcmaScript');
     end;
 
@@ -331,6 +355,7 @@ type
     end;
 
   public
+
     constructor(aValue: IntPtr);
     begin
       if aValue = 0 then raise new ArgumentNullException('0 not allowed');
@@ -364,7 +389,6 @@ type
       result := val.Handle;
       val.Release;
     end;
-
 
     property Items[s: String]: Object read get_Items write set_Items; default;
     property Items[i: Integer]: Object read get_Items write set_Items; default;
@@ -504,7 +528,9 @@ type
       fProxies.Add(IntPtr(aType.RTTI), lBase);
       exit lBase;
     end;
+
   public
+
     property Global: dynamic := new EcmaScriptObject(-1); lazy;
     property Object: dynamic := EcmaScriptObject(&Global)['Object']; lazy;
 
@@ -667,106 +693,20 @@ type
     begin
       exit new EcmaScriptObject(WebAssemblyCalls.CreateArray);
     end;
-  end;
 
-  Browser = public static class
-  public
-    class method GetElementById(id: String): dynamic;
+    class method ReflectConstruct(aClassName: String; aArgs: array of Object): dynamic;
     begin
-      var lRes := WebAssemblyCalls.GetElementById(id);
-      if lRes = 0 then exit nil;
-      exit new EcmaScriptObject(lRes);
+      var lData := new IntPtr[length(aArgs)];
+      for i: Integer := 0 to length(aArgs) -1 do
+        lData[i] := WebAssembly.CreateHandle(aArgs[i], true);
+      var lArgs := if length(lData) > 0 then @lData[0] else nil;
+      var c := WebAssemblyCalls.ReflectConstruct(aClassName, lArgs, lData.Length);
+      exit new EcmaScriptObject(c);
     end;
-
-    class method GetElementByName(id: String): dynamic;
-    begin
-      var lRes := WebAssemblyCalls.GetElementByName(id);
-      if lRes = 0 then exit nil;
-      exit new EcmaScriptObject(lRes);
-    end;
-
-    class method CreateElement(aName: String): dynamic;
-    begin
-      exit new EcmaScriptObject(WebAssemblyCalls.CreateElement(aName));
-    end;
-
-    class method CreateTextNode(aName: String): dynamic;
-    begin
-      exit new EcmaScriptObject(WebAssemblyCalls.CreateTextNode(aName));
-    end;
-
-    class method GetWindowObject: dynamic;
-    begin
-      exit new EcmaScriptObject(WebAssemblyCalls.GetWindowObject);
-    end;
-
-    class method AjaxRequest(url: String): String;
-    begin
-      exit WebAssembly.GetStringFromHandle(WebAssemblyCalls.AjaxRequest(@url.fFirstChar, url.Length));
-    end;
-
-    class method AjaxRequestBinary(url: String): array of Byte;
-    begin
-      var lArray := WebAssemblyCalls.AjaxRequestBinary(@url.fFirstChar, url.Length);
-      var lTotal := WebAssemblyCalls.GetStringLength(lArray);
-      result := new Byte[lTotal];
-      WebAssemblyCalls.ResponseBinaryTextToArray(lArray, @result[0]);
-    end;
-
-    class method NewXMLHttpRequest(): dynamic;
-    begin
-      exit new EcmaScriptObject(WebAssemblyCalls.New_XMLHttpRequest());
-    end;
-
-    class method NewWebSocket(s: String): dynamic;
-    begin
-      exit new EcmaScriptObject(WebAssemblyCalls.New_WebSocket(s));
-    end;
-  end;
-
-  Node = public static class
-  public
-    class method &require(aModule: String): dynamic;
-    begin
-      exit WebAssembly.GetObjectForHandle(WebAssemblyCalls.Require(aModule));
-    end;
-
-    class method NewTextEncoder: dynamic;
-    begin
-      exit new EcmaScriptObject(WebAssemblyCalls.New_TextEncoder());
-    end;
-
-    class method NewTextDecoder: dynamic;
-    begin
-      exit new EcmaScriptObject(WebAssemblyCalls.New_TextDecoder(''));
-    end;
-
-    class method NewTextDecoder(aEncoding: String): dynamic;
-    begin
-      exit new EcmaScriptObject(WebAssemblyCalls.New_TextDecoder(aEncoding));
-    end;
-
-    class method NewURL(aInput: String): dynamic;
-    begin
-      exit new EcmaScriptObject(WebAssemblyCalls.New_URL(aInput, ''));
-    end;
-
-    class method NewURL(aInput: String; aBase: String): dynamic;
-    begin
-      exit new EcmaScriptObject(WebAssemblyCalls.New_URL(aInput, aBase));
-    end;
-
-    //class property __dirname: dynamic read WebAssembly.Global.__dirname;
-    //class property __filename: dynamic read WebAssembly.Global.__filename;
-    class property Buffer: dynamic read WebAssembly.Global.Buffer;
-    class property console: dynamic read WebAssembly.Global.console;
-    class property exports: dynamic read WebAssembly.Global.exports;
-    class property &module: dynamic read WebAssembly.Global.module;
-    class property process: dynamic read WebAssembly.Global.process;
-    class property &global: dynamic read WebAssembly.Global.global;
   end;
 
   WebAssemblyType = public enum (Null, Undefined, String, Number, &Function, Symbol, Object, Boolean);
+
   ExternalCalls = public static class
   private
   public
@@ -955,10 +895,10 @@ type
     rpmalloc.rpfree(v);
   end;
 
-    [SymbolName('__elements_get_stack_pointer'), Used, DllExport]
-    method GetStackPointer: IntPtr;
-    begin
-      exit IntPtr(@result);
-    end;
+  [SymbolName('__elements_get_stack_pointer'), Used, DllExport]
+  method GetStackPointer: IntPtr;
+  begin
+    exit IntPtr(@result);
+  end;
 
 end.
