@@ -694,7 +694,7 @@ type
       exit new EcmaScriptObject(WebAssemblyCalls.CreateArray);
     end;
 
-    class method ReflectConstruct(aClassName: String; aArgs: array of Object): Object;
+    class method ReflectConstruct(aClassName: String; aArgs: array of Object): dynamic;
     begin
       var lData := new IntPtr[length(aArgs)];
       for i: Integer := 0 to length(aArgs) -1 do
