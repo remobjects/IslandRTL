@@ -13,28 +13,28 @@ type
 
   Browser = public static class
   public
-    class method GetElementById(id: String): dynamic;//<RemObjects.Elements.WebAssembly.DOM.Element>;
+    class method GetElementById(id: String): RemObjects.Elements.WebAssembly.DOM.Element;
     begin
       var lRes := WebAssemblyCalls.GetElementById(id);
       if lRes = 0 then exit nil;
-      exit new EcmaScriptObject(lRes);// as dynamic<RemObjects.Elements.WebAssembly.DOM.Element>;
+      exit new EcmaScriptObject(lRes) as RemObjects.Elements.WebAssembly.DOM.Element;
     end;
 
-    class method GetElementByName(id: String): dynamic;//<RemObjects.Elements.WebAssembly.DOM.Element>;
+    class method GetElementByName(id: String):RemObjects.Elements.WebAssembly.DOM.Element;
     begin
       var lRes := WebAssemblyCalls.GetElementByName(id);
       if lRes = 0 then exit nil;
-      exit new EcmaScriptObject(lRes);// as dynamic<RemObjects.Elements.WebAssembly.DOM.Element>;
+      exit new EcmaScriptObject(lRes) as RemObjects.Elements.WebAssembly.DOM.Element;
     end;
 
-    class method CreateElement(aName: String): dynamic;//<RemObjects.Elements.WebAssembly.DOM.Element>;
+    class method CreateElement(aName: String): RemObjects.Elements.WebAssembly.DOM.Element;
     begin
-      exit new EcmaScriptObject(WebAssemblyCalls.CreateElement(aName));// as dynamic//<RemObjects.Elements.WebAssembly.DOM.Element>;
+      exit new EcmaScriptObject(WebAssemblyCalls.CreateElement(aName)) as RemObjects.Elements.WebAssembly.DOM.Element;
     end;
 
-    class method CreateTextNode(aName: String): dynamic;//<RemObjects.Elements.WebAssembly.DOM.Node>;
+    class method CreateTextNode(aName: String): RemObjects.Elements.WebAssembly.DOM.Node;
     begin
-      exit new EcmaScriptObject(WebAssemblyCalls.CreateTextNode(aName));// as dynamic//<RemObjects.Elements.WebAssembly.DOM.Node>;
+      exit new EcmaScriptObject(WebAssemblyCalls.CreateTextNode(aName)) as RemObjects.Elements.WebAssembly.DOM.Node;
     end;
 
     class method GetWindowObject: RemObjects.Elements.WebAssembly.DOM.Window;
