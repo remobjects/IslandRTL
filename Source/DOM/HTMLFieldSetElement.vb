@@ -3,7 +3,6 @@
 Public Interface [HTMLFieldSetElement]
 Inherits HTMLElement
 
-'Defined on this type 
   '''<Summary>A Boolean reflecting the disabled HTML attribute, indicating whether the user can interact with the control.</Summary>
   Property [disabled] As Boolean
   '''<Summary>The elements belonging to this field set. The type of this property depends on the version of the spec that is implemented by the browser.</Summary>
@@ -20,10 +19,4 @@ Inherits HTMLElement
   Property [validity] As ValidityState
   '''<Summary>A Boolean false, because  element is used to group several controls as well as labels (&lt;label>) within a web form.">&lt;fieldset&gt; objects are never candidates for constraint validation.</Summary>
   Property [willValidate] As Boolean
-  '''<Summary>Always returns true because  element is used to group several controls as well as labels (&lt;label>) within a web form.">&lt;fieldset&gt; objects are never candidates for constraint validation.</Summary>
-  Function [checkValidity]() As Boolean
-  '''<Summary>Always returns true because  element is used to group several controls as well as labels (&lt;label>) within a web form.">&lt;fieldset&gt; objects are never candidates for constraint validation.</Summary>
-  Function [reportValidity]() As Boolean
-  '''<Summary>Sets a custom validity message for the field set. If this message is not the empty string, then the field set is suffering from a custom validity error, and does not validate.</Summary>
-  Function [setCustomValidity]() As Dynamic
 End Interface

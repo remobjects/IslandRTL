@@ -1,7 +1,6 @@
 ﻿'''<Summary>The RTCConfiguration dictionary is used to provide configuration options for an RTCPeerConnection. It may be passed into the constructor when instantiating a connection, or used with the RTCPeerConnection.getConfiguration() and RTCPeerConnection.setConfiguration() methods, which allow inspecting and changing the configuration while a connection is established.</Summary>
 <DynamicInterface(GetType(EcmaScriptObject))>
 Public Interface [RTCConfiguration]
-'Defined on this type 
   '''<Summary>Specifies how to handle negotiation of candidates when the remote peer is not compatible with the SDP BUNDLE standard. This must be one of the values from the enum RTCBundlePolicy. If this value isn't included in the dictionary, "balanced" is assumed.</Summary>
   Property [bundlePolicy] As Dynamic
   '''<Summary>An Array of objects of type RTCCertificate which are used by the connection for authentication. If this property isn't specified, a set of certificates is generated automatically for each RTCPeerConnection instance. Although only one certificate is used by a given connection, providing certificates for multiple algorithms may improve the odds of successfully connecting in some circumstances. See Using certificates below for additional information.</Summary>

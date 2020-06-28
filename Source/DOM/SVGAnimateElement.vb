@@ -3,5 +3,4 @@
 Public Interface [SVGAnimateElement]
 Inherits SVGAnimationElement, SVGStylable
 
-'Defined on this type 
 End Interface

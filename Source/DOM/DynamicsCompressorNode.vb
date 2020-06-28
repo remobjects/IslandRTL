@@ -3,7 +3,6 @@
 Public Interface [DynamicsCompressorNode]
 Inherits AudioNode
 
-'Defined on this type 
   '''<Summary>Is a k-rate AudioParam representing the decibel value above which the compression will start taking effect.</Summary>
   ReadOnly Property [threshold] As AudioParam
   '''<Summary>Is a k-rate AudioParam containing a decibel value representing the range above the threshold where the curve smoothly transitions to the compressed portion.</Summary>

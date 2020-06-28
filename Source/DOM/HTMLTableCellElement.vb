@@ -3,7 +3,6 @@
 Public Interface [HTMLTableCellElement]
 Inherits HTMLElement
 
-'Defined on this type 
   '''<Summary>A DOMString which can be used on &lt;th&gt; elements (not on  element defines a cell of a table that contains data. It participates in the table model.">&lt;td&gt;), specifying an alternative label for the header cell.. This alternate label can be used in other contexts, such as when describing the headers that apply to a data cell. This is used to offer a shorter term for use by screen readers in particular, and is a valuable accessibility tool. Usually the value of abbr is an abbreviation or acronym, but can be any text that's appropriate contextually.</Summary>
   Property [abbr] As String
   '''<Summary>A long integer representing the cell's position in the cells collection of the  element defines a row of cells in a table. The row's cells can then be established using a mix of &lt;td> (data cell) and &lt;th> (header cell) elements.">&lt;tr&gt; the cell is contained within. If the cell doesn't belong to a &lt;tr&gt;, it returns -1.</Summary>

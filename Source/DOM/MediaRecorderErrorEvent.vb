@@ -3,7 +3,6 @@
 Public Interface [MediaRecorderErrorEvent]
 Inherits [Event]
 
-'Defined on this type 
   '''<Summary>A DOMException containing information about the error that occurred. Read only.</Summary>
   ReadOnly Property [error] As DOMException
   '''<Summary>Creates and returns a new MediaRecorderErrorEvent event object with the given parameters.</Summary>

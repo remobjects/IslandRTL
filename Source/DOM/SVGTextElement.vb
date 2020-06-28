@@ -3,5 +3,4 @@
 Public Interface [SVGTextElement]
 Inherits SVGTextPositioningElement, SVGTransformable
 
-'Defined on this type 
 End Interface

@@ -3,7 +3,6 @@
 Public Interface [HTMLIFrameElement]
 Inherits HTMLElement
 
-'Defined on this type 
   '''<Summary>Is a Boolean indicating whether the Payment Request API may be invoked inside a cross-origin iframe.</Summary>
   Property [allowPaymentRequest] As Boolean
   '''<Summary>Returns a WindowProxy, the window proxy for the nested browsing context.</Summary>

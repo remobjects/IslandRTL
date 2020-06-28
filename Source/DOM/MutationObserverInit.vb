@@ -1,7 +1,6 @@
 ﻿'''<Summary>The MutationObserverInit dictionary describes the configuration of a mutation observer. As such, it's primarily used as the type of the options parameter on the MutationObserver.observe() method.</Summary>
 <DynamicInterface(GetType(EcmaScriptObject))>
 Public Interface [MutationObserverInit]
-'Defined on this type 
   '''<Summary>An array of specific attribute names to be monitored. If this property isn't included, changes to all attributes cause mutation notifications. No default value.</Summary>
   Property [attributeFilter] As String
   '''<Summary>Set to true to record the previous value of any attribute that changes when monitoring the node or nodes for attribute changes; see Monitoring attribute values in MutationObserver for details on watching for attribute changes and value recording. No default value.</Summary>

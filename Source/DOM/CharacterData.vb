@@ -3,7 +3,6 @@
 Public Interface [CharacterData]
 Inherits RemObjects.Elements.WebAssembly.DOM.Node, NonDocumentTypeChildNode
 
-'Defined on this type
   '''<Summary>Is a DOMString representing the textual data contained in this object.</Summary>
   Property [data] As Dynamic
   '''<Summary>Returns an unsigned long representing the size of the string contained in CharacterData.data.</Summary>

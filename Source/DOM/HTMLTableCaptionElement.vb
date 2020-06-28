@@ -3,5 +3,4 @@
 Public Interface [HTMLTableCaptionElement]
 Inherits HTMLElement
 
-'Defined on this type 
 End Interface

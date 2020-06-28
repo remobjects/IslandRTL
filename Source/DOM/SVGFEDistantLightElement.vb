@@ -3,5 +3,4 @@
 Public Interface [SVGFEDistantLightElement]
 Inherits SVGElement
 
-'Defined on this type 
 End Interface

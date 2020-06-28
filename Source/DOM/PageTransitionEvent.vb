@@ -3,7 +3,6 @@
 Public Interface [PageTransitionEvent]
 Inherits [Event]
 
-'Defined on this type 
   '''<Summary>Indicates if the document is loading from a cache.</Summary>
   ReadOnly Property [persisted] As Boolean
 End Interface

@@ -3,5 +3,4 @@
 Public Interface [SVGRadialGradientElement]
 Inherits SVGGradientElement
 
-'Defined on this type 
 End Interface

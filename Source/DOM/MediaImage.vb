@@ -1,7 +1,6 @@
 ﻿'''<Summary>The Media Session API's MediaImage dictionary describes the images associated with the media resource MediaMetadata.</Summary>
 <DynamicInterface(GetType(EcmaScriptObject))>
 Public Interface [MediaImage]
-'Defined on this type 
   '''<Summary>The URL from which user agent can fetch the image's data.</Summary>
   Property [src] As String
   '''<Summary>Specifies the resource in multiple sizes so that user agent does not have to scale a single image.</Summary>

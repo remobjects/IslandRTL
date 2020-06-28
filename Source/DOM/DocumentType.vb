@@ -3,7 +3,6 @@
 Public Interface [DocumentType]
 Inherits RemObjects.Elements.WebAssembly.DOM.Node
 
-'Defined on this type
   '''<Summary>A DOMString, eg "html" for &lt;!DOCTYPE HTML&gt;.</Summary>
   ReadOnly Property [name] As String
   '''<Summary>A DOMString, eg "-//W3C//DTD HTML 4.01//EN", empty string for HTML5.</Summary>

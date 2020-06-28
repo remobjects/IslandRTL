@@ -1,7 +1,6 @@
 ﻿'''<Summary>The WebRTC API's RTCIceCandidateInit dictionary, which contains the information needed to fundamentally describe an RTCIceCandidate.</Summary>
 <DynamicInterface(GetType(EcmaScriptObject))>
 Public Interface [RTCIceCandidateInit]
-'Defined on this type 
   '''<Summary>The ICE candidate-attribute. If the candidate is an indicator that there are no further candidates (rather than representing a new candidate), this is the empty string (""). The default is the empty string.</Summary>
   Property [candidate] As String
   '''<Summary>The identification tag of the media stream with which the candidate is associated, or null if there is no associated media stream. The default is null.</Summary>

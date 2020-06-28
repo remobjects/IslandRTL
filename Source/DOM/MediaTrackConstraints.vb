@@ -1,7 +1,6 @@
 ﻿'''<Summary>The MediaTrackConstraints dictionary is used to describe a set of capabilities and the value or values each can take on. A constraints dictionary is passed into applyConstraints() to allow a script to establish a set of exact (required) values or ranges and/or preferred values or ranges of values for the track, and the most recently-requested set of custom constraints can be retrieved by calling getConstraints().</Summary>
 <DynamicInterface(GetType(EcmaScriptObject))>
 Public Interface [MediaTrackConstraints]
-'Defined on this type 
   '''<Summary>A ConstrainDOMString object specifying a device ID or an array of device IDs which are acceptable and/or required.</Summary>
   Property [deviceId] As Integer
   '''<Summary>A ConstrainDOMString object specifying a group ID or an array of group IDs which are acceptable and/or required.</Summary>

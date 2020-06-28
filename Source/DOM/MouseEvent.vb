@@ -1,7 +1,6 @@
 ﻿'''<Summary>The MouseEvent interface represents events that occur due to the user interacting with a pointing device (such as a mouse). Common events using this interface include click, dblclick, mouseup, mousedown.</Summary>
 <DynamicInterface(GetType(EcmaScriptObject))>
 Public Interface [MouseEvent]
-'Defined on this type 
   '''<Summary>Returns true if the alt key was down when the mouse event was fired.</Summary>
   ReadOnly Property [altKey] As Boolean
   '''<Summary>The button number that was pressed (if applicable) when the mouse event was fired.</Summary>

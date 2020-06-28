@@ -3,7 +3,6 @@
 Public Interface [HTMLDataListElement]
 Inherits HTMLElement
 
-'Defined on this type 
   '''<Summary>Is a HTMLCollection representing a collection of the contained option elements.</Summary>
   ReadOnly Property [options] As HTMLCollection
 End Interface

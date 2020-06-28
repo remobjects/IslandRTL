@@ -3,7 +3,6 @@
 Public Interface [HTMLQuoteElement]
 Inherits HTMLElement
 
-'Defined on this type 
   '''<Summary>Is a DOMString reflecting the cite HTML attribute, containing a URL for the source of the quotation.</Summary>
   Property [cite] As String
 End Interface

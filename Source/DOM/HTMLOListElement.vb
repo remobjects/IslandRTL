@@ -3,7 +3,6 @@
 Public Interface [HTMLOListElement]
 Inherits HTMLElement
 
-'Defined on this type 
   '''<Summary>Is a Boolean value reflecting the reversed and defining if the numbering is descending, that is its value is true, or ascending (false).</Summary>
   Property [reversed] As Boolean
   '''<Summary>Is a long value reflecting the start and defining the value of the first number of the first element of the list.</Summary>

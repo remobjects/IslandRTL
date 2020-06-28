@@ -3,7 +3,6 @@
 Public Interface [SVGViewElement]
 Inherits SVGElement
 
-'Defined on this type 
   '''<Summary>An SVGStringList corresponding to the viewTarget attribute of the given &lt;view&gt; element. A list of DOMString values which contain the names listed in the viewTarget attribute. Each of the DOMString values can be associated with the corresponding element using the getElementById() method call.</Summary>
   Property [viewTarget] As String
 End Interface

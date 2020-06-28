@@ -1,7 +1,6 @@
 ﻿'''<Summary>An object implementing the StyleSheet interface represents a single style sheet. CSS style sheets will further implement the more specialized CSSStyleSheet interface.</Summary>
 <DynamicInterface(GetType(EcmaScriptObject))>
 Public Interface [StyleSheet]
-'Defined on this type 
   '''<Summary>Is a Boolean representing whether the current stylesheet has been applied or not.</Summary>
   Property [disabled] As Boolean
   '''<Summary>Returns a DOMString representing the location of the stylesheet.</Summary>

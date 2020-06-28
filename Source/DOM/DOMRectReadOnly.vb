@@ -1,7 +1,6 @@
 ﻿'''<Summary>The DOMRectReadOnly interface specifies the standard properties used by DOMRect to define a rectangle whose properties are immutable.</Summary>
 <DynamicInterface(GetType(EcmaScriptObject))>
 Public Interface [DOMRectReadOnly]
-'Defined on this type 
   '''<Summary>The x coordinate of the DOMRect's origin.</Summary>
   ReadOnly Property [x] As Double
   '''<Summary>The y coordinate of the DOMRect's origin.</Summary>

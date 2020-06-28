@@ -3,7 +3,6 @@
 Public Interface [SVGPatternElement]
 Inherits SVGElement, SVGURIReference
 
-'Defined on this type 
   '''<Summary>An SVGAnimatedEnumeration corresponding to the patternUnits attribute of the given  element defines a graphics object which can be redrawn at repeated x- and y-coordinate intervals ("tiled") to cover an area.'>&lt;pattern&gt; element. Takes one of the constants defined in SVGUnitTypes.</Summary>
   ReadOnly Property [patternUnits] As Dynamic
   '''<Summary>An SVGAnimatedEnumeration corresponding to the patternContentUnits attribute of the given  element defines a graphics object which can be redrawn at repeated x- and y-coordinate intervals ("tiled") to cover an area.'>&lt;pattern&gt; element. Takes one of the constants defined in SVGUnitTypes.</Summary>

@@ -1,7 +1,6 @@
 ﻿'''<Summary>The PublicKeyCredentialCreationOptions dictionary of the Web Authentication API holds options passed to navigators.credentials.create() in order to create a PublicKeyCredential.</Summary>
 <DynamicInterface(GetType(EcmaScriptObject))>
 Public Interface [PublicKeyCredentialCreationOptions]
-'Defined on this type 
   '''<Summary>An object describing the relying party which requested the credential creation.</Summary>
   Property [rp] As String
   '''<Summary>An object describing the user account for which the credential is generated.</Summary>

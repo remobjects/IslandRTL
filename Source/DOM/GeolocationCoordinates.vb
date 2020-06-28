@@ -1,7 +1,6 @@
 ﻿'''<Summary>The GeolocationCoordinates interface represents the position and altitude of the device on Earth, as well as the accuracy with which these properties are calculated.</Summary>
 <DynamicInterface(GetType(EcmaScriptObject))>
 Public Interface [GeolocationCoordinates]
-'Defined on this type 
   '''<Summary>Returns a double representing the position's latitude in decimal degrees.</Summary>
   ReadOnly Property [latitude] As Double
   '''<Summary>Returns a double representing the position's longitude in decimal degrees.</Summary>

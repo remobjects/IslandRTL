@@ -3,5 +3,4 @@
 Public Interface [SVGFESpecularLightingElement]
 Inherits SVGElement, SVGFilterPrimitiveStandardAttributes
 
-'Defined on this type 
 End Interface

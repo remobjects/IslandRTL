@@ -3,7 +3,6 @@
 Public Interface [SVGSVGElement]
 Inherits SVGGraphicsElement, SVGZoomAndPan
 
-'Defined on this type 
   '''<Summary>An SVGAnimatedLength corresponding to the x attribute of the given &lt;svg&gt; element.</Summary>
   ReadOnly Property [x] As Double
   '''<Summary>An SVGAnimatedLength corresponding to the y attribute of the given &lt;svg&gt; element.</Summary>
@@ -24,42 +23,4 @@ Inherits SVGGraphicsElement, SVGZoomAndPan
   Property [currentScale] As String
   '''<Summary>An SVGPoint representing the translation factor that takes into account user "magnification" corresponding to an outermost &lt;svg&gt; element. The behavior is undefined for &lt;svg&gt; elements that are not at the outermost level.</Summary>
   ReadOnly Property [currentTranslate] As SVGPoint
-  '''<Summary>Suspends (i.e., pauses) all currently running animations that are defined within the SVG document fragment corresponding to this &lt;svg&gt; element, causing the animation clock corresponding to this document fragment to stand still until it is unpaused.</Summary>
-  Function [pauseAnimations]() As String
-  '''<Summary>Unsuspends (i.e., unpauses) currently running animations that are defined within the SVG document fragment, causing the animation clock to continue from the time at which it was suspended.</Summary>
-  Function [unpauseAnimations]() As Dynamic
-  '''<Summary>Returns true if this SVG document fragment is in a paused state.</Summary>
-  Function [animationsPaused]() As Boolean
-  '''<Summary>Returns the current time in seconds relative to the start time for the current SVG document fragment. If getCurrentTime() is called before the document timeline has begun (for example, by script running in a &lt;script&gt; element before the document's SVGLoad event is dispatched), then 0 is returned.</Summary>
-  Function [getCurrentTime]() As String
-  '''<Summary>Adjusts the clock for this SVG document fragment, establishing a new current time. If setCurrentTime() is called before the document timeline has begun (for example, by script running in a &lt;script&gt; element before the document's SVGLoad event is dispatched), then the value of seconds in the last invocation of the method gives the time that the document will seek to once the document timeline has begun.</Summary>
-  Function [setCurrentTime]() As String
-  '''<Summary>Returns a NodeList of graphics elements whose rendered content intersects the supplied rectangle. Each candidate graphics element is to be considered a match only if the same graphics element can be a target of pointer events as defined in pointer-events processing.</Summary>
-  Function [getIntersectionList]() As Node
-  '''<Summary>Returns a NodeList of graphics elements whose rendered content is entirely contained within the supplied rectangle. Each candidate graphics element is to be considered a match only if the same graphics element can be a target of pointer events as defined in pointer-events processing.</Summary>
-  Function [getEnclosureList]() As Node
-  '''<Summary>Returns true if the rendered content of the given element intersects the supplied rectangle. Each candidate graphics element is to be considered a match only if the same graphics element can be a target of pointer events as defined in pointer-events processing.</Summary>
-  Function [checkIntersection]() As Boolean
-  '''<Summary>Returns true if the rendered content of the given element is entirely contained within the supplied rectangle. Each candidate graphics element is to be considered a match only if the same graphics element can be a target of pointer events as defined in pointer-events processing.</Summary>
-  Function [checkEnclosure]() As Boolean
-  '''<Summary>Unselects any selected objects, including any selections of text strings and type-in bars.</Summary>
-  Function [deselectAll]() As Dynamic
-  '''<Summary>Creates an SVGNumber object outside of any document trees. The object is initialized to 0.</Summary>
-  Function [createSVGNumber]() As Dynamic
-  '''<Summary>Creates an SVGLength object outside of any document trees. The object is initialized to 0 user units.</Summary>
-  Function [createSVGLength]() As Dynamic
-  '''<Summary>Creates an SVGAngle object outside of any document trees. The object is initialized to a value of 0 degrees (unitless).</Summary>
-  Function [createSVGAngle]() As Dynamic
-  '''<Summary>Creates an SVGPoint object outside of any document trees. The object is initialized to the point (0,0) in the user coordinate system.</Summary>
-  Function [createSVGPoint]() As Dynamic
-  '''<Summary>Creates an SVGMatrix object outside of any document trees. The object is initialized to the identity matrix.</Summary>
-  Function [createSVGMatrix]() As Dynamic
-  '''<Summary>Creates an SVGRect object outside of any document trees. The object is initialized such that all values are set to 0 user units.</Summary>
-  Function [createSVGRect]() As Dynamic
-  '''<Summary>Creates an SVGTransform object outside of any document trees. The object is initialized to an identity matrix transform (SVG_TRANSFORM_MATRIX).</Summary>
-  Function [createSVGTransform]() As Dynamic
-  '''<Summary>Creates an SVGTransform object outside of any document trees. The object is initialized to the given matrix transform (i.e., SVG_TRANSFORM_MATRIX). The values from the parameter matrix are copied, the matrix parameter is not adopted as SVGTransform::matrix.</Summary>
-  Function [createSVGTransformFromMatrix]() As Dynamic
-  '''<Summary>Searches this SVG document fragment (i.e., the search is restricted to a subset of the document tree) for an Element whose id is given by elementId. If an Element is found, that Element is returned. If no such element exists, returns null. Behavior is not defined if more than one element has this id.</Summary>
-  Function [getElementById]() As Element
 End Interface

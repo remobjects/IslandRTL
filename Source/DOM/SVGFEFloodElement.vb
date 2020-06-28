@@ -3,5 +3,4 @@
 Public Interface [SVGFEFloodElement]
 Inherits SVGElement, SVGFilterPrimitiveStandardAttributes
 
-'Defined on this type 
 End Interface

@@ -3,7 +3,6 @@
 Public Interface [VideoTrackList]
 Inherits EventTarget
 
-'Defined on this type 
   '''<Summary>The number of tracks in the list.</Summary>
   ReadOnly Property [length] As Integer
   '''<Summary>The index of the currently selected track, if any, or −1 otherwise.</Summary>
@@ -14,6 +13,4 @@ Inherits EventTarget
   Property [onchange] As EventListener
   '''<Summary>An event handler to call when the removetrack event is sent, indicating that a video track has been removed from the media element.</Summary>
   Property [onremovetrack] As EventListener
-  '''<Summary>Returns the VideoTrack found within the VideoTrackList whose id matches the specified string. If no match is found, null is returned.</Summary>
-  Sub [getTrackById]([parid] As Dynamic)
 End Interface

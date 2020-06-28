@@ -3,7 +3,6 @@
 Public Interface [HTMLTableSectionElement]
 Inherits HTMLElement
 
-'Defined on this type 
   '''<Summary>Returns a live HTMLCollection containing the rows in the section. The HTMLCollection is live and is automatically updated when rows are added or removed.</Summary>
   ReadOnly Property [rows] As HTMLCollection
 End Interface

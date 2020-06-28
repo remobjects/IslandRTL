@@ -1,7 +1,6 @@
 ﻿'''<Summary>The PaymentDetailsUpdate dictionary is used to provide updated information to the payment user interface after it has been instantiated.</Summary>
 <DynamicInterface(GetType(EcmaScriptObject))>
 Public Interface [PaymentDetailsUpdate]
-'Defined on this type 
   '''<Summary>An array of PaymentItem objects, each describing one line item for the payment request. These represent the line items on a receipt or invoice.</Summary>
   Property [displayItems] As String()
   '''<Summary>A DOMString specifying an error message to present to the user. When calling updateWith(), including error in the updated data causes the user agent to display the text as a general error message. For address field specific errors, use shippingAddressErrors.</Summary>

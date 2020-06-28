@@ -1,7 +1,6 @@
 ﻿'''<Summary>The PointerEvent interface represents the state of a DOM event produced by a pointer such as the geometry of the contact point, the device type that generated the event, the amount of pressure that was applied on the contact surface, etc.</Summary>
 <DynamicInterface(GetType(EcmaScriptObject))>
 Public Interface [PointerEvent]
-'Defined on this type 
   '''<Summary>A unique identifier for the pointer causing the event.</Summary>
   ReadOnly Property [pointerId] As Integer
   '''<Summary>The width (magnitude on the X axis), in CSS pixels, of the contact geometry of the pointer.</Summary>

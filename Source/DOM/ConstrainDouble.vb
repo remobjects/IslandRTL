@@ -1,5 +1,4 @@
 ﻿'''<Summary>The ConstrainDouble type is used to specify a constraint for a property whose value is a double-precision floating-point number. It extends the DoubleRange dictionary (which provides the ability to specify a permitted range of property values) to also support an exact value and/or an ideal value the property should take on. Additionally, you can specify the property's value as a simple floating-point value, in which case the user agent does its best to match the value once all other more stringent constraints are met.</Summary>
 <DynamicInterface(GetType(EcmaScriptObject))>
 Public Interface [ConstrainDouble]
-'Defined on this type 
 End Interface

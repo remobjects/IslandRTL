@@ -1,7 +1,6 @@
 ﻿'''<Summary>An instance of the WebRTC API's RTCRtpEncodingParameters dictionary describes a single configuration of a codec for an RTCRtpSender.</Summary>
 <DynamicInterface(GetType(EcmaScriptObject))>
 Public Interface [RTCRtpEncodingParameters]
-'Defined on this type 
   '''<Summary>If true, the described encoding is currently actively being used. That is, for RTP senders, the encoding is currently being used to send data, while for receivers, the encoding is being used to decode received data. The default value is true.</Summary>
   Property [active] As Boolean
   '''<Summary>When describing a codec for an RTCRtpSender, codecPayloadType is a single 8-bit byte (or octet) specifying the codec to use for sending the stream; the value matches one from the owning RTCRtpParameters object's codecs parameter. This value can only be set when creating the transceiver; after that, this value is read only.</Summary>

@@ -1,7 +1,6 @@
 ﻿'''<Summary>The WebRTC API's RTCRtpSendParameters dictionary is used to specify the parameters for an RTCRtpSender when calling its setParameters() method.</Summary>
 <DynamicInterface(GetType(EcmaScriptObject))>
 Public Interface [RTCRtpSendParameters]
-'Defined on this type 
   '''<Summary>Specifies the preferred way the WebRTC layer should handle optimizing bandwidth against quality in constrained-bandwidth situations; the value comes from the RTCDegradationPreference enumerated string type, and the default is balanced.</Summary>
   Property [degradationPreference] As String
   '''<Summary>An array of RTCRtpEncodingParameters objects, each specifying the parameters for a single codec that could be used to encode the track's media.</Summary>

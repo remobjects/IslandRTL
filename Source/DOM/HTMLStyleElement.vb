@@ -3,7 +3,6 @@
 Public Interface [HTMLStyleElement]
 Inherits HTMLElement, LinkStyle
 
-'Defined on this type 
   '''<Summary>Is a DOMString representing the intended destination medium for style information.</Summary>
   Property [media] As Dynamic
   '''<Summary>Is a DOMString representing the type of style being applied by this statement.</Summary>

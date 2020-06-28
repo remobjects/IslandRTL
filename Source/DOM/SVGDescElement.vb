@@ -3,5 +3,4 @@
 Public Interface [SVGDescElement]
 Inherits SVGGeometryElement, SVGStylable
 
-'Defined on this type 
 End Interface

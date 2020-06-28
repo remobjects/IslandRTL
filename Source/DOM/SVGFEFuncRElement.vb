@@ -3,5 +3,4 @@
 Public Interface [SVGFEFuncRElement]
 Inherits SVGComponentTransferFunctionElement
 
-'Defined on this type 
 End Interface

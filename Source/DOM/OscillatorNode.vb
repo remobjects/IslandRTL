@@ -1,7 +1,8 @@
 ﻿'''<Summary>The OscillatorNode interface represents a periodic waveform, such as a sine wave. It is an AudioScheduledSourceNode audio-processing module that causes a specified frequency of a given wave to be created—in effect, a constant tone.</Summary>
 <DynamicInterface(GetType(EcmaScriptObject))>
 Public Interface [OscillatorNode]
-'Defined on this type 
+Inherits AudioScheduledSourceNode
+
   '''<Summary>An a-rate AudioParam representing the frequency of oscillation in hertz (though the AudioParam returned is read-only, the value it represents is not). The default value is 440 Hz (a standard middle-A note).</Summary>
   Property [frequency] As Dynamic
   '''<Summary>An a-rate AudioParam representing detuning of oscillation in cents (though the AudioParam returned is read-only, the value it represents is not). The default value is 0.</Summary>

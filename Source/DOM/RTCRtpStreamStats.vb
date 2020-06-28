@@ -1,7 +1,6 @@
 ﻿'''<Summary>The RTCRtpStreamStats dictionary is returned by the RTCPeerConnection.getStats(), RTCRtpSender.getStats(), and RTCRtpReceiver.getStats() methods to provide detailed statistics about WebRTC connectivity.</Summary>
 <DynamicInterface(GetType(EcmaScriptObject))>
 Public Interface [RTCRtpStreamStats]
-'Defined on this type 
   '''<Summary>A DOMString which uniquely identifies the object which was inspected to produce the RTCCodecStats object associated with this RTP stream.</Summary>
   Property [codecId] As Integer
   '''<Summary>A DOMString whose value is "audio" if the associated MediaStreamTrack is audio-only or "video" if the track contains video. This value will match that of the media type indicated by RTCCodecStats.codec, as well as the track's kind property. Previously called mediaType.</Summary>

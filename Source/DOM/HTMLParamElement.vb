@@ -3,7 +3,6 @@
 Public Interface [HTMLParamElement]
 Inherits HTMLElement
 
-'Defined on this type 
   '''<Summary>Is a DOMString representing the name of the parameter. It reflects the name attribute.</Summary>
   Property [name] As String
   '''<Summary>Is a DOMString representing the value associated to the parameter. It reflects the value attribute.</Summary>

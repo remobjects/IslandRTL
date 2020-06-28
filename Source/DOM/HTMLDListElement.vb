@@ -3,5 +3,4 @@
 Public Interface [HTMLDListElement]
 Inherits HTMLElement
 
-'Defined on this type 
 End Interface

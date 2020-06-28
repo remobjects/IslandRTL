@@ -3,5 +3,4 @@
 Public Interface [HTMLParagraphElement]
 Inherits HTMLElement
 
-'Defined on this type 
 End Interface

@@ -1,7 +1,6 @@
 ﻿'''<Summary>The WebRTC RTCIceCandidatePairStats dictionary reports statistics which provide insight into the quality and performance of an RTCPeerConnection while connected and configured as described by the specified pair of ICE candidates.</Summary>
 <DynamicInterface(GetType(EcmaScriptObject))>
 Public Interface [RTCIceCandidatePairStats]
-'Defined on this type 
   '''<Summary>Provides an informative value representing the available inbound capacity of the network by reporting the total number of bits per second available for all of the candidate pair's incoming RTP streams. This does not take into account the size of the IP overhead, nor any other transport layers such as TCP or UDP.</Summary>
   Property [availableIncomingBitrate] As Double
   '''<Summary>Provides an informative value representing the available outbound capacity of the network by reporting the total number of bits per second available for all of the candidate pair's outoing RTP streams. This does not take into account the size of the IP overhead, nor any other transport layers such as TCP or UDP.</Summary>

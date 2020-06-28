@@ -3,7 +3,6 @@
 Public Interface [HTMLScriptElement]
 Inherits HTMLElement
 
-'Defined on this type 
   '''<Summary>Is a DOMString representing the MIME type of the script. It reflects the type attribute.</Summary>
   Property [type] As Dynamic
   '''<Summary>Is a DOMString representing the URL of an external script. It reflects the src attribute.</Summary>

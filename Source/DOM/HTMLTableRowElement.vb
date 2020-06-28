@@ -3,7 +3,6 @@
 Public Interface [HTMLTableRowElement]
 Inherits HTMLElement
 
-'Defined on this type 
   '''<Summary>Returns a live HTMLCollection containing the cells in the row. The HTMLCollection is live and is automatically updated when cells are added or removed.</Summary>
   ReadOnly Property [cells] As HTMLCollection
   '''<Summary>Returns a long value which gives the logical position of the row within the entire table. If the row is not part of a table, returns -1.</Summary>

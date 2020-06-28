@@ -3,7 +3,6 @@
 Public Interface [HTMLModElement]
 Inherits HTMLElement
 
-'Defined on this type 
   '''<Summary>Is a DOMString reflecting the cite HTML attribute, containing a URI of a resource explaining the change.</Summary>
   Property [cite] As String
   '''<Summary>Is a DOMString reflecting the datetime HTML attribute, containing a date-and-time string representing a timestamp for the change.</Summary>

@@ -1,7 +1,6 @@
 ﻿'''<Summary>The ResizeObserverEntry interface represents the object passed to the ResizeObserver() constructor's callback function, which allows you to access the new dimensions of the Element or SVGElement being observed.</Summary>
 <DynamicInterface(GetType(EcmaScriptObject))>
 Public Interface [ResizeObserverEntry]
-'Defined on this type 
   '''<Summary>An object containing the new border box size of the observed element when the callback is run.</Summary>
   ReadOnly Property [borderBoxSize] As Dynamic
   '''<Summary>An object containing the new content box size of the observed element when the callback is run.</Summary>

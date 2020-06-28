@@ -1,7 +1,6 @@
 ﻿'''<Summary>The RTCRtpCodecParameters dictionary, part of the WebRTC API, is used to describe the configuration parameters for a single media codec.</Summary>
 <DynamicInterface(GetType(EcmaScriptObject))>
 Public Interface [RTCRtpCodecParameters]
-'Defined on this type 
   '''<Summary>The RTP payload type used to identify this codec.</Summary>
   Property [payloadType] As Dynamic
   '''<Summary>The codec's MIME media type and subtype specified as a DOMString of the form "type/subtype". IANA maintains a registry of valid MIME types.</Summary>

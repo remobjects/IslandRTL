@@ -1,7 +1,6 @@
 ﻿'''<Summary>The PublicKeyCredentialRequestOptions dictionary of the Web Authentication API holds the options passed to navigator.credentials.get() in order to fetch a given PublicKeyCredential.</Summary>
 <DynamicInterface(GetType(EcmaScriptObject))>
 Public Interface [PublicKeyCredentialRequestOptions]
-'Defined on this type 
   '''<Summary>A BufferSource, emitted by the relying party's server and used as a cryptographic challenge. This value will be signed by the authenticator and the signature will be sent back as part of AuthenticatorAssertionResponse.signature.</Summary>
   Property [challenge] As BufferSource
   '''<Summary>A numerical hint, in milliseconds, which indicates the time the caller is willing to wait for the retrieval operation to complete. This hint may be overridden by the browser.</Summary>

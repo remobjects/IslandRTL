@@ -3,7 +3,6 @@
 Public Interface [Node]
 Inherits EventTarget
 
-'Defined on this type 
   '''<Summary>Returns a DOMString representing the base URL of the document containing the Node.</Summary>
   ReadOnly Property [baseURI] As String
   '''<Summary>Returns a live NodeList containing all the children of this node. NodeList being live means that if the children of the Node change, the NodeList object is automatically updated.</Summary>
@@ -30,30 +29,4 @@ Inherits EventTarget
   ReadOnly Property [previousSibling] As Node
   '''<Summary>Returns / Sets the textual content of an element and all its descendants.</Summary>
   Property [textContent] As String
-  '''<Summary>Adds the specified childNode argument as the last child to the current node. If the argument referenced an existing node on the DOM tree, the node will be detached from its current position and attached at the new position.</Summary>
-  Function [appendChild]([paraChild] As Dynamic) As Node
-  '''<Summary>Clone a Node, and optionally, all of its contents. By default, it clones the content of the node.</Summary>
-  Function [cloneNode]([par[pardeep]] As Dynamic) As Node
-  '''<Summary>Compares the position of the current node against another node in any other document.</Summary>
-  Function [compareDocumentPosition]([parotherNode] As Dynamic) As Integer
-  '''<Summary>Returns a Boolean value indicating whether or not a node is a descendant of the calling node.</Summary>
-  Function [contains]([partoken] As Dynamic) As Boolean
-  '''<Summary>Returns the context object's root which optionally includes the shadow root if it is available. </Summary>
-  Function [getRootNode]([paroptions] As Dynamic) As Node
-  '''<Summary>Returns a Boolean indicating whether or not the element has any child nodes.</Summary>
-  Function [hasChildNodes]() As Node
-  '''<Summary>Inserts a Node before the reference node as a child of a specified parent node.</Summary>
-  Function [insertBefore]([parnewNode As Dynamic, referenceNode] As Dynamic) As Node
-  '''<Summary>Accepts a namespace URI as an argument and returns a Boolean with a value of true if the namespace is the default namespace on the given node or false if not.</Summary>
-  Function [isDefaultNamespace]() As Boolean
-  '''<Summary>Returns a Boolean which indicates whether or not two nodes are of the same type and all their defining data points match.</Summary>
-  Function [isEqualNode]([parotherNode] As Node) As Node
-  '''<Summary>Returns a Boolean value indicating whether or not the two nodes are the same (that is, they reference the same object).</Summary>
-  Function [isSameNode]() As Node
-  '''<Summary>Accepts a prefix and returns the namespace URI associated with it on the given node if found (and null if not). Supplying null for the prefix will return the default namespace.</Summary>
-  Sub [lookupNamespaceURI]([parprefix] As Dynamic)
-  '''<Summary>Clean up all the text nodes under this element (merge adjacent, remove empty).</Summary>
-  Function [normalize]() As String
-  '''<Summary>Replaces one child Node of the current one with the second one given in parameter.</Summary>
-  Function [replaceChild]([parnewChild] As Dynamic, [paroldChild] As Dynamic) As Node
 End Interface

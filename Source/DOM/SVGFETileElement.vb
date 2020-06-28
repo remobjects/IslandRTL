@@ -3,5 +3,4 @@
 Public Interface [SVGFETileElement]
 Inherits SVGElement, SVGFilterPrimitiveStandardAttributes
 
-'Defined on this type 
 End Interface

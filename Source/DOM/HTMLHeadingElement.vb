@@ -3,5 +3,4 @@
 Public Interface [HTMLHeadingElement]
 Inherits HTMLElement
 
-'Defined on this type 
 End Interface

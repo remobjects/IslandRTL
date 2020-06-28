@@ -3,5 +3,4 @@
 Public Interface [SVGFEMergeElement]
 Inherits SVGElement, SVGFilterPrimitiveStandardAttributes
 
-'Defined on this type 
 End Interface

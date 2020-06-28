@@ -3,7 +3,6 @@
 Public Interface [HTMLDataElement]
 Inherits HTMLElement
 
-'Defined on this type 
   '''<Summary>Is a DOMString reflecting the value HTML attribute, containing a machine-readable form of the element's value.</Summary>
   Property [value] As String
 End Interface

@@ -1,7 +1,6 @@
 ﻿'''<Summary>The URL interface is used to parse, construct, normalize, and encode URLs. It works by providing properties which allow you to easily read and modify the components of a URL.</Summary>
 <DynamicInterface(GetType(EcmaScriptObject))>
 Public Interface [URL]
-'Defined on this type 
   '''<Summary>A USVString containing a '#' followed by the fragment identifier of the URL.</Summary>
   Property [hash] As String
   '''<Summary>A USVString containing the domain (that is the hostname) followed by (if a port was specified) a ':' and the port of the URL.</Summary>
@@ -26,8 +25,4 @@ Public Interface [URL]
   ReadOnly Property [searchParams] As Dynamic
   '''<Summary>A USVString containing the username specified before the domain name.</Summary>
   Property [username] As String
-  '''<Summary>Returns a USVString containing the whole URL. It is a synonym for URL.href, though it can't be used to modify the value.</Summary>
-  Function [toString]() As String
-  '''<Summary>Returns a USVString  containing the whole URL. It returns the same string as the href property.</Summary>
-  Function [toJSON]() As String
 End Interface

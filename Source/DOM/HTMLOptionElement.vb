@@ -3,7 +3,6 @@
 Public Interface [HTMLOptionElement]
 Inherits HTMLElement
 
-'Defined on this type 
   '''<Summary>Is a Boolean that contains the initial value of the selected HTML attribute, indicating whether the option is selected by default or not.</Summary>
   Property [defaultSelected] As Boolean
   '''<Summary>Is a Boolean representing the value of the disabled HTML attribute, which indicates that the option is unavailable to be selected. An option can also be disabled if it is a child of an  element creates a grouping of options within a &lt;select> element.">&lt;optgroup&gt; element that is disabled.</Summary>
@@ -20,6 +19,4 @@ Inherits HTMLElement
   Property [text] As String
   '''<Summary>Is a DOMString that reflects the value of the value HTML attribute, if it exists; otherwise reflects value of the Node.textContent property.</Summary>
   Property [value] As String
-  '''<Summary>Is a constructor creating an HTMLOptionElement object. It has four values: the text to display, text, the value associated, value, the value of defaultSelected, and the value of selected. The last three values are optional.</Summary>
-  Function [HTMLOptionElement]() As HTMLOptionElement
 End Interface

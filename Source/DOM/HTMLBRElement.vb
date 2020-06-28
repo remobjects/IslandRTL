@@ -3,5 +3,4 @@
 Public Interface [HTMLBRElement]
 Inherits HTMLElement
 
-'Defined on this type 
 End Interface
