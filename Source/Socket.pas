@@ -535,7 +535,7 @@ end;
 {$IF DARWIN OR ANDROID}
 method htons(port: Integer): Integer;
 begin
-    result := rtl.__uint16_t(((rtl.__uint16_t(port) and $ff00) shr 8) or ((rtl.__uint16_t(port) and $00ff) shl 8));
+  result := rtl.uint16_t(((rtl.uint16_t(port) and $ff00) shr 8) or ((rtl.uint16_t(port) and $00ff) shl 8));
 end;
 {$ENDIF}
 
