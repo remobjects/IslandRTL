@@ -145,7 +145,8 @@ begin
   var fs := new FileStream(FileName, FileMode.Create,FileAccess.Write, FileShare.None);
   SetLength(fLength);
   fs.Position := 0;
-  fs.Write(new Span<Byte>(@fbuf[0], fLength));
+  if fLength > 0 then
+    fs.Write(new Span<Byte>(@fbuf[0], fLength));
   fs.Close;
 end;
 {$ENDIF}
