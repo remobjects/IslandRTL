@@ -3,7 +3,6 @@
 Public Interface [HTMLAreaElement]
 Inherits HTMLElement
 
-'Defined on this type 
   '''<Summary>Is a DOMString that reflects the alt HTML attribute, containing alternative text for the element.</Summary>
   Property [alt] As String
   '''<Summary>Is a DOMString that reflects the coords HTML attribute, containing coordinates to define the hot-spot region.</Summary>
@@ -44,6 +43,4 @@ Inherits HTMLElement
   Property [type] As Dynamic
   '''<Summary>Is a USVString containing the username specified before the domain name.</Summary>
   Property [username] As String
-  '''<Summary>Returns a USVString containing the whole URL of the script executed in the Worker. It is a synonym for HTMLHyperlinkElementUtils.href.</Summary>
-  Function [toString]() As String
 End Interface

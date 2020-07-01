@@ -3,5 +3,4 @@
 Public Interface [SVGFEMergeNodeElement]
 Inherits SVGElement
 
-'Defined on this type 
 End Interface

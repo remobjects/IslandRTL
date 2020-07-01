@@ -1,7 +1,6 @@
 ﻿'''<Summary>The WebXR Device API's XRWebGLLayerInit dictionary is used to provide configuration options when creating a new XRWebGLLayer object with the XRWebGLLayer() constructor.</Summary>
 <DynamicInterface(GetType(EcmaScriptObject))>
 Public Interface [XRWebGLLayerInit]
-'Defined on this type 
   '''<Summary>The frame buffer's color buffer will be established with an alpha channel if the alpha Boolean property is true. Otherwise, the color buffer will not have an alpha channel. The default value is true.</Summary>
   Property [alpha] As Boolean
   '''<Summary>A Boolean value which is true if anti-aliasing is to be used when rendering in the context; otherwise false. The browser selects the anti-aliasing method to use; there is no support for requesting a specific mode yet.  The default value is true.</Summary>

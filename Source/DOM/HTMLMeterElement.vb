@@ -3,7 +3,6 @@
 Public Interface [HTMLMeterElement]
 Inherits HTMLElement
 
-'Defined on this type 
   '''<Summary>A double representing the value of the high boundary, reflecting the high attribute.</Summary>
   Property [high] As Double
   '''<Summary>A double representing the value of the low boundary, reflecting the lowattribute.</Summary>

@@ -3,5 +3,4 @@
 Public Interface [HTMLUnknownElement]
 Inherits HTMLElement
 
-'Defined on this type 
 End Interface

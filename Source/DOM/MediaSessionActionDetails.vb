@@ -1,7 +1,6 @@
 ﻿'''<Summary>The Media Session API's MediaSessionActionDetails dictionary is the type used by the sole input parameter into the callback which is executed when a media session action occurs.</Summary>
 <DynamicInterface(GetType(EcmaScriptObject))>
 Public Interface [MediaSessionActionDetails]
-'Defined on this type 
   '''<Summary>A string from the MediaSessionAction enumerated type, indicating which type of action needs to be performed. See Media action types below for possible values.</Summary>
   Property [action] As String
   '''<Summary>An seekto action may optionally include this property, which is a Boolean value indicating whether or not to perform a "fast" seek. A "fast" seek is a seek being performed in a rapid sequence, such as when fast-forwarding or reversing through the media, rapidly skipping through it. This property can be used to indicate that you should use the shortest possible method to seek the media. fastSeek is not included on the final action in the seek sequence in this situation.</Summary>

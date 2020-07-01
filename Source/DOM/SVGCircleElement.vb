@@ -3,7 +3,6 @@
 Public Interface [SVGCircleElement]
 Inherits SVGGeometryElement
 
-'Defined on this type 
   '''<Summary></Summary>
   ReadOnly Property [cx] As SVGAnimatedLength
   '''<Summary></Summary>

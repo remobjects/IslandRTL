@@ -3,5 +3,4 @@
 Public Interface [SVGEllipseElement]
 Inherits SVGGeometryElement
 
-'Defined on this type 
 End Interface

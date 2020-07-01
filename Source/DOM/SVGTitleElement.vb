@@ -3,5 +3,4 @@
 Public Interface [SVGTitleElement]
 Inherits SVGElement, SVGStylable
 
-'Defined on this type 
 End Interface

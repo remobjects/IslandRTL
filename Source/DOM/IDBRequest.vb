@@ -1,7 +1,6 @@
 ﻿'''<Summary>The request object does not initially contain any information about the result of the operation, but once information becomes available, an event is fired on the request, and the information becomes available through the properties of the IDBRequest instance.</Summary>
 <DynamicInterface(GetType(EcmaScriptObject))>
 Public Interface [IDBRequest]
-'Defined on this type 
   '''<Summary>Returns a DOMException in the event of an unsuccessful request, indicating what went wrong.</Summary>
   ReadOnly Property [error] As DOMException
   '''<Summary></Summary>

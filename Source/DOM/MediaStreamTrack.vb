@@ -1,7 +1,6 @@
 ﻿'''<Summary>The MediaStreamTrack interface represents a single media track within a stream; typically, these are audio or video tracks, but other track types may exist as well.</Summary>
 <DynamicInterface(GetType(EcmaScriptObject))>
 Public Interface [MediaStreamTrack]
-'Defined on this type 
   '''<Summary>A string that may be used by the web application to provide a hint as to what type of content the track contains to guide how it should be treated by API consumers.</Summary>
   Property [contentHint] As String
   '''<Summary>A Boolean whose value of true if the track is enabled, that is allowed to render the media source stream; or false if it is disabled, that is not rendering the media source stream but silence and blackness. If the track has been disconnected, this value can be changed but has no more effect.</Summary>
@@ -20,10 +19,4 @@ Public Interface [MediaStreamTrack]
   ReadOnly Property [readonly] As Dynamic
   '''<Summary>Returns an enumerated value giving the status of the track. This will be one of the following values:</Summary>
   ReadOnly Property [readyState] As String
-  '''<Summary>Returns a duplicate of the MediaStreamTrack.</Summary>
-  Function [clone]() As MediaStreamTrack
-  '''<Summary>Returns the a list of constrainable properties available for the MediaStreamTrack.</Summary>
-  Function [getCapabilities]() As Dynamic
-  '''<Summary>Returns a MediaTrackSettings object containing the current values of each of the MediaStreamTrack's constrainable properties.</Summary>
-  Function [getSettings]() As Dynamic
 End Interface

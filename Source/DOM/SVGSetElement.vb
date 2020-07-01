@@ -3,5 +3,4 @@
 Public Interface [SVGSetElement]
 Inherits SVGAnimationElement
 
-'Defined on this type 
 End Interface

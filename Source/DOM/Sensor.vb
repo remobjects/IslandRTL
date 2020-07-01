@@ -1,7 +1,6 @@
 ﻿'''<Summary>The Sensor interface of the the Sensor APIs is the base class for all the other sensor interfaces. This interface cannot be used directly. Instead it provides properties, event handlers, and methods accessed by interfaces that inherit from it.</Summary>
 <DynamicInterface(GetType(EcmaScriptObject))>
 Public Interface [Sensor]
-'Defined on this type 
   '''<Summary>Returns a Boolean indicating whether the sensor is active.</Summary>
   ReadOnly Property [activated] As Boolean
   '''<Summary>Returns a Boolean indicating whether the sensor has a reading.</Summary>

@@ -1,7 +1,6 @@
 ﻿'''<Summary>The TextMetrics interface represents the dimensions of a piece of text in the canvas; a textMetrics() instance can be retrieved using the CanvasRenderingContext2D.measureText() method.</Summary>
 <DynamicInterface(GetType(EcmaScriptObject))>
 Public Interface [TextMetrics]
-'Defined on this type 
   '''<Summary>Is a double giving the calculated width of a segment of inline text in CSS pixels. It takes into account the current font of the context.</Summary>
   ReadOnly Property [width] As Integer
   '''<Summary>Is a double giving the distance from the alignment point given by the CanvasRenderingContext2D.textAlign property to the left side of the bounding rectangle of the given text, in CSS pixels. The distance is measured parallel to the baseline.</Summary>

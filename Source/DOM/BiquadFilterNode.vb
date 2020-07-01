@@ -1,7 +1,8 @@
 ﻿'''<Summary>The BiquadFilterNode interface represents a simple low-order filter, and is created using the AudioContext.createBiquadFilter() method. It is an AudioNode that can represent different kinds of filters, tone control devices, and graphic equalizers.</Summary>
 <DynamicInterface(GetType(EcmaScriptObject))>
 Public Interface [BiquadFilterNode]
-'Defined on this type 
+Inherits AudioNode, AudioParam
+
   '''<Summary>Is an a-rate AudioParam, a double representing a frequency in the current filtering algorithm measured in hertz (Hz).</Summary>
   ReadOnly Property [frequency] As Double
   '''<Summary>Is an a-rate AudioParam representing detuning of the frequency in cents.</Summary>
@@ -12,6 +13,4 @@ Public Interface [BiquadFilterNode]
   ReadOnly Property [gain] As Double
   '''<Summary>Is a string value defining the kind of filtering algorithm the node is implementing.</Summary>
   Property [type] As Dynamic
-  '''<Summary>From the current filter parameter settings this method calculates the frequency response for frequencies specified in the provided array of frequencies.</Summary>
-  Sub [getFrequencyResponse]([parfrequencyArray As Dynamic, magResponseOutput As Dynamic, phaseResponseOutput] As Dynamic)
 End Interface

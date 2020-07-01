@@ -1,7 +1,6 @@
 ﻿'''<Summary>The CSSCounterStyleRule interface represents an @counter-style at-rule.</Summary>
 <DynamicInterface(GetType(EcmaScriptObject))>
 Public Interface [CSSCounterStyleRule]
-'Defined on this type 
   '''<Summary>Is a DOMString object that contains the serialization of the &lt;counter-style-name&gt; defined for the associated rule.</Summary>
   Property [name] As String
   '''<Summary>Is a DOMString object that contains the serialization of the system descriptor defined for the associated rule. If the descriptor was not specified in the associated rule, the attribute returns an empty string.</Summary>

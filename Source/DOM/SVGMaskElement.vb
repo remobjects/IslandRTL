@@ -3,7 +3,6 @@
 Public Interface [SVGMaskElement]
 Inherits SVGElement
 
-'Defined on this type 
   '''<Summary>An SVGAnimatedEnumeration corresponding to the maskUnits attribute of the given  element defines an alpha mask for compositing the current object into the background. A mask is used/referenced using the mask property.">&lt;mask&gt; element. Takes one of the constants defined in SVGUnitTypes.</Summary>
   ReadOnly Property [maskUnits] As Dynamic
   '''<Summary>An SVGAnimatedEnumeration corresponding to the maskContentUnits attribute of the given  element defines an alpha mask for compositing the current object into the background. A mask is used/referenced using the mask property.">&lt;mask&gt; element. Takes one of the constants defined in SVGUnitTypes.</Summary>

@@ -3,7 +3,6 @@
 Public Interface [HTMLLinkElement]
 Inherits HTMLElement, LinkStyle
 
-'Defined on this type 
   '''<Summary>Is a DOMString representing the type of content being loaded by the HTML link.</Summary>
   Property [as] As String
   '''<Summary>Is a Boolean which represents whether the link is disabled; currently only used with style sheet links.</Summary>

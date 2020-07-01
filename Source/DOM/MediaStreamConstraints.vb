@@ -1,7 +1,6 @@
 ﻿'''<Summary>The MediaStreamConstraints dictionary is used when calling getUserMedia() to specify what kinds of tracks should be included in the returned MediaStream, and, optionally, to establish constraints for those tracks' settings.</Summary>
 <DynamicInterface(GetType(EcmaScriptObject))>
 Public Interface [MediaStreamConstraints]
-'Defined on this type 
   '''<Summary>Either a Boolean (which indicates whether or not an audio track is requested) or a MediaTrackConstraints object providing the constraints which must be met by the audio track included in the returned MediaStream. If constraints are specified, an audio track is inherently requested.</Summary>
   Property [audio] As Boolean
   '''<Summary>Either a Boolean (which indicates whether or not a video track is requested) or a MediaTrackConstraints object providing the constraints which must be met by the video track included in the returned MediaStream. If constraints are specified, a video track is inherently requested.</Summary>

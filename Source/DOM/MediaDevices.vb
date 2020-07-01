@@ -3,11 +3,4 @@
 Public Interface [MediaDevices]
 Inherits EventTarget
 
-'Defined on this type 
-  '''<Summary>Returns an object conforming to MediaTrackSupportedConstraints indicating which constrainable properties are supported on the MediaStreamTrack interface. See Capabilities and constraints in Media Capture and Streams API (Media Stream) to learn more about constraints and how to use them.</Summary>
-  Function [getSupportedConstraints]() As MediaStreamTrack
-  '''<Summary>Prompts the user to select a display or portion of a display (such as a window) to capture as a MediaStream for sharing or recording purposes. Returns a promise that resolves to a MediaStream.</Summary>
-  Function [getDisplayMedia]([parconstraints] As Dynamic) As MediaStream
-  '''<Summary>With the user's permission through a prompt, turns on a camera and/or a microphone on the system and provides a MediaStream containing a video track and/or an audio track with the input.</Summary>
-  Function [getUserMedia]([parconstraints] As Dynamic) As MediaStream
 End Interface

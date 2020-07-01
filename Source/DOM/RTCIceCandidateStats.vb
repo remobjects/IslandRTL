@@ -1,7 +1,6 @@
 ﻿'''<Summary>The WebRTC API's RTCIceCandidateStats dictionary provides statistics related to an RTCIceCandidate.</Summary>
 <DynamicInterface(GetType(EcmaScriptObject))>
 Public Interface [RTCIceCandidateStats]
-'Defined on this type 
   '''<Summary>A string containing the address of the candidate. This value may be an IPv4 address, an IPv6 address, or a fully-qualified domain name. This property was previously named ip and only accepted IP addresses.</Summary>
   Property [address] As String
   '''<Summary>A string matching one of the values in the RTCIceCandidateType enumerated type, indicating what kind of candidate the object provides statistics for.</Summary>

@@ -3,7 +3,6 @@
 Public Interface [HTMLTrackElement]
 Inherits HTMLElement
 
-'Defined on this type 
   '''<Summary>Is a DOMString that reflects the kind HTML attribute, indicating how the text track is meant to be used. Possible values are: subtitles, captions, descriptions, chapters, or metadata.</Summary>
   Property [kind] As String
   '''<Summary>Is a DOMString that reflects the src HTML attribute, indicating the address of the text track data.</Summary>

@@ -3,5 +3,4 @@
 Public Interface [SVGPolylineElement]
 Inherits SVGGeometryElement, SVGAnimatedPoints, SVGElement, SVGTests, SVGStylable, SVGTransformable
 
-'Defined on this type 
 End Interface

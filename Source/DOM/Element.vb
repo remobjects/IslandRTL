@@ -3,7 +3,6 @@
 Public Interface [Element]
 Inherits RemObjects.Elements.WebAssembly.DOM.Node
 
-'Defined on this type
   '''<Summary>Returns a NamedNodeMap object containing the assigned attributes of the corresponding HTML element.</Summary>
   ReadOnly Property [attributes] As Dynamic
   '''<Summary>Returns a DOMTokenList containing the list of class attributes.</Summary>

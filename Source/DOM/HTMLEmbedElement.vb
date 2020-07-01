@@ -3,7 +3,6 @@
 Public Interface [HTMLEmbedElement]
 Inherits HTMLElement
 
-'Defined on this type 
   '''<Summary>Is a DOMString reflecting the height HTML attribute, containing the displayed height of the resource.</Summary>
   Property [height] As Integer
   '''<Summary>Is a DOMString that reflects the src HTML attribute, containing the address of the resource.</Summary>

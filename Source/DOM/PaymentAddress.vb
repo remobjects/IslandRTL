@@ -1,7 +1,6 @@
 ﻿'''<Summary>The PaymentAddress interface of the Payment Request API is used to store shipping or payment address information.</Summary>
 <DynamicInterface(GetType(EcmaScriptObject))>
 Public Interface [PaymentAddress]
-'Defined on this type 
   '''<Summary>An array of DOMString objects providing each line of the address not included among the other properties. The exact size and content varies by country or location and can include, for example, a street name, house number, apartment number, rural delivery route, descriptive instructions, or post office box number.</Summary>
   ReadOnly Property [addressLine] As String
   '''<Summary>A DOMString specifying the country in which the address is located, using the ISO-3166-1 alpha-2 standard. The string is always given in its canonical upper-case form. Some examples of valid country values: "US", "GB", "CN", or "JP".</Summary>

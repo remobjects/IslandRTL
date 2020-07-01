@@ -3,7 +3,6 @@
 Public Interface [SVGAElement]
 Inherits SVGGraphicsElement, SVGURIReference
 
-'Defined on this type 
   '''<Summary>See HTMLAnchorElement.href.</Summary>
   Property [href] As String
   '''<Summary>Is a DOMString that reflects the hreflang attribute, indicating the language of the linked resource.</Summary>

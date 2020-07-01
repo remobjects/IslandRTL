@@ -1,7 +1,6 @@
 ﻿'''<Summary>The AddressErrors dictionary is used by the Payment Request API to to report validation errors in a physical address (typically a billing address or a shipping address).</Summary>
 <DynamicInterface(GetType(EcmaScriptObject))>
 Public Interface [AddressErrors]
-'Defined on this type 
   '''<Summary>A DOMString which, if present, indicates that the addressLine property of the PaymentAddress could not be validated. The contents of the string provide a human-readable explanation of the validation failure, and ideally suggestions to correct the problem.</Summary>
   Property [addressLine] As String
   '''<Summary>A DOMString which, if present, indicates that the city property of the PaymentAddress could not be validated. The contents of the string provide a human-readable explanation of the validation failure, and ideally suggestions to correct the problem.</Summary>

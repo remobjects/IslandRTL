@@ -3,7 +3,6 @@
 Public Interface [HTMLElement]
 Inherits Element
 
-'Defined on this type 
   '''<Summary>Is a DOMString representing the access key assigned to the element.</Summary>
   Property [accessKey] As String
   '''<Summary>Returns a DOMString containing the element's assigned access key.</Summary>
@@ -38,8 +37,4 @@ Inherits Element
   Property [tabIndex] As Integer
   '''<Summary>Is a DOMString containing the text that appears in a popup box when mouse is over the element.</Summary>
   Property [title] As String
-  '''<Summary>Sends a mouse click event to the element.</Summary>
-  Function [click]() As HTMLElement
-  '''<Summary>Makes the element the current keyboard focus.</Summary>
-  Function [focus]([paroptions] As Dynamic, [parpreventScroll] As Dynamic) As HTMLElement
 End Interface

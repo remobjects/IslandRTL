@@ -3,7 +3,6 @@
 Public Interface [MediaStreamTrackEvent]
 Inherits [Event]
 
-'Defined on this type 
   '''<Summary>Constructs a new MediaStreamTrackEvent with the specified configuration.</Summary>
   Property [MediaStreamTrackEvent] As MediaStreamTrackEvent
 End Interface

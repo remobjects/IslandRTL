@@ -3,5 +3,4 @@
 Public Interface [SVGPathElement]
 Inherits SVGGeometryElement
 
-'Defined on this type 
 End Interface

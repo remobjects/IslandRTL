@@ -1,7 +1,6 @@
 ﻿'''<Summary>The Gamepad interface of the Gamepad API defines an individual gamepad or other controller, allowing access to information such as button presses, axis positions, and id.</Summary>
 <DynamicInterface(GetType(EcmaScriptObject))>
 Public Interface [Gamepad]
-'Defined on this type 
   '''<Summary>An array representing the controls with axes present on the device (e.g. analog thumb sticks).</Summary>
   ReadOnly Property [axes] As double
   '''<Summary>An array of gamepadButton objects representing the buttons present on the device.</Summary>

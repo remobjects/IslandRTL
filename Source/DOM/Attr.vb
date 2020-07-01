@@ -1,7 +1,6 @@
 ﻿'''<Summary>The Attr interface represents one of a DOM element's attributes as an object. In most DOM methods, you will directly retrieve the attribute as a string (e.g., Element.getAttribute()), but certain functions (e.g., Element.getAttributeNode()) or means of iterating return Attr types.</Summary>
 <DynamicInterface(GetType(EcmaScriptObject))>
 Public Interface [Attr]
-'Defined on this type 
   '''<Summary>The attribute's name.</Summary>
   ReadOnly Property [name] As String
   '''<Summary>A DOMString representing the namespace URI of the attribute, or null if there is no namespace.</Summary>

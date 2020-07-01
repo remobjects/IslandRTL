@@ -1,7 +1,6 @@
 ﻿'''<Summary>The NavigatorID interface contains methods and properties related to the identity of the browser.</Summary>
 <DynamicInterface(GetType(EcmaScriptObject))>
 Public Interface [NavigatorID]
-'Defined on this type 
   '''<Summary>Always returns "Mozilla", in any browser. This property is kept only for compatibility purposes.</Summary>
   ReadOnly Property [appCodeName] As String
   '''<Summary>Always returns "Netscape", in any browser. This property is kept only for compatibility purposes.</Summary>

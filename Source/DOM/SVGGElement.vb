@@ -3,5 +3,4 @@
 Public Interface [SVGGElement]
 Inherits SVGGraphicsElement, SVGElement, SVGTests, SVGStylable, SVGTransformable
 
-'Defined on this type 
 End Interface

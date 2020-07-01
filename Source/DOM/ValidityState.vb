@@ -1,7 +1,6 @@
 ﻿'''<Summary>The ValidityState interface represents the validity states that an element can be in, with respect to constraint validation. Together, they help explain why an element's value fails to validate, if it's not valid.</Summary>
 <DynamicInterface(GetType(EcmaScriptObject))>
 Public Interface [ValidityState]
-'Defined on this type 
   '''<Summary>A Boolean that is true if the user has provided input that the browser is unable to convert.</Summary>
   ReadOnly Property [badInput] As Boolean
   '''<Summary>A Boolean that is true if the value does not match the specified pattern, and false if it does match. If true, the element matches the  or other &lt;form> element whose contents fail to validate.">:invalid CSS pseudo-class.</Summary>

@@ -1,7 +1,6 @@
 ﻿'''<Summary>The AudioTrack interface represents a single audio track from one of the HTML media elements, &lt;audio> or &lt;video>. </Summary>
 <DynamicInterface(GetType(EcmaScriptObject))>
 Public Interface [AudioTrack]
-'Defined on this type 
   '''<Summary>A Boolean value which controls whether or not the audio track's sound is enabled. Setting this value to false mutes the track's audio.</Summary>
   Property [enabled] As Boolean
   '''<Summary>A DOMString which uniquely identifies the track within the media. This ID can be used to locate a specific track within an audio track list by calling AudioTrackList.getTrackById(). The ID can also be used as the fragment part of the URL if the media supports seeking by media fragment per the Media Fragments URI specification.</Summary>

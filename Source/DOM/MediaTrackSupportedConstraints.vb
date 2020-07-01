@@ -1,7 +1,6 @@
 ﻿'''<Summary>The MediaTrackSupportedConstraints dictionary establishes the list of constrainable properties recognized by the user agent or browser in its implementation of the MediaStreamTrack object. An object conforming to MediaTrackSupportedConstraints is returned by MediaDevices.getSupportedConstraints().</Summary>
 <DynamicInterface(GetType(EcmaScriptObject))>
 Public Interface [MediaTrackSupportedConstraints]
-'Defined on this type 
   '''<Summary>A Boolean whose value is true if the autoGainControl constraint is supported in the current environment.</Summary>
   Property [autoGainControl] As Boolean
   '''<Summary>A Boolean value whose value is true if the width constraint is supported in the current environment.</Summary>

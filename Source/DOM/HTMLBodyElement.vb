@@ -3,7 +3,6 @@
 Public Interface [HTMLBodyElement]
 Inherits HTMLElement
 
-'Defined on this type 
   '''<Summary>Is an EventHandler representing the code to be called when the afterprint event is raised.</Summary>
   Property [onafterprint] As EventListener
   '''<Summary>Is an EventHandler representing the code to be called when the beforeprint event is raised.</Summary>

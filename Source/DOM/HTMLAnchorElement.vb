@@ -3,7 +3,6 @@
 Public Interface [HTMLAnchorElement]
 Inherits HTMLElement
 
-'Defined on this type 
   '''<Summary>Is a USVString representing the fragment identifier, including the leading hash mark ('#'), if any, in the referenced URL.</Summary>
   Property [hash] As String
   '''<Summary>Is a USVString representing the hostname and port (if it's not the default port) in the referenced URL.</Summary>
@@ -40,8 +39,4 @@ Inherits HTMLElement
   Property [type] As Dynamic
   '''<Summary>Is a USVString containing the username specified before the domain name.</Summary>
   Property [username] As String
-  '''<Summary>Removes the keyboard focus from the current element.</Summary>
-  Sub [blur]()
-  '''<Summary>Returns a USVString containing the whole URL. It is a synonym for HTMLHyperlinkElementUtils.href, though it can't be used to modify the value.</Summary>
-  Function [toString]() As String
 End Interface

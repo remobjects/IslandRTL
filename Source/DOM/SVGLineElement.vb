@@ -3,5 +3,4 @@
 Public Interface [SVGLineElement]
 Inherits SVGGeometryElement
 
-'Defined on this type 
 End Interface

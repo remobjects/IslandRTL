@@ -3,5 +3,4 @@
 Public Interface [SVGLinearGradientElement]
 Inherits SVGGradientElement
 
-'Defined on this type 
 End Interface

@@ -1,7 +1,6 @@
 ﻿'''<Summary>The PaymentItem dictionary is used by the Payment Request API to describe a single line item on a payment request.</Summary>
 <DynamicInterface(GetType(EcmaScriptObject))>
 Public Interface [PaymentItem]
-'Defined on this type 
   '''<Summary>A PaymentCurrencyAmount object describing the monetary value of the item.</Summary>
   Property [amount] As Double
   '''<Summary>A string specifying a human-readable name or description of the item or service being charged for. This may be displayed to the user by the user agent, depending on the design of the interface.</Summary>

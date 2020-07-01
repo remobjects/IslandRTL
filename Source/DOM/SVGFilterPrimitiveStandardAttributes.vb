@@ -1,7 +1,6 @@
 ﻿'''<Summary>The SVGFilterPrimitiveStandardAttributes interface defines the set of DOM attributes that are common across the filter primitive interfaces.</Summary>
 <DynamicInterface(GetType(EcmaScriptObject))>
 Public Interface [SVGFilterPrimitiveStandardAttributes]
-'Defined on this type 
   '''<Summary>An SVGAnimatedLength corresponding to the x attribute of the given element.</Summary>
   ReadOnly Property [x] As Double
   '''<Summary>An SVGAnimatedLength corresponding to the y attribute of the given element.</Summary>

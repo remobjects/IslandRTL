@@ -3,7 +3,6 @@
 Public Interface [HTMLTitleElement]
 Inherits HTMLElement
 
-'Defined on this type 
   '''<Summary>Is a DOMString representing the text of the document's title.</Summary>
   Property [text] As String
 End Interface

@@ -3,7 +3,6 @@
 Public Interface [SVGTextPositioningElement]
 Inherits SVGTextContentElement
 
-'Defined on this type 
   '''<Summary>Returns an SVGAnimatedLengthList reflecting the x attribute of the given element.</Summary>
   ReadOnly Property [x] As Double
   '''<Summary>Returns an SVGAnimatedLengthList reflecting the y attribute of the given element.</Summary>

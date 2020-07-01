@@ -3,7 +3,6 @@
 Public Interface [SVGStyleElement]
 Inherits SVGElement, LinkStyle
 
-'Defined on this type 
   '''<Summary>A DOMString corresponding to the type attribute of the given element.</Summary>
   Property [type] As Dynamic
   '''<Summary>A DOMString corresponding to the media attribute of the given element.</Summary>

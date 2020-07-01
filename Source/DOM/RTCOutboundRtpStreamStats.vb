@@ -1,7 +1,6 @@
 ﻿'''<Summary>The RTCOutboundRtpStreamStats dictionary is the RTCStats-based object which provides metrics and statistics related to an outbound RTP stream being sent by an RTCRtpSender.</Summary>
 <DynamicInterface(GetType(EcmaScriptObject))>
 Public Interface [RTCOutboundRtpStreamStats]
-'Defined on this type 
   '''<Summary>A floating-point value indicating the average RTCP interval between two consecutive compound RTCP packets.</Summary>
   Property [averageRtcpInterval] As Double
   '''<Summary>An integer value which indicates the total number of Full Intra Request (FIR) packets which this RTCRtpSender has sent to the remote RTCRtpReceiver. This is an indicator of how often the stream has lagged, requiring frames to be skipped in order to catch up. Valid only for video streams.</Summary>

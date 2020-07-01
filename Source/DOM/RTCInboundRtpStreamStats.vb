@@ -1,7 +1,6 @@
 ﻿'''<Summary>The WebRTC API's RTCInboundRtpStreamStats dictionary, based upon RTCReceivedRtpStreamStats and RTCStats, contains statistics related to the receiving end of an RTP stream on the local end of the RTCPeerConnection.</Summary>
 <DynamicInterface(GetType(EcmaScriptObject))>
 Public Interface [RTCInboundRtpStreamStats]
-'Defined on this type 
   '''<Summary>A floating-point value indicating the average RTCP interval between two consecutive compound RTCP packets.</Summary>
   Property [averageRtcpInterval] As Double
   '''<Summary>A 64-bit integer which indicats the total numer of bytes that have been received so far for this media source.</Summary>

@@ -1,7 +1,6 @@
 ﻿'''<Summary>The RTCIceCandidate interface—part of the WebRTC API—represents a candidate Internet Connectivity Establishment (ICE) configuration which may be used to establish an RTCPeerConnection.</Summary>
 <DynamicInterface(GetType(EcmaScriptObject))>
 Public Interface [RTCIceCandidate]
-'Defined on this type 
   '''<Summary>A DOMString representing the transport address for the candidate that can be used for connectivity checks. The format of this address is a candidate-attribute as defined in RFC 5245. This string is empty ("") if the RTCIceCandidate is an "end of candidates" indicator.</Summary>
   ReadOnly Property [candidate] As String
   '''<Summary>A DOMString which indicates whether the candidate is an RTP or an RTCP candidate; its value is either "rtp" or "rtcp", and is derived from the  "component-id" field in the candidate a-line string. The permitted values are listed in the RTCIceComponent enumerated type.</Summary>
@@ -30,6 +29,4 @@ Public Interface [RTCIceCandidate]
   ReadOnly Property [type] As Dynamic
   '''<Summary>A DOMString containing a randomly-generated username fragment ("ice-ufrag") which ICE uses for message integrity along with a randomly-generated password ("ice-pwd"). You can use this string to verify generations of ICE generation; each generation of the same ICE process will use the same usernameFragment, even across ICE restarts.</Summary>
   ReadOnly Property [usernameFragment] As String
-  '''<Summary>Given the RTCIceCandidate's current configuration, toJSON() returns a DOMString containing a JSON representation of that configuration in the form of a RTCIceCandidateInit object.</Summary>
-  Function [toJSON]() As String
 End Interface

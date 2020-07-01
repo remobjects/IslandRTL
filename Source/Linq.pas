@@ -2,7 +2,7 @@
 
 extension method ISequence<T>.Count(): Integer; public;
 begin
-  for each el in self do inc(result);
+  for each in self do inc(result);
 end;
 
 extension method ISequence<T>.Count(aCondition: not nullable block(aItem: not nullable T): Boolean): Integer; public;
@@ -70,10 +70,10 @@ begin
 end;
 
 extension method IOrderedSequence<T>.ThenBy<C>(aBlock: not nullable block(aItem: not nullable T): C): /*not nullable*/ IOrderedSequence<T>; public;
-begin 
+begin
   var lOrg := self.Comparison;
-  exit new OrderedSequence<T>(self.Original, 
-    (a, b) -> begin 
+  exit new OrderedSequence<T>(self.Original,
+    (a, b) -> begin
       result := lOrg(a, b);
       if result = 0 then
         result := (aBlock(a) as IComparable).CompareTo(aBlock(b));
@@ -81,10 +81,10 @@ begin
 end;
 
 extension method IOrderedSequence<T>.ThenByDescending<C>(aBlock: not nullable block(aItem: not nullable T): C): /*not nullable*/ IOrderedSequence<T>; public;
-begin 
+begin
   var lOrg := self.Comparison;
-  exit new OrderedSequence<T>(self.Original, 
-    (a, b) -> begin 
+  exit new OrderedSequence<T>(self.Original,
+    (a, b) -> begin
       result := lOrg(a, b);
       if result = 0 then
         result := (aBlock(b) as IComparable).CompareTo(aBlock(a));
@@ -100,7 +100,7 @@ end;
 extension method ISequence<T>.SelectMany<T, U>(aBlock: not nullable block(aItem: not nullable T): nullable sequence of U): /*not nullable*/ ISequence<U>; public; iterator;
 begin
   for each el in self do begin
-    for each subval in aBlock(el) do 
+    for each subval in aBlock(el) do
       yield subval;
   end;
 end;
@@ -108,7 +108,7 @@ end;
 extension method ISequence<T>.SelectMany<T, U, TRes>(aBlock: not nullable block(aItem: not nullable T): nullable sequence of U; aSelector: not nullable block(aOriginal: not nullable T; aNew: U): TRes): /*not nullable*/ ISequence<TRes>; public; iterator;
 begin
   for each el in self do begin
-    for each subval in aBlock(el) do 
+    for each subval in aBlock(el) do
       yield aSelector(el, subval);
   end;
 end;
@@ -253,7 +253,7 @@ end;
 
 extension method ISequence<T>.Any(): Boolean; public;
 begin
-  for each el in self do
+  for each in self do
     exit true;
 end;
 
@@ -280,18 +280,18 @@ end;
 
 type
   Enumerable<T> = class
-  public 
-    class var Empty: array of T := new T[0]; 
+  public
+    class var Empty: array of T := new T[0];
   end;
 
   IOrderedSequence<T> = public interface(ISequence<T>)
-    property Original: ISequence<T> read;  
+    property Original: ISequence<T> read;
     property Comparison: Comparison<T> read;
   end;
   OrderedSequence<T> = class(ISequence<T>, IOrderedSequence<T>)
   public
     constructor(aSeq: ISequence<T>; aComp: Comparison<T>);
-    begin 
+    begin
       Original := aSeq;
       Comparison := aComp;
     end;
@@ -300,7 +300,7 @@ type
     property Comparison: Comparison<T>; readonly;
 
     method GetEnumerator: IEnumerator<T>;
-    begin 
+    begin
       var lSeq := Original.ToList;
       lSeq.Sort(Comparison);
       exit lSeq.GetEnumerator;
@@ -308,7 +308,7 @@ type
 
 
     method GetEnumerator2: IEnumerator; implements IEnumerable.GetEnumerator;
-    begin 
+    begin
       exit GetEnumerator;
     end;
   end;
@@ -472,7 +472,7 @@ extension method ISequence<T>.GroupBy<TKey, TValue>(
   aKeySelector: not nullable block(Item : T): TKey;
   aValueSelector: not nullable block(Item : T): TValue;
   aComparer: IEqualityComparer<TKey> := nil
-  ): ISequence<IGroupingSequence<TKey, TValue>>; public; 
+  ): ISequence<IGroupingSequence<TKey, TValue>>; public;
 begin
   result := Lookup<TKey, TValue>.Create<T>(self, aKeySelector, aValueSelector, aComparer)
 end;
@@ -486,7 +486,7 @@ end;
 extension method ISequence<T>.ToLookup<TKey, TValue>(
   aKeySelector: not nullable block(Item : T): TKey;
   aValueSelector: not nullable block(Item : T): TValue;
-  aComparer: IEqualityComparer<TKey> := nil): ILookup<TKey, TValue>; public; 
+  aComparer: IEqualityComparer<TKey> := nil): ILookup<TKey, TValue>; public;
 begin
   result := Lookup<TKey, TValue>.Create<T>(self, aKeySelector, aValueSelector, aComparer)
 end;
@@ -496,11 +496,11 @@ extension method ISequence<TOuter>.Join<TOuter, TInner, TKey, TResult>(aInner: I
   aInnerKeySelector: method (item: TInner): TKey;
   aResultSelector: method (item: TOuter; item2: TInner): TResult;
   aComparer: IEqualityComparer<TKey> := nil): ISequence<TResult>; public; iterator;
-begin 
+begin
   if aComparer = nil then aComparer := DefaultEqualityComparer<TKey>.Instance;
   var lLookup := aInner.ToLookup(aInnerKeySelector, aComparer);
-  for each el in self do begin 
-    for each item in lLookup[aOuterKeySelector(el)] do 
+  for each el in self do begin
+    for each item in lLookup[aOuterKeySelector(el)] do
       yield aResultSelector(el, item);
   end;
 end;

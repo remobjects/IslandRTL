@@ -1,7 +1,6 @@
 ﻿'''<Summary>The Event interface represents an event which takes place in the DOM.</Summary>
 <DynamicInterface(GetType(EcmaScriptObject))>
 Public Interface [Event]
-'Defined on this type 
   '''<Summary>A boolean indicating whether or not the event bubbles up through the DOM.</Summary>
   ReadOnly Property [bubbles] As Boolean
   '''<Summary>A historical alias to Event.stopPropagation(). Setting its value to true before returning from an event handler prevents propagation of the event.</Summary>

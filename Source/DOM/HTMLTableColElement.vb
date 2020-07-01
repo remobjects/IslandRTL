@@ -3,7 +3,6 @@
 Public Interface [HTMLTableColElement]
 Inherits HTMLElement
 
-'Defined on this type 
   '''<Summary>Is an unsigned long that reflects the span HTML attribute, indicating the number of columns to apply this object's attributes to. Must be a positive integer.</Summary>
   Property [span] As ULong
 End Interface

@@ -3,7 +3,6 @@
 Public Interface [IDBCursorWithValue]
 Inherits IDBCursor
 
-'Defined on this type 
   '''<Summary>Returns the value of the current cursor.</Summary>
   ReadOnly Property [value] As String
 End Interface

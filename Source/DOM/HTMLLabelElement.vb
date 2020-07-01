@@ -3,7 +3,6 @@
 Public Interface [HTMLLabelElement]
 Inherits HTMLElement
 
-'Defined on this type 
   '''<Summary>Is a HTMLElement representing the control with which the label is associated.</Summary>
   ReadOnly Property [control] As HTMLElement
   '''<Summary>Is a HTMLFormElement object representing the form with which the labeled control is associated, or null if there is no associated control, or if that control isn't associated with a form. In other words, this is just a shortcut for HTMLLabelElement.control.form.</Summary>

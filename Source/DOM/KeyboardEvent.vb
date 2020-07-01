@@ -1,7 +1,6 @@
 ﻿'''<Summary>KeyboardEvent objects describe a user interaction with the keyboard; each event describes a single interaction between the user and a key (or combination of a key with modifier keys) on the keyboard.</Summary>
 <DynamicInterface(GetType(EcmaScriptObject))>
 Public Interface [KeyboardEvent]
-'Defined on this type 
   '''<Summary>Returns a Boolean that is true if the Alt ( Option or ⌥ on OS X) key was active when the key event was generated.</Summary>
   ReadOnly Property [altKey] As Boolean
   '''<Summary>Returns a DOMString with the code value of the physical key represented by the event.</Summary>
@@ -22,6 +21,4 @@ Public Interface [KeyboardEvent]
   ReadOnly Property [repeat] As Boolean
   '''<Summary>Returns a Boolean that is true if the Shift key was active when the key event was generated.</Summary>
   ReadOnly Property [shiftKey] As Boolean
-  '''<Summary>Returns a Boolean indicating if a modifier key such as Alt, Shift, Ctrl, or Meta, was pressed when the event was created.</Summary>
-  Function [getModifierState]([parkeyArg] As Dynamic) As Boolean
 End Interface

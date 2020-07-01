@@ -1,7 +1,6 @@
 ﻿'''<Summary>The DOMException interface represents an abnormal event (called an exception) that occurs as a result of calling a method or accessing a property of a web API.</Summary>
 <DynamicInterface(GetType(EcmaScriptObject))>
 Public Interface [DOMException]
-'Defined on this type 
   '''<Summary>Returns a DOMString representing a message or description associated with the given error name.</Summary>
   ReadOnly Property [message] As String
   '''<Summary>Returns a DOMString that contains one of the strings associated with an error name.</Summary>

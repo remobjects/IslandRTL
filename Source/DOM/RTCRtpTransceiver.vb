@@ -1,7 +1,6 @@
 ﻿'''<Summary>The WebRTC interface RTCRtpTransceiver describes a permanent pairing of an RTCRtpSender and an RTCRtpReceiver, along with some shared state.</Summary>
 <DynamicInterface(GetType(EcmaScriptObject))>
 Public Interface [RTCRtpTransceiver]
-'Defined on this type 
   '''<Summary>A string from the enum RTCRtpTransceiverDirection which indicates the transceiver's current directionality, or null if the transceiver is stopped or has never participated in an exchange of offers and answers.</Summary>
   ReadOnly Property [currentDirection] As String
   '''<Summary>A string from the enum RTCRtpTransceiverDirection which is used to set the transceiver's desired direction.</Summary>
@@ -14,8 +13,4 @@ Public Interface [RTCRtpTransceiver]
   ReadOnly Property [sender] As Dynamic
   '''<Summary>Indicates whether or not sending and receiving using the paired RTCRtpSender and RTCRtpReceiver has been permanently disabled, either due to SDP offer/answer, or due to a call to stop().</Summary>
   Property [stopped] As Boolean
-  '''<Summary>A list of RTCRtpCodecParameters objects which override the default preferences used by the user agent for the transceiver's codecs.</Summary>
-  Function [setCodecPreferences]([parcodecs] As Dynamic) As RTCRtpCodecParameters()
-  '''<Summary>Permanently stops the RTCRtpTransceiver. The associated sender stops sending data, and the associated receiver likewise stops receiving and decoding incoming data.</Summary>
-  Sub [stop]([parwhen] As Dynamic)
 End Interface

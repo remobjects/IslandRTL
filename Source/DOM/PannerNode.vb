@@ -1,7 +1,8 @@
 ﻿'''<Summary>A PannerNode always has exactly one input and one output: the input can be mono or stereo but the output is always stereo (2 channels); you can't have panning effects without at least two audio channels!</Summary>
 <DynamicInterface(GetType(EcmaScriptObject))>
 Public Interface [PannerNode]
-'Defined on this type 
+Inherits AudioNode, AudioParam
+
   '''<Summary>Is a double value describing the angle, in degrees, of a cone inside of which there will be no volume reduction.</Summary>
   Property [coneInnerAngle] As Double
   '''<Summary>A double value describing the angle, in degrees, of a cone outside of which the volume will be reduced by a constant value, defined by the coneOuterGain attribute.</Summary>
@@ -30,6 +31,4 @@ Public Interface [PannerNode]
   Property [refDistance] As Double
   '''<Summary>A double value describing how quickly the volume is reduced as the source moves away from the listener. This value is used by all distance models.</Summary>
   Property [rolloffFactor] As Double
-  '''<Summary>Defines the position of the audio source relative to the listener (represented by an AudioListener object stored in the AudioContext.listener attribute.)</Summary>
-  Function [setPosition]([parx] As Dynamic,[pary] As Dynamic,[parz] As Dynamic) As Dynamic
 End Interface

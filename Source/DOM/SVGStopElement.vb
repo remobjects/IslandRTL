@@ -3,5 +3,4 @@
 Public Interface [SVGStopElement]
 Inherits SVGElement
 
-'Defined on this type 
 End Interface

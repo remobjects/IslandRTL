@@ -3,5 +3,4 @@
 Public Interface [SVGSymbolElement]
 Inherits SVGGraphicsElement, SVGElement, SVGStylable
 
-'Defined on this type 
 End Interface

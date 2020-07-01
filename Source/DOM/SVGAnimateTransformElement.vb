@@ -3,5 +3,4 @@
 Public Interface [SVGAnimateTransformElement]
 Inherits SVGAnimationElement
 
-'Defined on this type 
 End Interface

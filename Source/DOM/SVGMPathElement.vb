@@ -3,5 +3,4 @@
 Public Interface [SVGMPathElement]
 Inherits SVGElement
 
-'Defined on this type 
 End Interface

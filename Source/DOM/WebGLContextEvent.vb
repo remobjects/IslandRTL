@@ -3,5 +3,4 @@
 Public Interface [WebGLContextEvent]
 Inherits [Event]
 
-'Defined on this type 
 End Interface

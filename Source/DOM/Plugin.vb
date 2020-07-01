@@ -1,7 +1,6 @@
 ﻿'''<Summary>The Plugin interface provides information about a browser plugin.</Summary>
 <DynamicInterface(GetType(EcmaScriptObject))>
 Public Interface [Plugin]
-'Defined on this type 
   '''<Summary>A human readable description of the plugin.</Summary>
   ReadOnly Property [description] As String
   '''<Summary>The filename of the plugin file.</Summary>

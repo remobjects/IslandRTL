@@ -3,5 +3,4 @@
 Public Interface [SVGPolygonElement]
 Inherits SVGGeometryElement, SVGAnimatedPoints, SVGElement, SVGTests, SVGStylable, SVGTransformable
 
-'Defined on this type 
 End Interface

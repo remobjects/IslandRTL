@@ -58,7 +58,7 @@ begin
   var curpos := Position;
   //fLength := value;
   CheckCapacity(value);
-  fLength := value;  
+  fLength := value;
   if curpos > fLength then Seek(0, SeekOrigin.End);
 end;
 
@@ -98,7 +98,8 @@ end;
 method MemoryStream.ToArray: array of Byte;
 begin
   result := new array of Byte(fLength);
-  memcpy(@result[0], @fbuf[0], fLength);
+  if fLength > 0 then
+    memcpy(@result[0], @fbuf[0], fLength);
 end;
 
 method MemoryStream.CheckCapacity(value: Int32);
@@ -144,7 +145,8 @@ begin
   var fs := new FileStream(FileName, FileMode.Create,FileAccess.Write, FileShare.None);
   SetLength(fLength);
   fs.Position := 0;
-  fs.Write(new Span<Byte>(@fbuf[0], fLength));
+  if fLength > 0 then
+    fs.Write(new Span<Byte>(@fbuf[0], fLength));
   fs.Close;
 end;
 {$ENDIF}

@@ -3,5 +3,4 @@
 Public Interface [CSSStyleSheet]
 Inherits StyleSheet
 
-'Defined on this type 
 End Interface

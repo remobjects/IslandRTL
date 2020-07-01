@@ -3,7 +3,6 @@
 Public Interface [HTMLLegendElement]
 Inherits HTMLElement
 
-'Defined on this type 
   '''<Summary>Is a HTMLFormElement representing the form that this legend belongs to. If the legend has a fieldset element as its parent, then this attribute returns the same value as the form attribute on the parent fieldset element. Otherwise, it returns null. </Summary>
   ReadOnly Property [form] As HTMLFormElement
   '''<Summary>Is a DOMString representing a single-character access key to give access to the element.</Summary>

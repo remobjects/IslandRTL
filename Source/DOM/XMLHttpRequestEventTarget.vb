@@ -1,7 +1,6 @@
 ﻿'''<Summary>XMLHttpRequestEventTarget is the interface that describes the event handlers you can implement in an object that will handle events for an XMLHttpRequest.</Summary>
 <DynamicInterface(GetType(EcmaScriptObject))>
 Public Interface [XMLHttpRequestEventTarget]
-'Defined on this type 
   '''<Summary>Contains the function to call when a request is aborted and the abort event is received by this object.</Summary>
   Property [onabort] As Dynamic
   '''<Summary>Contains the function to call when a request encounters an error and the error event is received by this object.</Summary>

@@ -1,7 +1,8 @@
 ﻿'''<Summary>The MessageEvent interface represents a message received by a target object.</Summary>
 <DynamicInterface(GetType(EcmaScriptObject))>
 Public Interface [MessageEvent]
-'Defined on this type 
+Inherits [Event]
+
   '''<Summary>The data sent by the message emitter.</Summary>
   ReadOnly Property [data] As Dynamic
   '''<Summary>A USVString representing the origin of the message emitter.</Summary>

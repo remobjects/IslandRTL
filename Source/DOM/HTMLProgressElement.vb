@@ -3,7 +3,6 @@
 Public Interface [HTMLProgressElement]
 Inherits HTMLElement
 
-'Defined on this type 
   '''<Summary>Is a double value reflecting the content attribute of the same name, limited to numbers greater than zero. Its default value is 1.0.</Summary>
   Property [max] As Double
   '''<Summary>Returns a double value returning the result of dividing the current value (value) by the maximum value (max); if the progress bar is an indeterminate progress bar, it returns -1.</Summary>

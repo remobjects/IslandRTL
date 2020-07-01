@@ -1,7 +1,8 @@
 ﻿'''<Summary>The Text interface represents the textual content of Element or Attr. </Summary>
 <DynamicInterface(GetType(EcmaScriptObject))>
 Public Interface [Text]
-'Defined on this type 
+Inherits CharacterData
+
   '''<Summary>Returns a DOMString containing the text of all Text nodes logically adjacent to this Node, concatenated in document order.</Summary>
   ReadOnly Property [wholeText] As String
   '''<Summary>Returns the HTMLSlotElement object associated with the element.</Summary>

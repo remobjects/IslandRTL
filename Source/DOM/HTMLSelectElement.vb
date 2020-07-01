@@ -1,7 +1,6 @@
 ﻿'''<Summary>The HTMLSelectElement interface represents a &lt;select> HTML Element. These elements also share all of the properties and methods of other HTML elements via the HTMLElement interface.</Summary>
 <DynamicInterface(GetType(EcmaScriptObject))>
 Public Interface [HTMLSelectElement]
-'Defined on this type 
   '''<Summary>A Boolean reflecting the autofocus HTML attribute, which indicates whether the control should have input focus when the page loads, unless the user overrides it, for example by typing in a different control. Only one form-associated element in a document can have this attribute specified. </Summary>
   Property [autofocus] As Boolean
   '''<Summary>A Boolean reflecting the disabled HTML attribute, which indicates whether the control is disabled. If it is disabled, it does not accept clicks.</Summary>
@@ -36,16 +35,4 @@ Public Interface [HTMLSelectElement]
   Property [value] As String
   '''<Summary>A Boolean that indicates whether the button is a candidate for constraint validation. It is false if any conditions bar it from constraint validation.</Summary>
   ReadOnly Property [willValidate] As Boolean
-  '''<Summary>Checks whether the element has any constraints and whether it satisfies them. If the element fails its constraints, the browser fires a cancelable invalid event at the element (and returns false).</Summary>
-  Function [checkValidity]() As Boolean
-  '''<Summary>Gets an item from the options collection for this  element represents a control that provides a menu of options">&lt;select&gt; element. You can also access an item by specifying the index in array-style brackets or parentheses, without calling this method explicitly.</Summary>
-  Function [item]() As String()
-  '''<Summary>Gets the item in the options collection with the specified name. The name string can match either the id or the name attribute of an option node. You can also access an item by specifying the name in array-style brackets or parentheses, without calling this method explicitly.</Summary>
-  Function [namedItem]() As String
-  '''<Summary>Removes the element at the specified index from the options collection for this select element.</Summary>
-  Function [remove]([partoken] As Dynamic) As HTMLElement
-  '''<Summary>This method reports the problems with the constraints on the element, if any, to the user. If there are problems, it fires a cancelable invalid event at the element, and returns false; if there are no problems, it returns true.</Summary>
-  Function [reportValidity]() As Boolean
-  '''<Summary>Sets the custom validity message for the selection element to the specified message. Use the empty string to indicate that the element does not have a custom validity error.</Summary>
-  Function [setCustomValidity]([parerror] As Dynamic) As String
 End Interface

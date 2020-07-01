@@ -3,5 +3,4 @@
 Public Interface [SVGFEImageElement]
 Inherits SVGElement, SVGFilterPrimitiveStandardAttributes, SVGURIReference
 
-'Defined on this type 
 End Interface

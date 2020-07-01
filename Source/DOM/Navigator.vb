@@ -1,7 +1,6 @@
 ﻿'''<Summary>The Navigator interface represents the state and the identity of the user agent. It allows scripts to query it and to register themselves to carry on some activities.</Summary>
 <DynamicInterface(GetType(EcmaScriptObject))>
 Public Interface [Navigator]
-'Defined on this type 
   '''<Summary>Returns a BatteryManager object you can use to get information about the battery charging status.</Summary>
   ReadOnly Property [battery] As Dynamic
   '''<Summary>Returns false if setting a cookie will be ignored and true otherwise.</Summary>
