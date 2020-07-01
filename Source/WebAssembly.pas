@@ -711,7 +711,7 @@ type
   private
   public
     [SymbolName('elements_webassembly_current_exception')]
-    class var CurrentException: Exception; 
+    class var CurrentException: Exception;
     [SymbolName('llvm.trap')]
     class method trap; external;
     method RaiseException(aRaiseAddress: ^Void; aRaiseFrame: ^Void; aRaiseObject: Object);
@@ -768,6 +768,24 @@ type
         inc(result);
       end;
     end;
+
+    [SymbolName('memcmp')]
+    [DllExport]
+    class method memcmp(a, b: ^Byte; num: NativeInt): Integer;
+    begin
+      if (a = nil) and (b = nil) then exit 0;
+      if (a = nil) or (b = nil) then exit if a = nil then 1 else -1;
+      if num = 0 then exit 0;
+      loop begin
+        if a^ > b^ then exit 1;
+        if a^ < b^ then exit -1;
+        inc(a);
+        inc(b);
+        dec(num);
+        if num = 0 then exit 0;
+      end;
+    end;
+
 
     [SymbolName('memcpy')]
     [DLLExport]
