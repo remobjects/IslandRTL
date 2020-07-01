@@ -457,6 +457,15 @@ begin
 end;
 
 
+method memcmp(a: ^Void; b: ^Void; num: NativeInt): Integer; public;inline;
+begin
+  {$IFDEF WINDOWS OR WEBASSEMBLY}
+  exit ExternalCalls.memcmp(^Byte(a), ^Byte(b), num);
+  {$ELSE}
+  exit rtl.memcmp(a, b, num);
+  {$ENDIF}
+end;
+
 method memmove(destination: ^Void; source: ^Void; num: NativeInt): ^Void; public;inline;
 begin
   {$IFDEF WINDOWS OR WEBASSEMBLY}
