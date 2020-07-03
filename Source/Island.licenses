@@ -1,0 +1,291 @@
+1b763b76938133aa7ec3901d0ae75f992d07e0bfb37e40f26ee34c0105fcfaec553091d4719fd0683d19e6ffa47994d547dc75ed683c2c50f778e4aae4638267398cc88dd27fda99e27bfdff8e5a753f96f2c395361533fafbd101b12f39f91a4b92ac7c3903d146438e44e2d3b1174cc38f82cca963c236898a5992493e870924a9246b1f8b00ec825553ce43ed1960066506ab037e85da7aa55c3691761420a6f5c8963e33dc2065b29c08c09edd2f494210510648455532b4ed21e386964c6f16cfdfc6f8c1d28f8a243e3ab879fbf6c4243dd7f4fd7b7150c205dd400fb4b4b53cc6a8d669a43edc8b8cd04dfb582188b47e569f4f0cde3e5c09736d17dc
+e1b0420a40a0adaf6c8fd9536082aeae5658efd63ce53140ee1618ecfcbbebd2bf3ab574cbe511c6b33ff37133f3ec72ead085cd2af446d2ed56eac4996698d0bd808f547d8d57173ccb97323e703745344397b42b9cbde69d42fd6e4339ff3a968d910b6b65d92049cb2e5a7623606ab93254618f54602d7197ee79bc0d3249
+[License]
+LicenseType=Project
+Product=Hydrogene
+Platform=Island
+AllowBeta=1
+AllowFull=1
+
+DisplayName=Island Contributor License, Hydrogene/Island
+ProjectName=Island (Android NDK)
+ProjectFileName=Island.Android.elements
+ProjectGuid={961edd39-0901-480d-97a6-c775095d5ebc}
+ProjectAssemblyName=Island
+ProjectOutputType=StaticLibrary
+
+[License]
+LicenseType=Project
+Product=Oxygene
+Platform=Island
+AllowBeta=1
+AllowFull=1
+
+DisplayName=Island Contributor License, Oxygene/Island
+ProjectName=Island (Android NDK)
+ProjectFileName=Island.Android.elements
+ProjectGuid={961edd39-0901-480d-97a6-c775095d5ebc}
+ProjectAssemblyName=Island
+ProjectOutputType=StaticLibrary
+
+[License]
+LicenseType=Project
+Product=Hydrogene
+Platform=Island
+AllowBeta=1
+AllowFull=1
+
+DisplayName=Island Contributor License, Hydrogene/Island
+ProjectName=Island (Darwin iOS)
+ProjectFileName=Island.Darwin.iOS.elements
+ProjectGuid={617c0962-5cb7-4e31-a80b-4f07c618cb83}
+ProjectAssemblyName=Island
+ProjectOutputType=StaticLibrary
+
+[License]
+LicenseType=Project
+Product=Oxygene
+Platform=Island
+AllowBeta=1
+AllowFull=1
+
+DisplayName=Island Contributor License, Oxygene/Island
+ProjectName=Island (Darwin iOS)
+ProjectFileName=Island.Darwin.iOS.elements
+ProjectGuid={617c0962-5cb7-4e31-a80b-4f07c618cb83}
+ProjectAssemblyName=Island
+ProjectOutputType=StaticLibrary
+
+[License]
+LicenseType=Project
+Product=Hydrogene
+Platform=Island
+AllowBeta=1
+AllowFull=1
+
+DisplayName=Island Contributor License, Hydrogene/Island
+ProjectName=Island (Darwin macOS)
+ProjectFileName=Island.Darwin.macOS.elements
+ProjectGuid={f918a14e-26a5-449e-8f22-dc24ee904ce0}
+ProjectAssemblyName=Island
+ProjectOutputType=StaticLibrary
+
+[License]
+LicenseType=Project
+Product=Oxygene
+Platform=Island
+AllowBeta=1
+AllowFull=1
+
+DisplayName=Island Contributor License, Oxygene/Island
+ProjectName=Island (Darwin macOS)
+ProjectFileName=Island.Darwin.macOS.elements
+ProjectGuid={f918a14e-26a5-449e-8f22-dc24ee904ce0}
+ProjectAssemblyName=Island
+ProjectOutputType=StaticLibrary
+
+[License]
+LicenseType=Project
+Product=Hydrogene
+Platform=Island
+AllowBeta=1
+AllowFull=1
+
+DisplayName=Island Contributor License, Hydrogene/Island
+ProjectName=Island (Darwin tvOS)
+ProjectFileName=Island.Darwin.tvOS.elements
+ProjectGuid={80e79a08-e879-4706-af50-311343cb8de1}
+ProjectAssemblyName=Island
+ProjectOutputType=StaticLibrary
+
+[License]
+LicenseType=Project
+Product=Oxygene
+Platform=Island
+AllowBeta=1
+AllowFull=1
+
+DisplayName=Island Contributor License, Oxygene/Island
+ProjectName=Island (Darwin tvOS)
+ProjectFileName=Island.Darwin.tvOS.elements
+ProjectGuid={80e79a08-e879-4706-af50-311343cb8de1}
+ProjectAssemblyName=Island
+ProjectOutputType=StaticLibrary
+
+[License]
+LicenseType=Project
+Product=Hydrogene
+Platform=Island
+AllowBeta=1
+AllowFull=1
+
+DisplayName=Island Contributor License, Hydrogene/Island
+ProjectName=Island (Darwin watchOS)
+ProjectFileName=Island.Darwin.watchOS.elements
+ProjectGuid={ec1f85c8-f514-4566-9f51-e1bb64ec1514}
+ProjectAssemblyName=Island
+ProjectOutputType=StaticLibrary
+
+[License]
+LicenseType=Project
+Product=Oxygene
+Platform=Island
+AllowBeta=1
+AllowFull=1
+
+DisplayName=Island Contributor License, Oxygene/Island
+ProjectName=Island (Darwin watchOS)
+ProjectFileName=Island.Darwin.watchOS.elements
+ProjectGuid={ec1f85c8-f514-4566-9f51-e1bb64ec1514}
+ProjectAssemblyName=Island
+ProjectOutputType=StaticLibrary
+
+[License]
+LicenseType=Project
+Product=Hydrogene
+Platform=Island
+AllowBeta=1
+AllowFull=1
+
+DisplayName=Island Contributor License, Hydrogene/Island
+ProjectName=Island (Linux)
+ProjectFileName=Island.Linux.elements
+ProjectGuid={a2c670b6-db38-401a-ae00-71515c87ccc5}
+ProjectAssemblyName=Island
+ProjectOutputType=StaticLibrary
+
+[License]
+LicenseType=Project
+Product=Oxygene
+Platform=Island
+AllowBeta=1
+AllowFull=1
+
+DisplayName=Island Contributor License, Oxygene/Island
+ProjectName=Island (Linux)
+ProjectFileName=Island.Linux.elements
+ProjectGuid={a2c670b6-db38-401a-ae00-71515c87ccc5}
+ProjectAssemblyName=Island
+ProjectOutputType=StaticLibrary
+
+[License]
+LicenseType=Project
+Product=Hydrogene
+Platform=Island
+AllowBeta=1
+AllowFull=1
+
+DisplayName=Island Contributor License, Hydrogene/Island
+ProjectName=Island (WebAssembly)
+ProjectFileName=Island.WebAssembly.elements
+ProjectGuid={8c88f0a8-d5e6-4957-b16f-4fb38738fd75}
+ProjectAssemblyName=Island
+ProjectOutputType=StaticLibrary
+
+[License]
+LicenseType=Project
+Product=Mercury
+Platform=Island
+AllowBeta=1
+AllowFull=1
+
+DisplayName=Island Contributor License, Mercury/Island
+ProjectName=Island (WebAssembly)
+ProjectFileName=Island.WebAssembly.elements
+ProjectGuid={8c88f0a8-d5e6-4957-b16f-4fb38738fd75}
+ProjectAssemblyName=Island
+ProjectOutputType=StaticLibrary
+
+[License]
+LicenseType=Project
+Product=Oxygene
+Platform=Island
+AllowBeta=1
+AllowFull=1
+
+DisplayName=Island Contributor License, Oxygene/Island
+ProjectName=Island (WebAssembly)
+ProjectFileName=Island.WebAssembly.elements
+ProjectGuid={8c88f0a8-d5e6-4957-b16f-4fb38738fd75}
+ProjectAssemblyName=Island
+ProjectOutputType=StaticLibrary
+
+[License]
+LicenseType=Project
+Product=Mercury
+Platform=Island
+AllowBeta=1
+AllowFull=1
+
+DisplayName=Island Contributor License, Mercury/Island
+ProjectName=Island (WebAssembly) DOM
+ProjectFileName=Island (WebAssembly) DOM.elements
+ProjectGuid={a0647181-12ad-45d4-ad23-34ff368b25ba}
+ProjectAssemblyName=(null)
+ProjectOutputType=Shared
+
+[License]
+LicenseType=Project
+Product=Hydrogene
+Platform=Island
+AllowBeta=1
+AllowFull=1
+
+DisplayName=Island Contributor License, Hydrogene/Island
+ProjectName=Island (Windows)
+ProjectFileName=Island.Windows.elements
+ProjectGuid={00bbbadd-8d31-439b-9495-1f35080e299e}
+ProjectAssemblyName=Island
+ProjectOutputType=StaticLibrary
+
+[License]
+LicenseType=Project
+Product=Oxygene
+Platform=Island
+AllowBeta=1
+AllowFull=1
+
+DisplayName=Island Contributor License, Oxygene/Island
+ProjectName=Island (Windows)
+ProjectFileName=Island.Windows.elements
+ProjectGuid={00bbbadd-8d31-439b-9495-1f35080e299e}
+ProjectAssemblyName=Island
+ProjectOutputType=StaticLibrary
+
+[License]
+LicenseType=Project
+Product=Hydrogene
+Platform=Island
+AllowBeta=1
+AllowFull=1
+
+DisplayName=Island Contributor License, Hydrogene/Island
+ProjectName=Island.Shared
+ProjectFileName=Island.Shared.elements
+ProjectGuid=(null)
+ProjectAssemblyName=(null)
+ProjectOutputType=Shared
+
+[License]
+LicenseType=Project
+Product=Oxygene
+Platform=Island
+AllowBeta=1
+AllowFull=1
+
+DisplayName=Island Contributor License, Oxygene/Island
+ProjectName=Island.Shared
+ProjectFileName=Island.Shared.elements
+ProjectGuid=(null)
+ProjectAssemblyName=(null)
+ProjectOutputType=Shared
+
+
+[SignatureInfo]
+LicenseFileStartDate=2020-07-01
+LicenseFileEndDate=2021-07-03
+P1=7358404600760491620
+P2=9664247611848014006
+P3=1834702792
+P4=2507316343
+
