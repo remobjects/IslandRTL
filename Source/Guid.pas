@@ -149,7 +149,7 @@ type
     begin
       if assigned(obj) and (obj is Guid) then
         exit self = Guid(obj)
-      else if assigned(obj) and (obj is rtl.Guid) then
+      else if assigned(obj) and (obj is rtl.GUID) then
         exit self = rtl.Guid(obj)
       else
         exit False;
