@@ -29,4 +29,9 @@ Inherits EventTarget
   ReadOnly Property [previousSibling] As Node
   '''<Summary>Returns / Sets the textual content of an element and all its descendants.</Summary>
   Property [textContent] As String
+
+  ' deprecated, but useful, so added manually:
+  Function appendChild(aChild As Node) As Node
+  Function appendChild(aChild As DocumentFragment) As DocumentFragment
+
 End Interface
