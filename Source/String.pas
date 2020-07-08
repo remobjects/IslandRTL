@@ -167,17 +167,15 @@ begin
   if outputdata = nil then begin
     exit -1;
   end;
+  retry:;
   var inpos := inputdata;
-  var outpos := outputdata;
   var left: rtl.size_t := inputdatalength;
   var outleft: rtl.size_t := suggestedlength;
-  retry:;
+  var outpos := outputdata;
   var count := rtl.iconv(cd, @inpos, @left, @outpos, @outleft);
   if (count = rtl.size_t(- 1)) and (rtl.errno = 7) then begin
-    suggestedlength := suggestedlength + 16;
-    var cu := outpos - outputdata;
+    suggestedlength := suggestedlength + left + 8;
     outputdata := ^AnsiChar(rtl.realloc(outputdata, suggestedlength));
-    outpos := outputdata + cu;
     goto retry;
   end;
   if (count = rtl.size_t(-1)) then begin
