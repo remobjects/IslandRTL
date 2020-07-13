@@ -1,7 +1,7 @@
 ﻿'''<Summary>The DocumentType interface represents a Node containing a doctype.</Summary>
 <DynamicInterface(GetType(EcmaScriptObject))>
 Public Interface [DocumentType]
-Inherits RemObjects.Elements.WebAssembly.DOM.Node
+Inherits Node
 
   '''<Summary>A DOMString, eg "html" for &lt;!DOCTYPE HTML&gt;.</Summary>
   ReadOnly Property [name] As String
