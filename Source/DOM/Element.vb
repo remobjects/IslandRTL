@@ -1,7 +1,7 @@
 ﻿'''<Summary>Element is the most general base class from which all element objects (i.e. objects that represent elements) in a Document inherit. It only has methods and properties common to all kinds of elements. More specific classes inherit from Element.</Summary>
 <DynamicInterface(GetType(EcmaScriptObject))>
 Public Interface [Element]
-Inherits RemObjects.Elements.WebAssembly.DOM.Node
+Inherits Node
 
   '''<Summary>Returns a NamedNodeMap object containing the assigned attributes of the corresponding HTML element.</Summary>
   ReadOnly Property [attributes] As Dynamic

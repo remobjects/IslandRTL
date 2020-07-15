@@ -1,7 +1,7 @@
 ﻿'''<Summary>The HTMLMediaElement interface adds to HTMLElement the properties and methods needed to support basic media-related capabilities that are common to audio and video.</Summary>
 <DynamicInterface(GetType(EcmaScriptObject))>
 Public Interface [HTMLMediaElement]
-Inherits HTMLElement, Element, RemObjects.Elements.WebAssembly.DOM.Node, EventTarget
+Inherits HTMLElement, Element, Node, EventTarget
 
   '''<Summary>A AudioTrackList that lists the AudioTrack objects contained in the element.</Summary>
   Property [audioTracks] As HTMLElement

@@ -525,7 +525,7 @@ type
         Utilities.SpinLockExit(var fLock);
         exit;
       end;
-      if fState = TaskState.New then begin
+      if fState = TaskState.AwaitingStart then begin
         fState := TaskState.Started;
         Utilities.SpinLockExit(var fLock);
         DoRun;
