@@ -101,7 +101,7 @@ type
     exit INSFastEnumeration<T>(aIn).GetSequence;
   end;
 
-  extension method INSFastEnumeration<T>.GetSequence<T>: sequence of T; iterator;
+  extension method INSFastEnumeration<T>.GetSequence<T>: sequence of T; iterator; public;
   begin
     var lState: NSFastEnumerationState;
     var lDest: array[0..3] of T;
@@ -114,7 +114,7 @@ type
     end;
   end;
 
-  extension method INSFastEnumeration.GetSequence: sequence of id;
+  extension method INSFastEnumeration.GetSequence: sequence of id; public;
   begin
     exit INSFastEnumeration<id>(self).GetSequence;
   end;
