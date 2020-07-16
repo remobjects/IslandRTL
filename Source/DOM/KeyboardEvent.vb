@@ -21,4 +21,6 @@ Public Interface [KeyboardEvent]
   ReadOnly Property [repeat] As Boolean
   '''<Summary>Returns a Boolean that is true if the Shift key was active when the key event was generated.</Summary>
   ReadOnly Property [shiftKey] As Boolean
+  '''<Summary>Returns a Boolean indicating if a modifier key such as Alt, Shift, Ctrl, or Meta, was pressed when the event was created.</Summary>
+  Function [getModifierState]([parkeyArg] As Dynamic) As Boolean
 End Interface

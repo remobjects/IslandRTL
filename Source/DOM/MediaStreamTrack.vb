@@ -19,4 +19,10 @@ Public Interface [MediaStreamTrack]
   ReadOnly Property [readonly] As Dynamic
   '''<Summary>Returns an enumerated value giving the status of the track. This will be one of the following values:</Summary>
   ReadOnly Property [readyState] As String
+  '''<Summary>Returns a duplicate of the MediaStreamTrack.</Summary>
+  Function [clone]() As MediaStreamTrack
+  '''<Summary>Returns the a list of constrainable properties available for the MediaStreamTrack.</Summary>
+  Function [getCapabilities]() As Dynamic
+  '''<Summary>Returns a MediaTrackSettings object containing the current values of each of the MediaStreamTrack's constrainable properties.</Summary>
+  Function [getSettings]() As Dynamic
 End Interface

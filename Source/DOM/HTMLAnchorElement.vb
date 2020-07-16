@@ -39,4 +39,8 @@ Inherits HTMLElement
   Property [type] As Dynamic
   '''<Summary>Is a USVString containing the username specified before the domain name.</Summary>
   Property [username] As String
+  '''<Summary>Removes the keyboard focus from the current element.</Summary>
+  Sub [blur]()
+  '''<Summary>Returns a USVString containing the whole URL. It is a synonym for HTMLHyperlinkElementUtils.href, though it can't be used to modify the value.</Summary>
+  Function [toString]() As String
 End Interface

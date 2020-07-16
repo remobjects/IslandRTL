@@ -7,4 +7,6 @@ Public Interface [PerformanceEntry]
   ReadOnly Property [entryType] As Dynamic
   '''<Summary>A DOMHighResTimeStamp representing the starting time for the performance metric.</Summary>
   ReadOnly Property [startTime] As Date
+  '''<Summary>Returns a JSON representation of the PerformanceEntry object.</Summary>
+  Function [toJSON]() As PerformanceEntry
 End Interface

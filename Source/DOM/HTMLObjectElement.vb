@@ -31,4 +31,8 @@ Inherits HTMLElement
   Property [width] As Integer
   '''<Summary>Returns a Boolean that indicates whether the element is a candidate for constraint validation. Always false for HTMLObjectElement objects.</Summary>
   ReadOnly Property [willValidate] As HTMLElement
+  '''<Summary>Retuns a Boolean that always is true, because object objects are never candidates for constraint validation.</Summary>
+  Function [checkValidity]() As Boolean
+  '''<Summary>Sets a custom validity message for the element. If this message is not the empty string, then the element is suffering from a custom validity error, and does not validate.</Summary>
+  Function [setCustomValidity]([parerror] As Dynamic) As HTMLElement
 End Interface

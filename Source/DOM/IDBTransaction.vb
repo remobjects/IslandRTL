@@ -9,4 +9,8 @@ Public Interface [IDBTransaction]
   ReadOnly Property [mode] As Dynamic
   '''<Summary>Returns a DOMStringList of the names of IDBObjectStore objects associated with the transaction.</Summary>
   ReadOnly Property [objectStoreNames] As String
+  '''<Summary>Returns an IDBObjectStore object representing an object store that is part of the scope of this transaction.</Summary>
+  Function [objectStore]([parname] As Dynamic) As Dynamic
+  '''<Summary>For an active transaction, commits the transaction. Note that this doesn't normally have to be called — a transaction will automatically commit when all outstanding requests have been satisfied and no new requests have been made. commit() can be used to start the commit process without waiting for events from outstanding requests to be dispatched.</Summary>
+  Sub [commit]()
 End Interface

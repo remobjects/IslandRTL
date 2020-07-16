@@ -7,4 +7,8 @@ Public Interface [PublicKeyCredential]
   ReadOnly Property [rawId] As Integer
   '''<Summary>An instance of an AuthenticatorResponse object. It is either of type AuthenticatorAttestationResponse if the PublicKeyCredential was the results of a navigator.credentials.create() call, or of type AuthenticatorAssertionResponse if the PublicKeyCredential was the result of a navigator.credentials.get() call.</Summary>
   ReadOnly Property [response] As Dynamic
+  '''<Summary>If any extensions were requested, this method will return the results of processing those extensions.</Summary>
+  Function [getClientExtensionResults]() As Dynamic
+  '''<Summary>A static method returning a Promise which resolves to true if an authenticator bound to the platform is capable of verifying the user. With the current state of implementation, this method only resolves to true when Windows Hello is available on the system.</Summary>
+  Function [isUserVerifyingPlatformAuthenticatorAvailable]() As Boolean
 End Interface

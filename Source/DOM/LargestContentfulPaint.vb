@@ -13,4 +13,6 @@ Public Interface [LargestContentfulPaint]
   Property [id] As Integer
   '''<Summary>If the element is an image, the request url of the image.</Summary>
   Property [url] As String
+  '''<Summary>Returns the above properties as JSON.</Summary>
+  Function [toJSON]() As Dynamic
 End Interface

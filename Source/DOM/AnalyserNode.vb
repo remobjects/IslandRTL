@@ -13,4 +13,12 @@ Inherits AudioNode
   Property [maxDecibels] As Double
   '''<Summary>Is a double value representing the averaging constant with the last analysis frame — basically, it makes the transition between values over time smoother.</Summary>
   Property [smoothingTimeConstant] As Double
+  '''<Summary>Copies the current frequency data into a Float32Array array passed into it.</Summary>
+  Function [getFloatFrequencyData]([pararray] As Dynamic) As Double
+  '''<Summary>Copies the current frequency data into a Uint8Array (unsigned byte array) passed into it.</Summary>
+  Sub [getByteFrequencyData]([pararray] As Dynamic)
+  '''<Summary>Copies the current waveform, or time-domain, data into a Float32Array array passed into it.</Summary>
+  Function [getFloatTimeDomainData]([pararray] As Dynamic) As Double
+  '''<Summary>Copies the current waveform, or time-domain, data into a Uint8Array (unsigned byte array) passed into it.</Summary>
+  Sub [getByteTimeDomainData]([pararray] As Dynamic)
 End Interface

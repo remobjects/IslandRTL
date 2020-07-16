@@ -31,4 +31,6 @@ Inherits AudioNode, AudioParam
   Property [refDistance] As Double
   '''<Summary>A double value describing how quickly the volume is reduced as the source moves away from the listener. This value is used by all distance models.</Summary>
   Property [rolloffFactor] As Double
+  '''<Summary>Defines the position of the audio source relative to the listener (represented by an AudioListener object stored in the AudioContext.listener attribute.)</Summary>
+  Function [setPosition]([parx] As Dynamic,[pary] As Dynamic,[parz] As Dynamic) As Dynamic
 End Interface

@@ -5,4 +5,8 @@ Public Interface [PaymentRequest]
   ReadOnly Property [id] As Integer
   '''<Summary>Returns the type of shipping used to fulfill the transaction. This will be one of shipping, delivery, pickup, or null if a value was not provided in the constructor.</Summary>
   ReadOnly Property [shippingType] As Dynamic
+  '''<Summary>Indicates whether the PaymentRequest object can make a payment before calling show().</Summary>
+  Function [canMakePayment]() As Dynamic
+  '''<Summary>Causes the user agent to begin the user interaction for the payment request.</Summary>
+  Function [show]([pardetailsPromise] As Dynamic) As Dynamic
 End Interface

@@ -21,4 +21,10 @@ Public Interface [Location]
   Property [hash] As String
   '''<Summary>Returns a USVString containing the canonical form of the origin of the specific location.</Summary>
   ReadOnly Property [origin] As String
+  '''<Summary>Loads the resource at the URL provided in parameter.</Summary>
+  Function [assign]([parurl] As Dynamic) As String
+  '''<Summary>Reloads the resource from the current URL. Its optional unique parameter is a Boolean, which, when it is true, causes the page to always be reloaded from the server. If it is false or not specified, the browser may reload the page from its cache.</Summary>
+  Function [reload]() As Boolean
+  '''<Summary>Returns a USVString containing the whole URL. It is a synonym for HTMLHyperlinkElementUtils.href, though it can't be used to modify the value.</Summary>
+  Function [toString]() As String
 End Interface

@@ -21,4 +21,10 @@ Public Interface [MediaRecorder]
   Property [onstart] As EventListener
   '''<Summary>An EventHandler called to handle the stop event, which occurs when media recording ends, either when the MediaStream ends — or after the MediaRecorder.stop() method is called.</Summary>
   Property [onstop] As EventListener
+  '''<Summary>Pauses the recording of media.</Summary>
+  Sub [pause]()
+  '''<Summary>Requests a Blob containing the saved data received thus far (or since the last time requestData() was called. After calling this method, recording continues, but in a new Blob.</Summary>
+  Function [requestData]() As Byte()
+  '''<Summary>Begins recording media; this method can optionally be passed a timeslice argument with a value in milliseconds. If this is specified, the media will be captured in separate chunks of that duration, rather than the default behavior of recording the media in a single large chunk.</Summary>
+  Function [start]([partimeslice] As Dynamic) As Long
 End Interface

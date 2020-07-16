@@ -11,4 +11,6 @@ Inherits EventTarget
   Property [onchange] As EventListener
   '''<Summary>An event handler to call when the removetrack event is sent, indicating that an audio track has been removed from the media element.</Summary>
   Property [onremovetrack] As EventListener
+  '''<Summary>Returns the AudioTrack found within the AudioTrackList whose id matches the specified string. If no match is found, null is returned.</Summary>
+  Sub [getTrackById]([parid] As Dynamic)
 End Interface

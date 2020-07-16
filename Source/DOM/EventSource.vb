@@ -15,4 +15,6 @@ Inherits EventTarget
   Property [onmessage] As EventListener
   '''<Summary>Is an EventHandler called when an open event is received, that is when the connection was just opened.</Summary>
   Property [onopen] As EventListener
+  '''<Summary>Closes the connection, if any, and sets the readyState attribute to CLOSED. If the connection is already closed, the method does nothing.</Summary>
+  Sub [close]()
 End Interface

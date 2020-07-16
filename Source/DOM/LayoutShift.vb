@@ -9,4 +9,6 @@ Public Interface [LayoutShift]
   Property [lastInputTime] As Date
   '''<Summary>Returns an array of LayoutShiftAttribution objects with information on the elements that were shifted.</Summary>
   Property [sources] As HTMLElement
+  '''<Summary>Converts the properties to JSON.</Summary>
+  Function [toJSON]() As Dynamic
 End Interface

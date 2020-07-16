@@ -19,4 +19,6 @@ Inherits HTMLElement
   Property [text] As String
   '''<Summary>Is a DOMString that reflects the value of the value HTML attribute, if it exists; otherwise reflects value of the Node.textContent property.</Summary>
   Property [value] As String
+  '''<Summary>Is a constructor creating an HTMLOptionElement object. It has four values: the text to display, text, the value associated, value, the value of defaultSelected, and the value of selected. The last three values are optional.</Summary>
+  Function [HTMLOptionElement]() As HTMLOptionElement
 End Interface

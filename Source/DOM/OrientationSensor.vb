@@ -3,4 +3,6 @@
 Public Interface [OrientationSensor]
   '''<Summary>Returns a four element Array whose elements contain the components of the unit quaternion representing the device's orientation.</Summary>
   Property [quaternion] As Dynamic
+  '''<Summary>Populates the given object with the rotation matrix based on the latest sensor reading. The rotation maxtrix is shown below.</Summary>
+  Function [populateMatrix]([partargetMatrix] As Dynamic) As Dynamic
 End Interface

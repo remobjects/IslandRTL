@@ -5,4 +5,6 @@ Inherits SVGElement, SVGFilterPrimitiveStandardAttributes
 
   '''<Summary>An SVGAnimatedEnumeration corresponding to the edgeMode attribute of the given element. Takes one of the SVG_EDGEMODE_* constants defined on this interface.</Summary>
   ReadOnly Property [edgeMode] As Dynamic
+  '''<Summary>Sets the values for the stdDeviation attribute.</Summary>
+  Function [setStdDeviation]() As Dynamic
 End Interface

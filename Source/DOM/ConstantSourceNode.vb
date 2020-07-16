@@ -7,4 +7,8 @@ Inherits AudioScheduledSourceNode
   Property [offset] As AudioParam
   '''<Summary>Fired whenever the ConstantSourceNode data has stopped playing.</Summary>
   Property [onended] As EventListener
+  '''<Summary>Schedules a sound to playback at an exact time.</Summary>
+  Sub [start]([parwhen] As Dynamic, [paroffset] As Dynamic, [parduration] As Dynamic)
+  '''<Summary>Schedules a sound to stop playback at an exact time.</Summary>
+  Sub [stop]([parwhen] As Dynamic)
 End Interface

@@ -69,4 +69,14 @@ Inherits HTMLElement, Element, Node, EventTarget
   Property [onencrypted] As EventListener
   '''<Summary>Sets the EventHandler called when playback is blocked while waiting for an encryption key.</Summary>
   Property [onwaitingforkey] As EventListener
+  '''<Summary>Adds a text track (such as a track for subtitles) to a media element.</Summary>
+  Function [addTextTrack]() As Dynamic
+  '''<Summary>Given a string specifying a MIME media type (potentially with the codecs parameter included), canPlayType() returns the string probably if the media should be playable, maybe if there's not enough information to determine whether the media will play or not, or an empty string if the media cannot be played.</Summary>
+  Function [canPlayType]([parmediaType] As Dynamic) As String
+  '''<Summary>Resets the media to the beginning and selects the best available source from the sources provided using the src attribute or the  element specifies multiple media resources for the &lt;picture>, the &lt;audio> element, or the &lt;video> element.">&lt;source&gt; element.</Summary>
+  Function [load]() As HTMLElement
+  '''<Summary>Pauses the media playback.</Summary>
+  Function [pause]() As Dynamic
+  '''<Summary>Begins playback of the media.</Summary>
+  Function [play]() As Dynamic
 End Interface

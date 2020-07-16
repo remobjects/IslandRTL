@@ -19,4 +19,10 @@ Inherits HTMLElement
   Property [validity] As ValidityState
   '''<Summary>A Boolean false, because  element is used to group several controls as well as labels (&lt;label>) within a web form.">&lt;fieldset&gt; objects are never candidates for constraint validation.</Summary>
   Property [willValidate] As Boolean
+  '''<Summary>Always returns true because  element is used to group several controls as well as labels (&lt;label>) within a web form.">&lt;fieldset&gt; objects are never candidates for constraint validation.</Summary>
+  Function [checkValidity]() As Boolean
+  '''<Summary>Always returns true because  element is used to group several controls as well as labels (&lt;label>) within a web form.">&lt;fieldset&gt; objects are never candidates for constraint validation.</Summary>
+  Function [reportValidity]() As Boolean
+  '''<Summary>Sets a custom validity message for the field set. If this message is not the empty string, then the field set is suffering from a custom validity error, and does not validate.</Summary>
+  Function [setCustomValidity]() As Dynamic
 End Interface

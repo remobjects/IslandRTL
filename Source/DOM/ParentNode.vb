@@ -9,4 +9,10 @@ Public Interface [ParentNode]
   ReadOnly Property [firstElementChild] As Node
   '''<Summary>Returns the last node which is both a child of this ParentNode and is an Element, or null if there is none.</Summary>
   ReadOnly Property [lastElementChild] As Node
+  '''<Summary>Returns the first Element with the current element as root that matches the specified group of selectors.</Summary>
+  Function [querySelector]([parselectors] As Dynamic) As Element
+  '''<Summary>Returns a NodeList representing a list of elements with the current element as root that matches the specified group of selectors.</Summary>
+  Function [querySelectorAll]([parselectors] As Dynamic) As Node
+  '''<Summary>Replaces the existing children of a node with a specified new set of children.</Summary>
+  Function [replaceChildren]() As Dynamic
 End Interface

@@ -7,4 +7,6 @@ Public Interface [AudioWorkletGlobalScope]
   ReadOnly Property [currentTime] As Date
   '''<Summary>Returns a float that represents the sample rate of the associated BaseAudioContext.</Summary>
   ReadOnly Property [sampleRate] As Double
+  '''<Summary>Registers a class derived from the AudioWorkletProcessor interface. The class can then be used by creating an AudioWorkletNode, providing its registered name.</Summary>
+  Sub [registerProcessor]([parname] As Dynamic, [parprocessorCtor] As Dynamic)
 End Interface

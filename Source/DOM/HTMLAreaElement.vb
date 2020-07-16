@@ -43,4 +43,6 @@ Inherits HTMLElement
   Property [type] As Dynamic
   '''<Summary>Is a USVString containing the username specified before the domain name.</Summary>
   Property [username] As String
+  '''<Summary>Returns a USVString containing the whole URL of the script executed in the Worker. It is a synonym for HTMLHyperlinkElementUtils.href.</Summary>
+  Function [toString]() As String
 End Interface

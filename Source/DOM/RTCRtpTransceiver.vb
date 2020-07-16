@@ -13,4 +13,8 @@ Public Interface [RTCRtpTransceiver]
   ReadOnly Property [sender] As Dynamic
   '''<Summary>Indicates whether or not sending and receiving using the paired RTCRtpSender and RTCRtpReceiver has been permanently disabled, either due to SDP offer/answer, or due to a call to stop().</Summary>
   Property [stopped] As Boolean
+  '''<Summary>A list of RTCRtpCodecParameters objects which override the default preferences used by the user agent for the transceiver's codecs.</Summary>
+  Function [setCodecPreferences]([parcodecs] As Dynamic) As RTCRtpCodecParameters()
+  '''<Summary>Permanently stops the RTCRtpTransceiver. The associated sender stops sending data, and the associated receiver likewise stops receiving and decoding incoming data.</Summary>
+  Sub [stop]()
 End Interface

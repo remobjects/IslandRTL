@@ -11,4 +11,8 @@ Public Interface [DOMPointReadOnly]
   ReadOnly Property [w] As Double
   '''<Summary>A static method that creates a new DOMPointReadOnly object given the coordinates provided in the specified DOMPointInit object.</Summary>
   Property [fromPoint] As Dynamic
+  '''<Summary>Applies a matrix transform specified as a DOMMatrixInit object to the DOMPointReadOnly object.</Summary>
+  Function [matrixTransform]() As Dynamic
+  '''<Summary>Returns a JSON representation of the DOMPointReadOnly object.</Summary>
+  Function [toJSON]() As DOMPointInit
 End Interface

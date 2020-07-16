@@ -29,4 +29,6 @@ Public Interface [RTCIceCandidate]
   ReadOnly Property [type] As Dynamic
   '''<Summary>A DOMString containing a randomly-generated username fragment ("ice-ufrag") which ICE uses for message integrity along with a randomly-generated password ("ice-pwd"). You can use this string to verify generations of ICE generation; each generation of the same ICE process will use the same usernameFragment, even across ICE restarts.</Summary>
   ReadOnly Property [usernameFragment] As String
+  '''<Summary>Given the RTCIceCandidate's current configuration, toJSON() returns a DOMString containing a JSON representation of that configuration in the form of a RTCIceCandidateInit object.</Summary>
+  Function [toJSON]() As String
 End Interface

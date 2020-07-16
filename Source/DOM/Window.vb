@@ -123,4 +123,78 @@ Public Interface [Window]
   Property [onvrdisplayfocus] As EventListener
   '''<Summary>represents an event handler that will run when the presenting state of a VR device changes — i.e. goes from presenting to not presenting, or vice versa (when the vrdisplaypresentchange event fires).</Summary>
   Property [onvrdisplaypresentchange] As EventListener
+  '''<Summary>Displays an alert dialog.</Summary>
+  Function [alert]([parmessage] As Dynamic) As Dynamic
+  '''<Summary>Sets focus away from the window.</Summary>
+  Function [blur]() As Dynamic
+  '''<Summary>Cancels the repeated execution set using setImmediate.</Summary>
+  Function [clearImmediate]([parimmediateID] As Dynamic) As Dynamic
+  '''<Summary>Closes the current window.</Summary>
+  Function [close]() As Dynamic
+  '''<Summary>Displays a dialog with a message that the user needs to respond to.</Summary>
+  Function [confirm]([parmessage] As Dynamic) As Dynamic
+  '''<Summary>Searches for a given string in a window.</Summary>
+  Function [find]([parparaString] As Dynamic, [paraCaseSensitive] As Dynamic, [paraBackwards] As Dynamic, [paraWrapAround] As Dynamic, [paraWholeWord] As Dynamic, [paraSearchInFrames] As Dynamic, [paraShowDialog] As Dynamic) As String
+  '''<Summary>Sets focus on the current window.</Summary>
+  Function [focus]() As Dynamic
+  '''<Summary>Gets computed style for the specified element. Computed style indicates the computed values of all CSS properties of the element.</Summary>
+  Function [getComputedStyle]([parelement] As Dynamic) As HTMLElement
+  '''<Summary>Returns the selection object representing the selected item(s).</Summary>
+  Function [getSelection]() As Dynamic
+  '''<Summary>Returns a MediaQueryList object representing the specified media query string.</Summary>
+  Function [matchMedia]([parmediaQueryString] As Dynamic) As Dynamic
+  '''<Summary>FIXME: NeedsContents</Summary>
+  Function [maximize]() As Dynamic
+  '''<Summary>Minimizes the window.</Summary>
+  Function [minimize]() As Dynamic
+  '''<Summary>Moves the current window by a specified amount.</Summary>
+  Function [moveBy]() As Dynamic
+  '''<Summary>Moves the window to the specified coordinates.</Summary>
+  Function [moveTo]() As Dynamic
+  '''<Summary>Opens a new window.</Summary>
+  Function [open]([parurl] As Dynamic, [parwindowName] As Dynamic, [parwindowFeatures] As Dynamic) As Dynamic
+  '''<Summary>Provides a secure means for one window to send a string of data to another window, which need not be within the same domain as the first.</Summary>
+  Function [postMessage]([parmessage] As Dynamic, [partargetOrigin] As Dynamic, [partransfer]] As Dynamic) As String
+  '''<Summary>Opens the Print Dialog to print the current document.</Summary>
+  Function [print]() As Dynamic
+  '''<Summary>Returns the text entered by the user in a prompt dialog.</Summary>
+  Function [prompt]([parmessage] As Dynamic, [pardefault] As Dynamic) As String
+  '''<Summary>Tells the browser that an animation is in progress, requesting that the browser schedule a repaint of the window for the next animation frame.</Summary>
+  Function [requestAnimationFrame]([parcallback] As Dynamic) As Dynamic
+  '''<Summary>Resizes the current window by a certain amount.</Summary>
+  Function [resizeBy]() As Dynamic
+  '''<Summary>Dynamically resizes window.</Summary>
+  Function [resizeTo]([parwidth] As Dynamic, [parheight] As Dynamic) As Dynamic
+  '''<Summary>Scrolls the window to a particular place in the document.</Summary>
+  Function [scroll]() As Dynamic
+  '''<Summary>Scrolls the document in the window by the given amount.</Summary>
+  Function [scrollBy]() As Dynamic
+  '''<Summary>Scrolls to a particular set of coordinates in the document.</Summary>
+  Function [scrollTo]() As Dynamic
+  '''<Summary>Executes a function after the browser has finished other heavy tasks</Summary>
+  Function [setImmediate]([parparfunc] As Dynamic, [parparparam1] As Dynamic, [parparparam2] As Dynamic) As Dynamic
+  '''<Summary>This method stops window loading.</Summary>
+  Function [stop]() As Dynamic
+  '''<Summary>Register an event handler to a specific event type on the window.</Summary>
+  Function [addEventListener]([partype] As Dynamic, [parlistener] As Dynamic, [paroptions] As Dynamic, [parcapture] As Dynamic, [paronce] As Dynamic, [parpassive] As Dynamic) As Dynamic
+  '''<Summary>Used to trigger an event.</Summary>
+  Function [dispatchEvent]([parevent] As Dynamic) As Dynamic
+  '''<Summary>Decodes a string of data which has been encoded using base-64 encoding.</Summary>
+  Function [atob]([parencodedData] As Dynamic) As String
+  '''<Summary>Creates a base-64 encoded ASCII string from a string of binary data.</Summary>
+  Function [btoa]([parstringToEncode] As Dynamic) As String
+  '''<Summary>Cancels the repeated execution set using WindowOrWorkerGlobalScope.setInterval().</Summary>
+  Function [clearInterval]([parintervalID] As Dynamic) As Dynamic
+  '''<Summary>Cancels the delayed execution set using WindowOrWorkerGlobalScope.setTimeout().</Summary>
+  Function [clearTimeout]([partimeoutID] As Dynamic) As Dynamic
+  '''<Summary>Accepts a variety of different image sources, and returns a Promise which resolves to an ImageBitmap. Optionally the source is cropped to the rectangle of pixels originating at (sx, sy) with width sw, and height sh.</Summary>
+  Function [createImageBitmap]([parimage] As Dynamic, [parsx] As Dynamic, [parsy] As Dynamic, [parsw] As Dynamic, [parsh] As Dynamic, [paroptions] As Dynamic) As Integer
+  '''<Summary>Starts the process of fetching a resource from the network.</Summary>
+  Function [fetch]([parresource] As Dynamic, [parinit] As Dynamic, [parmethod] As Dynamic, [parheaders] As Dynamic, [parbody] As Dynamic, [parmode] As Dynamic, [parcredentials] As Dynamic, [parcache] As Dynamic, [parredirect] As Dynamic, [parreferrer] As Dynamic, [parreferrerPolicy] As Dynamic, [parintegrity] As Dynamic, [parkeepalive] As Dynamic, [parsignal] As Dynamic) As Dynamic
+  '''<Summary>Removes an event listener from the window.</Summary>
+  Function [removeEventListener]([partype] As Dynamic, [parlistener] As Dynamic, [paroptions] As Dynamic, [paruseCapture] As Dynamic) As Dynamic
+  '''<Summary>Schedules a function to execute every time a given number of milliseconds elapses.</Summary>
+  Function [setInterval]([parfunc] As Dynamic, [parcode] As Dynamic, [pardelay] As Dynamic, ParamArray args() As Dynamic) As Long
+  '''<Summary>Schedules a function to execute in a given amount of time.</Summary>
+  Function [setTimeout]([parfunction] As Dynamic, [parcode] As Dynamic, [pardelay] As Dynamic, [pararg1] As Dynamic) As Dynamic
 End Interface

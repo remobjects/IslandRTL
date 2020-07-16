@@ -13,4 +13,6 @@ Inherits AudioNode, AudioParam
   ReadOnly Property [gain] As Double
   '''<Summary>Is a string value defining the kind of filtering algorithm the node is implementing.</Summary>
   Property [type] As Dynamic
+  '''<Summary>From the current filter parameter settings this method calculates the frequency response for frequencies specified in the provided array of frequencies.</Summary>
+  Sub [getFrequencyResponse]([parfrequencyArray] As Dynamic, [parmagResponseOutput] As Dynamic, [parphaseResponseOutput] As Dynamic)
 End Interface

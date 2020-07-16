@@ -23,4 +23,10 @@ Inherits HTMLElement
   Property [value] As String
   '''<Summary>A Boolean indicating whether the element is a candidate for constraint validation.</Summary>
   ReadOnly Property [willValidate] As HTMLElement
+  '''<Summary>Checks the validity of the element and returns a Boolean holding the check result.</Summary>
+  Function [checkValidity]() As HTMLElement
+  '''<Summary>This method reports the problems with the constraints on the element, if any, to the user. If there are problems, fires an invalid event at the element, and returns false; if there are no problems, it returns true.</Summary>
+  Function [reportValidity]() As Boolean
+  '''<Summary>Sets a custom validity message for the element. If this message is not the empty string, then the element is suffering from a custom validity error, and does not validate.</Summary>
+  Function [setCustomValidity]() As HTMLElement
 End Interface

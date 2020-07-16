@@ -9,4 +9,6 @@ Public Interface [PerformanceEventTiming]
   Property [cancelable] As Dynamic
   '''<Summary>Returns the associated event's last target, if it is not removed.</Summary>
   Property [target] As Dynamic
+  '''<Summary>Converts the PerformanceEventTiming object to JSON.</Summary>
+  Function [toJSON]() As Dynamic
 End Interface

@@ -13,4 +13,6 @@ Public Interface [PerformanceResourceTiming]
   ReadOnly Property [decodedBodySize] As Double
   '''<Summary>An array of PerformanceServerTiming entries containing server timing metrics.</Summary>
   ReadOnly Property [serverTiming] As PerformanceServerTiming()
+  '''<Summary>Returns a DOMString that is the JSON representation of the PerformanceResourceTiming object.</Summary>
+  Function [toJSON]() As String
 End Interface

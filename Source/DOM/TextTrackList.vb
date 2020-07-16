@@ -11,4 +11,6 @@ Inherits EventTarget
   Property [onchange] As EventListener
   '''<Summary>An event handler to call when the removetrack event is sent, indicating that a text track has been removed from the media element.</Summary>
   Property [onremovetrack] As EventListener
+  '''<Summary>Returns the TextTrack found within the TextTrackList whose id matches the specified string. If no match is found, null is returned.</Summary>
+  Function [getTrackById]([parid] As Dynamic) As TextTrack
 End Interface

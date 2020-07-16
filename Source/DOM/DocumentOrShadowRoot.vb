@@ -7,4 +7,6 @@ Public Interface [DocumentOrShadowRoot]
   ReadOnly Property [fullscreenElement] As Element
   '''<Summary>Returns a StyleSheetList of CSSStyleSheet objects for stylesheets explicitly linked into, or embedded in a document.</Summary>
   ReadOnly Property [styleSheets] As CSSStyleSheet
+  '''<Summary>Returns the topmost element at the specified coordinates.</Summary>
+  Function [elementFromPoint]([parx] As Dynamic, [pary] As Dynamic) As Element
 End Interface

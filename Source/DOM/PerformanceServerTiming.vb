@@ -7,4 +7,6 @@ Public Interface [PerformanceServerTiming]
   ReadOnly Property [duration] As Double
   '''<Summary>A DOMString value of the server-specified metric name.</Summary>
   ReadOnly Property [name] As String
+  '''<Summary>Returns a DOMString that is the JSON representation of the PerformanceServerTiming object.</Summary>
+  Function [toJSON]() As String
 End Interface

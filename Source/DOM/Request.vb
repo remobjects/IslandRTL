@@ -25,4 +25,16 @@ Public Interface [Request]
   ReadOnly Property [url] As String
   '''<Summary>Stores a Boolean that declares whether the body has been used in a response yet.</Summary>
   ReadOnly Property [bodyUsed] As Boolean
+  '''<Summary>Creates a copy of the current Request object.</Summary>
+  Function [clone]() As Request
+  '''<Summary>Returns a promise that resolves with an ArrayBuffer representation of the request body.</Summary>
+  Function [arrayBuffer]() As Byte()
+  '''<Summary>Returns a promise that resolves with a Blob representation of the request body.</Summary>
+  Function [blob]() As Byte()
+  '''<Summary>Returns a promise that resolves with a FormData representation of the request body.</Summary>
+  Function [formData]() As Dynamic
+  '''<Summary>Returns a promise that resolves with a JSON representation of the request body.</Summary>
+  Function [json]() As Dynamic
+  '''<Summary>Returns a promise that resolves with an USVString (text) representation of the request body.</Summary>
+  Function [text]() As String
 End Interface

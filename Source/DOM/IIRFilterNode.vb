@@ -3,4 +3,6 @@
 Public Interface [IIRFilterNode]
 Inherits AudioNode
 
+  '''<Summary>Uses the filter's current parameter settings to calculate the response for frequencies specified in the provided array of frequencies.</Summary>
+  Sub [getFrequencyResponse]([parfrequencyArray] As Dynamic, [parmagResponseOutput] As Dynamic, [parphaseResponseOutput] As Dynamic)
 End Interface

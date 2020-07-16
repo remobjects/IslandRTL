@@ -13,4 +13,18 @@ Public Interface [XMLHttpRequest]
   Property [mozBackgroundRequest] As Boolean
   '''<Summary>This Gecko-only feature, a boolean, was removed in Firefox/Gecko 22. Please use Server-Sent Events, Web Sockets, or responseText from progress events instead.</Summary>
   Property [multipart] As Boolean
+  '''<Summary>Aborts the request if it has already been sent.</Summary>
+  Sub [abort]()
+  '''<Summary>Returns all the response headers, separated by CRLF, as a string, or null if no response has been received.</Summary>
+  Function [getAllResponseHeaders]() As String
+  '''<Summary>Returns the string containing the text of the specified header, or null if either the response has not yet been received or the header doesn't exist in the response.</Summary>
+  Function [getResponseHeader]([parheaderName] As Dynamic) As String
+  '''<Summary>Overrides the MIME type returned by the server.</Summary>
+  Function [overrideMimeType]([parmimeType] As Dynamic) As String
+  '''<Summary>Sends the request. If the request is asynchronous (which is the default), this method returns as soon as the request is sent.</Summary>
+  Sub [send]([parbody] As Dynamic)
+  '''<Summary>Sets the value of an HTTP request header. You must call setRequestHeader()after open(), but before send().</Summary>
+  Sub [setRequestHeader]([parheader] As Dynamic, [parvalue] As Dynamic)
+  '''<Summary>Initializes the object for use from C++ code. Warning: This method must not be called from JavaScript. </Summary>
+  Function [init]() As Dynamic
 End Interface

@@ -5,4 +5,8 @@ Public Interface [MediaList]
   Property [mediaText] As String
   '''<Summary>Returns the number of media queries in the MediaList.</Summary>
   ReadOnly Property [length] As Integer
+  '''<Summary>Adds a media query to the MediaList.</Summary>
+  Function [appendMedium]() As Dynamic
+  '''<Summary>Removes a media query from the MediaList.</Summary>
+  Function [deleteMedium]() As Dynamic
 End Interface

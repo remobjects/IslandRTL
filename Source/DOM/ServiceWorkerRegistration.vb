@@ -13,4 +13,12 @@ Public Interface [ServiceWorkerRegistration]
   ReadOnly Property [pushManager] As Dynamic
   '''<Summary>An EventListener property called whenever an event of type updatefound is fired; it is fired any time the ServiceWorkerRegistration.installing property acquires a new service worker.</Summary>
   Property [onupdatefound] As EventListener
+  '''<Summary>Returns a Promise that resolves to an array of Notification objects.</Summary>
+  Function [getNotifications]([paroptions] As Dynamic) As Dynamic
+  '''<Summary>Displays the notification with the requested title.</Summary>
+  Function [showNotification]([partitle] As Dynamic, [paroptions] As Dynamic) As Dynamic
+  '''<Summary>Checks the server for an updated version of the service worker without consulting caches.</Summary>
+  Function [update]() As Integer
+  '''<Summary>Unregisters the service worker registration and returns a Promise. The service worker will finish any ongoing operations before it is unregistered.</Summary>
+  Function [unregister]() As Dynamic
 End Interface

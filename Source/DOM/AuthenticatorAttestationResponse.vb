@@ -3,4 +3,6 @@
 Public Interface [AuthenticatorAttestationResponse]
   '''<Summary>An ArrayBuffer containing authenticator data and an attestation statement for a newly-created key pair.</Summary>
   ReadOnly Property [attestationObject] As Byte()
+  '''<Summary>Returns an Array of strings describing which transport methods (e.g. usb, nfc) are believed to be supported with the authenticator. The array may be empty if the information is not available.</Summary>
+  Function [getTransports]() As String()
 End Interface

@@ -3,4 +3,6 @@
 Public Interface [NamedNodeMap]
   '''<Summary>Returns the amount of objects in the map.</Summary>
   ReadOnly Property [length] As Integer
+  '''<Summary>Returns the Attr at the given index, or null if the index is higher or equal to the number of nodes.</Summary>
+  Function [item]() As Double
 End Interface

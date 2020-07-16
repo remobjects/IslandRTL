@@ -7,4 +7,10 @@ Public Interface [IntersectionObserver]
   ReadOnly Property [rootMargin] As String
   '''<Summary>A list of thresholds, sorted in increasing numeric order, where each threshold is a ratio of intersection area to bounding box area of an observed target. Notifications for a target are generated when any of the thresholds are crossed for that target. If no value was passed to the constructor, 0 is used.</Summary>
   ReadOnly Property [thresholds] As Double
+  '''<Summary>Stops the IntersectionObserver object from observing any target.</Summary>
+  Function [disconnect]() As Dynamic
+  '''<Summary>Returns an array of IntersectionObserverEntry objects for all observed targets.</Summary>
+  Function [takeRecords]() As IntersectionObserverEntry()
+  '''<Summary>Tells the IntersectionObserver to stop observing a particular target element.</Summary>
+  Sub [unobserve]([partarget] As Dynamic)
 End Interface
