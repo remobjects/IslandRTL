@@ -1,4 +1,6 @@
-﻿doc>Adopt node from an external document.</Summary>
+﻿'''<Summary>Adopt node from an external document.</Summary>
+<DynamicInterface(GetType(EcmaScriptObject))>
+Public Interface [Document]
   Function [adoptNode]([parexternalNode] As Dynamic) As Node
   '''<Summary>Creates a new Attr object and returns it.</Summary>
   Function [createAttribute]([parname] As Dynamic) As Dynamic
