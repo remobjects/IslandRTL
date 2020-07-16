@@ -1,4 +1,4 @@
-﻿'''<Summary>Element is the most general base class from which all element objects (i.e. objects that represent elements) in a Document inherit. It only has methods and properties common to all kinds of elements. More specific classes inherit from Element.</Summary>
+'''<Summary>Element is the most general base class from which all element objects (i.e. objects that represent elements) in a Document inherit. It only has methods and properties common to all kinds of elements. More specific classes inherit from Element.</Summary>
 <DynamicInterface(GetType(EcmaScriptObject))>
 Public Interface [Element]
 Inherits Node
@@ -22,7 +22,7 @@ Inherits Node
   '''<Summary>Returns a DOMString containing the ARIA role that has been applied to a particular element.</Summary>
   ReadOnly Property [computedRole] As String
   '''<Summary>Is a DOMString representing the id of the element.</Summary>
-  Property [id] As Integer
+  Property [id] As String
   '''<Summary>Is a DOMString representing the markup of the element's content.</Summary>
   Property [innerHTML] As String
   '''<Summary>A DOMString representing the local part of the qualified name of the element.</Summary>
