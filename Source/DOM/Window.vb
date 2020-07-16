@@ -10,7 +10,7 @@ Public Interface [Window]
   '''<Summary>Gets the arguments passed to the window (if it's a dialog box) at the time window.showModalDialog() was called. This is an nsIArray.</Summary>
   ReadOnly Property [dialogArguments] As Dynamic
   '''<Summary>Returns a reference to the document that the window contains.</Summary>
-  ReadOnly Property [document] As Dynamic
+  ReadOnly Property [document] As Document
   '''<Summary>Returns the current event, which is the event currently being handled by the JavaScript code's context, or undefined if no event is currently being handled. The Event object passed directly to event handlers should be used instead whenever possible.</Summary>
   ReadOnly Property [event] As Dynamic
   '''<Summary>Returns the element in which the window is embedded, or null if the window is not embedded.</Summary>
