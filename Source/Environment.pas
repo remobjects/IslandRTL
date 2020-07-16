@@ -208,6 +208,15 @@ type
       exit rtl.sysconf(rtl._SC_NPROCESSORS_ONLN);
       {$ENDIF}
     end;
+
+    method &Exit(aCode: Integer);
+    begin
+      {$IFDEF WINDOWS}
+      ExternalCalls.exit(aCode);
+      {$ELSEIF POSIX}
+      rtl.exit(aCode);
+      {$ENDIF}
+    end;
   end;
 
 end.
