@@ -278,13 +278,11 @@ namespace RemObjects.Elements.MicroTasks
 		private Exception exception;
 		private volatile Completion completion;
 
-
-		class Completion
+		private class Completion
 		{
 			public Completion Next;
 			public IAsyncCompletion Action;
 		}
-
 
 		#if !COOPER
 		private static void SpinLockEnter(ref int v)

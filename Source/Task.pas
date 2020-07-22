@@ -673,7 +673,7 @@ type
 
 
   PThreadPoolCallback = ^ThreadPoolCallback;
-  ThreadPoolCallback = assembly class
+  ThreadPoolCallback = public class
   assembly
     fState: Object;
     fCallback: WaitCallback;
