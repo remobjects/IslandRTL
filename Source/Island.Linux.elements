@@ -6,18 +6,17 @@
     <OutputType>StaticLibrary</OutputType>
     <AssemblyName>Island</AssemblyName>
     <AllowGlobals>True</AllowGlobals>
-    <AllowLegacyOutParams>False</AllowLegacyOutParams>
-    <AllowLegacyCreate>False</AllowLegacyCreate>
     <Configuration Condition="'$(Configuration)' == ''">Release</Configuration>
     <TargetFrameworkVersion>v4.0</TargetFrameworkVersion>
     <Name>Island (Linux)</Name>
-    <ProjectGuid>{a2c670b6-db38-401a-ae00-71515c87ccc5}</ProjectGuid>
+    <ProjectGuid>{A2C670B6-DB38-401A-AE00-71515C87CCC5}</ProjectGuid>
     <Mode>Island</Mode>
     <WarnOnCaseMismatch>True</WarnOnCaseMismatch>
     <Platform Condition="'$(Platform)' == ''">AnyCPU</Platform>
     <GenerateDebugInfo>True</GenerateDebugInfo>
     <DefineConstants>LINUX</DefineConstants>
     <Architecture>x86_64;armv6</Architecture>
+    <DefaultGlobalsToPublic>True</DefaultGlobalsToPublic>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)' == 'Debug'">
     <OutputPath>Bin\Debug</OutputPath>

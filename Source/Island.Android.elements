@@ -6,17 +6,16 @@
     <OutputType>StaticLibrary</OutputType>
     <AssemblyName>Island</AssemblyName>
     <AllowGlobals>True</AllowGlobals>
-    <AllowLegacyOutParams>False</AllowLegacyOutParams>
-    <AllowLegacyCreate>False</AllowLegacyCreate>
     <Configuration Condition="'$(Configuration)' == ''">Release</Configuration>
     <TargetFrameworkVersion>v4.0</TargetFrameworkVersion>
     <Name>Island (Android NDK)</Name>
-    <ProjectGuid>{961edd39-0901-480d-97a6-c775095d5ebc}</ProjectGuid>
+    <ProjectGuid>{961EDD39-0901-480D-97A6-C775095D5EBC}</ProjectGuid>
     <Mode>Island</Mode>
     <WarnOnCaseMismatch>True</WarnOnCaseMismatch>
     <Platform Condition="'$(Platform)' == ''">AnyCPU</Platform>
     <GenerateDebugInfo>True</GenerateDebugInfo>
     <DefineConstants>ANDROID</DefineConstants>
+    <DefaultGlobalsToPublic>True</DefaultGlobalsToPublic>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)' == 'Debug'">
     <OutputPath>Bin\Debug</OutputPath>

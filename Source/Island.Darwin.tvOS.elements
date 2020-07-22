@@ -6,18 +6,17 @@
     <OutputType>StaticLibrary</OutputType>
     <AssemblyName>Island</AssemblyName>
     <AllowGlobals>True</AllowGlobals>
-    <AllowLegacyOutParams>False</AllowLegacyOutParams>
-    <AllowLegacyCreate>False</AllowLegacyCreate>
     <Configuration Condition="'$(Configuration)' == ''">Release</Configuration>
     <TargetFrameworkVersion>v4.0</TargetFrameworkVersion>
     <Name>Island (Darwin tvOS)</Name>
-    <ProjectGuid>{80e79a08-e879-4706-af50-311343cb8de1}</ProjectGuid>
+    <ProjectGuid>{80E79A08-E879-4706-AF50-311343CB8DE1}</ProjectGuid>
     <Mode>Island</Mode>
     <WarnOnCaseMismatch>True</WarnOnCaseMismatch>
     <Platform Condition="'$(Platform)' == ''">AnyCPU</Platform>
     <GenerateDebugInfo>True</GenerateDebugInfo>
     <DefineConstants>POSIX;DARWIN;MACOS;x86_64</DefineConstants>
     <SDK>tvOS</SDK>
+    <DefaultGlobalsToPublic>True</DefaultGlobalsToPublic>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)' == 'Debug'">
     <OutputPath>Bin\Debug</OutputPath>

@@ -6,18 +6,17 @@
     <OutputType>StaticLibrary</OutputType>
     <AssemblyName>Island</AssemblyName>
     <AllowGlobals>True</AllowGlobals>
-    <AllowLegacyOutParams>False</AllowLegacyOutParams>
-    <AllowLegacyCreate>False</AllowLegacyCreate>
     <Configuration Condition="'$(Configuration)' == ''">Release</Configuration>
     <TargetFrameworkVersion>v4.0</TargetFrameworkVersion>
     <Name>Island (Darwin watchOS)</Name>
-    <ProjectGuid>{ec1f85c8-f514-4566-9f51-e1bb64ec1514}</ProjectGuid>
+    <ProjectGuid>{EC1F85C8-F514-4566-9F51-E1BB64EC1514}</ProjectGuid>
     <Mode>Island</Mode>
     <WarnOnCaseMismatch>True</WarnOnCaseMismatch>
     <Platform Condition="'$(Platform)' == ''">AnyCPU</Platform>
     <GenerateDebugInfo>True</GenerateDebugInfo>
     <DefineConstants>POSIX;DARWIN;MACOS;x86_64</DefineConstants>
     <SDK>watchOS</SDK>
+    <DefaultGlobalsToPublic>True</DefaultGlobalsToPublic>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)' == 'Debug'">
     <OutputPath>Bin\Debug</OutputPath>
