@@ -510,7 +510,7 @@ type
       var lKey: Integer;
       var lTy: ProtoReadType;
       while (lPtr < fEnd) and ProtoReadHeader(var lPtr, out lKey, out lTy) do begin
-        if (lKey = 6) and (lTy = ProtoReadType.varint) then begin
+        if (lKey = 7) and (lTy = ProtoReadType.varint) then begin
           exit  &Type.ResolveMethod(fValue^.Ext^.MemberInfoList[ProtoReadVarInt(var lPtr)])
         end else
           ProtoSkipValue(var lPtr, lTy);
@@ -522,7 +522,7 @@ type
       var lKey: Integer;
       var lTy: ProtoReadType;
       while (lPtr < fEnd) and ProtoReadHeader(var lPtr, out lKey, out lTy) do begin
-        if (lKey = 6) and (lTy = ProtoReadType.varint) then begin
+        if (lKey = 8) and (lTy = ProtoReadType.varint) then begin
           exit  &Type.ResolveMethod(fValue^.Ext^.MemberInfoList[ProtoReadVarInt(var lPtr)])
         end else
           ProtoSkipValue(var lPtr, lTy);

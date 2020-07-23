@@ -167,6 +167,10 @@ type
             exit lMethod.Invoke(aInstance, aArgs);
           end;
         end;
+        var lEvents := lCL.Events.Where(el ->(not lStatic or el.IsStatic) and (el.Name = aName));
+        if lEvents.Count = 1 then
+          exit new DynamicEventInfo(aInstance, lEvents.First);
+
         lCL := if lCL.fValue^.ParentType <> nil then new &Type(lCL.fValue^.ParentType) else nil;
       end;
 
@@ -241,6 +245,13 @@ type
       if lDyn <> nil then exit lDyn.Invoke(nil, aGetFlags, aArgs);
       if aInstance is &Type then begin
         aInstance := new DynamicMethodGroup(nil, &Type(aInstance).Methods.Where(a -> MethodFlags.Constructor in a.Flags).ToList);
+      end;
+      var lEvent := DynamicEventInfo(aInstance);
+      if lEvent ≠ nil then begin
+        var lMeth := lEvent.ResolveEvent;
+        if lMeth = nil then
+          raise new DynamicInvokeException('No event found');
+        exit lMeth.Invoke(if lEvent.Inst is &Type then nil else lEvent.Inst, aArgs);
       end;
       var lGroup := DynamicMethodGroup(aInstance);
       if lGroup = nil then
@@ -559,6 +570,27 @@ type
     property Inst: Object read fInst;
     property Count: Integer read fItems.Count;
     property Item[i: Integer]: &MethodInfo read fItems[i]; default;
+  end;
+
+  DynamicEventInfo = public class
+  private
+    fEvent: EventInfo;
+    fInst: Object;
+  public
+    constructor(aInst: Object; aEvent: EventInfo);
+    begin
+      fEvent := aEvent;
+      fInst := aInst;
+    end;
+
+    method ResolveEvent: MethodInfo;
+    begin
+      var lRM := fEvent.FireMethod;
+      if lRM = nil then exit nil;
+      exit fEvent.DeclaringType.Methods.FirstOrDefault(a -> a.Pointer = lRM);
+    end;
+    property Inst: Object read fInst;
+    property &Event: EventInfo read fEvent;
   end;
 
 end.
