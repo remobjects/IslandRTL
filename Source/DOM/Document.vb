@@ -14,11 +14,11 @@ Public Interface Document
   '''<Summary>Returns the document location as a string.</Summary>
   ReadOnly Property documentURI As String
   '''<Summary>Returns a list of the embedded  element embeds external content at the specified point in the document. This content is provided by an external application or other source of interactive content such as a browser plug-in.">&lt;embed&gt; elements within the current document.</Summary>
-  ReadOnly Property embeds As Element()
+  ReadOnly Property embeds As HTMLCollection
   '''<Summary>Returns the FontFaceSet interface of the current document.</Summary>
   Property fonts As Dynamic
   '''<Summary>Returns a list of the  element represents a document section containing interactive controls for submitting information.">&lt;form&gt; elements within the current document.</Summary>
-  ReadOnly Property forms As HTMLElement()
+  ReadOnly Property forms As HTMLCollection
   '''<Summary>Returns the  element contains machine-readable information (metadata) about the document, like its title, scripts, and style sheets.">&lt;head&gt; element of the current document.</Summary>
   ReadOnly Property head As HTMLElement
   '''<Summary>Returns a Boolean value indicating if the page is considered hidden or not.</Summary>
@@ -112,11 +112,11 @@ Public Interface Document
   '''<Summary>Enables the style sheets for the specified style sheet set.</Summary>
   Function enableStyleSheetsForSet(parname As Dynamic) As Dynamic
   '''<Summary>Returns a list of elements with the given class name.</Summary>
-  Function getElementsByClassName(parnames As Dynamic) As Element()
+  Function getElementsByClassName(parnames As Dynamic) As HTMLCollection
   '''<Summary>Returns a list of elements with the given tag name.</Summary>
-  Function getElementsByTagName(parname As Dynamic) As Element()
+  Function getElementsByTagName(parname As Dynamic) As HTMLCollection
   '''<Summary>Returns a list of elements with the given tag name and namespace.</Summary>
-  Function getElementsByTagNameNS(parnamespace As Dynamic, parname As Dynamic) As Element()
+  Function getElementsByTagNameNS(parnamespace As Dynamic, parname As Dynamic) As HTMLCollection
   '''<Summary>Returns a clone of a node from an external document.</Summary>
   Function importNode(parexternalNode As Dynamic, pardeep As Dynamic) As Node
   '''<Summary>Returns an object reference to the identified element.</Summary>
@@ -136,7 +136,7 @@ Public Interface Document
   '''<Summary>On an editable document, executes a formating command.</Summary>
   Function execCommand(paraCommandName As Dynamic, paraShowDefaultUI As Dynamic, paraValueArgument As Dynamic) As Dynamic
   '''<Summary>Returns a list of elements with the given name.</Summary>
-  Function getElementsByName(parname As Dynamic) As Element()
+  Function getElementsByName(parname As Dynamic) As HTMLCollection
   '''<Summary>Returns true if the focus is currently located anywhere inside the specified document.</Summary>
   Function hasFocus() As Boolean
   '''<Summary>Opens a document stream for writing.</Summary>
