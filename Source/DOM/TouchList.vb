@@ -4,5 +4,5 @@ Public Interface [TouchList]
   '''<Summary>The number of Touch objects in the TouchList.</Summary>
   ReadOnly Property [length] As Integer
   '''<Summary>Returns the Touch object at the specified index in the list.</Summary>
-  Function [item]([parindex] As Dynamic) As Dynamic
+  Default Property [item]([parindex] As Integer) As Dynamic
 End Interface

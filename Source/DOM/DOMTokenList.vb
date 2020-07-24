@@ -6,7 +6,7 @@ Public Interface [DOMTokenList]
   '''<Summary>A stringifier property that returns the value of the list as a DOMString.</Summary>
   Property [value] As String
   '''<Summary>Returns the item in the list by its index, or undefined if index is greater than or equal to the list's length.</Summary>
-  Sub [item]([parindex] As Dynamic)
+  Default Property [item]([parindex] As Integer) As Dynamic
   '''<Summary>Returns true if the list contains the given token, otherwise false.</Summary>
   Function [contains]([partoken] As Dynamic) As Boolean
   '''<Summary>Adds the specified token(s) to the list.</Summary>
