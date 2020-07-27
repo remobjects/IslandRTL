@@ -4,7 +4,7 @@ Public Interface [Element]
 Inherits Node
 
   '''<Summary>Returns a NamedNodeMap object containing the assigned attributes of the corresponding HTML element.</Summary>
-  ReadOnly Property [attributes] As Dynamic
+  ReadOnly Property [attributes] As NamedNodeMap
   '''<Summary>Returns a DOMTokenList containing the list of class attributes.</Summary>
   ReadOnly Property [classList] As DOMTokenList
   '''<Summary>Is a DOMString representing the class of the element.</Summary>
