@@ -265,6 +265,12 @@ type
     [DllImport('', EntryPoint := '__island_getNodeListItem')]
     class method GetNodeListItem(aNodeList: IntPtr; aIndex: Int32): IntPtr; external;
 
+    [DllImport('', EntryPoint := '__island_isHTMLCollection')]
+    class method IsHTMLCollection(aCollection: IntPtr): Boolean; external;
+
+    [DllImport('', EntryPoint := '__island_getHTMLCollectionItem')]
+    class method GetHTMLCollectionItem(aCollection: IntPtr; aIndex: Int32): IntPtr; external;
+
     [DllImport('', EntryPoint := '__island_reflect_construct')]
     class method ReflectConstruct(aClassName: String; aArgs: ^IntPtr; aArgCount: IntPtr): IntPtr; external;
   end;
@@ -314,7 +320,10 @@ type
         exit Items[Convert.ToInt32(aArgs[0])]
       else
         if WebAssemblyCalls.IsNodeList(fHandle) and (aArgs.Length = 1) then
-          exit new EcmaScriptObject(WebAssemblyCalls.GetNodeListItem(fHandle, Convert.ToInt32(aArgs[0])));
+          exit new EcmaScriptObject(WebAssemblyCalls.GetNodeListItem(fHandle, Convert.ToInt32(aArgs[0])))
+        else
+          if WebAssemblyCalls.IsHTMLCollection(fHandle) and (aArgs.Length = 1) then
+            exit new EcmaScriptObject(WebAssemblyCalls.GetHTMLCollectionItem(fHandle, Convert.ToInt32(aArgs[0])));
 
       raise new Exception('Array accessors not allowed in EcmaScript');
     end;

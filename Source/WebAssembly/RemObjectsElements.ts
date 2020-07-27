@@ -526,6 +526,14 @@ export module ElementsWebAssembly {
         imp.env.__island_getNodeListItem = function(aNodeList: number, aIndex: number): number {
             var par1 = handletable[aNodeList] as NodeList;
 			return createHandle(par1[aIndex]);
+        };
+        imp.env.__island_isHTMLCollection = function(aCollection: number): boolean {
+            var par1 = handletable[aCollection] as object;
+			return par1 instanceof HTMLCollection;
+        };
+        imp.env.__island_getHTMLCollectionItem = function(aCollection: number, aIndex: number): number {
+            var par1 = handletable[aCollection] as HTMLCollection;
+			return createHandle(par1[aIndex]);
         };				
         imp.env.__island_reflect_construct = function (name: number, args: number, argcount: number): number {            
 			var reflect = require("reflect-metadata");
