@@ -105,7 +105,7 @@ type
 			{$ELSEIF POSIX}
 			var ts: rtl.__struct_timespec;
 			rtl.timespec_get(@ts, rtl.TIME_UTC);
-			exit new DateTime(UnixDateOffset + (ts.tv_sec * TicksPerSecond) + (ts.tv_nsec / 100000));
+			exit new DateTime(UnixDateOffset + Int64(ts.tv_sec * TicksPerSecond) + (ts.tv_nsec / 100000));
 			{$ELSEIF WEBASSEMBLY}
 			exit new DateTime(Int64(UnixDateOffset + (WebAssemblyCalls.GetUTCTime * TicksPerMillisecond)));
 			{$ELSE}{$ERROR}
