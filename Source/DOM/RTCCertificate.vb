@@ -2,5 +2,5 @@
 <DynamicInterface(GetType(EcmaScriptObject))>
 Public Interface [RTCCertificate]
   '''<Summary>Returns the expiration date of the certificate.</Summary>
-  ReadOnly Property [expires] As Date
+  ReadOnly Property [expires] As DateTime
 End Interface

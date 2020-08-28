@@ -12,9 +12,9 @@ Public Interface [Performance]
   '''<Summary>Returns a list of PerformanceEntry objects of the given entry type.</Summary>
   Function [getEntriesByType]([partype] As Dynamic) As PerformanceEntry()
   '''<Summary>Creates a timestamp in the browser's performance entry buffer with the given name.</Summary>
-  Function [mark]([parname] As Dynamic) As Date
+  Function [mark]([parname] As Dynamic) As DateTime
   '''<Summary>Creates a named timestamp in the browser's performance entry buffer between two specified marks (known as the start mark and end mark, respectively).</Summary>
-  Function [measure]([parname] As Dynamic) As Date
+  Function [measure]([parname] As Dynamic) As DateTime
   '''<Summary>Returns a DOMHighResTimeStamp representing the number of milliseconds elapsed since a reference instant.</Summary>
   Function [now]() As Long
   '''<Summary>Is a jsonizer returning a json object representing the Performance object.</Summary>

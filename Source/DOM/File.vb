@@ -2,7 +2,7 @@
 <DynamicInterface(GetType(EcmaScriptObject))>
 Public Interface [File]
   '''<Summary>Returns the last modified time of the file, in millisecond since the UNIX epoch (January 1st, 1970 at Midnight).</Summary>
-  ReadOnly Property [lastModified] As Date
+  ReadOnly Property [lastModified] As DateTime
   '''<Summary>Returns the name of the file referenced by the File object.</Summary>
   ReadOnly Property [name] As String
   '''<Summary>Returns the size of the file in bytes.</Summary>

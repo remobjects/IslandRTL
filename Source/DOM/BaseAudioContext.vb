@@ -2,7 +2,7 @@
 <DynamicInterface(GetType(EcmaScriptObject))>
 Public Interface [BaseAudioContext]
   '''<Summary>Returns a double representing an ever-increasing hardware time in seconds used for scheduling. It starts at 0.</Summary>
-  ReadOnly Property [currentTime] As Date
+  ReadOnly Property [currentTime] As DateTime
   '''<Summary>Returns an AudioDestinationNode representing the final destination of all audio in the context. It can be thought of as the audio-rendering device.</Summary>
   ReadOnly Property [destination] As AudioDestinationNode
   '''<Summary>Returns the AudioListener object, used for 3D spatialization.</Summary>

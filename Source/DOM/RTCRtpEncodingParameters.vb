@@ -12,7 +12,7 @@ Public Interface [RTCRtpEncodingParameters]
   '''<Summary>A double-precision floating-point value specifying the maximum number of frames per second to allow for this encoding.</Summary>
   Property [maxFramerate] As Double
   '''<Summary>An unsigned long integer value indicating the preferred duration of a media packet in milliseconds. This is typically only relevant for audio encodings. The user agent will try to match this as well as it can, but there is no guarantee.</Summary>
-  Property [ptime] As Date
+  Property [ptime] As DateTime
   '''<Summary>A DOMString which, if set, specifies an RTP stream ID (RID) to be sent using the RID header extension. This parameter cannot be modified using setParameters(). Its value can only be set when the transceiver is first created.</Summary>
   Property [rid] As Integer
   '''<Summary>Only used for senders whose track's kind is video, this is a double-precision floating-point value specifying a factor by which to scale down the video during encoding. The default value, 1.0, means that the sent video's size will be the same as the original. A value of 2.0 scales the video frames down by a factor of 2 in each dimension, resulting in a video 1/4 the size of the original. The value must not be less than 1.0 (you can't use this to scale the video up).</Summary>

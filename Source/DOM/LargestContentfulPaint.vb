@@ -4,9 +4,9 @@ Public Interface [LargestContentfulPaint]
   '''<Summary>The element that is the current largest contentful paint.</Summary>
   Property [element] As Element
   '''<Summary>The time the element was rendered to the screen. May not be available if the element is a cross-origin image loaded without the Timing-Allow-Origin header.</Summary>
-  Property [renderTime] As Date
+  Property [renderTime] As DateTime
   '''<Summary>The time the element was loaded.</Summary>
-  Property [loadTime] As Date
+  Property [loadTime] As DateTime
   '''<Summary>The intrinsic size of the element returned as the area (width * height).</Summary>
   Property [size] As HTMLElement
   '''<Summary>The id of the element. This property returns an empty string when there is no id.</Summary>

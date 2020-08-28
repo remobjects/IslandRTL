@@ -6,7 +6,7 @@ Public Interface [PerformanceEntry]
   '''<Summary>A DOMString representing the type of performance metric such as, for example, "mark". See property page for valid values.</Summary>
   ReadOnly Property [entryType] As Dynamic
   '''<Summary>A DOMHighResTimeStamp representing the starting time for the performance metric.</Summary>
-  ReadOnly Property [startTime] As Date
+  ReadOnly Property [startTime] As DateTime
   '''<Summary>Returns a JSON representation of the PerformanceEntry object.</Summary>
   Function [toJSON]() As PerformanceEntry
 End Interface

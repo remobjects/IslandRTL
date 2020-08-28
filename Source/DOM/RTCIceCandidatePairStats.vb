@@ -16,7 +16,7 @@ Public Interface [RTCIceCandidatePairStats]
   '''<Summary>The total number of consent requests that have been sent on this candidate pair.</Summary>
   Property [consentRequestsSent] As Double
   '''<Summary>A floating-point value indicating the total time, in seconds, that elapsed elapsed between the most recently-sent STUN request and the response being received. This may be based upon requests that were involved in confirming permission to open the connection.</Summary>
-  Property [currentRoundTripTime] As Date
+  Property [currentRoundTripTime] As DateTime
   '''<Summary>A DOMHighResTimeStamp value which specifies the time at which the first STUN request was sent from the local peer to the remote peer for this candidate pair.</Summary>
   Property [firstRequestTimestamp] As DOMHighResTimeStamp
   '''<Summary>A DOMHighResTimeStamp value indicating the time at which the last packet was received by the local peer from the remote peer for this candidate pair. Timestamps are not recorded for STUN packets.</Summary>
@@ -52,7 +52,7 @@ Public Interface [RTCIceCandidatePairStats]
   '''<Summary>A RTCStatsIceCandidatePairState object which indicates the state of the connection between the two candidates.</Summary>
   Property [state] As Dynamic
   '''<Summary>A floating-point value indicating the total time, in seconds, that has elapsed between sending STUN requests and receiving responses to them, for all such requests made to date on this candidate pair. This includes botyh connectivity check and consent check requests. You can compute the average round trip time (RTT) by dividing this value by responsesReceived.</Summary>
-  Property [totalRoundTripTime] As Date
+  Property [totalRoundTripTime] As DateTime
   '''<Summary>A DOMString that uniquely identifies the RTCIceTransport that was inspected to obtain the transport-related statistics (as found in RTCTransportStats) used in generating this object.</Summary>
   Property [transportId] As Integer
 End Interface

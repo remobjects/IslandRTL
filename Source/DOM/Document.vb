@@ -56,7 +56,7 @@ Public Interface Document
   '''<Summary>Gets/sets the domain of the current document.</Summary>
   Property domain As String
   '''<Summary>Returns the date on which the document was last modified.</Summary>
-  ReadOnly Property lastModified As Date
+  ReadOnly Property lastModified As DateTime
   '''<Summary>Returns the URI of the current document.</Summary>
   ReadOnly Property location As Dynamic
   '''<Summary>Returns loading status of the document.</Summary>

@@ -8,7 +8,7 @@ Public Interface [MediaSessionActionDetails]
   '''<Summary>If the action is either seekforward or seekbackward and this property is present, it is a floating point value which indicates the number of seconds to move the play position forward or backward. If this property isn't present, those actions should choose a reasonable default distance to skip forward or backward (such as 7 or 10 seconds).</Summary>
   Property [seekOffset] As Double
   '''<Summary>If the action is seekto, this property must be present and must be a floating-point value indicating the absolute time within the media to move the playback position to, where 0 indicates the beginning of the media. This property is not present for other action types.</Summary>
-  Property [seekTime] As Date
+  Property [seekTime] As DateTime
   '''<Summary>Advance playback to the next track.</Summary>
   Property [nexttrack] As Dynamic
   '''<Summary>Pause playback of the media.</Summary>

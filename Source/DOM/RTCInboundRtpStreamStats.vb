@@ -14,7 +14,7 @@ Public Interface [RTCInboundRtpStreamStats]
   '''<Summary>A long integer value indicating the total number of frames of video which have been correctly decoded so far for this media source. This is the number of frames that would have been rendered if none were dropped. Only valid for video streams.</Summary>
   Property [framesDecoded] As Long
   '''<Summary>A DOMHighResTimeStamp indicating the time at which the last packet was received for this source. The timestamp property, on the other hand, indicates the time at which the statistics object was generated.</Summary>
-  Property [lastPacketReceivedTimestamp] As Date
+  Property [lastPacketReceivedTimestamp] As DateTime
   '''<Summary>An integer value indicating the total number of Negative ACKnolwedgement (NACK) packets this receiver has sent.</Summary>
   Property [nackCount] As Integer
   '''<Summary>An integer value indicating the total number of packets that have been discarded because they were duplicates. These packets are not counted by packetsDiscarded.</Summary>

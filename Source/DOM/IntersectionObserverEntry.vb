@@ -8,5 +8,5 @@ Public Interface [IntersectionObserverEntry]
   '''<Summary>The Element whose intersection with the root changed.</Summary>
   ReadOnly Property [target] As HTMLElement
   '''<Summary>A DOMHighResTimeStamp indicating the time at which the intersection was recorded, relative to the IntersectionObserver's time origin.</Summary>
-  ReadOnly Property [time] As Date
+  ReadOnly Property [time] As DateTime
 End Interface

@@ -20,7 +20,7 @@ Inherits HTMLElement, Element, Node, EventTarget
   '''<Summary>Returns a DOMString with the absolute URL of the chosen media resource.</Summary>
   ReadOnly Property [currentSrc] As String
   '''<Summary>A double-precision floating-point value indicating the current playback time in seconds; if the media has not started to play and has not been seeked, this value is the media's initial playback time. Setting this value seeks the media to the new time. The time is specified relative to the media's timeline.</Summary>
-  Property [currentTime] As Date
+  Property [currentTime] As DateTime
   '''<Summary>A Boolean that reflects the muted HTML attribute, which indicates whether the media element's audio output should be muted by default.</Summary>
   Property [defaultMuted] As Boolean
   '''<Summary>A double indicating the default playback rate for the media.</Summary>

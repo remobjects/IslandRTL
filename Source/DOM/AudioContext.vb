@@ -12,5 +12,5 @@ Inherits BaseAudioContext
   '''<Summary>Creates a MediaStreamTrackAudioSourceNode associated with a MediaStream representing an media stream track.</Summary>
   Function [createMediaStreamTrackSource]([partrack] As Dynamic) As MediaStream
   '''<Summary>Returns a new AudioTimestamp object containing two audio timestamp values relating to the current audio context.</Summary>
-  Function [getOutputTimestamp]() As Date
+  Function [getOutputTimestamp]() As DateTime
 End Interface
