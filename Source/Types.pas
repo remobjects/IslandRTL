@@ -22,6 +22,7 @@ type
   end;
 
   DummyEnum = class(&Enum) public fValue: Integer; end;
+  Dummy64Enum = class(&Enum) public fValue: Int64; end;
 
   &Enum = public abstract class
   public
@@ -33,7 +34,8 @@ type
       case EnumSize of
         1: exit ^Byte(@lSelf.fValue)^;
         2: exit ^Word(@lSelf.fValue)^;
-        4, 8: exit ^Int32(@lSelf.fValue)^;
+        4: exit ^Int32(@lSelf.fValue)^;
+        8: exit InternalCalls.Cast<Dummy64Enum>(InternalCalls.Cast(self)).fValue;
       end;
     end;
 
@@ -43,8 +45,8 @@ type
       case EnumSize of
         1: exit ^Byte(@lSelf.fValue)^;
         2: exit ^Word(@lSelf.fValue)^;
-        8: exit ^Int64(@lSelf.fValue)^;
-        4: exit ^Int32(@lSelf.fValue)^
+        4: exit ^Int32(@lSelf.fValue)^;
+        8: exit InternalCalls.Cast<Dummy64Enum>(InternalCalls.Cast(self)).fValue;
       end;
     end;
 
@@ -52,13 +54,29 @@ type
     begin
       if aOther = nil then exit false;
       if aOther.GetType <> GetType then exit false;
-      var lSelf := InternalCalls.Cast<DummyEnum>(InternalCalls.Cast(self));
-      var lOther := InternalCalls.Cast<DummyEnum>(InternalCalls.Cast(aOther));
+
       case EnumSize of
-        1: exit ^Byte(@lSelf.fValue)^ = ^Byte(@lOther.fValue)^;
-        2: exit ^Int16(@lSelf.fValue)^ = ^Int16(@lOther.fValue)^;
-        4: exit ^Int32(@lSelf.fValue)^ = ^Int32(@lOther.fValue)^;
-        8: exit ^Int64(@lSelf.fValue)^ = ^Int64(@lOther.fValue)^;
+        1: begin
+            var lSelf := InternalCalls.Cast<DummyEnum>(InternalCalls.Cast(self));
+            var lOther := InternalCalls.Cast<DummyEnum>(InternalCalls.Cast(aOther));
+            exit ^Byte(@lSelf.fValue)^ = ^Byte(@lOther.fValue)^;
+          end;
+        2: begin
+            var lSelf := InternalCalls.Cast<DummyEnum>(InternalCalls.Cast(self));
+            var lOther := InternalCalls.Cast<DummyEnum>(InternalCalls.Cast(aOther));
+            exit ^Int16(@lSelf.fValue)^ = ^Int16(@lOther.fValue)^;
+          end;
+        4: begin
+            var lSelf := InternalCalls.Cast<DummyEnum>(InternalCalls.Cast(self));
+            var lOther := InternalCalls.Cast<DummyEnum>(InternalCalls.Cast(aOther));
+            exit ^Int32(@lSelf.fValue)^ = ^Int32(@lOther.fValue)^;
+          end;
+        8: begin
+          var lSelf := InternalCalls.Cast<Dummy64Enum>(InternalCalls.Cast(self));
+          var lOther := InternalCalls.Cast<Dummy64Enum>(InternalCalls.Cast(aOther));
+
+            exit ^Int64(@lSelf.fValue)^ = ^Int64(@lOther.fValue)^;
+          end;
       end;
     end;
 
@@ -70,7 +88,7 @@ type
         1: lValue := ^Byte(@lSelf.fValue)^;
         2: lValue := ^Word(@lSelf.fValue)^;
         4: lValue := ^Int32(@lSelf.fValue)^;
-        8: lValue := ^Int64(@lSelf.fValue)^;
+        8: lValue := InternalCalls.Cast<Dummy64Enum>(InternalCalls.Cast(self)).fValue;
       end;
       result := self.GetType.Constants.FirstOrDefault(a -> a.IsStatic and (Convert.ToInt64(a.Value) = lValue)):Name;
       if result = nil then exit lValue.ToString();
