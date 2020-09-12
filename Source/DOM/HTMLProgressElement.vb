@@ -10,5 +10,5 @@ Inherits HTMLElement
   '''<Summary>Is a double value that reflects the current value; if the progress bar is an indeterminate progress bar, it returns 0.</Summary>
   Property [value] As String
   '''<Summary>Returns NodeList containing the list of  element represents a caption for an item in a user interface.">&lt;label&gt; elements that are labels for this element.</Summary>
-  ReadOnly Property [labels] As Element()
+  ReadOnly Property [labels] As NodeList
 End Interface

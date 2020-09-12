@@ -2,7 +2,7 @@
 <DynamicInterface(GetType(EcmaScriptObject))>
 Public Interface [IDBVersionChangeEvent]
   '''<Summary>Returns the old version of the database.</Summary>
-  ReadOnly Property [oldVersion] As String
+  ReadOnly Property [oldVersion] As Integer
   '''<Summary>Returns the new version of the database.</Summary>
-  ReadOnly Property [newVersion] As String
+  ReadOnly Property [newVersion] As Integer
 End Interface

@@ -4,5 +4,5 @@ Public Interface [MediaElementAudioSourceNode]
 Inherits AudioNode
 
   '''<Summary>The HTMLMediaElement used when constructing this MediaStreamAudioSourceNode.</Summary>
-  ReadOnly Property [mediaElement] As Element
+  ReadOnly Property [mediaElement] As HTMLMediaElement
 End Interface

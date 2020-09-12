@@ -9,4 +9,8 @@ Public Interface [Plugin]
   ReadOnly Property [name] As String
   '''<Summary>The plugin's version number string.</Summary>
   ReadOnly Property [version] As Dynamic
+  '''<Summary>Returns the MIME type of a supported content type, given the index number into a list of supported types.</Summary>
+  Default Property [item]() As Dynamic
+  '''<Summary>Returns the MIME type of a supported item.</Summary>
+  Function [namedItem]() As Dynamic
 End Interface

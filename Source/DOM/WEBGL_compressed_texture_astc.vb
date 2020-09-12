@@ -2,5 +2,5 @@
 <DynamicInterface(GetType(EcmaScriptObject))>
 Public Interface [WEBGL_compressed_texture_astc]
   '''<Summary> Returns an array of strings containing the names of the ASTC profiles supported by the implementation. </Summary>
-  Function [getSupportedProfiles]() As String()
+  Function [getSupportedProfiles]() As String
 End Interface

@@ -8,7 +8,7 @@ Public Interface [DataTransfer]
   '''<Summary>Contains a list of all the local files available on the data transfer. If the drag operation doesn't involve dragging files, this property is an empty list.</Summary>
   Property [files] As String()
   '''<Summary>Gives a DataTransferItemList object which is a list of all of the drag data.</Summary>
-  ReadOnly Property [items] As String()
+  ReadOnly Property [items] As DataTransferItemList
   '''<Summary>The Node over which the mouse cursor was located when the button was pressed to initiate the drag operation. This value is null for external drags or if the caller can't access the node.</Summary>
   ReadOnly Property [mozSourceNode] As Node
   '''<Summary>Retrieves the data for a given type, or an empty string if data for that type does not exist or the data transfer contains no data.</Summary>

@@ -16,9 +16,9 @@ Public Interface [PointerEvent]
   '''<Summary>The plane angle (in degrees, in the range of -90 to 90) between the X–Z plane and the plane containing both the pointer (e.g. pen stylus) axis and the X axis.</Summary>
   ReadOnly Property [tiltY] As Double
   '''<Summary>The clockwise rotation of the pointer (e.g. pen stylus) around its major axis in degrees, with a value in the range 0 to 359.</Summary>
-  ReadOnly Property [twist] As Dynamic
+  ReadOnly Property [twist] As long
   '''<Summary>Indicates the device type that caused the event (mouse, pen, touch, etc.)</Summary>
-  ReadOnly Property [pointerType] As Dynamic
+  ReadOnly Property [pointerType] As String
   '''<Summary>Indicates if the pointer represents the primary pointer of this pointer type.</Summary>
   ReadOnly Property [isPrimary] As Boolean
 End Interface

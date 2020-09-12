@@ -4,9 +4,9 @@ Public Interface [DataTransferItem]
   '''<Summary>The kind of drag data item, string or file.</Summary>
   ReadOnly Property [kind] As String
   '''<Summary>The drag data item's type, typically a MIME type.</Summary>
-  ReadOnly Property [type] As Dynamic
+  ReadOnly Property [type] As String
   '''<Summary>Returns the File object associated with the drag data item (or null if the drag item is not a file).</Summary>
-  Function [getAsFile]() As Dynamic
+  Function [getAsFile]() As File
   '''<Summary>Invokes the specified callback with the drag data item string as its argument.</Summary>
   Function [getAsString]([parcallback] As Dynamic) As String
 End Interface

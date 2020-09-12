@@ -3,4 +3,6 @@
 Public Interface [StereoPannerNode]
 Inherits AudioNode
 
+  '''<Summary>Is an a-rate AudioParam representing the amount of panning to apply.</Summary>
+  ReadOnly Property [pan] As AudioParam
 End Interface

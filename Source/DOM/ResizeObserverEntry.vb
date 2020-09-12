@@ -2,11 +2,11 @@
 <DynamicInterface(GetType(EcmaScriptObject))>
 Public Interface [ResizeObserverEntry]
   '''<Summary>An object containing the new border box size of the observed element when the callback is run.</Summary>
-  ReadOnly Property [borderBoxSize] As Dynamic
+  ReadOnly Property [borderBoxSize] As Element
   '''<Summary>An object containing the new content box size of the observed element when the callback is run.</Summary>
-  ReadOnly Property [contentBoxSize] As Dynamic
+  ReadOnly Property [contentBoxSize] As Element
   '''<Summary>A DOMRectReadOnly object containing the new size of the observed element when the callback is run. Note that this is better supported than the above two properties, but it is left over from an earlier implementation of the Resize Observer API, is still included in the spec for web compat reasons, and may be deprecated in future versions.</Summary>
-  ReadOnly Property [contentRect] As Dynamic
+  ReadOnly Property [contentRect] As DOMRectReadOnly
   '''<Summary>A reference to the Element or SVGElement being observed.</Summary>
-  ReadOnly Property [target] As HTMLElement
+  ReadOnly Property [target] As Element
 End Interface

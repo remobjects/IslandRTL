@@ -6,7 +6,7 @@ Public Interface [DOMTokenList]
   '''<Summary>A stringifier property that returns the value of the list as a DOMString.</Summary>
   Property [value] As String
   '''<Summary>Returns the item in the list by its index, or undefined if index is greater than or equal to the list's length.</Summary>
-  Default Property [item]([parindex] As Integer) As Dynamic
+  Default Property [item]([parindex] As Dynamic) As String
   '''<Summary>Returns true if the list contains the given token, otherwise false.</Summary>
   Function [contains]([partoken] As Dynamic) As Boolean
   '''<Summary>Adds the specified token(s) to the list.</Summary>
@@ -20,7 +20,7 @@ Public Interface [DOMTokenList]
   '''<Summary>Returns an iterator, allowing you to go through all key/value pairs contained in this object.</Summary>
   Function [entries]() As Dynamic
   '''<Summary>Executes a provided callback function once per DOMTokenList element.</Summary>
-  Sub [forEach]([parcallback] As Dynamic, [parcurrentValue] As Dynamic, [parcurrentIndex] As Dynamic, [parlistObj] As Dynamic)
+  Function [forEach]([parcallback] As Dynamic, [parcurrentValue] As Dynamic, [parcurrentIndex] As Dynamic, [parlistObj] As Dynamic) As DOMTokenList
   '''<Summary>Returns an iterator, allowing you to go through all keys of the key/value pairs contained in this object.</Summary>
   Function [keys]() As Dynamic
   '''<Summary>Returns an iterator, allowing you to go through all values of the key/value pairs contained in this object.</Summary>

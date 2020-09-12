@@ -29,6 +29,8 @@ Inherits Element
   Property [lang] As String
   '''<Summary>Is a Boolean indicating whether an import script can be executed in user agents that support module scripts.</Summary>
   Property [noModule] As Boolean
+  '''<Summary>Returns the cryptographic number used once that is used by Content Security Policy to determine whether a given fetch will be allowed to proceed.</Summary>
+  Property [nonce] As Dynamic
   '''<Summary>Is a Boolean that controls spell-checking. It is present on all HTML elements, though it doesn't have an effect on all of them.</Summary>
   Property [spellcheck] As Boolean
   '''<Summary>Is a CSSStyleDeclaration, an object representing the declarations of an element's style attributes.</Summary>

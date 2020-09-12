@@ -2,13 +2,13 @@
 <DynamicInterface(GetType(EcmaScriptObject))>
 Public Interface [File]
   '''<Summary>Returns the last modified time of the file, in millisecond since the UNIX epoch (January 1st, 1970 at Midnight).</Summary>
-  ReadOnly Property [lastModified] As DateTime
+  ReadOnly Property [lastModified] As Double
   '''<Summary>Returns the name of the file referenced by the File object.</Summary>
   ReadOnly Property [name] As String
   '''<Summary>Returns the size of the file in bytes.</Summary>
   ReadOnly Property [size] As Double
   '''<Summary>Returns the MIME type of the file.</Summary>
-  ReadOnly Property [type] As Dynamic
+  ReadOnly Property [type] As String
   '''<Summary>Returns a new Blob object containing the data in the specified range of bytes of the source Blob.</Summary>
   Function [slice]([parstart] As Dynamic, [parend] As Dynamic, [parcontentType] As Dynamic) As Dynamic
   '''<Summary>Transforms the File into a ReadableStream that can be used to read the File contents.</Summary>

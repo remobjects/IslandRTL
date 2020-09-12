@@ -4,9 +4,9 @@ Public Interface [AnalyserNode]
 Inherits AudioNode
 
   '''<Summary>Is an unsigned long value representing the size of the FFT (Fast Fourier Transform) to be used to determine the frequency domain.</Summary>
-  Property [fftSize] As ULong
+  Property [fftSize] As UInteger
   '''<Summary>Is an unsigned long value half that of the FFT size. This generally equates to the number of data values you will have to play with for the visualization.</Summary>
-  ReadOnly Property [frequencyBinCount] As Dynamic
+  ReadOnly Property [frequencyBinCount] As UInteger
   '''<Summary>Is a double value representing the minimum power value in the scaling range for the FFT analysis data, for conversion to unsigned byte values — basically, this specifies the minimum value for the range of results when using getByteFrequencyData().</Summary>
   Property [minDecibels] As Double
   '''<Summary>Is a double value representing the maximum power value in the scaling range for the FFT analysis data, for conversion to unsigned byte values — basically, this specifies the maximum value for the range of results when using getByteFrequencyData().</Summary>
@@ -16,9 +16,9 @@ Inherits AudioNode
   '''<Summary>Copies the current frequency data into a Float32Array array passed into it.</Summary>
   Function [getFloatFrequencyData]([pararray] As Dynamic) As Double
   '''<Summary>Copies the current frequency data into a Uint8Array (unsigned byte array) passed into it.</Summary>
-  Sub [getByteFrequencyData]([pararray] As Dynamic)
+  Function [getByteFrequencyData]([pararray] As Dynamic) As byte
   '''<Summary>Copies the current waveform, or time-domain, data into a Float32Array array passed into it.</Summary>
   Function [getFloatTimeDomainData]([pararray] As Dynamic) As Double
   '''<Summary>Copies the current waveform, or time-domain, data into a Uint8Array (unsigned byte array) passed into it.</Summary>
-  Sub [getByteTimeDomainData]([pararray] As Dynamic)
+  Function [getByteTimeDomainData]([pararray] As Dynamic) As byte
 End Interface

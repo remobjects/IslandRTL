@@ -2,7 +2,7 @@
 <DynamicInterface(GetType(EcmaScriptObject))>
 Public Interface [GamepadButton]
   '''<Summary>A double value used to represent the current state of analog buttons, such as the triggers on many modern gamepads. The values are normalized to the range 0.0 —1.0, with 0.0 representing a button that is not pressed, and 1.0 representing a button that is fully pressed.</Summary>
-  ReadOnly Property [value] As String
+  ReadOnly Property [value] As double
   '''<Summary>A boolean value indicating whether the button is currently pressed (true) or unpressed (false).</Summary>
-  ReadOnly Property [pressed] As Boolean
+  ReadOnly Property [pressed] As boolean
 End Interface

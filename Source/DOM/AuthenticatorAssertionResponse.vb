@@ -2,7 +2,7 @@
 <DynamicInterface(GetType(EcmaScriptObject))>
 Public Interface [AuthenticatorAssertionResponse]
   '''<Summary>An ArrayBuffer containing information from the authenticator such as the Relying Party ID Hash (rpIdHash), a signature counter, test of user presence and user verification flags, and any extensions processed by the authenticator.</Summary>
-  ReadOnly Property [authenticatorData] As Dynamic
+  ReadOnly Property [authenticatorData] As Byte()
   '''<Summary>An assertion signature over AuthenticatorAssertionResponse.authenticatorData and AuthenticatorResponse.clientDataJSON. The assertion signature is created with the private key of keypair that was created during the navigator.credentials.create() call and verified using the public key of that same keypair.</Summary>
   ReadOnly Property [signature] As Byte()
   '''<Summary>An ArrayBuffer containing an opaque user identifier.</Summary>

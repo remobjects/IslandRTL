@@ -10,7 +10,7 @@ Public Interface [DOMPointReadOnly]
   '''<Summary>The point's perspective value, w.</Summary>
   ReadOnly Property [w] As Double
   '''<Summary>A static method that creates a new DOMPointReadOnly object given the coordinates provided in the specified DOMPointInit object.</Summary>
-  Property [fromPoint] As Dynamic
+  Property [fromPoint] As DOMPointInit
   '''<Summary>Applies a matrix transform specified as a DOMMatrixInit object to the DOMPointReadOnly object.</Summary>
   Function [matrixTransform]() As Dynamic
   '''<Summary>Returns a JSON representation of the DOMPointReadOnly object.</Summary>

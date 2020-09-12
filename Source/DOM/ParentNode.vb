@@ -12,7 +12,7 @@ Public Interface [ParentNode]
   '''<Summary>Returns the first Element with the current element as root that matches the specified group of selectors.</Summary>
   Function [querySelector]([parselectors] As Dynamic) As Element
   '''<Summary>Returns a NodeList representing a list of elements with the current element as root that matches the specified group of selectors.</Summary>
-  Function [querySelectorAll]([parselectors] As Dynamic) As Node
+  Function [querySelectorAll]([parselectors] As Dynamic) As NodeList
   '''<Summary>Replaces the existing children of a node with a specified new set of children.</Summary>
-  Function [replaceChildren]() As Dynamic
+  Function [replaceChildren]() As Node
 End Interface

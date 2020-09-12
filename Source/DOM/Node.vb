@@ -16,9 +16,9 @@ Inherits EventTarget
   '''<Summary>Returns a Node representing the next node in the tree, or null if there isn't such node.</Summary>
   ReadOnly Property [nextSibling] As Node
   '''<Summary>Returns a DOMString containing the name of the Node. The structure of the name will differ with the node type. E.g. An HTMLElement will contain the name of the corresponding tag, like 'audio' for an HTMLAudioElement, a Text node will have the '#text' string, or a Document node will have the '#document' string.</Summary>
-  ReadOnly Property [nodeName] As Node
+  ReadOnly Property [nodeName] As String
   '''<Summary>Returns / Sets the value of the current node.</Summary>
-  Property [nodeValue] As Node
+  Property [nodeValue] As String
   '''<Summary>Returns the Document that this node belongs to. If the node is itself a document, returns null.</Summary>
   ReadOnly Property [ownerDocument] As Document
   '''<Summary>Returns a Node that is the parent of this node. If there is no such node, like if this node is the top of the tree or if doesn't participate in a tree, this property returns null.</Summary>
@@ -40,7 +40,7 @@ Inherits EventTarget
   '''<Summary>Returns the context object's root which optionally includes the shadow root if it is available. </Summary>
   Function [getRootNode]([paroptions] As Dynamic) As Node
   '''<Summary>Returns a Boolean indicating whether or not the element has any child nodes.</Summary>
-  Function [hasChildNodes]() As Node
+  Function [hasChildNodes]() As Boolean
   '''<Summary>Inserts a Node before the reference node as a child of a specified parent node.</Summary>
   Function [insertBefore]([parnewNode] As Dynamic, [parreferenceNode] As Dynamic) As Node
   '''<Summary>Accepts a namespace URI as an argument and returns a Boolean with a value of true if the namespace is the default namespace on the given node or false if not.</Summary>
@@ -50,9 +50,11 @@ Inherits EventTarget
   '''<Summary>Returns a Boolean value indicating whether or not the two nodes are the same (that is, they reference the same object).</Summary>
   Function [isSameNode]() As Node
   '''<Summary>Accepts a prefix and returns the namespace URI associated with it on the given node if found (and null if not). Supplying null for the prefix will return the default namespace.</Summary>
-  Sub [lookupNamespaceURI]([parprefix] As Dynamic)
+  Function [lookupNamespaceURI]([parprefix] As Dynamic) As String
   '''<Summary>Clean up all the text nodes under this element (merge adjacent, remove empty).</Summary>
   Function [normalize]() As String
+  '''<Summary>Removes a child node from the current element, which must be a child of the current node.</Summary>
+  Function [removeChild]([parchild] As Dynamic) As Node
   '''<Summary>Replaces one child Node of the current one with the second one given in parameter.</Summary>
   Function [replaceChild]([parnewChild] As Dynamic, [paroldChild] As Dynamic) As Node
 End Interface

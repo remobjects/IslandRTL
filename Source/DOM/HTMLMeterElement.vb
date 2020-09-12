@@ -16,5 +16,5 @@ Inherits HTMLElement
   '''<Summary>A double representing the currrent value, reflecting the value attribute.</Summary>
   Property [value] As String
   '''<Summary>A NodeList of  element represents a caption for an item in a user interface.">&lt;label&gt; elements that are associated with the element.</Summary>
-  ReadOnly Property [labels] As HTMLElement
+  ReadOnly Property [labels] As NodeList
 End Interface

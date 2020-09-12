@@ -2,5 +2,5 @@
 <DynamicInterface(GetType(EcmaScriptObject))>
 Public Interface [XPathException]
   '''<Summary>Returns a short that contains one of the error code constants.</Summary>
-  ReadOnly Property [code] As Short
+  ReadOnly Property [code] As short
 End Interface

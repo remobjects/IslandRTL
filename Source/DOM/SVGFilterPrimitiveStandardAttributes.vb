@@ -9,4 +9,6 @@ Public Interface [SVGFilterPrimitiveStandardAttributes]
   ReadOnly Property [width] As Integer
   '''<Summary>An SVGAnimatedLength corresponding to the height attribute of the given element.</Summary>
   ReadOnly Property [height] As Integer
+  '''<Summary>An SVGAnimatedString corresponding to the result attribute of the given element.</Summary>
+  ReadOnly Property [result] As SVGAnimatedString
 End Interface

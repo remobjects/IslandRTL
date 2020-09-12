@@ -4,7 +4,7 @@ Public Interface [ValidityState]
   '''<Summary>A Boolean that is true if the user has provided input that the browser is unable to convert.</Summary>
   ReadOnly Property [badInput] As Boolean
   '''<Summary>A Boolean that is true if the value does not match the specified pattern, and false if it does match. If true, the element matches the  or other &lt;form> element whose contents fail to validate.">:invalid CSS pseudo-class.</Summary>
-  ReadOnly Property [patternMismatch] As Boolean
+  ReadOnly Property [patternMismatch] As String
   '''<Summary>A Boolean that is true if the value is greater than the maximum specified by the max attribute, or false if it is less than or equal to the maximum. If true, the element matches the  or other &lt;form> element whose contents fail to validate.">:invalid and  element whose current value is outside the range limits specified by the min and max attributes.">:out-of-range and CSS pseudo-classes.</Summary>
   ReadOnly Property [rangeOverflow] As Boolean
   '''<Summary>A Boolean that is true if the value is less than the minimum specified by the min attribute, or false if it is greater than or equal to the minimum. If true, the element matches the  or other &lt;form> element whose contents fail to validate.">:invalid and  element whose current value is outside the range limits specified by the min and max attributes.">:out-of-range CSS pseudo-classes.</Summary>
@@ -16,7 +16,7 @@ Public Interface [ValidityState]
   '''<Summary>A Boolean that is true if the value fails to meet the specified minlength for HTMLInputElement or HTMLTextAreaElement objects, or false if its length is greater than or equal to the minimum length. If true, the element matches the  or other &lt;form> element whose contents fail to validate.">:invalid and  element whose current value is outside the range limits specified by the min and max attributes.">:out-of-range CSS pseudo-classes.</Summary>
   ReadOnly Property [tooShort] As Boolean
   '''<Summary>A Boolean that is true if the value is not in the required syntax (when type is email or url), or false if the syntax is correct. If true, the element matches the  or other &lt;form> element whose contents fail to validate.">:invalid CSS pseudo-class.</Summary>
-  ReadOnly Property [typeMismatch] As Boolean
+  ReadOnly Property [typeMismatch] As String
   '''<Summary>A Boolean that is true if the element has a required attribute, but no value, or false otherwise. If true, the element matches the  or other &lt;form> element whose contents fail to validate.">:invalid CSS pseudo-class.</Summary>
   ReadOnly Property [valueMissing] As Boolean
 End Interface

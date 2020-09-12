@@ -8,5 +8,5 @@ Public Interface [OES_vertex_array_object]
   '''<Summary>	Returns true if a given object is a WebGLVertexArrayObject.	</Summary>
   Function [isVertexArrayOES]([pararrayObject] As Dynamic) As Boolean
   '''<Summary>	Binds a given WebGLVertexArrayObject to the buffer.	</Summary>
-  Sub [bindVertexArrayOES]([pararrayObject] As Dynamic)
+  Function [bindVertexArrayOES]([pararrayObject] As Dynamic) As WebGLVertexArrayObject
 End Interface

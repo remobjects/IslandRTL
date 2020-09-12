@@ -14,5 +14,5 @@ Inherits HTMLElement
   '''<Summary>Is a Boolean that if true, stops the script's execution in browsers that support ES2015 modules — used to run fallback scripts in older browsers that do not support JavaScript modules.</Summary>
   Property [noModule] As Boolean
   '''<Summary>Is a DOMString that reflects the referrerpolicy HTML attribute indicating which referrer to use when fetching the script, and fetches done by that script.</Summary>
-  Property [referrerPolicy] As Dynamic
+  Property [referrerPolicy] As String
 End Interface

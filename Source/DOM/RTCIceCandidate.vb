@@ -10,9 +10,9 @@ Public Interface [RTCIceCandidate]
   '''<Summary>A DOMString containing the IP address of the candidate.</Summary>
   ReadOnly Property [ip] As String
   '''<Summary>An integer value indicating the candidate's port number.</Summary>
-  ReadOnly Property [port] As Integer
+  ReadOnly Property [port] As String
   '''<Summary>A long integer value indicating the candidate's priority.</Summary>
-  ReadOnly Property [priority] As Long
+  ReadOnly Property [priority] As String
   '''<Summary>A string indicating whether the candidate's protocol is "tcp" or "udp". The string is one of those in the enumerated type RTCIceProtocol.</Summary>
   ReadOnly Property [protocol] As String
   '''<Summary>If the candidate is derived from another candidate, relatedAddress is a DOMString containing that host candidate's IP address. For host candidates, this value is null.</Summary>
@@ -20,13 +20,13 @@ Public Interface [RTCIceCandidate]
   '''<Summary>For a candidate that is derived from another, such as a relay or reflexive candidate, the relatedPort is a number indicating the port number of the candidate from which this candidate is derived. For host candidates, the relatedPort property is null.</Summary>
   ReadOnly Property [relatedPort] As Double
   '''<Summary>A DOMString specifying the candidate's media stream identification tag which uniquely identifies the media stream within the component with which the candidate is associated, or null if no such association exists.</Summary>
-  ReadOnly Property [sdpMid] As Integer
+  ReadOnly Property [sdpMid] As String
   '''<Summary>If not null, sdpMLineIndex indicates the zero-based index number of the media description (as defined in RFC 4566) in the SDP with which the candidate is associated.</Summary>
-  ReadOnly Property [sdpMLineIndex] As Integer
+  ReadOnly Property [sdpMLineIndex] As Double
   '''<Summary>If protocol is "tcp", tcpType represents the type of TCP candidate. Otherwise, tcpType is null.</Summary>
-  ReadOnly Property [tcpType] As Dynamic
+  ReadOnly Property [tcpType] As String
   '''<Summary>A DOMString indicating the type of candidate as one of the strings from the RTCIceCandidateType enumerated type.</Summary>
-  ReadOnly Property [type] As Dynamic
+  ReadOnly Property [type] As String
   '''<Summary>A DOMString containing a randomly-generated username fragment ("ice-ufrag") which ICE uses for message integrity along with a randomly-generated password ("ice-pwd"). You can use this string to verify generations of ICE generation; each generation of the same ICE process will use the same usernameFragment, even across ICE restarts.</Summary>
   ReadOnly Property [usernameFragment] As String
   '''<Summary>Given the RTCIceCandidate's current configuration, toJSON() returns a DOMString containing a JSON representation of that configuration in the form of a RTCIceCandidateInit object.</Summary>

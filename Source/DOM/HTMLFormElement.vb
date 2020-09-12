@@ -24,7 +24,7 @@ Inherits HTMLElement
   '''<Summary>A Boolean reflecting the value of the form's novalidate HTML attribute, indicating whether the form should not be validated.</Summary>
   Property [noValidate] As Boolean
   '''<Summary>Returns true if the element's child controls are subject to constraint validation and satisfy those contraints; returns false if some controls do not satisfy their constraints. Fires an event named invalid at any control that does not satisfy its constraints; such controls are considered invalid if the event is not canceled. It is up to the programmer to decide how to respond to false.</Summary>
-  Function [checkValidity]() As Boolean
+  Function [checkValidity]() As String
   '''<Summary>Returns true if the element's child controls satisfy their validation constraints. When false is returned, cancelable invalid events are fired for each invalid child and validation problems are reported to the user.</Summary>
   Function [reportValidity]() As Boolean
   '''<Summary>Requests that the form be submitted using the specified submit button and its corresponding configuration.</Summary>

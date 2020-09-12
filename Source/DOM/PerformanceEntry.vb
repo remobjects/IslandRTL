@@ -4,9 +4,11 @@ Public Interface [PerformanceEntry]
   '''<Summary>A value that further specifies the value returned by the PerformanceEntry.entryType property. The value of both depends on the subtype. See property page for valid values.</Summary>
   ReadOnly Property [name] As String
   '''<Summary>A DOMString representing the type of performance metric such as, for example, "mark". See property page for valid values.</Summary>
-  ReadOnly Property [entryType] As Dynamic
+  ReadOnly Property [entryType] As String
   '''<Summary>A DOMHighResTimeStamp representing the starting time for the performance metric.</Summary>
-  ReadOnly Property [startTime] As DateTime
+  ReadOnly Property [startTime] As Date
+  '''<Summary>A DOMHighResTimeStamp representing the time value of the duration of the performance event.</Summary>
+  ReadOnly Property [duration] As DOMHighResTimeStamp
   '''<Summary>Returns a JSON representation of the PerformanceEntry object.</Summary>
   Function [toJSON]() As PerformanceEntry
 End Interface

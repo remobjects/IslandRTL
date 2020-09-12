@@ -22,15 +22,15 @@ Inherits AudioNode, AudioParam
   '''<Summary>An enumerated value determining which spatialisation algorithm to use to position the audio in 3D space.</Summary>
   Property [panningModel] As Dynamic
   '''<Summary>Represents the horizontal position of the audio in a right-hand cartesian coordinate system. The default is 0. While this AudioParam cannot be directly changed, its value can be altered using its value property. The default is value is 0.</Summary>
-  Property [positionX] As Integer
+  Property [positionX] As AudioParam
   '''<Summary>Represents the vertical position of the audio in a right-hand cartesian coordinate system. The default is 0. While this AudioParam cannot be directly changed, its value can be altered using its value property. The default is value is 0.</Summary>
-  Property [positionY] As Integer
+  Property [positionY] As AudioParam
   '''<Summary>Represents the longitudinal (back and forth) position of the audio in a right-hand cartesian coordinate system. The default is 0. While this AudioParam cannot be directly changed, its value can be altered using its value property. The default is value is 0.</Summary>
-  Property [positionZ] As Integer
+  Property [positionZ] As AudioParam
   '''<Summary>A double value representing the reference distance for reducing volume as the audio source moves further from the listener. For distances greater than this the volume will be reduced based on rolloffFactor and distanceModel.</Summary>
   Property [refDistance] As Double
   '''<Summary>A double value describing how quickly the volume is reduced as the source moves away from the listener. This value is used by all distance models.</Summary>
   Property [rolloffFactor] As Double
   '''<Summary>Defines the position of the audio source relative to the listener (represented by an AudioListener object stored in the AudioContext.listener attribute.)</Summary>
-  Function [setPosition]([parx] As Dynamic,[pary] As Dynamic,[parz] As Dynamic) As Dynamic
+  Function [setPosition]([parx] As Dynamic,[pary] As Dynamic,[parz] As Dynamic) As AudioListener
 End Interface

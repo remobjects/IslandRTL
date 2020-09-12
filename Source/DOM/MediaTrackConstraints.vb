@@ -2,19 +2,19 @@
 <DynamicInterface(GetType(EcmaScriptObject))>
 Public Interface [MediaTrackConstraints]
   '''<Summary>A ConstrainDOMString object specifying a device ID or an array of device IDs which are acceptable and/or required.</Summary>
-  Property [deviceId] As Integer
+  Property [deviceId] As String
   '''<Summary>A ConstrainDOMString object specifying a group ID or an array of group IDs which are acceptable and/or required.</Summary>
-  Property [groupId] As Integer
+  Property [groupId] As String
   '''<Summary>A ConstrainBoolean object which specifies whether automatic gain control is preferred and/or required.</Summary>
-  Property [autoGainControl] As Dynamic
+  Property [autoGainControl] As ConstrainBoolean
   '''<Summary>A ConstrainLong specifying the channel count or range of channel counts which are acceptable and/or required.</Summary>
   Property [channelCount] As Double
   '''<Summary>A ConstrainBoolean object specifying whether or not echo cancellation is preferred and/or required.</Summary>
-  Property [echoCancellation] As Dynamic
+  Property [echoCancellation] As ConstrainBoolean
   '''<Summary>A ConstrainDouble specifying the latency or range of latencies which are acceptable and/or required.</Summary>
   Property [latency] As Double
   '''<Summary>A ConstrainBoolean which specifies whether noise suppression is preferred and/or required.</Summary>
-  Property [noiseSuppression] As Boolean
+  Property [noiseSuppression] As ConstrainBoolean
   '''<Summary>A ConstrainLong specifying the sample rate or range of sample rates which are acceptable and/or required.</Summary>
   Property [sampleRate] As Double
   '''<Summary>A ConstrainLong specifying the sample size or range of sample sizes which are acceptable and/or required.</Summary>
@@ -56,9 +56,9 @@ Public Interface [MediaTrackConstraints]
   '''<Summary>A ConstrainDouble specifying the frame rate or range of frame rates which are acceptable and/or required.</Summary>
   Property [frameRate] As Double
   '''<Summary>A ConstrainLong specifying the video height or range of heights which are acceptable and/or required.</Summary>
-  Property [height] As Integer
+  Property [height] As Double
   '''<Summary>A ConstrainLong specifying the video width or range of widths which are acceptable and/or required.</Summary>
-  Property [width] As Integer
+  Property [width] As Double
   '''<Summary></Summary>
   Property [cursor] As String
   '''<Summary></Summary>

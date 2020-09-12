@@ -22,7 +22,7 @@ Inherits HTMLElement
   '''<Summary>Is a DOMString reflecting a name or keyword indicating where to display the response that is received after submitting the form. If specified, this attribute overrides the target attribute of the  element represents a document section containing interactive controls for submitting information.">&lt;form&gt; element that owns this element.</Summary>
   Property [formTarget] As String
   '''<Summary>Is a NodeList that represents a list of  element represents a caption for an item in a user interface.">&lt;label&gt; elements that are labels for this button.</Summary>
-  ReadOnly Property [labels] As Element()
+  ReadOnly Property [labels] As NodeList
   '''<Summary>Is a DOMString representing the name of the object when submitted with a form. HTML5 If specified, it must not be the empty string.</Summary>
   Property [name] As String
   '''<Summary>Is a long that represents this element's position in the tabbing order.</Summary>

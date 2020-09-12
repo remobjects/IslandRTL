@@ -2,5 +2,5 @@
 <DynamicInterface(GetType(EcmaScriptObject))>
 Public Interface [SubmitEvent]
   '''<Summary>An HTMLElement object which identifies the button or other element which was invoked to trigger the form being submitted.</Summary>
-  ReadOnly Property [submitter] As Dynamic
+  ReadOnly Property [submitter] As Element
 End Interface

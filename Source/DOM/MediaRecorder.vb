@@ -2,13 +2,13 @@
 <DynamicInterface(GetType(EcmaScriptObject))>
 Public Interface [MediaRecorder]
   '''<Summary>Returns the MIME type that was selected as the recording container for the MediaRecorder object when it was created.</Summary>
-  ReadOnly Property [mimeType] As Dynamic
+  ReadOnly Property [mimeType] As String
   '''<Summary>Returns the current state of the MediaRecorder object (inactive, recording, or paused.)</Summary>
-  ReadOnly Property [state] As Dynamic
+  ReadOnly Property [state] As MediaRecorder
   '''<Summary>Returns the stream that was passed into the constructor when the MediaRecorder was created.</Summary>
   ReadOnly Property [stream] As MediaRecorder()
   '''<Summary>Indicates whether the MediaRecorder instance will record input when the input MediaStreamTrack is muted. If this attribute is false, MediaRecorder will record silence for audio and black frames for video. The default is false.</Summary>
-  Property [ignoreMutedMedia] As Dynamic
+  Property [ignoreMutedMedia] As Boolean
   '''<Summary>Called to handle the dataavailable event, which is periodically triggered each time timeslice milliseconds of media have been recorded (or when the entire media has been recorded, if timeslice wasn't specified). The event, of type BlobEvent, contains the recorded media in its data property. You can then collect and act upon that recorded media data using this event handler.</Summary>
   Property [ondataavailable] As EventListener
   '''<Summary>An EventHandler called to handle the error event, including reporting errors that arise with media recording. These are fatal errors that stop recording. The received event is based on the MediaRecorderErrorEvent interface, whose error property contains a DOMException that describes the actual error that occurred.</Summary>
@@ -27,4 +27,6 @@ Public Interface [MediaRecorder]
   Function [requestData]() As Byte()
   '''<Summary>Begins recording media; this method can optionally be passed a timeslice argument with a value in milliseconds. If this is specified, the media will be captured in separate chunks of that duration, rather than the default behavior of recording the media in a single large chunk.</Summary>
   Function [start]([partimeslice] As Dynamic) As Long
+  '''<Summary>Stops recording, at which point a dataavailable event containing the final Blob of saved data is fired. No more recording occurs.</Summary>
+  Function [stop]() As Blob
 End Interface

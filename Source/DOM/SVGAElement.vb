@@ -14,7 +14,7 @@ Inherits SVGGraphicsElement, SVGURIReference
   '''<Summary>See HTMLAnchorElement.rel.</Summary>
   Property [rel] As String
   '''<Summary>See HTMLAnchorElement.relList.</Summary>
-  Property [relList] As DOMTokenList
+  Property [relList] As String
   '''<Summary>Is a DOMString being a synonym for the Node.textContent property.</Summary>
   Property [text] As String
   '''<Summary>Is a DOMString that reflects the type attribute, indicating the MIME type of the linked resource.</Summary>

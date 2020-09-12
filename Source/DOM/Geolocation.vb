@@ -2,7 +2,7 @@
 <DynamicInterface(GetType(EcmaScriptObject))>
 Public Interface [Geolocation]
   '''<Summary>Determines the device's current location and gives back a GeolocationPosition object with the data.</Summary>
-  Function [getCurrentPosition]([parsuccess] As Dynamic, [parerror] As Dynamic, [paroptions] As Dynamic) As Dynamic
+  Function [getCurrentPosition]([parsuccess] As Dynamic, [parerror] As Dynamic, [paroptions] As Dynamic) As GeolocationPosition
   '''<Summary>Returns a long value representing the newly established callback function to be invoked whenever the device location changes.</Summary>
-  Function [watchPosition]([parsuccess] As Dynamic, [parerror] As Dynamic, [paroptions] As Dynamic) As Long
+  Function [watchPosition]([parsuccess] As Dynamic, [parerror] As Dynamic, [paroptions] As Dynamic) As Integer
 End Interface

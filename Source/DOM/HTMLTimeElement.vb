@@ -4,5 +4,5 @@ Public Interface [HTMLTimeElement]
 Inherits HTMLElement
 
   '''<Summary>Is a DOMString that reflects the datetime HTML attribute, containing a machine-readable form of the element's date and time value.</Summary>
-  Property [dateTime] As DateTime
+  Property [dateTime] As Date
 End Interface

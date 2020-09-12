@@ -6,7 +6,7 @@ Public Interface [LayoutShift]
   '''<Summary>Returns true if there was a user input in the past 500 milliseconds.</Summary>
   Property [hadRecentInput] As Boolean
   '''<Summary>Returns the time of the most recent user input.</Summary>
-  Property [lastInputTime] As DateTime
+  Property [lastInputTime] As Date
   '''<Summary>Returns an array of LayoutShiftAttribution objects with information on the elements that were shifted.</Summary>
   Property [sources] As HTMLElement
   '''<Summary>Converts the properties to JSON.</Summary>

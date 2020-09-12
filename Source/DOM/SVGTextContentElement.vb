@@ -11,6 +11,12 @@ Inherits SVGGraphicsElement
   Function [getComputedTextLength]() As String
   '''<Summary>Returns a float representing the computed length of the formatted text advance distance for a substring of text within the element. Note that this method only accounts for the widths of the glyphs in the substring and any extra spacing inserted by the CSS 'letter-spacing' and 'word-spacing' properties. Visual spacing adjustments made by the 'x' attribute is ignored.</Summary>
   Function [getSubStringLength]() As HTMLElement
+  '''<Summary>Returns a DOMPoint representing the position of a typographic character after text layout has been performed. Note: In SVG 1.1 this method returned an SVGPoint. </Summary>
+  Function [getStartPositionOfChar]() As DOMPoint
+  '''<Summary>Returns a DOMPoint representing the trailing position of a typographic character after text layout has been performed. Note: In SVG 1.1 this method returned an SVGPoint. </Summary>
+  Function [getEndPositionOfChar]() As DOMPoint
+  '''<Summary>Returns a DOMRect representing the computed tight bounding box of the glyph cell that corresponds to a given typographic character.</Summary>
+  Function [getExtentOfChar]() As DOMRect
   '''<Summary>Returns a float representing the rotation of typographic character.</Summary>
   Function [getRotationOfChar]() As Double
   '''<Summary>Returns a long representing the character which caused a text glyph to be rendered at a given position in the coordinate system. Because the relationship between characters and glyphs is not one-to-one, only the first character of the relevant typographic character is returned</Summary>

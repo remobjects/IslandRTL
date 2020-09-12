@@ -7,6 +7,8 @@ Public Interface [RTCConfiguration]
   Property [certificates] As RTCCertificate()
   '''<Summary>An unsigned 16-bit integer value which specifies the size of the prefetched ICE candidate pool. The default value is 0 (meaning no candidate prefetching will occur). You may find in some cases that connections can be established more quickly by allowing the ICE agent to start fetching ICE candidates before you start trying to connect, so that they're already available for inspection when RTCPeerConnection.setLocalDescription() is called.</Summary>
   Property [iceCandidatePoolSize] As Integer
+  '''<Summary>An array of RTCIceServer objects, each describing one server which may be used by the ICE agent; these are typically STUN and/or TURN servers. If this isn't specified, the connection attempt will be made with no STUN or TURN server available, which limits the connection to local peers.</Summary>
+  Property [iceServers] As String
   '''<Summary>The current ICE transport policy; this must be one of the values from the RTCIceTransportPolicy enum. If this isn't specified, "all" is assumed.</Summary>
   Property [iceTransportPolicy] As Dynamic
   '''<Summary>A DOMString which specifies the target peer identity for the RTCPeerConnection. If this value is set (it defaults to null), the RTCPeerConnection will not connect to a remote peer unless it can successfully authenticate with the given name.</Summary>

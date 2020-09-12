@@ -5,6 +5,8 @@ Public Interface [DOMException]
   ReadOnly Property [message] As String
   '''<Summary>Returns a DOMString that contains one of the strings associated with an error name.</Summary>
   ReadOnly Property [name] As String
+  '''<Summary>The index is not in the allowed range. For example, this can be thrown by the Range object. (Legacy code value: 1 and legacy constant name: INDEX_SIZE_ERR)</Summary>
+  Property [IndexSizeError] As Range
   '''<Summary>The object is in the wrong Document. (Legacy code value: 4 and legacy constant name: WRONG_DOCUMENT_ERR)</Summary>
   Property [WrongDocumentError] As Dynamic
   '''<Summary>The string contains invalid characters. (Legacy code value: 5 and legacy constant name: INVALID_CHARACTER_ERR)</Summary>
@@ -30,5 +32,5 @@ Public Interface [DOMException]
   '''<Summary>The operation timed out. (Legacy code value: 23 and legacy constant name: TIMEOUT_ERR)</Summary>
   Property [TimeoutError] As Dynamic
   '''<Summary>The request is not allowed by the user agent or the platform in the current context, possibly because the user denied permission (No legacy code value and constant name).</Summary>
-  Property [NotAllowedError] As Dynamic
+  Property [NotAllowedError] As Request
 End Interface

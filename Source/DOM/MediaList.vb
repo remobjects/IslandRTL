@@ -9,4 +9,6 @@ Public Interface [MediaList]
   Function [appendMedium]() As Dynamic
   '''<Summary>Removes a media query from the MediaList.</Summary>
   Function [deleteMedium]() As Dynamic
+  '''<Summary>A getter that returns a CSSOMString representing a media query as text, given the media query's index value inside the MediaList.</Summary>
+  Default Property [item]() As CSSOMString
 End Interface

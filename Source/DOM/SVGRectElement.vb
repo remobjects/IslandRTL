@@ -11,4 +11,8 @@ Inherits SVGGeometryElement
   ReadOnly Property [width] As Integer
   '''<Summary>Returns an SVGAnimatedLength corresponding to the height attribute of the given  element is a basic SVG shape that draws rectangles, defined by their position, width, and height. The rectangles may have their corners rounded.">&lt;rect&gt; element.</Summary>
   ReadOnly Property [height] As Integer
+  '''<Summary>Returns an SVGAnimatedLength corresponding to the rx attribute of the given  element is a basic SVG shape that draws rectangles, defined by their position, width, and height. The rectangles may have their corners rounded.">&lt;rect&gt; element.</Summary>
+  ReadOnly Property [rx] As Element
+  '''<Summary>Returns an SVGAnimatedLength corresponding to the ry attribute of the given  element is a basic SVG shape that draws rectangles, defined by their position, width, and height. The rectangles may have their corners rounded.">&lt;rect&gt; element.</Summary>
+  ReadOnly Property [ry] As Element
 End Interface

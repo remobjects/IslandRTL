@@ -1,4 +1,4 @@
-'''<Summary>Element is the most general base class from which all element objects (i.e. objects that represent elements) in a Document inherit. It only has methods and properties common to all kinds of elements. More specific classes inherit from Element.</Summary>
+﻿'''<Summary>Element is the most general base class from which all element objects (i.e. objects that represent elements) in a Document inherit. It only has methods and properties common to all kinds of elements. More specific classes inherit from Element.</Summary>
 <DynamicInterface(GetType(EcmaScriptObject))>
 Public Interface [Element]
 Inherits Node
@@ -22,7 +22,7 @@ Inherits Node
   '''<Summary>Returns a DOMString containing the ARIA role that has been applied to a particular element.</Summary>
   ReadOnly Property [computedRole] As String
   '''<Summary>Is a DOMString representing the id of the element.</Summary>
-  Property [id] As String
+  Property [id] As Integer
   '''<Summary>Is a DOMString representing the markup of the element's content.</Summary>
   Property [innerHTML] As String
   '''<Summary>A DOMString representing the local part of the qualified name of the element.</Summary>
@@ -44,7 +44,7 @@ Inherits Node
   '''<Summary>Returns a Number representing the scroll view width of the element.</Summary>
   ReadOnly Property [scrollWidth] As Integer
   '''<Summary>Returns the open shadow root that is hosted by the element, or null if no open shadow root is present.</Summary>
-  ReadOnly Property [shadowRoot] As HTMLElement
+  ReadOnly Property [shadowRoot] As ShadowRoot
   '''<Summary>Returns a String with the name of the tag for the given element.</Summary>
   ReadOnly Property [tagName] As String
   '''<Summary>An event handler for the fullscreenchange event, which is sent when the element enters or exits full-screen mode. This can be used to watch both for successful expected transitions, but also to watch for unexpected changes, such as when your app is running in the background.</Summary>
@@ -57,8 +57,8 @@ Inherits Node
   Function [attachShadow]([parshadowRootInit] As Dynamic, [parmode] As Dynamic, [pardelegatesFocus] As Dynamic) As ShadowRoot
   '''<Summary>Dispatches an event to this node in the DOM and returns a Boolean that indicates whether no handler canceled the event.</Summary>
   Function [dispatchEvent]([parevent] As Dynamic) As Dynamic
-  '''<Summary>Retrieves the value of the attribute with the specified name, from the current node and returns it as an Object.</Summary>
-  Function [getAttribute]([parname] As Dynamic) As String
+  '''<Summary>Retrieves the value of the named attribute from the current node and returns it as an Object.</Summary>
+  Function [getAttribute]([parattributeName] As Dynamic) As Node
   '''<Summary>Retrieves the value of the attribute with the specified name and namespace, from the current node and returns it as an Object.</Summary>
   Function [getAttributeNS]([parnamespace] As Dynamic, [parname] As Dynamic) As String
   '''<Summary>Returns the size of an element and its position relative to the viewport.</Summary>
@@ -78,7 +78,7 @@ Inherits Node
   '''<Summary>Returns a Boolean indicating if the element has one or more HTML attributes present.</Summary>
   Function [hasAttributes]() As HTMLElement
   '''<Summary>Indicates whether the element on which it is invoked has pointer capture for the pointer identified by the given pointer ID.</Summary>
-  Function [hasPointerCapture]([parpointerId] As Dynamic) As HTMLElement
+  Function [hasPointerCapture]([parpointerId] As Dynamic) As Boolean
   '''<Summary>Inserts a given element node at a given position relative to the element it is invoked upon.</Summary>
   Function [insertAdjacentElement]([parposition] As Dynamic, [parelement] As Dynamic) As HTMLElement
   '''<Summary>Parses the text as HTML or XML and inserts the resulting nodes into the tree in the position given.</Summary>
@@ -88,17 +88,19 @@ Inherits Node
   '''<Summary>Returns the first Node which matches the specified selector string relative to the element.</Summary>
   Function [querySelector]([parselectors] As Dynamic) As Element
   '''<Summary>Returns a NodeList of nodes which match the specified selector string relative to the element.</Summary>
-  Function [querySelectorAll]([parselectors] As Dynamic) As HTMLElement
+  Function [querySelectorAll]([parselectors] As Dynamic) As NodeList
   '''<Summary>Releases (stops) pointer capture that was previously set for a specific pointer event.</Summary>
   Sub [releasePointerCapture]([parpointerId] As Dynamic)
   '''<Summary>Removes the named attribute from the current node.</Summary>
   Sub [removeAttribute]([parattrName] As Dynamic)
   '''<Summary>Removes an event listener from the element.</Summary>
   Function [removeEventListener]([partype] As Dynamic, [parlistener] As Dynamic, [paroptions] As Dynamic, [paruseCapture] As Dynamic) As Dynamic
+  '''<Summary>Scrolls an element by the given amount.</Summary>
+  Function [scrollBy]() As Element
   '''<Summary>Sets the value of a named attribute of the current node.</Summary>
   Sub [setAttribute]([parname] As Dynamic, [parvalue] As Dynamic)
   '''<Summary>Designates a specific element as the capture target of future pointer events.</Summary>
-  Sub [setPointerCapture]([parpointerId] As Dynamic)
+  Function [setPointerCapture]([parpointerId] As Dynamic) As Element
   '''<Summary>Toggles a boolean attribute, removing it if it is present and adding it if it is not present, on the specified element.</Summary>
   Function [toggleAttribute]([parname] As Dynamic, [parforce] As Dynamic) As Boolean
 End Interface

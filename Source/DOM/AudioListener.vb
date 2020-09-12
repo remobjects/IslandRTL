@@ -2,21 +2,21 @@
 <DynamicInterface(GetType(EcmaScriptObject))>
 Public Interface [AudioListener]
   '''<Summary>Represents the horizontal position of the listener in a right-hand cartesian coordinate sytem. The default is 0.</Summary>
-  Property [positionX] As Integer
+  Property [positionX] As AudioParam
   '''<Summary>Represents the vertical position of the listener in a right-hand cartesian coordinate sytem. The default is 0.</Summary>
-  Property [positionY] As Integer
+  Property [positionY] As AudioParam
   '''<Summary>Represents the longitudinal (back and forth) position of the listener in a right-hand cartesian coordinate sytem. The default is 0.</Summary>
-  Property [positionZ] As Integer
+  Property [positionZ] As AudioParam
   '''<Summary>Represents the horizontal position of the listener's forward direction in the same cartesian coordinate sytem as the position (positionX, positionY, and positionZ) values. The forward and up values are linearly independent of each other. The default is 0.</Summary>
-  Property [forwardX] As Integer
+  Property [forwardX] As AudioParam
   '''<Summary>Represents the vertical position of the listener's forward direction in the same cartesian coordinate sytem as the position (positionX, positionY, and positionZ) values. The forward and up values are linearly independent of each other. The default is 0.</Summary>
-  Property [forwardY] As Integer
+  Property [forwardY] As AudioParam
   '''<Summary>Represents the longitudinal (back and forth) position of the listener's forward direction in the same cartesian coordinate sytem as the position (positionX, positionY, and positionZ) values. The forward and up values are linearly independent of each other. The default is -1.</Summary>
-  Property [forwardZ] As Integer
+  Property [forwardZ] As AudioParam
   '''<Summary>Represents the horizontal position of the top of the listener's head in the same cartesian coordinate sytem as the position (positionX, positionY, and positionZ) values. The forward and up values are linearly independent of each other. The default is 0.</Summary>
-  Property [upX] As Integer
+  Property [upX] As AudioParam
   '''<Summary>Represents the vertical position of the top of the listener's head in the same cartesian coordinate sytem as the position (positionX, positionY, and positionZ) values. The forward and up values are linearly independent of each other. The default is 1.</Summary>
-  Property [upY] As Integer
+  Property [upY] As AudioParam
   '''<Summary>Represents the longitudinal (back and forth) position of the top of the listener's head in the same cartesian coordinate sytem as the position (positionX, positionY, and positionZ) values. The forward and up values are linearly independent of each other. The default is 0.</Summary>
-  Property [upZ] As Integer
+  Property [upZ] As AudioParam
 End Interface

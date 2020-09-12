@@ -6,5 +6,5 @@ Public Interface [DeviceProximityEvent]
   '''<Summary>The minimum sensing distance the sensor is able to report, in centimeters. Ususally zero.</Summary>
   ReadOnly Property [min] As Double
   '''<Summary>The current device proximity, in centimeters.</Summary>
-  ReadOnly Property [value] As String
+  ReadOnly Property [value] As Double
 End Interface

@@ -8,9 +8,9 @@ Inherits [Event]
   '''<Summary>A USVString representing the origin of the message emitter.</Summary>
   ReadOnly Property [origin] As String
   '''<Summary>A DOMString representing a unique ID for the event.</Summary>
-  ReadOnly Property [lastEventId] As Integer
+  ReadOnly Property [lastEventId] As String
   '''<Summary>A MessageEventSource (which can be a WindowProxy, MessagePort, or ServiceWorker object) representing the message emitter.</Summary>
   ReadOnly Property [source] As Window
   '''<Summary>An array of MessagePort objects representing the ports associated with the channel the message is being sent through (where appropriate, e.g. in channel messaging or when sending a message to a shared worker).</Summary>
-  ReadOnly Property [ports] As MessagePort()
+  ReadOnly Property [ports] As MessagePort
 End Interface

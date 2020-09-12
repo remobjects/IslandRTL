@@ -6,5 +6,5 @@ Public Interface [XRPermissionDescriptor]
   '''<Summary>An array of strings, each specifying the name of a WebXR feature which is requested but not required for the app to function. The available features are the same as those used by XRSessionInit; see Default features in XRSessionInit for further information.</Summary>
   Property [optionalFeatures] As String
   '''<Summary>An array of strings giving the names of the WebXR features for which permission must be obtained in order to use your app or site.</Summary>
-  Property [requiredFeatures] As String()
+  Property [requiredFeatures] As String
 End Interface

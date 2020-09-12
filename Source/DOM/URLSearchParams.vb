@@ -8,7 +8,7 @@ Public Interface [URLSearchParams]
   '''<Summary>Returns an iterator allowing iteration through all key/value pairs contained in this object.</Summary>
   Function [entries]() As Dynamic
   '''<Summary>Allows iteration through all values contained in this object via a callback function.</Summary>
-  Function [forEach]([parcallback] As Dynamic) As Dynamic
+  Sub [forEach]([parcallback] As Dynamic)
   '''<Summary>Returns the first value associated with the given search parameter.</Summary>
   Function [get]([parname] As Dynamic) As String
   '''<Summary>Returns all the values associated with a given search parameter.</Summary>

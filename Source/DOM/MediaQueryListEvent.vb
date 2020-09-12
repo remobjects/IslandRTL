@@ -6,5 +6,5 @@ Inherits [Event]
   '''<Summary> A Boolean that returns true if the document currently matches the media query list, or false if not.</Summary>
   ReadOnly Property [matches] As Boolean
   '''<Summary> A DOMString representing a serialized media query.</Summary>
-  ReadOnly Property [media] As Dynamic
+  ReadOnly Property [media] As String
 End Interface

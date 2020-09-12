@@ -2,9 +2,9 @@
 <DynamicInterface(GetType(EcmaScriptObject))>
 Public Interface [RTCStats]
   '''<Summary>A DOMString which uniquely identifies the object which was inspected to produce this object based on RTCStats.</Summary>
-  Property [id] As Integer
+  Property [id] As String
   '''<Summary>A DOMHighResTimeStamp object indicating the time at which the sample was taken for this statistics object.</Summary>
-  Property [timestamp] As Dynamic
+  Property [timestamp] As DOMHighResTimeStamp
   '''<Summary>A DOMString indicating the type of statistics the object contains, taken from the enum type RTCStatsType.</Summary>
-  Property [type] As Dynamic
+  Property [type] As String
 End Interface

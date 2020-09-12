@@ -4,5 +4,5 @@ Public Interface [DelayNode]
 Inherits AudioNode
 
   '''<Summary>Is an a-rate AudioParam representing the amount of delay to apply, specified in seconds.</Summary>
-  ReadOnly Property [delayTime] As DateTime
+  ReadOnly Property [delayTime] As AudioParam
 End Interface

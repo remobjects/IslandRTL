@@ -3,6 +3,8 @@
 Public Interface [XPathResult]
   '''<Summary>A boolean representing the value of the result if resultType is BOOLEAN_TYPE.</Summary>
   ReadOnly Property [booleanValue] As String
+  '''<Summary>Signifies that the iterator has become invalid. It is true if resultType is UNORDERED_NODE_ITERATOR_TYPE or ORDERED_NODE_ITERATOR_TYPE and the document has been modified since this result was returned.</Summary>
+  ReadOnly Property [invalidIteratorState] As Document
   '''<Summary>A number representing the value of the result if resultType is NUMBER_TYPE.</Summary>
   ReadOnly Property [numberValue] As String
   '''<Summary>A number code representing the type of the result, as defined by the type constants.</Summary>
@@ -13,4 +15,8 @@ Public Interface [XPathResult]
   ReadOnly Property [snapshotLength] As Integer
   '''<Summary>A string representing the value of the result if resultType is STRING_TYPE.</Summary>
   ReadOnly Property [stringValue] As String
+  '''<Summary>If the result is a node set, this method iterates over it and returns the next node from it or null if there are no more nodes.</Summary>
+  Function [iterateNext]() As Node
+  '''<Summary>Returns an item of the snapshot collection or null in case the index is not within the range of nodes. Unlike the iterator result, the snapshot does not become invalid, but may not correspond to the current document if it is mutated.</Summary>
+  Function [snapshotItem]([pari] As Dynamic) As Document
 End Interface

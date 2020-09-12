@@ -4,7 +4,7 @@ Public Interface [AudioScheduledSourceNode]
 Inherits AudioNode
 
   '''<Summary>Schedules the node to begin playing the constant sound at the specified time. If no time is specified, the node begins playing immediately.</Summary>
-  Sub [start]([parwhen] As Dynamic, [paroffset] As Dynamic, [parduration] As Dynamic)
+  Function [start]([parwhen] As Dynamic, [paroffset] As Dynamic, [parduration] As Dynamic) As Node
   '''<Summary>Schedules the node to stop playing at the specified time. If no time is specified, the node stops playing at once.</Summary>
-  Sub [stop]([parwhen] As Dynamic)
+  Function [stop]([parwhen] As Dynamic) As Node
 End Interface

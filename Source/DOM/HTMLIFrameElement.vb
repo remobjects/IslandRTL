@@ -5,14 +5,18 @@ Inherits HTMLElement
 
   '''<Summary>Is a Boolean indicating whether the Payment Request API may be invoked inside a cross-origin iframe.</Summary>
   Property [allowPaymentRequest] As Boolean
+  '''<Summary>Returns a Document, the active document in the inline frame's nested browsing context.</Summary>
+  ReadOnly Property [contentDocument] As Document
   '''<Summary>Returns a WindowProxy, the window proxy for the nested browsing context.</Summary>
   ReadOnly Property [contentWindow] As Window
+  '''<Summary>Specifies the Content Security Policy that an embedded document must agree to enforce upon itself.</Summary>
+  Property [csp] As Document
   '''<Summary>Is a DOMString that reflects the height HTML attribute, indicating the height of the frame.</Summary>
   Property [height] As Integer
   '''<Summary>Is a DOMString that reflects the name HTML attribute, containing a name by which to refer to the frame.</Summary>
   Property [name] As String
   '''<Summary>Is a DOMSettableTokenList that reflects the sandbox HTML attribute, indicating extra restrictions on the behavior of the nested content.</Summary>
-  Property [sandbox] As DOMTokenList
+  Property [sandbox] As String
   '''<Summary>Is a DOMString that reflects the src HTML attribute, containing the address of the content to be embedded. Note that programatically removing an &lt;iframe&gt;'s src attribute (e.g. via Element.removeAttribute()) causes about:blank to be loaded in the frame in Firefox (from version 65), Chromium-based browsers, and Safari/iOS.</Summary>
   Property [src] As String
   '''<Summary>Is a DOMString that represents the content to display in the frame.</Summary>

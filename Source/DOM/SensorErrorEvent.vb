@@ -2,5 +2,5 @@
 <DynamicInterface(GetType(EcmaScriptObject))>
 Public Interface [SensorErrorEvent]
   '''<Summary>Returns the DOMException object passed in the event's contructor.</Summary>
-  ReadOnly Property [error] As Dynamic
+  ReadOnly Property [error] As DOMException
 End Interface

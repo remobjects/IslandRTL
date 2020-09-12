@@ -4,5 +4,5 @@ Public Interface [SharedWorker]
 Inherits EventTarget, AbstractWorker
 
   '''<Summary>Returns a MessagePort object used to communicate with and control the shared worker.</Summary>
-  ReadOnly Property [port] As Dynamic
+  ReadOnly Property [port] As MessagePort
 End Interface

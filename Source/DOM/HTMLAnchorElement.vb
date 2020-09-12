@@ -28,7 +28,7 @@ Inherits HTMLElement
   '''<Summary>Is a DOMString that reflects the rel HTML attribute, specifying the relationship of the target object to the linked object.</Summary>
   Property [rel] As String
   '''<Summary>Returns a DOMTokenList that reflects the rel HTML attribute, as a list of tokens.</Summary>
-  ReadOnly Property [relList] As DOMTokenList
+  ReadOnly Property [relList] As String
   '''<Summary>Is a USVString representing the search element, including leading question mark ('?'), if any, of the referenced URL.</Summary>
   Property [search] As String
   '''<Summary>Is a DOMString that reflects the target HTML attribute, indicating where to display the linked resource.</Summary>

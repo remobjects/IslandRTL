@@ -6,7 +6,7 @@ Public Interface [FileReader]
   '''<Summary>A number indicating the state of the FileReader. This is one of the following:</Summary>
   ReadOnly Property [readyState] As Double
   '''<Summary>The file's contents. This property is only valid after the read operation is complete, and the format of the data depends on which of the methods was used to initiate the read operation.</Summary>
-  ReadOnly Property [result] As Byte()
+  ReadOnly Property [result] As String
   '''<Summary>A handler for the abort event. This event is triggered each time the reading operation is aborted.</Summary>
   Property [onabort] As EventListener
   '''<Summary>A handler for the error event. This event is triggered each time the reading operation encounter an error.</Summary>
@@ -25,4 +25,6 @@ Public Interface [FileReader]
   Function [readAsBinaryString]([parblob] As Dynamic) As String
   '''<Summary>Starts reading the contents of the specified Blob, once finished, the result attribute contains a data: URL representing the file's data.</Summary>
   Function [readAsDataURL]([parblob] As Dynamic) As String
+  '''<Summary>Starts reading the contents of the specified Blob, once finished, the result attribute contains the contents of the file as a text string. An optional encoding name can be specified.</Summary>
+  Function [readAsText]([parblob] As Dynamic, [parencoding] As Dynamic) As File
 End Interface

@@ -2,5 +2,5 @@
 <DynamicInterface(GetType(EcmaScriptObject))>
 Public Interface [TrackEvent]
   '''<Summary>The DOM track object the event is in reference to. If not null, this is always an object of one of the media track types: AudioTrack, VideoTrack, or TextTrack).</Summary>
-  ReadOnly Property [track] As TextTrack
+  ReadOnly Property [track] As AudioTrack
 End Interface

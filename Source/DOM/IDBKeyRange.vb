@@ -6,9 +6,9 @@ Public Interface [IDBKeyRange]
   '''<Summary>Upper bound of the key range.</Summary>
   ReadOnly Property [upper] As Integer
   '''<Summary>Returns false if the lower-bound value is included in the key range.</Summary>
-  ReadOnly Property [lowerOpen] As Boolean
+  ReadOnly Property [lowerOpen] As boolean
   '''<Summary>Returns false if the upper-bound value is included in the key range.</Summary>
-  ReadOnly Property [upperOpen] As Boolean
+  ReadOnly Property [upperOpen] As boolean
   '''<Summary>Creates a new key range with upper and lower bounds.</Summary>
   Function [bound]([parlower] As Dynamic, [parupper] As Dynamic, [parlowerOpen] As Dynamic, [parupperOpen] As Dynamic) As IDBKeyRange
   '''<Summary>Creates a new key range containing a single value.</Summary>

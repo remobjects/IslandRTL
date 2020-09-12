@@ -7,4 +7,6 @@ Inherits SVGElement
   ReadOnly Property [x] As Double
   '''<Summary>An SVGAnimatedNumber corresponding to the y attribute of the given element.</Summary>
   ReadOnly Property [y] As Double
+  '''<Summary>An SVGAnimatedNumber corresponding to the z attribute of the given element.</Summary>
+  ReadOnly Property [z] As SVGAnimatedNumber
 End Interface

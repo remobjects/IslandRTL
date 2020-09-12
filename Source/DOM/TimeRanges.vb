@@ -3,4 +3,6 @@
 Public Interface [TimeRanges]
   '''<Summary>Returns an unsigned long representing the number of time ranges represented by the time range object.</Summary>
   ReadOnly Property [length] As Integer
+  '''<Summary>Returns the time for the start of the range with the specified index.</Summary>
+  Function [start]() As Range
 End Interface

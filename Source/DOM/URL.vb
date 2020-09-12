@@ -22,7 +22,7 @@ Public Interface [URL]
   '''<Summary>A USVString indicating the URL's parameter string; if any parameters are provided, this string includes all of them, beginning with the leading '?' character.</Summary>
   Property [search] As String
   '''<Summary>A URLSearchParams object which can be used to access the individual query parameters found in search.</Summary>
-  ReadOnly Property [searchParams] As Dynamic
+  ReadOnly Property [searchParams] As URLSearchParams
   '''<Summary>A USVString containing the username specified before the domain name.</Summary>
   Property [username] As String
   '''<Summary>Returns a USVString containing the whole URL. It is a synonym for URL.href, though it can't be used to modify the value.</Summary>

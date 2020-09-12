@@ -10,7 +10,7 @@ Inherits HTMLElement
   '''<Summary>A DOMTokenList reflecting the for HTML attribute, containing a list of IDs of other elements in the same document that contribute to (or otherwise affect) the calculated value.</Summary>
   ReadOnly Property [htmlFor] As DOMTokenList
   '''<Summary>A NodeList of  element represents a caption for an item in a user interface.">&lt;label&gt; elements associated with the element.</Summary>
-  ReadOnly Property [labels] As HTMLElement
+  ReadOnly Property [labels] As NodeList
   '''<Summary>A DOMString reflecting the name HTML attribute, containing the name for the control that is submitted with form data.</Summary>
   Property [name] As String
   '''<Summary>The DOMString "output".</Summary>

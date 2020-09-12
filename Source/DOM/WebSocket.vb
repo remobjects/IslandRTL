@@ -2,7 +2,7 @@
 <DynamicInterface(GetType(EcmaScriptObject))>
 Public Interface [WebSocket]
   '''<Summary>The binary data type used by the connection.</Summary>
-  Property [binaryType] As Dynamic
+  Property [binaryType] As String
   '''<Summary>The number of bytes of queued data.</Summary>
   ReadOnly Property [bufferedAmount] As Double
   '''<Summary>The extensions selected by the server.</Summary>

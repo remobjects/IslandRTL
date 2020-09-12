@@ -14,11 +14,11 @@ Inherits EventTarget
   '''<Summary>Returns an array of RTCIceCandidate objects, each describing one of the ICE candidates that have been gathered so far for the local device. These are the same candidates which have already been sent to the remote peer by sending an icecandidate event to the RTCPeerConnection for transmission.</Summary>
   Function [getLocalCandidates]() As RTCIceCandidate()
   '''<Summary>Returns a RTCIceParameters object describing the ICE parameters established by a call to the RTCPeerConnection.setLocalDescription() method. Returns null if parameters have not yet been received.</Summary>
-  Function [getLocalParameters]() As Dynamic
+  Function [getLocalParameters]() As RTCIceParameters
   '''<Summary>Returns an array of RTCIceCandidate objects, one for each of the remote device's ICE candidates that have been received by the local end of the RTCPeerConnection and delivered to ICE by calling addIceCandidate().</Summary>
-  Function [getRemoteCandidates]() As RTCIceCandidate()
+  Function [getRemoteCandidates]() As RTCIceCandidate
   '''<Summary>Returns a RTCIceParameters object containing the ICE parameters for the remote device, as set by a call to RTCPeerConnection.setRemoteDescription(). If setRemoteDescription() hasn't been called yet, the return value is null.</Summary>
-  Function [getRemoteParameters]() As Dynamic
+  Function [getRemoteParameters]() As RTCIceParameters
   '''<Summary>Returns a RTCIceCandidatePair object that identifies the two candidates—one for each end of the connection—that have been selected so far. It's possible that a better pair will be found and selected later; if you need to keep up with this, watch for the selectedcandidatepairchange event. If no candidate pair has been selected yet, the return value is null.</Summary>
-  Function [getSelectedCandidatePair]() As Dynamic
+  Function [getSelectedCandidatePair]() As RTCIceCandidatePair
 End Interface

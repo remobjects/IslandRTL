@@ -4,7 +4,7 @@ Public Interface [AudioTrackList]
 Inherits EventTarget
 
   '''<Summary>The number of tracks in the list.</Summary>
-  ReadOnly Property [length] As Integer
+  ReadOnly Property [length] As Double
   '''<Summary>An event handler to be called when the addtrack event is fired, indicating that a new audio track has been added to the media element.</Summary>
   Property [onaddtrack] As EventListener
   '''<Summary>An event handler to be called when the change event occurs. This occurs when one or more tracks have been enabled or disabled by their enabled flag being changed.</Summary>
@@ -12,5 +12,5 @@ Inherits EventTarget
   '''<Summary>An event handler to call when the removetrack event is sent, indicating that an audio track has been removed from the media element.</Summary>
   Property [onremovetrack] As EventListener
   '''<Summary>Returns the AudioTrack found within the AudioTrackList whose id matches the specified string. If no match is found, null is returned.</Summary>
-  Sub [getTrackById]([parid] As Dynamic)
+  Function [getTrackById]([parid] As Dynamic) As String
 End Interface

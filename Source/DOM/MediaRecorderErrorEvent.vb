@@ -5,6 +5,4 @@ Inherits [Event]
 
   '''<Summary>A DOMException containing information about the error that occurred. Read only.</Summary>
   ReadOnly Property [error] As DOMException
-  '''<Summary>Creates and returns a new MediaRecorderErrorEvent event object with the given parameters.</Summary>
-  Property [MediaStreamRecorderEvent] As Dynamic
 End Interface

@@ -24,7 +24,7 @@ Inherits HTMLElement
   '''<Summary>An integer value representing the intrinsic width of the image in CSS pixels, if it is available; otherwise, it will show 0. This is the width the image would be if it were rendered at its natural full size.</Summary>
   ReadOnly Property [naturalWidth] As Integer
   '''<Summary>A DOMString that reflects the referrerpolicy HTML attribute, which tells the user agent how to decide which referrer to use in order to fetch the image. Read this article for details on the possible values of this string.</Summary>
-  Property [referrerPolicy] As Dynamic
+  Property [referrerPolicy] As String
   '''<Summary>A DOMString reflecting the sizes HTML attribute. This string specifies a list of comma-separated conditional sizes for the image; that is, for a given viewport size, a particular image size is to be used. Read the documentation on the sizes page for details on the format of this string.</Summary>
   Property [sizes] As Dynamic
   '''<Summary>A USVString that reflects the src HTML attribute, which contains the full URL of the image including base URI. You can load a different image into the element by changing the URL in the src attribute.</Summary>
@@ -36,9 +36,9 @@ Inherits HTMLElement
   '''<Summary>An integer value that reflects the width HTML attribute, indicating the rendered width of the image in CSS pixels.</Summary>
   Property [width] As Integer
   '''<Summary>An integer indicating the horizontal offset of the left border edge of the image's CSS layout box relative to the origin of the  element represents the root (top-level element) of an HTML document, so it is also referred to as the root element. All other elements must be descendants of this element.">&lt;html&gt; element's containing block.</Summary>
-  ReadOnly Property [x] As Double
+  ReadOnly Property [x] As Integer
   '''<Summary>The integer vertical offset of the top border edge of the image's CSS layout box relative to the origin of the  element represents the root (top-level element) of an HTML document, so it is also referred to as the root element. All other elements must be descendants of this element.">&lt;html&gt; element's containing block.</Summary>
-  ReadOnly Property [y] As Double
+  ReadOnly Property [y] As Integer
   '''<Summary>Returns a Promise that resolves when the image is decoded and it's safe to append the image to the DOM. This prevents rendering of the next frame from having to pause to decode the image, as would happen if an undecoded image were added to the DOM.</Summary>
   Function [decode]() As Dynamic
 End Interface
