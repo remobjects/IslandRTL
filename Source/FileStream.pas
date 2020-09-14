@@ -145,6 +145,7 @@ begin
   {$IFDEF ANDROID or DARWIN}
   result := rtl.fseek(fHandle, Offset, lOrigin);
   CheckForIOError(result);
+  result := rtl.ftell(fHandle);
   {$ELSE}
   CheckForIOError(rtl.fseeko64(fHandle, Offset, lOrigin));
   var pos: rtl._G_fpos64_t;
