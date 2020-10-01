@@ -1267,6 +1267,11 @@ type
           end;
           b := b.BaseType;
         end;
+        var lAttrs := self.Attributes.Where(c->c.Type = typeOf(DynamicInterfaceAttribute)).ToList;
+        for each lAttr in lAttrs do begin
+          if (lAttr.Arguments[0].Value is String) and (String(lAttr.Arguments[0].Value) = aOrg.Name) then
+            exit true;
+        end;
         exit false;
       end else
         exit aOrg.IsSubclassOf(self);
