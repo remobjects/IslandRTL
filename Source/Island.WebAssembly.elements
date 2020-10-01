@@ -50,6 +50,8 @@
     <Compile Include="Brower.pas" />
     <Compile Include="NodeJS.pas" />
     <None Include="WebAssembly\RemObjectsElements.js" />
+    <Compile Include="WasmEvents_Mercury.vb" />
+    <Compile Include="WasmEvents.vb" />
   </ItemGroup>
   <Import Project="$(MSBuildExtensionsPath)\RemObjects Software\Elements\RemObjects.Elements.Island.WebAssembly.targets" />
   <Import Project="Island.Shared.projitems" Label="Shared" />
