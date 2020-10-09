@@ -4,11 +4,12 @@
 
 uses
   Foundation;
-
+{$ENDIF}
 type
   String = public partial class
   private
   public
+{$IF DARWIN}
 
     //
     // Casts
@@ -122,7 +123,7 @@ type
       result := String(aValue2) ≤ aValue1;
     end;
 
+{$ENDIF}
   end;
 
-{$ENDIF}
 end.
