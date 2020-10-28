@@ -216,7 +216,7 @@ type
 
 		class method FromOleDate(aDate: Double): DateTime;
 		begin
-			exit new DateTime(DoubleDateOffset + Math.Round(aDate * TicksPerDay));
+			exit new DateTime(DoubleDateOffset + Int64(Math.Round(aDate * TicksPerDay)));
 		end;
 
 		class method ToOleDate(aDate: DateTime): Double;

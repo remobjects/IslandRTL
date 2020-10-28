@@ -141,12 +141,12 @@ type
     [SymbolName('__stdio_common_vfprintf')]
     class method ___stdio_common_vfprintf(
     _Options: UInt64;
-    _Stream: FILEHANDLE;
+    _Stream: ^FILE;
     _Format: ^AnsiChar;
     _Locale: ^Void;
     _ArgList: ^Void): Integer;
     begin
-      raise new NotSupportedException();
+      // empty.
     end;
 
     [SymbolName('__security_check_cookie'), Inlineasm('ret', '', false, false)]
@@ -378,6 +378,95 @@ type
 
     const ElementsExceptionCode = $E0428819;
 
+
+    [SymbolName('fmaxf')]
+    class method fmaxf(x, y: Single): Single;
+    begin
+      exit if x > y then x else y;
+    end;
+
+    [SymbolName('strtod')]
+    class method strtod(str: ^AnsiChar; aEndPtr: ^^AnsiChar): Double;
+    begin
+      Convert.TryParseDouble(String.FromPAnsiChars(str), out result, false);
+    end;
+
+    [SymbolName('strtol')]
+    class method strtol(str: ^AnsiChar; aEndPtr: ^^AnsiChar; aBase: Integer): Integer;
+    begin
+      var lStr := String.FromPAnsiChars(str);
+      if lStr.StartsWith('0x') then begin
+        Convert.TryHexStringToUInt64(lStr.Substring(2), out var lVal);
+        exit lVal;
+      end else begin
+        Convert.TryParseInt64(lStr, out var lVal, false);
+        exit lVal;
+      end;
+    end;
+
+    [SymbolName('toupper')]
+    class method ToUpper(c: AnsiChar): AnsiChar;
+    begin
+      if c in ['a'..'z'] then
+        c := AnsiChar((Integer(c) - Integer('a')) + Integer('A'));
+      exit c;
+    end;
+
+    [SymbolName('tolower')]
+    class method ToLower(c: AnsiChar): AnsiChar;
+    begin
+      if c in ['A'..'Z'] then
+        c := AnsiChar((Integer(c) - Integer('A')) + Integer('a'));
+      exit c;
+    end;
+
+    [SymbolName('frexp')]
+    class method frexp(x: Double; e: ^Integer): Double;
+    begin
+      var lVal := ^Int64(@x)^;
+      var exp := (lVal shr 52) and ($7ff);
+      if exp = 0 then begin
+        if x = 0 then begin
+          e^ := 0;
+          exit x;
+        end;
+        x := frexp(1.8446744073709552E+19 * x, e);
+        e := e - 64;
+        exit x;
+      end;
+      e^ := exp - $3fe;
+      lVal := (lVal and $800fffffffffffff) or $3fe0000000000000;
+      exit ^Double(@lVal)^;
+    end;
+
+
+    [SymbolName('fminf')]
+    class method fminf(x, y: Single): Single;
+    begin
+      exit if x < y then x else y;
+    end;
+
+    [SymbolName('fmax')]
+    class method fmax(x, y: Double): Double;
+    begin
+      exit if x > y then x else y;
+    end;
+
+    [SymbolName('fmin')]
+    class method fmin(x, y: Double): Double;
+    begin
+      exit if x < y then x else y;
+    end;
+
+
+
+    [SymbolName('roundf')]
+    class method roundf(x: Single): Single;
+    begin
+      exit Math.Round(x);
+    end;
+
+
     [SymbolName('strcmp')]
     class method strcmp(a, b: ^AnsiChar): Integer;
     begin
@@ -454,6 +543,98 @@ type
       x := lRandom.Random();
       Utilities.SpinLockExit(var fRandomLock);
       exit 0;
+    end;
+
+    [SymbolName('system')]
+    class method system(aVal: ^AnsiChar): Integer;
+    begin
+      var lCmd := String.FromPAnsiChars(aVal).Trim;
+      var lArgs := new List<String>;
+      while length(lCmd) > 0 do begin
+        if lCmd[0] ='"' then begin
+          var n := lCmd.IndexOf('"');
+          lArgs.Add(lCmd.Substring(1, -1));
+          lCmd := lCmd.Substring(n+1).Trim;
+        end else begin
+          var n := lCmd.IndexOf(' ');
+          lArgs.Add(lCmd.Substring(0, n));
+          lCmd := lCmd.Substring(n+1).Trim;
+        end;
+      end;
+      lCmd := lArgs.FirstOrDefault;
+      if lArgs.Count > 0 then lArgs.RemoveAt(0);
+      exit Process.Run(lCmd, lArgs, out var lStdOut, out var lStdErr);
+    end;
+    [SymbolName('_getcwd')]
+    class method _getcwd(aDest: ^AnsiChar; aLen: Integer): ^AnsiChar;
+    begin
+      var lDir := Environment.CurrentDirectory.ToAnsiChars;
+      if length(lDir) +1 > aLen then exit nil;
+      strncpy(aDest, @lDir[0], lDir.Length + 1);
+      exit aDest;
+    end;
+
+    [SymbolName('_chdir')]
+    class method _chdir(aDest: ^AnsiChar): Integer;
+    begin
+      exit Integer(rtl.SetCurrentDirectoryA(String.FromPAnsiChars(aDest)));
+    end;
+
+    [SymbolName('strpbrk')]
+    class method strpbrk(str1, str2: ^AnsiChar): ^AnsiChar;
+    begin
+      while str1^ <> #0 do begin
+        var lTest := str2;
+        while lTest^ <> #0 do begin
+          if lTest^ = str1^ then exit str1;
+          inc(lTest);
+        end;
+      end;
+      exit nil;
+    end;
+
+    end;
+
+    [SymbolName('strncpy')]
+    class method strncpy(aDest, aSrc: ^AnsiChar; n: Integer): ^AnsiChar;
+    begin
+      while (n > 0) and (aSrc^ <> #0) do begin
+        aDest^ := aSrc^;
+        aDest := aDest + 1;
+        aSrc := aSrc + 1;
+        dec(n);
+      end;
+      while n > 0 do begin
+        aDest^ := #0;
+        aDest  := aDest + 1;
+        dec(n);
+      end;
+      result := aDest;
+    end;
+
+    [SymbolName('strchr')]
+    class method strchr(str: ^AnsiChar; c: Integer): ^AnsiChar;
+    begin
+      while str^ <> #0 do begin
+        if Integer(str^) = c then exit str;
+      end;
+      exit nil;
+    end;
+
+    [SymbolName('strrchr')]
+    class method strrchr(str: ^AnsiChar; c: Integer): ^AnsiChar;
+    begin
+      var lHit: ^AnsiChar := nil;
+      while str^ <> #0 do begin
+        if Integer(str^) = c then lHit := str;
+      end;
+      exit lHit;
+    end;
+
+    [SymbolName('srand')]
+    class method srand(val: UInt32);
+    begin
+      fRandom.Set(val);
     end;
 
     [SymbolName('_byteswap_ulong')]

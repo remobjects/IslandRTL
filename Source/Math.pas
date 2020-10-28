@@ -116,7 +116,7 @@ type
     [SymbolName('pow')]
     class method Pow(x, y: Double): Double;
     [SymbolName('round')]
-    class method Round(a: Double): Int64;
+    class method Round(a: Double): Double;
     class method Sign(d: Double): Integer;
     [SymbolName('sin')]
     class method Sin(x: Double): Double;
@@ -330,9 +330,9 @@ begin
 end;
 
 class method Math.Floor(d: Single): Single;
-begin 
+begin
   var xi := Integer(d);
-  if d < xi then 
+  if d < xi then
     exit xi -1;
   exit xi;
 end;
@@ -420,11 +420,11 @@ end;
 
 
 class method Math.Pow(x: Double; y: Integer): Double;
-begin  
-  if y >= 0 then 
+begin
+  if y >= 0 then
     exit IntPow(x, y)
   else
-    exit 1.0 / IntPow(x, -y); 
+    exit 1.0 / IntPow(x, -y);
 end;
 
 class method Math.Pow(x, y: Double): Double;
@@ -435,22 +435,22 @@ begin
     exit Exp(y * Log(x));
 end;
 
-class method Math.Round(a: Double): Int64;
+class method Math.Round(a: Double): Double;
 begin
   var p := a mod 1;
-  if p = 0 then exit Int64(a);
+  if p = 0 then exit Double(a);
   var p1 := Abs(p);
-  if p1 < 0.5 then exit Int64(a - p);
-  if p1 > 0.5 then exit Int64(a - p) + if a<0 then -1 else 1;
+  if p1 < 0.5 then exit Double(a - p);
+  if p1 > 0.5 then exit Double(a - p) + if a<0 then -1 else 1;
   //special case, p1 = 0.5
   //12.5 => 12 and 11.5 => 12
   //-12.5 => -12 and -11.5 => -12
   var d1 := a + if a<0 then -0.5 else 0.5;
   if d1 mod 2 <> 0 then begin
-    exit Int64(d1) - if a<0 then -1 else 1
+    exit Double(d1) - if a<0 then -1 else 1
   end
   else
-    exit Int64(d1);
+    exit Double(d1);
 end;
 
 class method Math.Sin(x: Double): Double;
@@ -476,7 +476,7 @@ end;
 
 class method Math.Sqrt(d: Double): Double;
 begin
-  exit Exp2((0.5 * Log(d))/ln2); // Pow(d, 0.5) = Exp(0.5 * Log(d)) = Exp2((0.5 * Log(d))/ln2);  
+  exit Exp2((0.5 * Log(d))/ln2); // Pow(d, 0.5) = Exp(0.5 * Log(d)) = Exp2((0.5 * Log(d))/ln2);
 end;
 
 class method Math.Tan(d: Double): Double;
@@ -512,10 +512,10 @@ end;
 
 
 class method Math.fmodf(x,y: Single): Single;
-begin 
+begin
   exit Math.fmod(x, y);
 end;
-    
+
 class method Math.IntPow(x: Double; y: Integer): Double;
 begin
   if y = 0 then exit 1.0;
@@ -527,7 +527,7 @@ begin
     res := res*res;
     y := y shr 1;
   end;
-  res := IntPow(res, y); 
+  res := IntPow(res, y);
   if fl then res := res * x;
   exit res;
 end;

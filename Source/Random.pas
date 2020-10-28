@@ -33,6 +33,15 @@ type
       memcpy(@state, @aSeedData[0], 16 * 4);
     end;
 
+    method &Set(aVal: Cardinal);
+    begin
+      state[0] := aVal;
+      // This needs to be better but this at should work.
+      for i: Integer := 1 to 15 do begin
+        state[i] := state[i-1] xor ((i shl (24 + (i and 5))) xor (i shl 7) xor (i shl 6) xor (i shr 2));
+      end;
+    end;
+
     method Random: Cardinal;
     begin
       var a: Cardinal;
