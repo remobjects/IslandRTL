@@ -593,8 +593,6 @@ type
       exit nil;
     end;
 
-    end;
-
     [SymbolName('strncpy')]
     class method strncpy(aDest, aSrc: ^AnsiChar; n: Integer): ^AnsiChar;
     begin
