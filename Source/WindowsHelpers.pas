@@ -1058,7 +1058,8 @@ end;
 class method ExternalCalls.realloc(ptr: ^Void; size: NativeInt): ^Void;
 begin
   if processheap = nil then processheap := rtl.GetProcessHeap;
-
+  if ptr = nil then
+    exit rtl.HeapAlloc(processheap, 0, size);
   exit rtl.HeapReAlloc(processheap, 0, ptr, size);
 end;
 
