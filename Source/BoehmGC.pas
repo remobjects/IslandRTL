@@ -124,6 +124,9 @@ type
     class method LocalGC; private;
     begin
       fLocal := true;
+      {$IF MACOS AND ARM64}
+      GC_set_pages_executable(0);
+      {$ENDIF}
       GC_init;
       GC_allow_register_threads();
       fSharedMemory.collect := @GC_gcollect;
