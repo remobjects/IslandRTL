@@ -26,6 +26,9 @@
     End Function
 
     Public Sub SetEvent(element As HTMLElement, EventName As String, del As EventDelegate)
+      If Not assigned(element) Then
+        Throw New ArgumentException("Element cannot be nil")
+      End If
       ClearEvent(element, EventName)
       If del IsNot Nothing then
         Dim Id As String = NextId.ToString
@@ -37,12 +40,15 @@
     End Sub
 
     Public Sub ClearEvent(element As HTMLElement, EventName As String)
-        dim id As String = element.getAttribute(EventName.ToLower)
-        If assigned(id) then
-          EventIds.Remove(id)
-          EventSource.Remove(id)
-          element.setAttribute(EventName.ToLower, "")
-        End If
+      If Not assigned(element) Then
+        Throw New ArgumentException("Element cannot be nil")
+      End If
+      dim id As String = element.getAttribute(EventName.ToLower)
+      If assigned(id) then
+        EventIds.Remove(id)
+        EventSource.Remove(id)
+        element.setAttribute(EventName.ToLower, "")
+      End If
     End Sub
 
     Public Function GetEventDelegate(Id As String) As EventDelegate
