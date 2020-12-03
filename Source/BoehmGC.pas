@@ -124,7 +124,7 @@ type
     class method LocalGC; private;
     begin
       fLocal := true;
-      {$IF MACOS AND ARM64}
+      {$IF DARWIN}
       GC_set_pages_executable(0);
       {$ENDIF}
       GC_init;
