@@ -141,7 +141,7 @@ type
     [SymbolName('__stdio_common_vfprintf')]
     class method ___stdio_common_vfprintf(
     _Options: UInt64;
-    _Stream: ^FILE;
+    _Stream: ^File;
     _Format: ^AnsiChar;
     _Locale: ^Void;
     _ArgList: ^Void): Integer;
