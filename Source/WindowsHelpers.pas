@@ -366,9 +366,11 @@ type
     {$IFDEF _WIN64}
     [SymbolName('_elements_exception_handler'), DisableInliningAttribute] // 32bits windows only!!
     method ExceptionHandler(arec: ^rtl.EXCEPTION_RECORD; EstablisherFrame: UInt64; context: rtl.PCONTEXT; dispatcher: rtl.PDISPATCHER_CONTEXT ): Integer;
-    {$ELSE}
+    {$ELSEIF i386}
     [SymbolName('_elements_exception_handler'), CallingConvention(CallingConvention.Stdcall), DisableInliningAttribute] // 32bits windows only!!
     method ExceptionHandler([InReg]inmsvcinfo: ^MSVCExceptionInfo; arec: ^rtl.EXCEPTION_RECORD; aOrgregFrame: ^ElementsRegistrationFrame; context: rtl.PCONTEXT; dispatcher: ^Void): Integer;
+    {$ELSE}
+    {$ERROR Unsupported Architecture}
     {$ENDIF}
 
     [SymbolName('ElementsRaiseException'), DllExport]
@@ -377,7 +379,6 @@ type
     class property ModuleHandle: rtl.HMODULE read fModuleHandle;
 
     const ElementsExceptionCode = $E0428819;
-
 
     [SymbolName('fmaxf')]
     class method fmaxf(x, y: Single): Single;
@@ -458,14 +459,11 @@ type
       exit if x < y then x else y;
     end;
 
-
-
     [SymbolName('roundf')]
     class method roundf(x: Single): Single;
     begin
       exit Math.Round(x);
     end;
-
 
     [SymbolName('strcmp')]
     class method strcmp(a, b: ^AnsiChar): Integer;
@@ -791,7 +789,7 @@ var
   [Used, SymbolName('_load_config_used'), StaticallyInitializedField]
   _load_config_used: rtl.IMAGE_LOAD_CONFIG_DIRECTORY :=
     new rtl.IMAGE_LOAD_CONFIG_DIRECTORY(
-    size := sizeOf(rtl.IMAGE_LOAD_CONFIG_DIRECTORY),
+    Size := sizeOf(rtl.IMAGE_LOAD_CONFIG_DIRECTORY),
     SecurityCookie := UIntPtr(^UIntPtr(@__security_cookie)),
     //GuardCFCheckFunctionPointer := UIntPtr(^UIntPtr(@__guard_check_icall_fptr)),
     //GuardCFDispatchFunctionPointer := UIntPtr(^UIntPtr(@__guard_dispatch_icall_fptr)),
@@ -803,7 +801,7 @@ var
     GuardLongJumpTargetTable := UIntPtr(^UIntPtr(@__guard_longjmp_table)),
     GuardLongJumpTargetCount := UIntPtr(^UIntPtr(@__guard_longjmp_count))
     ); readonly; public;
-  {$else}
+  {$ELSEIF i386}
   [Used, SymbolName('_load_config_used'), StaticallyInitializedField]
   _load_config_used: rtl.IMAGE_LOAD_CONFIG_DIRECTORY :=
     new rtl.IMAGE_LOAD_CONFIG_DIRECTORY(
@@ -821,6 +819,8 @@ var
     GuardLongJumpTargetTable := UIntPtr(^UIntPtr(@__guard_longjmp_table)),
     GuardLongJumpTargetCount := UIntPtr(^UIntPtr(@__guard_longjmp_count))
     ); readonly; public;
+  {$ELSE}
+    {.$ERROR Unsupported Architecture}
   {$ENDIF}
 
   [SymbolName('__security_cookie'), StaticallyInitializedField] var __security_cookie: Integer := $12345678;
@@ -1110,7 +1110,7 @@ class method ExternalCalls.uint64remainder(dividend, divisor: UInt64): UInt64;
 begin
   if divisor = dividend then exit 0;
   if divisor = 0 then begin
-    {$message hint throw!}
+    {$HINT throw!}
     exit 0;
   end;
   if divisor > dividend then
@@ -1137,7 +1137,7 @@ class method ExternalCalls.int64remainder(dividend, divisor: Int64): Int64;
 begin
   if divisor = dividend then exit 0;
   if divisor = 0 then begin
-    {$message hint throw!}
+    {$HINT throw!}
     exit 0;
   end;
   var rem: UInt64 := dividend;
@@ -1168,7 +1168,7 @@ class method ExternalCalls.uint64divide(dividend, divisor: UInt64): UInt64;
 begin
   if divisor = dividend then exit 1;
   if divisor = 0 then begin
-    {$message hint throw!}
+    {$HINT throw!}
     exit 0;
   end;
   if divisor > dividend then
@@ -1195,7 +1195,7 @@ class method ExternalCalls.int64divide(dividend, divisor: Int64): Int64;
 begin
   if divisor = dividend then exit 1;
   if divisor = 0 then begin
-    {$message hint throw!}
+    {$HINT throw!}
     exit 0;
   end;
   var rem: UInt64 := dividend;
@@ -1298,7 +1298,7 @@ done:
 ", "", false, false);
 {$ELSE}
 // This version is dual licensed under the MIT and the University of Illinois Open Source Licenses. See LICENSE.TXT for details; from the llvm compiler-RT project.
-InternalCalls.voidasm(
+InternalCalls.VoidAsm(
 "
       push   %rcx
       push   %rax
@@ -1318,6 +1318,8 @@ done:
         pop    %rcx
         ret
 ", "", false, false);
+//{$ELSE}
+  //{$ERROR Unsupported Architecture}
 {$ENDIF}
 end;
 
@@ -1344,8 +1346,6 @@ begin
   {$ENDIF}
 end;
 
-
-
 {$IFDEF _WIN64}
 [InlineAsm("
 pushq %rbp
@@ -1357,7 +1357,7 @@ popq %rbp
 retq
 ", "", false, false), DisableInlining, DisableOptimizations, LinkOnce]
 method CallCatch64(aCall: NativeInt; aEBP: NativeInt): NativeInt; external;
-{$ELSE}
+{$ELSEIF i386}
 [DisableInlining]
 method CallCatch32(aCall: NativeInt; aEBP: NativeInt): NativeInt;
 begin
@@ -1366,6 +1366,8 @@ movl $2, %ebp
 calll *$1
 ", "=A,r,r,~{esi},~{ebx},~{edi}~{ebp},~{dirflag},~{fpsr},~{flags}", false, false, aCall, aEBP);
 end;
+{$ELSE}
+  {$ERROR Unsupported Architecture}
 {$ENDIF}
 
 {$IFNDEF _WIN64}
@@ -1386,7 +1388,8 @@ begin
   if TargetFrame = 0 then // KEEP! This forces it to be linked in, without this call it disapears!
     rtl.RtlUnwind(^Void(TargetFrame), ^Void(TargetIp), rtl.PEXCEPTION_RECORD(ExceptionRecord), ^Void(ReturnValue));
   exit;
-end;{$ENDIF}
+end;
+{$ENDIF}
 
 {$IFDEF _WIN64}
 [InlineAsm("
@@ -1395,7 +1398,7 @@ end;{$ENDIF}
     jmpq *%rcx
 ", "", false, false), DisableInlining, DisableOptimizations]
 method JumpToContinuation64(aAddress, aESP, aEBP: NativeInt); external;
-{$ELSE}
+{$ELSEIF I386}
 (*[InlineAsm("
     movl 12(%esp), %ebp
     movl 4(%esp), %eax
@@ -1412,11 +1415,11 @@ begin
     jmpl *%eax
   ", "r,r,r,~{ebp},~{esp},~{esp},~{dirflag},~{fpsr},~{flags}", false, false, aAddress, aESP, aEBP);
 end;
+{$ELSE}
+  {$ERROR Unsupported Architecture}
 {$ENDIF}
+
 {$IFDEF _WIN64}
-
-
-
 method GetMapIndex(aIP: NativeUInt; dispatcher: rtl.PDISPATCHER_CONTEXT): Integer;
 begin
   var msvcinfo := ^MSVCExceptionInfo(dispatcher^.ImageBase + ^Int32(dispatcher^.HandlerData)^);
@@ -1513,7 +1516,7 @@ begin
   end;
   result := 1;
 end;
-{$ELSE}
+{$ELSEIF i386}
 method ExternalCalls.ExceptionHandler(inmsvcinfo: ^MSVCExceptionInfo; arec: ^rtl.EXCEPTION_RECORD; aOrgregFrame: ^ElementsRegistrationFrame; context: rtl.PCONTEXT; dispatcher: ^Void): Integer;
 begin
   var msvcinfo := inmsvcinfo;
@@ -1571,6 +1574,8 @@ begin
     end;
   end;
 end;
+{$ELSE}
+  {$ERROR Unsupported Architecture}
 {$ENDIF}
 
 method ExternalCalls.wcslen(c: ^Char): Integer;
