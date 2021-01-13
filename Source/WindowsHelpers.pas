@@ -355,10 +355,11 @@ type
     class method uint64divide(dividend, divisor: UInt64): UInt64;
     [SymbolName(#1'__alldiv'), CallingConvention(CallingConvention.Stdcall), Used]
     class method int64divide(dividend, divisor: Int64): Int64;
-    {$IFDEF _WIN64}
+
+    {$IF _WIN64}
     [SymbolName('_setjmp'), Naked, DisableOptimizations, DisableInliningAttribute]
     class method setjmp(var buf: rtl.jmp_buf);
-    {$ELSE}
+    {$ELSEIF i386}
     [SymbolName('_setjmp3'), Naked, DisableOptimizations, DisableInliningAttribute]
     class method setjmp3(var buf: rtl.jmp_buf; var ctx: ^Void);
     {$ENDIF}
@@ -1223,9 +1224,12 @@ begin
   exit q;
 end;
 
-{$IFDEF _WIN64}
+{$IF _WIN64}
 class method ExternalCalls.setjmp(var buf: rtl.jmp_buf); // Odds are this has some mistakes
 begin
+  {$IF _M_ARM64}
+  raise new NotImplementedException("setjmp is not implemented yet for arm64");
+  {$ELSE}
   InternalCalls.VoidAsm(
     "
     //movl %rbp, (%rcx)  // What is frame?
@@ -1252,10 +1256,9 @@ begin
     movups %xmm15, +240(%rcx)
     // there's also: EPI, Registration, TryLevel, Cookie, UnwindFunc, Unwinddata, but libgc doesn't need those.
     xor %rax,%rax", "", false, false);
+    {$ENDIF}
 end;
-{$ENDIF}
-
-{$IFNDEF _WIN64}
+{$ELSEIF i386}
 class method ExternalCalls.setjmp3(var buf: rtl.jmp_buf; var ctx: ^Void); // Odds are this has some mistakes
 begin
   InternalCalls.VoidAsm(
@@ -1270,57 +1273,61 @@ begin
     // there's also: EPI, Registration, TryLevel, Cookie, UnwindFunc, Unwinddata, but libgc doesn't need those.
     xor %eax,%eax", "", false, false);
 end;
+{$ELSE}
+  {$ERROR Unsupported Architecture}
 {$ENDIF}
 
 class method ExternalCalls._chkstk;
 begin
-{$IFNDEF _WIN64}
-InternalCalls.VoidAsm(
-"
-  push %ecx  // save EcX as the caller doesn't expect ANY changes to registers, except EAX which holds the nr of bytes
-  leal 4(%esp), %ecx // top of the stack after returning from this function
-  cmpl $$0x1000, %eax
-  jb done // if below 4096, done
-loop:
-  subl $$0x1000, %eax  // decrease the count by 4096
-  subl $$0x1000, %ecx  // decrease (ie grow) the stack bt 4096
-  testl %ecx, (%ecx) // touch it
-  cmpl $$0x1000, %eax
-  jae loop // if above or equal to 4096, loop
-done:
-  xchg %eax, %ecx
-  subl %ecx, %eax
-  movl 4(%esp), %ecx // store the original top of stack in ecx
-  movl %ecx, (%eax) // place it back at the top of the new stack
-  movl (%esp), %ecx // restore ecx
-  movl %eax, %esp
-  ret
-", "", false, false);
-{$ELSE}
-// This version is dual licensed under the MIT and the University of Illinois Open Source Licenses. See LICENSE.TXT for details; from the llvm compiler-RT project.
-InternalCalls.VoidAsm(
-"
-      push   %rcx
-      push   %rax
-      cmp    $$0x1000,%rax
-      lea    24(%rsp),%rcx
-      jb     done
-loop:
-        sub    $$0x1000,%rcx
-        test   %rcx,(%rcx)
-        sub    $$0x1000,%rax
+  {$IF _M_ARM64}
+    raise new NotImplementedException("_chkstk is not implemented yet for arm64");
+  {$ELSEIF X86_64}
+  // This version is dual licensed under the MIT and the University of Illinois Open Source Licenses. See LICENSE.TXT for details; from the llvm compiler-RT project.
+  InternalCalls.VoidAsm(
+  "
+        push   %rcx
+        push   %rax
         cmp    $$0x1000,%rax
-        ja     loop
-done:
-        sub    %rax,%rcx
-        test   %rcx,(%rcx)
-        pop    %rax
-        pop    %rcx
-        ret
-", "", false, false);
-//{$ELSE}
-  //{$ERROR Unsupported Architecture}
-{$ENDIF}
+        lea    24(%rsp),%rcx
+        jb     done
+  loop:
+          sub    $$0x1000,%rcx
+          test   %rcx,(%rcx)
+          sub    $$0x1000,%rax
+          cmp    $$0x1000,%rax
+          ja     loop
+  done:
+          sub    %rax,%rcx
+          test   %rcx,(%rcx)
+          pop    %rax
+          pop    %rcx
+          ret
+  ", "", false, false);
+  {$ELSEIF I386}
+  InternalCalls.VoidAsm(
+  "
+    push %ecx  // save EcX as the caller doesn't expect ANY changes to registers, except EAX which holds the nr of bytes
+    leal 4(%esp), %ecx // top of the stack after returning from this function
+    cmpl $$0x1000, %eax
+    jb done // if below 4096, done
+  loop:
+    subl $$0x1000, %eax  // decrease the count by 4096
+    subl $$0x1000, %ecx  // decrease (ie grow) the stack bt 4096
+    testl %ecx, (%ecx) // touch it
+    cmpl $$0x1000, %eax
+    jae loop // if above or equal to 4096, loop
+  done:
+    xchg %eax, %ecx
+    subl %ecx, %eax
+    movl 4(%esp), %ecx // store the original top of stack in ecx
+    movl %ecx, (%eax) // place it back at the top of the new stack
+    movl (%esp), %ecx // restore ecx
+    movl %eax, %esp
+    ret
+  ", "", false, false);
+  {$ELSE}
+    {$ERROR Unsupported Architecture}
+  {$ENDIF}
 end;
 
 class method ExternalCalls._wassert;
@@ -1346,7 +1353,12 @@ begin
   {$ENDIF}
 end;
 
-{$IFDEF _WIN64}
+{$IF _M_ARM64}
+method CallCatch64(aCall: NativeInt; aEBP: NativeInt): NativeInt;
+begin
+  raise new NotImplementedException("CallCatch64 is not implemented yet for arm64");
+end;
+{$ELSEIF X86_64}
 [InlineAsm("
 pushq %rbp
 movq %rdx, %rbp
@@ -1370,7 +1382,7 @@ end;
   {$ERROR Unsupported Architecture}
 {$ENDIF}
 
-{$IFNDEF _WIN64}
+{$IF I386}
 [DisableInlining, DisableOptimizations, LinkOnce]
 method MyRtlUnwind(TargetFrame: IntPtr; TargetIp: IntPtr; ExceptionRecord: IntPtr; ReturnValue: IntPtr);
 begin
@@ -1391,7 +1403,12 @@ begin
 end;
 {$ENDIF}
 
-{$IFDEF _WIN64}
+{$IF _M_ARM64}
+method JumpToContinuation64(aAddress, aESP, aEBP: NativeInt);
+begin
+  raise new NotImplementedException("JumpToContinuation64 is not implemented yet for arm64");
+end;
+{$ELSEIF X86_64}
 [InlineAsm("
     movq %r8, %rbp
     movq %rdx, %rsp
@@ -1505,10 +1522,17 @@ begin
             if (lCatchOffset <> 0) then
               ^Exception(EstablisherFrame + lCatchOffset)^ := exo;
             var cond := htt^.Filter;
-            if (cond = nil) or (cond(^Void({$IF ARM64)context^.sp{$ELSE}context^.rsp{$ENDIF}))) then begin
+            {$IF _M_ARM64} // workaround for 85424: Oxygene: bad error for {IFDEF}
+            if (cond = nil) or (cond(^Void(context^.Sp))) then begin
               result := 0;
               CallCatch(tb, ht, arec, EstablisherFrame, context, dispatcher);
             end;
+            {$ELSE}
+            if (cond = nil) or (cond(^Void(context^.Rsp))) then begin
+              result := 0;
+              CallCatch(tb, ht, arec, EstablisherFrame, context, dispatcher);
+            end;
+            {$ENDIF}
           end;
         end;
       end;
