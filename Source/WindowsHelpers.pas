@@ -1505,7 +1505,7 @@ begin
             if (lCatchOffset <> 0) then
               ^Exception(EstablisherFrame + lCatchOffset)^ := exo;
             var cond := htt^.Filter;
-            if (cond = nil) or (cond(^Void(context^.Rsp))) then begin
+            if (cond = nil) or (cond(^Void({$IF ARM64)context^.sp{$ELSE}context^.rsp{$ENDIF}))) then begin
               result := 0;
               CallCatch(tb, ht, arec, EstablisherFrame, context, dispatcher);
             end;
