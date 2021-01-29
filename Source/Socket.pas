@@ -289,14 +289,14 @@ end;
 
 {$IF WINDOWS}
 type
-sockaddr_in6 = record
-public
-  sin6_family: rtl.USHORT;
-  sin6_port: rtl.USHORT;
-  sin6_flowinfo: rtl.ULONG;
-  sin6_addr: rtl.IN6_ADDR;
-  sin6_scope_id: rtl.ULONG;
-end;
+  sockaddr_in6 = record
+  public
+    sin6_family: rtl.USHORT;
+    sin6_port: rtl.USHORT;
+    sin6_flowinfo: rtl.ULONG;
+    sin6_addr: rtl.IN6_ADDR;
+    sin6_scope_id: rtl.ULONG;
+  end;
 {$ENDIF}
 
 class method IPAddress.TryParseIPV6(ipString: String; out address: IPAddress): Boolean;

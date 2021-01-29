@@ -1,16 +1,14 @@
 ﻿namespace RemObjects.Elements.System;
 
-type
+[assembly: NamespaceAlias('System', ['RemObjects.Elements.System'])]
 
+type
   DebugExceptionCallback = public procedure (data: ^Void; ex: IntPtr);
   DebugInvokeCallback = public procedure (data: ^Void);
 
-
-[assembly: NamespaceAlias('System', ['RemObjects.Elements.System'])]
-
   Utilities = public static class
-  private
   public
+
     [SymbolName('__island_debug_invoke'), Used, DllExport]
     method DebugInvoke(data: ^Void; invk: DebugInvokeCallback; ex: DebugExceptionCallback);
     begin
@@ -113,7 +111,6 @@ type
 
     const FinalizerIndex = 4 + {$IFDEF I386}4{$ELSE}2{$ENDIF};
 
-
     [SymbolName('__newdelegate')]
     //[SkipDebug]
     class method NewDelegate(aTY: ^Void; aSelf: Object; aPtr: ^Void): &Delegate;
@@ -123,7 +120,6 @@ type
       result.fPtr := aPtr;
     end;
 
-
     [SymbolName('__newarray')]
     //[SkipDebug]
     class method NewArray(aTY: ^Void; aElementSize, aElements: NativeInt): ^Void;
@@ -131,7 +127,6 @@ type
       result := DefaultGC.New(aTY, sizeOf(^Void) + sizeOf(NativeInt) + aElementSize * aElements);
       (@InternalCalls.Cast<&Array>(result).fLength)^ := aElements;
     end;
-
 
     [SymbolName('__init')]
     class method Initialize;
@@ -157,7 +152,6 @@ type
       var s := aObj:ToString():ToCharArray(true);
       exit @s[0];
     end;
-
 
     {$IFDEF DARWIN}
     [SymbolName('CocoaObjectToString'), Used]
@@ -271,7 +265,7 @@ type
   // Intrinsics
   InternalCalls = public static class
   public
-{$IFDEF WINDOWS}
+    {$IFDEF WINDOWS}
     // Read the FS register at offset N
     class method ReadFS8(off: NativeInt): Byte; external;
     class method ReadFS16(off: NativeInt): Word; external;
@@ -282,7 +276,7 @@ type
     class method ReadGS16(off: NativeInt): Word; external;
     class method ReadGS32(off: NativeInt): UInt32; external;
     class method ReadGS64(off: NativeInt): UInt64; external;
-{$ENDIF}
+    {$ENDIF}
     // Returns the raw typeinfo for T
     class method GetTypeInfo<T>(): ^Void; external;
     class method GetIslandTypeInfo<T>(): ^Void; external;
@@ -344,7 +338,6 @@ type
     class method CompareExchange(var address: NativeUInt; value, compare: NativeUInt): NativeUInt; external;
     class method CompareExchange<T>(var address: T; value, compare: T): T; external;
 
-
     // Exchanges the value at address with value, returns the old value.
     class method Exchange(var address: Int64; value: Int64): Int64; external;
     class method Exchange(var address: Int32; value: Int32): Int32; external;
@@ -391,7 +384,6 @@ begin
   exit InternalCalls.Add(var x, increment);
 end;
 
-
 method interlockedInc(var x: Int64; increment: Int64 := 1): Int64;  inline; public;
 begin
   exit InternalCalls.Add(var x, increment);
@@ -401,8 +393,6 @@ method interlockedInc(var x: IntPtr; increment: IntPtr := 1): IntPtr;  inline; p
 begin
   exit InternalCalls.Add(var x, increment);
 end;
-
-
 
 method interlockedDec(var x: Integer; increment: Integer := 1): Integer;  inline; public;
 begin
@@ -420,7 +410,6 @@ begin
   exit InternalCalls.Add(var x, 0 - increment);
 end;
 
-
 method interlockedCompareExchange(var x: Integer; compareTo, newValue: Integer): Integer; inline; public;
 begin
   exit InternalCalls.CompareExchange(var x, newValue, compareTo);
@@ -435,7 +424,6 @@ method interlockedCompareExchange(var x: Integer; compareTo, newValue: IntPtr): 
 begin
   exit InternalCalls.CompareExchange(var x, newValue, compareTo);
 end;
-
 
 {$G+}
 method GC_finalizer(obj, d: ^Void); assembly;
@@ -455,7 +443,6 @@ begin
   exit rtl.memcpy(destination, source, num);
   {$ENDIF}
 end;
-
 
 method memcmp(a: ^Void; b: ^Void; num: NativeInt): Integer; public;inline;
 begin
@@ -510,6 +497,5 @@ begin
     b := b shr 1;
   end;
 end;
-
 
 end.
