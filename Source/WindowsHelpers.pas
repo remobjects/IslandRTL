@@ -1227,7 +1227,7 @@ end;
 {$IF _WIN64}
 class method ExternalCalls.setjmp(var buf: rtl.jmp_buf); // Odds are this has some mistakes
 begin
-  {$IF _M_ARM64}
+  {$IF ARM64}
   raise new NotImplementedException("setjmp is not implemented yet for arm64");
   {$ELSE}
   InternalCalls.VoidAsm(
@@ -1279,7 +1279,7 @@ end;
 
 class method ExternalCalls._chkstk;
 begin
-  {$IF _M_ARM64}
+  {$IF ARM64}
     raise new NotImplementedException("_chkstk is not implemented yet for arm64");
   {$ELSEIF X86_64}
   // This version is dual licensed under the MIT and the University of Illinois Open Source Licenses. See LICENSE.TXT for details; from the llvm compiler-RT project.
@@ -1353,7 +1353,7 @@ begin
   {$ENDIF}
 end;
 
-{$IF _M_ARM64}
+{$IF ARM64}
 method CallCatch64(aCall: NativeInt; aEBP: NativeInt): NativeInt;
 begin
   raise new NotImplementedException("CallCatch64 is not implemented yet for arm64");
@@ -1403,7 +1403,7 @@ begin
 end;
 {$ENDIF}
 
-{$IF _M_ARM64}
+{$IF ARM64}
 method JumpToContinuation64(aAddress, aESP, aEBP: NativeInt);
 begin
   raise new NotImplementedException("JumpToContinuation64 is not implemented yet for arm64");
@@ -1522,7 +1522,7 @@ begin
             if (lCatchOffset <> 0) then
               ^Exception(EstablisherFrame + lCatchOffset)^ := exo;
             var cond := htt^.Filter;
-            {$IF _M_ARM64} // workaround for 85424: Oxygene: bad error for {IFDEF}
+            {$IF ARM64} // workaround for 85424: Oxygene: bad error for {IFDEF}
             if (cond = nil) or (cond(^Void(context^.Sp))) then begin
               result := 0;
               CallCatch(tb, ht, arec, EstablisherFrame, context, dispatcher);
