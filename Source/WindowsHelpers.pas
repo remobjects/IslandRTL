@@ -355,8 +355,19 @@ type
     class method uint64divide(dividend, divisor: UInt64): UInt64;
     [SymbolName(#1'__alldiv'), CallingConvention(CallingConvention.Stdcall), Used]
     class method int64divide(dividend, divisor: Int64): Int64;
-
-    {$IF _WIN64}
+    {$IFDEF ARM64}
+    [SymbolName('__C_specific_handler')]
+    class method __C_specific_handler; empty;
+    [SymbolName('__stack_base__')]
+    class var __stack_base__: IntPtr := 0;
+    [SymbolName('_setjmpex'), Naked, DisableOptimizations, DisableInliningAttribute]
+    class method setjmpex(var buf: rtl.jmp_buf);
+    begin
+      var p: rtl.CONTEXT;
+      rtl.RtlCaptureContext(@p);
+      memcpy(@buf, @p, Math.Min(sizeOf(rtl.CONTEXT), sizeOf(rtl.jmp_buf)));
+    end;
+    {$ELSEIF _WIN64}
     [SymbolName('_setjmp'), Naked, DisableOptimizations, DisableInliningAttribute]
     class method setjmp(var buf: rtl.jmp_buf);
     {$ELSEIF i386}
@@ -1223,8 +1234,8 @@ begin
     exit -Int64(q);
   exit q;
 end;
-
-{$IF _WIN64}
+{$IFDEF ARM64}
+{$ELSEIF _WIN64}
 class method ExternalCalls.setjmp(var buf: rtl.jmp_buf); // Odds are this has some mistakes
 begin
   {$IF ARM64}
