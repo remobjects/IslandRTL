@@ -1,5 +1,13 @@
 ﻿namespace RemObjects.Elements.System
 {
+    public __extension class MemoryExtension<T>: Memory<T> {
+        public MemoryExtension(T value) 
+        {
+            var v = value;
+            return &v;
+        }
+    }
+    
 	public struct Memory<T> {
 		private Object inst;
 		private IntPtr offset;
