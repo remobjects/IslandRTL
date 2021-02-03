@@ -28,5 +28,9 @@
 		    x = value;
 		  }
 		}
+		public static bool operator null (Memory<T> a)
+		{
+			return a.offset == 0 && a.inst == null;
+		}
 	}
 }
