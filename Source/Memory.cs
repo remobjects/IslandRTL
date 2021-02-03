@@ -40,5 +40,15 @@
 		{
 			return a.offset == 0 && a.inst == null;
 		}
+        
+        public static bool operator == (Memory<T> a, Memory<T> b) 
+        {
+            return a.inst == b.inst && a.offset == b.offset;
+        }
+        
+        public static bool operator != (Memory<T> a, Memory<T> b) 
+        {
+            return !(a.inst == b.inst && a.offset == b.offset);
+        }
 	}
 }
