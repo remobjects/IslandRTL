@@ -1,5 +1,11 @@
 ﻿namespace RemObjects.Elements.System
 {
+    public interface IMemory
+    {
+        object GetValue();
+        void SetValue(object aValue);
+    }
+
     public __extension class MemoryExtension<T>: Memory<T> {
         public MemoryExtension(T value) 
         {
@@ -8,7 +14,7 @@
         }
     }
     
-	public struct Memory<T> {
+	public struct Memory<T>: IMemory {
 		private Object inst;
 		private IntPtr offset;
 
@@ -36,7 +42,18 @@
 		    x = value;
 		  }
 		}
-		public static bool operator null (Memory<T> a)
+
+        object GetValue()
+        {
+            return Value;
+        }
+
+        void SetValue(object aValue)
+        {
+            Value = (T)aValue;
+        }
+
+        public static bool operator null (Memory<T> a)
 		{
 			return a.offset == 0 && a.inst == null;
 		}
