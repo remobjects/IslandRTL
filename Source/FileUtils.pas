@@ -65,7 +65,7 @@ type
     class method Get__struct_stat(aFullName: String): ^rtl.__struct_stat;inline;
     begin
       var sb: rtl.__struct_stat;
-      CheckForIOError(rtl.stat(aFullName.ToFileName(),@sb));
+      rtl.stat(aFullName.ToFileName(), @sb);
       exit @sb;
     end;
     {$ENDIF}
