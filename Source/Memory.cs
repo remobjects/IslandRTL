@@ -1,5 +1,7 @@
 ﻿namespace RemObjects.Elements.System
 {
+	public class MemoryException: Exception { }
+	
     public interface IMemory
     {
         object GetValue();
@@ -17,7 +19,12 @@
 	public struct Memory<T>: IMemory {
 		private Object inst;
 		private IntPtr offset;
-
+		
+        private static void CheckMemorySpace(Memory<T> a, Memory<T> b)
+        {
+            if (a.inst != b.inst) throw new MemoryException("Can not compare items in different memory space");
+        }
+		
 		public Memory(Object inst, IntPtr offset)
 		{
 			this.inst = inst;
@@ -62,7 +69,31 @@
         {
             return a.inst == b.inst && a.offset == b.offset;
         }
+		
+        public static bool operator >= (Memory<T> a, Memory<T> b)
+        {
+            CheckMemorySpace(a, b);
+            return a.offset >= b.offset;
+        }
+
+        public static bool operator <= (Memory<T> a, Memory<T> b)
+        {
+            CheckMemorySpace(a, b);
+            return a.offset <= b.offset;
+        }
         
+        public static bool operator < (Memory<T> a, Memory<T> b)
+        {
+            CheckMemorySpace(a, b);
+            return a.offset < b.offset;
+        }
+
+        public static bool operator > (Memory<T> a, Memory<T> b)
+        {
+            CheckMemorySpace(a, b);
+            return a.offset > b.offset;
+        }
+		        
         public static bool operator != (Memory<T> a, Memory<T> b) 
         {
             return !(a.inst == b.inst && a.offset == b.offset);
