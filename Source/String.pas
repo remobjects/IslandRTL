@@ -928,7 +928,7 @@ begin
           sb.Append(' ', t);
         old_pos := cur_pos+1;
       end;
-      /*'}': begin
+      '}': begin
         if (cur_pos < aFormat.Length-1) and (aFormat[cur_pos+1] = '}') then begin
           sb.Append(aFormat, old_pos, cur_pos - old_pos+1);
           old_pos := cur_pos+1;
@@ -938,7 +938,7 @@ begin
         else begin
           RaiseError('format error');
         end;
-      end;*/
+      end;
     end;
     inc(cur_pos);
   end;
