@@ -1,8 +1,8 @@
-﻿'''<Summary>The SVGFEDropShadowElement interface corresponds to the &lt;feDropShadow> element.</Summary>
+﻿'''<summary>The SVGFEDropShadowElement interface corresponds to the &lt;feDropShadow> element.</summary>
 <DynamicInterface(GetType(EcmaScriptObject))>
 Public Interface [SVGFEDropShadowElement]
 Inherits SVGElement, SVGFilterPrimitiveStandardAttributes
 
-  '''<Summary>Sets the values for the stdDeviation attribute.</Summary>
+  '''<summary>Sets the values for the stdDeviation attribute.</summary>
   Function [setStdDeviation]() As Dynamic
 End Interface

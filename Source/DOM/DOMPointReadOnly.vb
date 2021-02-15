@@ -1,18 +1,18 @@
-﻿'''<Summary>The DOMPointReadOnly interface specifies the coordinate and perspective fields used by DOMPoint to define a 2D or 3D point in a coordinate system.</Summary>
+﻿'''<summary>The DOMPointReadOnly interface specifies the coordinate and perspective fields used by DOMPoint to define a 2D or 3D point in a coordinate system.</summary>
 <DynamicInterface(GetType(EcmaScriptObject))>
 Public Interface [DOMPointReadOnly]
-  '''<Summary>The point's horizontal coordinate, x.</Summary>
+  '''<summary>The point's horizontal coordinate, x.</summary>
   ReadOnly Property [x] As Double
-  '''<Summary>The point's vertical coordinate, y.</Summary>
+  '''<summary>The point's vertical coordinate, y.</summary>
   ReadOnly Property [y] As Double
-  '''<Summary>The point's depth coordinate, z.</Summary>
+  '''<summary>The point's depth coordinate, z.</summary>
   ReadOnly Property [z] As Double
-  '''<Summary>The point's perspective value, w.</Summary>
+  '''<summary>The point's perspective value, w.</summary>
   ReadOnly Property [w] As Double
-  '''<Summary>A static method that creates a new DOMPointReadOnly object given the coordinates provided in the specified DOMPointInit object.</Summary>
+  '''<summary>A static method that creates a new DOMPointReadOnly object given the coordinates provided in the specified DOMPointInit object.</summary>
   Property [fromPoint] As Dynamic
-  '''<Summary>Applies a matrix transform specified as a DOMMatrixInit object to the DOMPointReadOnly object.</Summary>
+  '''<summary>Applies a matrix transform specified as a DOMMatrixInit object to the DOMPointReadOnly object.</summary>
   Function [matrixTransform]() As Dynamic
-  '''<Summary>Returns a JSON representation of the DOMPointReadOnly object.</Summary>
+  '''<summary>Returns a JSON representation of the DOMPointReadOnly object.</summary>
   Function [toJSON]() As DOMPointInit
 End Interface

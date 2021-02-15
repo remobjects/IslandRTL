@@ -1,68 +1,68 @@
-﻿'''<Summary>The MediaTrackConstraints dictionary is used to describe a set of capabilities and the value or values each can take on. A constraints dictionary is passed into applyConstraints() to allow a script to establish a set of exact (required) values or ranges and/or preferred values or ranges of values for the track, and the most recently-requested set of custom constraints can be retrieved by calling getConstraints().</Summary>
+﻿'''<summary>The MediaTrackConstraints dictionary is used to describe a set of capabilities and the value or values each can take on. A constraints dictionary is passed into applyConstraints() to allow a script to establish a set of exact (required) values or ranges and/or preferred values or ranges of values for the track, and the most recently-requested set of custom constraints can be retrieved by calling getConstraints().</summary>
 <DynamicInterface(GetType(EcmaScriptObject))>
 Public Interface [MediaTrackConstraints]
-  '''<Summary>A ConstrainDOMString object specifying a device ID or an array of device IDs which are acceptable and/or required.</Summary>
+  '''<summary>A ConstrainDOMString object specifying a device ID or an array of device IDs which are acceptable and/or required.</summary>
   Property [deviceId] As Integer
-  '''<Summary>A ConstrainDOMString object specifying a group ID or an array of group IDs which are acceptable and/or required.</Summary>
+  '''<summary>A ConstrainDOMString object specifying a group ID or an array of group IDs which are acceptable and/or required.</summary>
   Property [groupId] As Integer
-  '''<Summary>A ConstrainBoolean object which specifies whether automatic gain control is preferred and/or required.</Summary>
+  '''<summary>A ConstrainBoolean object which specifies whether automatic gain control is preferred and/or required.</summary>
   Property [autoGainControl] As Dynamic
-  '''<Summary>A ConstrainLong specifying the channel count or range of channel counts which are acceptable and/or required.</Summary>
+  '''<summary>A ConstrainLong specifying the channel count or range of channel counts which are acceptable and/or required.</summary>
   Property [channelCount] As Double
-  '''<Summary>A ConstrainBoolean object specifying whether or not echo cancellation is preferred and/or required.</Summary>
+  '''<summary>A ConstrainBoolean object specifying whether or not echo cancellation is preferred and/or required.</summary>
   Property [echoCancellation] As Dynamic
-  '''<Summary>A ConstrainDouble specifying the latency or range of latencies which are acceptable and/or required.</Summary>
+  '''<summary>A ConstrainDouble specifying the latency or range of latencies which are acceptable and/or required.</summary>
   Property [latency] As Double
-  '''<Summary>A ConstrainBoolean which specifies whether noise suppression is preferred and/or required.</Summary>
+  '''<summary>A ConstrainBoolean which specifies whether noise suppression is preferred and/or required.</summary>
   Property [noiseSuppression] As Boolean
-  '''<Summary>A ConstrainLong specifying the sample rate or range of sample rates which are acceptable and/or required.</Summary>
+  '''<summary>A ConstrainLong specifying the sample rate or range of sample rates which are acceptable and/or required.</summary>
   Property [sampleRate] As Double
-  '''<Summary>A ConstrainLong specifying the sample size or range of sample sizes which are acceptable and/or required.</Summary>
+  '''<summary>A ConstrainLong specifying the sample size or range of sample sizes which are acceptable and/or required.</summary>
   Property [sampleSize] As Double
-  '''<Summary>A ConstrainDouble specifying the volume or range of volumes which are acceptable and/or required.</Summary>
+  '''<summary>A ConstrainDouble specifying the volume or range of volumes which are acceptable and/or required.</summary>
   Property [volume] As Double
-  '''<Summary>A String specifying one of "none", "manual", "single-shot", or "continuous".</Summary>
+  '''<summary>A String specifying one of "none", "manual", "single-shot", or "continuous".</summary>
   Property [whiteBalanceMode] As String
-  '''<Summary>A String specifying one of "none", "manual", "single-shot", or "continuous".</Summary>
+  '''<summary>A String specifying one of "none", "manual", "single-shot", or "continuous".</summary>
   Property [exposureMode] As String
-  '''<Summary>A String specifying one of "none", "manual", "single-shot", or "continuous".</Summary>
+  '''<summary>A String specifying one of "none", "manual", "single-shot", or "continuous".</summary>
   Property [focusMode] As String
-  '''<Summary>The pixel coordinates on the sensor of one or more points of interest. This is either an object in the form { x:value, y:value } or an array of such objects, where value  is a double-precision integer.</Summary>
+  '''<summary>The pixel coordinates on the sensor of one or more points of interest. This is either an object in the form { x:value, y:value } or an array of such objects, where value  is a double-precision integer.</summary>
   Property [pointsOfInterest] As Double
-  '''<Summary>A ConstrainDouble (a double-precision integer) specifying f-stop adjustment by up to ±3. </Summary>
+  '''<summary>A ConstrainDouble (a double-precision integer) specifying f-stop adjustment by up to ±3. </summary>
   Property [exposureCompensation] As Double
-  '''<Summary>A ConstrainDouble (a double-precision integer) specifying a desired color temperature in degrees kelvin.</Summary>
+  '''<summary>A ConstrainDouble (a double-precision integer) specifying a desired color temperature in degrees kelvin.</summary>
   Property [colorTemperature] As Double
-  '''<Summary>A ConstrainDouble (a double-precision integer) specifying a desired iso setting.</Summary>
+  '''<summary>A ConstrainDouble (a double-precision integer) specifying a desired iso setting.</summary>
   Property [iso] As Boolean
-  '''<Summary>A ConstrainDouble (a double-precision integer) specifying a desired brightness setting.</Summary>
+  '''<summary>A ConstrainDouble (a double-precision integer) specifying a desired brightness setting.</summary>
   Property [brightness] As Double
-  '''<Summary>A ConstrainDouble (a double-precision integer) specifying the degree of difference between light and dark.</Summary>
+  '''<summary>A ConstrainDouble (a double-precision integer) specifying the degree of difference between light and dark.</summary>
   Property [contrast] As Double
-  '''<Summary>A ConstrainDouble (a double-precision integer) specifying the degree of color intensity.</Summary>
+  '''<summary>A ConstrainDouble (a double-precision integer) specifying the degree of color intensity.</summary>
   Property [saturation] As Double
-  '''<Summary>A ConstrainDouble (a double-precision integer) specifying the intensity of edges.</Summary>
+  '''<summary>A ConstrainDouble (a double-precision integer) specifying the intensity of edges.</summary>
   Property [sharpness] As Double
-  '''<Summary>A ConstrainDouble (a double-precision integer) specifying distance to a focused object.</Summary>
+  '''<summary>A ConstrainDouble (a double-precision integer) specifying distance to a focused object.</summary>
   Property [focusDistance] As Double
-  '''<Summary>A ConstrainDouble (a double-precision integer) specifying the desired focal length.</Summary>
+  '''<summary>A ConstrainDouble (a double-precision integer) specifying the desired focal length.</summary>
   Property [zoom] As Double
-  '''<Summary>A Boolean defining whether the fill light is continuously connected, meaning it stays on as long as the track is active.</Summary>
+  '''<summary>A Boolean defining whether the fill light is continuously connected, meaning it stays on as long as the track is active.</summary>
   Property [torch] As Boolean
-  '''<Summary>A ConstrainDouble specifying the video aspect ratio or range of aspect ratios which are acceptable and/or required.</Summary>
+  '''<summary>A ConstrainDouble specifying the video aspect ratio or range of aspect ratios which are acceptable and/or required.</summary>
   Property [aspectRatio] As Double
-  '''<Summary>A ConstrainDOMString object specifying a facing or an array of facings which are acceptable and/or required.</Summary>
+  '''<summary>A ConstrainDOMString object specifying a facing or an array of facings which are acceptable and/or required.</summary>
   Property [facingMode] As String
-  '''<Summary>A ConstrainDouble specifying the frame rate or range of frame rates which are acceptable and/or required.</Summary>
+  '''<summary>A ConstrainDouble specifying the frame rate or range of frame rates which are acceptable and/or required.</summary>
   Property [frameRate] As Double
-  '''<Summary>A ConstrainLong specifying the video height or range of heights which are acceptable and/or required.</Summary>
+  '''<summary>A ConstrainLong specifying the video height or range of heights which are acceptable and/or required.</summary>
   Property [height] As Integer
-  '''<Summary>A ConstrainLong specifying the video width or range of widths which are acceptable and/or required.</Summary>
+  '''<summary>A ConstrainLong specifying the video width or range of widths which are acceptable and/or required.</summary>
   Property [width] As Integer
-  '''<Summary></Summary>
+  '''<Summary></summary>
   Property [cursor] As String
-  '''<Summary></Summary>
+  '''<Summary></summary>
   Property [displaySurface] As String
-  '''<Summary>A ConstrainBoolean value which may contain a single Boolean value or a set of them, indicating whether or not to allow the user to choose source surfaces which do not directly correspond to display areas. These may include backing buffers for windows to allow capture of window contents that are hidden by other windows in front of them, or buffers containing larger documents that need to be scrolled through to see the entire contents in their windows.</Summary>
+  '''<summary>A ConstrainBoolean value which may contain a single Boolean value or a set of them, indicating whether or not to allow the user to choose source surfaces which do not directly correspond to display areas. These may include backing buffers for windows to allow capture of window contents that are hidden by other windows in front of them, or buffers containing larger documents that need to be scrolled through to see the entire contents in their windows.</summary>
   Property [logicalSurface] As ConstrainBoolean
 End Interface

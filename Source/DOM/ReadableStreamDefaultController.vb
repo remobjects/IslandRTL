@@ -1,12 +1,12 @@
-﻿'''<Summary>The ReadableStreamDefaultController interface of the Streams API represents a controller allowing control of a ReadableStream's state and internal queue. Default controllers are for streams that are not byte streams. </Summary>
+﻿'''<summary>The ReadableStreamDefaultController interface of the Streams API represents a controller allowing control of a ReadableStream's state and internal queue. Default controllers are for streams that are not byte streams. </summary>
 <DynamicInterface(GetType(EcmaScriptObject))>
 Public Interface [ReadableStreamDefaultController]
-  '''<Summary>Returns the desired size required to fill the stream's internal queue.</Summary>
+  '''<summary>Returns the desired size required to fill the stream's internal queue.</summary>
   ReadOnly Property [desiredSize] As Integer
-  '''<Summary>Closes the associated stream.</Summary>
+  '''<summary>Closes the associated stream.</summary>
   Sub [close]()
-  '''<Summary>Enqueues a given chunk in the associated stream.</Summary>
+  '''<summary>Enqueues a given chunk in the associated stream.</summary>
   Sub [enqueue]([parchunk] As Dynamic)
-  '''<Summary>Causes any future interactions with the associated stream to error.</Summary>
+  '''<summary>Causes any future interactions with the associated stream to error.</summary>
   Sub [error]([pare] As Dynamic)
 End Interface

@@ -1,12 +1,12 @@
-﻿'''<Summary>The Plugin interface provides information about a browser plugin.</Summary>
+﻿'''<summary>The Plugin interface provides information about a browser plugin.</summary>
 <DynamicInterface(GetType(EcmaScriptObject))>
 Public Interface [Plugin]
-  '''<Summary>A human readable description of the plugin.</Summary>
+  '''<summary>A human readable description of the plugin.</summary>
   ReadOnly Property [description] As String
-  '''<Summary>The filename of the plugin file.</Summary>
+  '''<summary>The filename of the plugin file.</summary>
   ReadOnly Property [filename] As String
-  '''<Summary>The name of the plugin.</Summary>
+  '''<summary>The name of the plugin.</summary>
   ReadOnly Property [name] As String
-  '''<Summary>The plugin's version number string.</Summary>
+  '''<summary>The plugin's version number string.</summary>
   ReadOnly Property [version] As Dynamic
 End Interface

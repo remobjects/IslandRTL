@@ -1,8 +1,8 @@
-﻿'''<Summary>The UIEvent interface represents simple user interface events.</Summary>
+﻿'''<summary>The UIEvent interface represents simple user interface events.</summary>
 <DynamicInterface(GetType(EcmaScriptObject))>
 Public Interface [UIEvent]
-  '''<Summary>Returns a long with details about the event, depending on the event type.</Summary>
+  '''<summary>Returns a long with details about the event, depending on the event type.</summary>
   ReadOnly Property [detail] As Dynamic
-  '''<Summary>Returns a WindowProxy that contains the view that generated the event.</Summary>
+  '''<summary>Returns a WindowProxy that contains the view that generated the event.</summary>
   ReadOnly Property [view] As Window
 End Interface

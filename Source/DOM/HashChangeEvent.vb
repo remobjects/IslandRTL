@@ -1,8 +1,8 @@
-﻿'''<Summary>The HashChangeEvent interface represents events that fire when the fragment identifier of the URL has changed.</Summary>
+﻿'''<summary>The HashChangeEvent interface represents events that fire when the fragment identifier of the URL has changed.</summary>
 <DynamicInterface(GetType(EcmaScriptObject))>
 Public Interface [HashChangeEvent]
-  '''<Summary>The new URL to which the window is navigating.</Summary>
+  '''<summary>The new URL to which the window is navigating.</summary>
   ReadOnly Property [newURL] As String
-  '''<Summary>The previous URL from which the window was navigated.</Summary>
+  '''<summary>The previous URL from which the window was navigated.</summary>
   ReadOnly Property [oldURL] As String
 End Interface

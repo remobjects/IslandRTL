@@ -1,8 +1,8 @@
-﻿'''<Summary>The PageTransitionEvent event object is available inside handler functions for the pageshow and pagehide events, fired when a document is being loaded or unloaded.</Summary>
+﻿'''<summary>The PageTransitionEvent event object is available inside handler functions for the pageshow and pagehide events, fired when a document is being loaded or unloaded.</summary>
 <DynamicInterface(GetType(EcmaScriptObject))>
 Public Interface [PageTransitionEvent]
 Inherits [Event]
 
-  '''<Summary>Indicates if the document is loading from a cache.</Summary>
+  '''<summary>Indicates if the document is loading from a cache.</summary>
   ReadOnly Property [persisted] As Boolean
 End Interface

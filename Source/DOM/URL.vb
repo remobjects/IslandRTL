@@ -1,32 +1,32 @@
-﻿'''<Summary>The URL interface is used to parse, construct, normalize, and encode URLs. It works by providing properties which allow you to easily read and modify the components of a URL.</Summary>
+﻿'''<summary>The URL interface is used to parse, construct, normalize, and encode URLs. It works by providing properties which allow you to easily read and modify the components of a URL.</summary>
 <DynamicInterface(GetType(EcmaScriptObject))>
 Public Interface [URL]
-  '''<Summary>A USVString containing a '#' followed by the fragment identifier of the URL.</Summary>
+  '''<summary>A USVString containing a '#' followed by the fragment identifier of the URL.</summary>
   Property [hash] As String
-  '''<Summary>A USVString containing the domain (that is the hostname) followed by (if a port was specified) a ':' and the port of the URL.</Summary>
+  '''<summary>A USVString containing the domain (that is the hostname) followed by (if a port was specified) a ':' and the port of the URL.</summary>
   Property [host] As String
-  '''<Summary>A USVString containing the domain of the URL.</Summary>
+  '''<summary>A USVString containing the domain of the URL.</summary>
   Property [hostname] As String
-  '''<Summary>A stringifier that returns a USVString containing the whole URL.</Summary>
+  '''<summary>A stringifier that returns a USVString containing the whole URL.</summary>
   Property [href] As String
-  '''<Summary>Returns a USVString containing the origin of the URL, that is its scheme, its domain and its port.</Summary>
+  '''<summary>Returns a USVString containing the origin of the URL, that is its scheme, its domain and its port.</summary>
   ReadOnly Property [origin] As String
-  '''<Summary>A USVString containing the password specified before the domain name.</Summary>
+  '''<summary>A USVString containing the password specified before the domain name.</summary>
   Property [password] As String
-  '''<Summary>A USVString containing an initial '/' followed by the path of the URL.</Summary>
+  '''<summary>A USVString containing an initial '/' followed by the path of the URL.</summary>
   Property [pathname] As String
-  '''<Summary>A USVString containing the port number of the URL.</Summary>
+  '''<summary>A USVString containing the port number of the URL.</summary>
   Property [port] As String
-  '''<Summary>A USVString containing the protocol scheme of the URL, including the final ':'.</Summary>
+  '''<summary>A USVString containing the protocol scheme of the URL, including the final ':'.</summary>
   Property [protocol] As String
-  '''<Summary>A USVString indicating the URL's parameter string; if any parameters are provided, this string includes all of them, beginning with the leading '?' character.</Summary>
+  '''<summary>A USVString indicating the URL's parameter string; if any parameters are provided, this string includes all of them, beginning with the leading '?' character.</summary>
   Property [search] As String
-  '''<Summary>A URLSearchParams object which can be used to access the individual query parameters found in search.</Summary>
+  '''<summary>A URLSearchParams object which can be used to access the individual query parameters found in search.</summary>
   ReadOnly Property [searchParams] As Dynamic
-  '''<Summary>A USVString containing the username specified before the domain name.</Summary>
+  '''<summary>A USVString containing the username specified before the domain name.</summary>
   Property [username] As String
-  '''<Summary>Returns a USVString containing the whole URL. It is a synonym for URL.href, though it can't be used to modify the value.</Summary>
+  '''<summary>Returns a USVString containing the whole URL. It is a synonym for URL.href, though it can't be used to modify the value.</summary>
   Function [toString]() As String
-  '''<Summary>Returns a USVString  containing the whole URL. It returns the same string as the href property.</Summary>
+  '''<summary>Returns a USVString  containing the whole URL. It returns the same string as the href property.</summary>
   Function [toJSON]() As String
 End Interface

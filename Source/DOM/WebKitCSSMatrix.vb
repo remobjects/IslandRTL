@@ -1,4 +1,4 @@
-﻿'''<Summary>An alias for DOMMatrix.</Summary>
+﻿'''<summary>An alias for DOMMatrix.</summary>
 <DynamicInterface(GetType(EcmaScriptObject))>
 Public Interface [WebKitCSSMatrix]
 End Interface

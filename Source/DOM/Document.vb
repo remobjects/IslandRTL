@@ -1,160 +1,160 @@
-﻿'''<Summary>The Document interface represents any web page loaded in the browser and serves as an entry point into the web page's content, which is the DOM tree.</Summary>
+﻿'''<summary>The Document interface represents any web page loaded in the browser and serves as an entry point into the web page's content, which is the DOM tree.</summary>
 <DynamicInterface(GetType(EcmaScriptObject))>
 Public Interface Document
-  '''<Summary>Returns a list of all of the anchors in the document.</Summary>
+  '''<summary>Returns a list of all of the anchors in the document.</summary>
   ReadOnly Property anchors As Dynamic
-  '''<Summary>Returns the  Element represents the content of an HTML document. There can be only one &lt;body> element in a document.">&lt;body&gt; or  element is used to contain &lt;frame> elements.">&lt;frameset&gt; node of the current document.</Summary>
+  '''<summary>Returns the  Element represents the content of an HTML document. There can be only one &lt;body> element in a document.">&lt;body&gt; or  element is used to contain &lt;frame> elements.">&lt;frameset&gt; node of the current document.</summary>
   Property body As HTMLElement
-  '''<Summary>Returns the character set being used by the document.</Summary>
+  '''<summary>Returns the character set being used by the document.</summary>
   ReadOnly Property characterSet As String
-  '''<Summary>Returns the Document Type Definition (DTD) of the current document.</Summary>
+  '''<summary>Returns the Document Type Definition (DTD) of the current document.</summary>
   ReadOnly Property doctype As Dynamic
-  '''<Summary>Returns the Element that is a direct child of the document. For HTML documents, this is normally the HTMLHtmlElement object representing the document's  element represents the root (top-level element) of an HTML document, so it is also referred to as the root element. All other elements must be descendants of this element.">&lt;html&gt; element.</Summary>
+  '''<summary>Returns the Element that is a direct child of the document. For HTML documents, this is normally the HTMLHtmlElement object representing the document's  element represents the root (top-level element) of an HTML document, so it is also referred to as the root element. All other elements must be descendants of this element.">&lt;html&gt; element.</summary>
   ReadOnly Property documentElement As Element
-  '''<Summary>Returns the document location as a string.</Summary>
+  '''<summary>Returns the document location as a string.</summary>
   ReadOnly Property documentURI As String
-  '''<Summary>Returns a list of the embedded  element embeds external content at the specified point in the document. This content is provided by an external application or other source of interactive content such as a browser plug-in.">&lt;embed&gt; elements within the current document.</Summary>
+  '''<summary>Returns a list of the embedded  element embeds external content at the specified point in the document. This content is provided by an external application or other source of interactive content such as a browser plug-in.">&lt;embed&gt; elements within the current document.</summary>
   ReadOnly Property embeds As HTMLCollection
-  '''<Summary>Returns the FontFaceSet interface of the current document.</Summary>
+  '''<summary>Returns the FontFaceSet interface of the current document.</summary>
   Property fonts As Dynamic
-  '''<Summary>Returns a list of the  element represents a document section containing interactive controls for submitting information.">&lt;form&gt; elements within the current document.</Summary>
+  '''<summary>Returns a list of the  element represents a document section containing interactive controls for submitting information.">&lt;form&gt; elements within the current document.</summary>
   ReadOnly Property forms As HTMLCollection
-  '''<Summary>Returns the  element contains machine-readable information (metadata) about the document, like its title, scripts, and style sheets.">&lt;head&gt; element of the current document.</Summary>
+  '''<summary>Returns the  element contains machine-readable information (metadata) about the document, like its title, scripts, and style sheets.">&lt;head&gt; element of the current document.</summary>
   ReadOnly Property head As HTMLElement
-  '''<Summary>Returns a Boolean value indicating if the page is considered hidden or not.</Summary>
+  '''<summary>Returns a Boolean value indicating if the page is considered hidden or not.</summary>
   ReadOnly Property hidden As Boolean
-  '''<Summary>Returns a list of the images in the current document.</Summary>
+  '''<summary>Returns a list of the images in the current document.</summary>
   ReadOnly Property images As Dynamic
-  '''<Summary>Returns the DOM implementation associated with the current document.</Summary>
+  '''<summary>Returns the DOM implementation associated with the current document.</summary>
   ReadOnly Property implementation As String
-  '''<Summary>Returns the name of the style sheet set that was last enabled. Has the value null until the style sheet is changed by setting the value of selectedStyleSheetSet.</Summary>
+  '''<summary>Returns the name of the style sheet set that was last enabled. Has the value null until the style sheet is changed by setting the value of selectedStyleSheetSet.</summary>
   ReadOnly Property lastStyleSheetSet As String
-  '''<Summary>Returns a list of all the hyperlinks in the document.</Summary>
+  '''<summary>Returns a list of all the hyperlinks in the document.</summary>
   ReadOnly Property links As Dynamic
-  '''<Summary>Returns a list of the available plugins.</Summary>
+  '''<summary>Returns a list of the available plugins.</summary>
   ReadOnly Property plugins As Dynamic
-  '''<Summary>Returns the preferred style sheet set as specified by the page author.</Summary>
+  '''<summary>Returns the preferred style sheet set as specified by the page author.</summary>
   ReadOnly Property preferredStyleSheetSet As String
-  '''<Summary>Returns all the  element is used to embed or reference executable code; this is typically used to embed or refer to JavaScript code.">&lt;script&gt; elements on the document.</Summary>
+  '''<summary>Returns all the  element is used to embed or reference executable code; this is typically used to embed or refer to JavaScript code.">&lt;script&gt; elements on the document.</summary>
   ReadOnly Property scripts As HTMLElement
-  '''<Summary>Returns a reference to the Element that scrolls the document.</Summary>
+  '''<summary>Returns a reference to the Element that scrolls the document.</summary>
   ReadOnly Property scrollingElement As Element
-  '''<Summary>Returns which style sheet set is currently in use.</Summary>
+  '''<summary>Returns which style sheet set is currently in use.</summary>
   Property selectedStyleSheetSet As String
-  '''<Summary>Returns a list of the style sheet sets available on the document.</Summary>
+  '''<summary>Returns a list of the style sheet sets available on the document.</summary>
   ReadOnly Property styleSheetSets As String()
-  '''<Summary>Returns a string denoting the visibility state of the document. Possible values are visible, hidden, prerender, and unloaded.</Summary>
+  '''<summary>Returns a string denoting the visibility state of the document. Possible values are visible, hidden, prerender, and unloaded.</summary>
   ReadOnly Property visibilityState As String
-  '''<Summary>Returns a semicolon-separated list of the cookies for that document or sets a single cookie.</Summary>
+  '''<summary>Returns a semicolon-separated list of the cookies for that document or sets a single cookie.</summary>
   Property cookie As Dynamic
-  '''<Summary>Returns a reference to the window object.</Summary>
+  '''<summary>Returns a reference to the window object.</summary>
   ReadOnly Property defaultView As Window
-  '''<Summary>Gets/sets the ability to edit the whole document.</Summary>
+  '''<summary>Gets/sets the ability to edit the whole document.</summary>
   Property designMode As Dynamic
-  '''<Summary>Gets/sets directionality (rtl/ltr) of the document.</Summary>
+  '''<summary>Gets/sets directionality (rtl/ltr) of the document.</summary>
   ReadOnly Property dir As String
-  '''<Summary>Gets/sets the domain of the current document.</Summary>
+  '''<summary>Gets/sets the domain of the current document.</summary>
   Property domain As String
-  '''<Summary>Returns the date on which the document was last modified.</Summary>
+  '''<summary>Returns the date on which the document was last modified.</summary>
   ReadOnly Property lastModified As DateTime
-  '''<Summary>Returns the URI of the current document.</Summary>
+  '''<summary>Returns the URI of the current document.</summary>
   ReadOnly Property location As Dynamic
-  '''<Summary>Returns loading status of the document.</Summary>
+  '''<summary>Returns loading status of the document.</summary>
   ReadOnly Property readyState As Dynamic
-  '''<Summary>Returns the URI of the page that linked to this page.</Summary>
+  '''<summary>Returns the URI of the page that linked to this page.</summary>
   ReadOnly Property referrer As String
-  '''<Summary>Sets or gets the title of the current document.</Summary>
+  '''<summary>Sets or gets the title of the current document.</summary>
   Property title As String
-  '''<Summary>Returns the document location as a string.</Summary>
+  '''<summary>Returns the document location as a string.</summary>
   ReadOnly Property URL As String
-  '''<Summary>The element that's currently in full screen mode for this document.</Summary>
+  '''<summary>The element that's currently in full screen mode for this document.</summary>
   ReadOnly Property fullscreenElement As Element
-  '''<Summary>Is an EventHandler representing the code to be called when the fullscreenchange event is raised.</Summary>
+  '''<summary>Is an EventHandler representing the code to be called when the fullscreenchange event is raised.</summary>
   Property onfullscreenchange As EventListener
-  '''<Summary>Is an EventHandler representing the code to be called when the fullscreenerror event is raised.</Summary>
+  '''<summary>Is an EventHandler representing the code to be called when the fullscreenerror event is raised.</summary>
   Property onfullscreenerror As EventListener
-  '''<Summary>Represents the event handling code for the readystatechange event.</Summary>
+  '''<summary>Represents the event handling code for the readystatechange event.</summary>
   Property onreadystatechange As EventListener
-  '''<Summary>Is an EventHandler representing the code to be called when the visibilitychange event is raised.</Summary>
+  '''<summary>Is an EventHandler representing the code to be called when the visibilitychange event is raised.</summary>
   Property onvisibilitychange As EventListener
-  '''<Summary>Adopt node from an external document.</Summary>
+  '''<summary>Adopt node from an external document.</summary>
   Function adoptNode(parexternalNode As Dynamic) As Node
-  '''<Summary>Creates a new Attr object and returns it.</Summary>
+  '''<summary>Creates a new Attr object and returns it.</summary>
   Function createAttribute(parname As Dynamic) As Dynamic
-  '''<Summary>Creates a new attribute node in a given namespace and returns it.</Summary>
+  '''<summary>Creates a new attribute node in a given namespace and returns it.</summary>
   Function createAttributeNS() As Dynamic
-  '''<Summary>Creates a new CDATA node and returns it.</Summary>
+  '''<summary>Creates a new CDATA node and returns it.</summary>
   Function createCDATASection(pardata As Dynamic) As CDATASection
-  '''<Summary>Creates a new comment node and returns it.</Summary>
+  '''<summary>Creates a new comment node and returns it.</summary>
   Function createComment(pardata As Dynamic) As Comment
-  '''<Summary>Creates a new document fragment.</Summary>
+  '''<summary>Creates a new document fragment.</summary>
   Function createDocumentFragment() As Document
-  '''<Summary>Creates a new element with the given tag name.</Summary>
+  '''<summary>Creates a new element with the given tag name.</summary>
   Function createElement(partagName As Dynamic, paroptions As Dynamic) As Element
-  '''<Summary>Creates a new element with the given tag name.</Summary>
+  '''<summary>Creates a new element with the given tag name.</summary>
   Function createElement(tagName As Dynamic) As Element
-  '''<Summary>Creates a new element with the given tag name and namespace URI.</Summary>
+  '''<summary>Creates a new element with the given tag name and namespace URI.</summary>
   Function createElementNS(parnamespaceURI As Dynamic, parqualifiedName As Dynamic, paroptions As Dynamic) As Element
-  '''<Summary>Creates an event object.</Summary>
+  '''<summary>Creates an event object.</summary>
   Function createEvent(partype As Dynamic) As [Event]
-  '''<Summary>Creates a NodeIterator object.</Summary>
+  '''<summary>Creates a NodeIterator object.</summary>
   Function createNodeIterator(parroot As Dynamic, parwhatToShow As Dynamic, parfilter As Dynamic) As Node
-  '''<Summary>Creates a new ProcessingInstruction object.</Summary>
+  '''<summary>Creates a new ProcessingInstruction object.</summary>
   Function createProcessingInstruction() As ProcessingInstruction
-  '''<Summary>Creates a Range object.</Summary>
+  '''<summary>Creates a Range object.</summary>
   Function createRange() As Range
-  '''<Summary>Creates a text node.</Summary>
+  '''<summary>Creates a text node.</summary>
   Function createTextNode(pardata As Dynamic) As Node
-  '''<Summary>Creates a TouchList object.</Summary>
+  '''<summary>Creates a TouchList object.</summary>
   Function createTouchList(partouches As Dynamic) As TouchList
-  '''<Summary>Creates a TreeWalker object.</Summary>
+  '''<summary>Creates a TreeWalker object.</summary>
   Function createTreeWalker(parroot As Dynamic, parwhatToShow As Dynamic, parfilter As Dynamic, parentityReferenceExpansion As Dynamic) As TreeWalker
-  '''<Summary>Enables the style sheets for the specified style sheet set.</Summary>
+  '''<summary>Enables the style sheets for the specified style sheet set.</summary>
   Function enableStyleSheetsForSet(parname As Dynamic) As Dynamic
-  '''<Summary>Returns a list of elements with the given class name.</Summary>
+  '''<summary>Returns a list of elements with the given class name.</summary>
   Function getElementsByClassName(parnames As Dynamic) As HTMLCollection
-  '''<Summary>Returns a list of elements with the given tag name.</Summary>
+  '''<summary>Returns a list of elements with the given tag name.</summary>
   Function getElementsByTagName(parname As Dynamic) As HTMLCollection
-  '''<Summary>Returns a list of elements with the given tag name and namespace.</Summary>
+  '''<summary>Returns a list of elements with the given tag name and namespace.</summary>
   Function getElementsByTagNameNS(parnamespace As Dynamic, parname As Dynamic) As HTMLCollection
-  '''<Summary>Returns a clone of a node from an external document.</Summary>
+  '''<summary>Returns a clone of a node from an external document.</summary>
   Function importNode(parexternalNode As Dynamic, pardeep As Dynamic) As Node
-  '''<Summary>Returns an object reference to the identified element.</Summary>
+  '''<summary>Returns an object reference to the identified element.</summary>
   Function getElementById(parid As Dynamic) As Dynamic
-  '''<Summary>Returns the first Element node within the document, in document order, that matches the specified selectors.</Summary>
+  '''<summary>Returns the first Element node within the document, in document order, that matches the specified selectors.</summary>
   Function querySelector(parselectors As Dynamic) As Element
-  '''<Summary>Returns a list of all the Element nodes within the document that match the specified selectors.</Summary>
+  '''<summary>Returns a list of all the Element nodes within the document that match the specified selectors.</summary>
   Function querySelectorAll(parselectors As Dynamic) As HTMLElement
-  '''<Summary>Compiles an XPathExpression which can then be used for (repeated) evaluations.</Summary>
+  '''<summary>Compiles an XPathExpression which can then be used for (repeated) evaluations.</summary>
   Function createExpression() As Dynamic
-  '''<Summary>Creates an XPathNSResolver object.</Summary>
+  '''<summary>Creates an XPathNSResolver object.</summary>
   Function createNSResolver() As XPathNSResolver
-  '''<Summary>Evaluates an XPath expression.</Summary>
+  '''<summary>Evaluates an XPath expression.</summary>
   Function evaluate(parxpathExpression As Dynamic, parcontextNode As Dynamic, parnamespaceResolver As Dynamic, parresultType As Dynamic, parresult As Dynamic) As Dynamic
-  '''<Summary>Closes a document stream for writing.</Summary>
+  '''<summary>Closes a document stream for writing.</summary>
   Function close() As Dynamic
-  '''<Summary>On an editable document, executes a formating command.</Summary>
+  '''<summary>On an editable document, executes a formating command.</summary>
   Function execCommand(paraCommandName As Dynamic, paraShowDefaultUI As Dynamic, paraValueArgument As Dynamic) As Dynamic
-  '''<Summary>Returns a list of elements with the given name.</Summary>
+  '''<summary>Returns a list of elements with the given name.</summary>
   Function getElementsByName(parname As Dynamic) As HTMLCollection
-  '''<Summary>Returns true if the focus is currently located anywhere inside the specified document.</Summary>
+  '''<summary>Returns true if the focus is currently located anywhere inside the specified document.</summary>
   Function hasFocus() As Boolean
-  '''<Summary>Opens a document stream for writing.</Summary>
+  '''<summary>Opens a document stream for writing.</summary>
   Function open() As Dynamic
-  '''<Summary>Returns true if the formating command can be executed on the current range.</Summary>
+  '''<summary>Returns true if the formating command can be executed on the current range.</summary>
   Function queryCommandEnabled() As Boolean
-  '''<Summary>Returns true if the formating command is in an indeterminate state on the current range.</Summary>
+  '''<summary>Returns true if the formating command is in an indeterminate state on the current range.</summary>
   Function queryCommandIndeterm() As Boolean
-  '''<Summary>Returns true if the formating command has been executed on the current range.</Summary>
+  '''<summary>Returns true if the formating command has been executed on the current range.</summary>
   Function queryCommandState(parcommand As Dynamic) As Boolean
-  '''<Summary>Returns true if the formating command is supported on the current range.</Summary>
+  '''<summary>Returns true if the formating command is supported on the current range.</summary>
   Function queryCommandSupported() As Boolean
-  '''<Summary>Returns the current value of the current range for a formating command.</Summary>
+  '''<summary>Returns the current value of the current range for a formating command.</summary>
   Function queryCommandValue() As Dynamic
-  '''<Summary>Writes text in a document.</Summary>
+  '''<summary>Writes text in a document.</summary>
   Function write(parmarkup As Dynamic) As Dynamic
-  '''<Summary>Writes a line of text in a document.</Summary>
+  '''<summary>Writes a line of text in a document.</summary>
   Function writeln(parline As Dynamic) As Dynamic
-  '''<Summary>Returns the topmost element at the specified coordinates.</Summary>
+  '''<summary>Returns the topmost element at the specified coordinates.</summary>
   Function elementFromPoint(parx As Dynamic, pary As Dynamic) As Dynamic
 End Interface

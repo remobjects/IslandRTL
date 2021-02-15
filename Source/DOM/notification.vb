@@ -1,8 +1,8 @@
-﻿'''<Summary>The Notification interface of the Notifications API is used to configure and display desktop notifications to the user.</Summary>
+﻿'''<summary>The Notification interface of the Notifications API is used to configure and display desktop notifications to the user.</summary>
 <DynamicInterface(GetType(EcmaScriptObject))>
 Public Interface [notification]
-  '''<Summary>Requests permission from the user to display notifications.</Summary>
+  '''<summary>Requests permission from the user to display notifications.</summary>
   Function [requestPermission]([parcallback] As Dynamic) As Dynamic
-  '''<Summary>Programmatically closes a notification instance.</Summary>
+  '''<summary>Programmatically closes a notification instance.</summary>
   Function [close]() As Dynamic
 End Interface

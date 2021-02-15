@@ -1,28 +1,28 @@
-﻿'''<Summary>The FileReader object lets web applications asynchronously read the contents of files (or raw data buffers) stored on the user's computer, using File or Blob objects to specify the file or data to read.</Summary>
+﻿'''<summary>The FileReader object lets web applications asynchronously read the contents of files (or raw data buffers) stored on the user's computer, using File or Blob objects to specify the file or data to read.</summary>
 <DynamicInterface(GetType(EcmaScriptObject))>
 Public Interface [FileReader]
-  '''<Summary>A DOMException representing the error that occurred while reading the file.</Summary>
+  '''<summary>A DOMException representing the error that occurred while reading the file.</summary>
   ReadOnly Property [error] As DOMException
-  '''<Summary>A number indicating the state of the FileReader. This is one of the following:</Summary>
+  '''<summary>A number indicating the state of the FileReader. This is one of the following:</summary>
   ReadOnly Property [readyState] As Double
-  '''<Summary>The file's contents. This property is only valid after the read operation is complete, and the format of the data depends on which of the methods was used to initiate the read operation.</Summary>
+  '''<summary>The file's contents. This property is only valid after the read operation is complete, and the format of the data depends on which of the methods was used to initiate the read operation.</summary>
   ReadOnly Property [result] As Byte()
-  '''<Summary>A handler for the abort event. This event is triggered each time the reading operation is aborted.</Summary>
+  '''<summary>A handler for the abort event. This event is triggered each time the reading operation is aborted.</summary>
   Property [onabort] As EventListener
-  '''<Summary>A handler for the error event. This event is triggered each time the reading operation encounter an error.</Summary>
+  '''<summary>A handler for the error event. This event is triggered each time the reading operation encounter an error.</summary>
   Property [onerror] As EventListener
-  '''<Summary>A handler for the load event. This event is triggered each time the reading operation is successfully completed.</Summary>
+  '''<summary>A handler for the load event. This event is triggered each time the reading operation is successfully completed.</summary>
   Property [onload] As EventListener
-  '''<Summary>A handler for the loadstart event. This event is triggered each time the reading is starting.</Summary>
+  '''<summary>A handler for the loadstart event. This event is triggered each time the reading is starting.</summary>
   Property [onloadstart] As EventListener
-  '''<Summary>A handler for the loadend event. This event is triggered each time the reading operation is completed (either in success or failure).</Summary>
+  '''<summary>A handler for the loadend event. This event is triggered each time the reading operation is completed (either in success or failure).</summary>
   Property [onloadend] As EventListener
-  '''<Summary>A handler for the progress event. This event is triggered while reading a Blob content.</Summary>
+  '''<summary>A handler for the progress event. This event is triggered while reading a Blob content.</summary>
   Property [onprogress] As EventListener
-  '''<Summary>Starts reading the contents of the specified Blob, once finished, the result attribute contains an ArrayBuffer representing the file's data.</Summary>
+  '''<summary>Starts reading the contents of the specified Blob, once finished, the result attribute contains an ArrayBuffer representing the file's data.</summary>
   Function [readAsArrayBuffer]([parblob] As Dynamic) As Byte()
-  '''<Summary>Starts reading the contents of the specified Blob, once finished, the result attribute contains the raw binary data from the file as a string.</Summary>
+  '''<summary>Starts reading the contents of the specified Blob, once finished, the result attribute contains the raw binary data from the file as a string.</summary>
   Function [readAsBinaryString]([parblob] As Dynamic) As String
-  '''<Summary>Starts reading the contents of the specified Blob, once finished, the result attribute contains a data: URL representing the file's data.</Summary>
+  '''<summary>Starts reading the contents of the specified Blob, once finished, the result attribute contains a data: URL representing the file's data.</summary>
   Function [readAsDataURL]([parblob] As Dynamic) As String
 End Interface

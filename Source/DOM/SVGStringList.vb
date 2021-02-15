@@ -1,4 +1,4 @@
-﻿'''<Summary>The SVGStringList defines a list of DOMString objects.</Summary>
+﻿'''<summary>The SVGStringList defines a list of DOMString objects.</summary>
 <DynamicInterface(GetType(EcmaScriptObject))>
 Public Interface [SVGStringList]
 End Interface

@@ -1,12 +1,12 @@
-﻿'''<Summary>The OES_vertex_array_object extension is part of the WebGL API and provides vertex array objects (VAOs) which encapsulate vertex array states. These objects keep pointers to vertex data and provide names for different sets of vertex data.</Summary>
+﻿'''<summary>The OES_vertex_array_object extension is part of the WebGL API and provides vertex array objects (VAOs) which encapsulate vertex array states. These objects keep pointers to vertex data and provide names for different sets of vertex data.</summary>
 <DynamicInterface(GetType(EcmaScriptObject))>
 Public Interface [OES_vertex_array_object]
-  '''<Summary>	Creates a new WebGLVertexArrayObject.	</Summary>
+  '''<summary>	Creates a new WebGLVertexArrayObject.	</summary>
   Function [createVertexArrayOES]() As WebGLVertexArrayObject
-  '''<Summary>	Deletes a given WebGLVertexArrayObject.	</Summary>
+  '''<summary>	Deletes a given WebGLVertexArrayObject.	</summary>
   Sub [deleteVertexArrayOES]([pararrayObject] As Dynamic)
-  '''<Summary>	Returns true if a given object is a WebGLVertexArrayObject.	</Summary>
+  '''<summary>	Returns true if a given object is a WebGLVertexArrayObject.	</summary>
   Function [isVertexArrayOES]([pararrayObject] As Dynamic) As Boolean
-  '''<Summary>	Binds a given WebGLVertexArrayObject to the buffer.	</Summary>
+  '''<summary>	Binds a given WebGLVertexArrayObject to the buffer.	</summary>
   Sub [bindVertexArrayOES]([pararrayObject] As Dynamic)
 End Interface

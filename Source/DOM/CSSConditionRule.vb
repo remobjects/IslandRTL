@@ -1,6 +1,6 @@
-﻿'''<Summary>An object implementing the CSSConditionRule interface represents a single condition CSS at-rule, which consists of a condition and a statement block. It is a child of CSSGroupingRule.</Summary>
+﻿'''<summary>An object implementing the CSSConditionRule interface represents a single condition CSS at-rule, which consists of a condition and a statement block. It is a child of CSSGroupingRule.</summary>
 <DynamicInterface(GetType(EcmaScriptObject))>
 Public Interface [CSSConditionRule]
-  '''<Summary>Represents the text of the condition of the rule.</Summary>
+  '''<summary>Represents the text of the condition of the rule.</summary>
   Property [conditionText] As String
 End Interface

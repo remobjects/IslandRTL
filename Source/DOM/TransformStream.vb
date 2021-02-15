@@ -1,8 +1,8 @@
-﻿'''<Summary>The TransformStream interface of the Streams API represents a set of transformable data.</Summary>
+﻿'''<summary>The TransformStream interface of the Streams API represents a set of transformable data.</summary>
 <DynamicInterface(GetType(EcmaScriptObject))>
 Public Interface [TransformStream]
-  '''<Summary>The readable end of a TransformStream.</Summary>
+  '''<summary>The readable end of a TransformStream.</summary>
   ReadOnly Property [readable] As Dynamic
-  '''<Summary>The writable end of a TransformStream.</Summary>
+  '''<summary>The writable end of a TransformStream.</summary>
   ReadOnly Property [writable] As Dynamic
 End Interface

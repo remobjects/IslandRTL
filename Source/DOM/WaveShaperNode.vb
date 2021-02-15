@@ -1,10 +1,10 @@
-﻿'''<Summary>A WaveShaperNode always has exactly one input and one output.</Summary>
+﻿'''<summary>A WaveShaperNode always has exactly one input and one output.</summary>
 <DynamicInterface(GetType(EcmaScriptObject))>
 Public Interface [WaveShaperNode]
 Inherits AudioNode
 
-  '''<Summary>Is a Float32Array of numbers describing the distortion to apply.</Summary>
+  '''<summary>Is a Float32Array of numbers describing the distortion to apply.</summary>
   Property [curve] As Double
-  '''<Summary>Is an enumerated value indicating if oversampling must be used. Oversampling is a technique for creating more samples (up-sampling) before applying the distortion effect to the audio signal.</Summary>
+  '''<summary>Is an enumerated value indicating if oversampling must be used. Oversampling is a technique for creating more samples (up-sampling) before applying the distortion effect to the audio signal.</summary>
   Property [oversample] As WaveShaperNode
 End Interface

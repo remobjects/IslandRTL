@@ -1,12 +1,12 @@
-﻿'''<Summary>The HTMLStyleElement interface represents a &lt;style> element. It inherits properties and methods from its parent, HTMLElement, and from LinkStyle.</Summary>
+﻿'''<summary>The HTMLStyleElement interface represents a &lt;style> element. It inherits properties and methods from its parent, HTMLElement, and from LinkStyle.</summary>
 <DynamicInterface(GetType(EcmaScriptObject))>
 Public Interface [HTMLStyleElement]
 Inherits HTMLElement, LinkStyle
 
-  '''<Summary>Is a DOMString representing the intended destination medium for style information.</Summary>
+  '''<summary>Is a DOMString representing the intended destination medium for style information.</summary>
   Property [media] As Dynamic
-  '''<Summary>Is a DOMString representing the type of style being applied by this statement.</Summary>
+  '''<summary>Is a DOMString representing the type of style being applied by this statement.</summary>
   Property [type] As Dynamic
-  '''<Summary>Is a Boolean value representing whether or not the stylesheet is disabled (true) or not (false).</Summary>
+  '''<summary>Is a Boolean value representing whether or not the stylesheet is disabled (true) or not (false).</summary>
   Property [disabled] As Boolean
 End Interface

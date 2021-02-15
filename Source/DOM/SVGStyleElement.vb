@@ -1,12 +1,12 @@
-﻿'''<Summary>The SVGStyleElement interface corresponds to the SVG &lt;style> element.</Summary>
+﻿'''<summary>The SVGStyleElement interface corresponds to the SVG &lt;style> element.</summary>
 <DynamicInterface(GetType(EcmaScriptObject))>
 Public Interface [SVGStyleElement]
 Inherits SVGElement, LinkStyle
 
-  '''<Summary>A DOMString corresponding to the type attribute of the given element.</Summary>
+  '''<summary>A DOMString corresponding to the type attribute of the given element.</summary>
   Property [type] As Dynamic
-  '''<Summary>A DOMString corresponding to the media attribute of the given element.</Summary>
+  '''<summary>A DOMString corresponding to the media attribute of the given element.</summary>
   Property [media] As Dynamic
-  '''<Summary>A DOMString corresponding to the title attribute of the given element.</Summary>
+  '''<summary>A DOMString corresponding to the title attribute of the given element.</summary>
   Property [title] As String
 End Interface

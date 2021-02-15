@@ -1,14 +1,14 @@
-﻿'''<Summary>The DOMRectReadOnly interface specifies the standard properties used by DOMRect to define a rectangle whose properties are immutable.</Summary>
+﻿'''<summary>The DOMRectReadOnly interface specifies the standard properties used by DOMRect to define a rectangle whose properties are immutable.</summary>
 <DynamicInterface(GetType(EcmaScriptObject))>
 Public Interface [DOMRectReadOnly]
-  '''<Summary>The x coordinate of the DOMRect's origin.</Summary>
+  '''<summary>The x coordinate of the DOMRect's origin.</summary>
   ReadOnly Property [x] As Double
-  '''<Summary>The y coordinate of the DOMRect's origin.</Summary>
+  '''<summary>The y coordinate of the DOMRect's origin.</summary>
   ReadOnly Property [y] As Double
-  '''<Summary>The width of the DOMRect.</Summary>
+  '''<summary>The width of the DOMRect.</summary>
   ReadOnly Property [width] As Integer
-  '''<Summary>The height of the DOMRect.</Summary>
+  '''<summary>The height of the DOMRect.</summary>
   ReadOnly Property [height] As Integer
-  '''<Summary>Creates a new DOMRect object with a given location and dimensions.</Summary>
+  '''<summary>Creates a new DOMRect object with a given location and dimensions.</summary>
   Property [fromRect] As DOMRect
 End Interface

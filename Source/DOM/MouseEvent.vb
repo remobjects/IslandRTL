@@ -1,32 +1,32 @@
-﻿'''<Summary>The MouseEvent interface represents events that occur due to the user interacting with a pointing device (such as a mouse). Common events using this interface include click, dblclick, mouseup, mousedown.</Summary>
+﻿'''<summary>The MouseEvent interface represents events that occur due to the user interacting with a pointing device (such as a mouse). Common events using this interface include click, dblclick, mouseup, mousedown.</summary>
 <DynamicInterface(GetType(EcmaScriptObject))>
 Public Interface [MouseEvent]
-  '''<Summary>Returns true if the alt key was down when the mouse event was fired.</Summary>
+  '''<summary>Returns true if the alt key was down when the mouse event was fired.</summary>
   ReadOnly Property [altKey] As Boolean
-  '''<Summary>The button number that was pressed (if applicable) when the mouse event was fired.</Summary>
+  '''<summary>The button number that was pressed (if applicable) when the mouse event was fired.</summary>
   ReadOnly Property [button] As Integer
-  '''<Summary>The buttons being depressed (if any) when the mouse event was fired.</Summary>
+  '''<summary>The buttons being depressed (if any) when the mouse event was fired.</summary>
   ReadOnly Property [buttons] As Double
-  '''<Summary>The X coordinate of the mouse pointer in local (DOM content) coordinates.</Summary>
+  '''<summary>The X coordinate of the mouse pointer in local (DOM content) coordinates.</summary>
   ReadOnly Property [clientX] As Integer
-  '''<Summary>The Y coordinate of the mouse pointer in local (DOM content) coordinates.</Summary>
+  '''<summary>The Y coordinate of the mouse pointer in local (DOM content) coordinates.</summary>
   ReadOnly Property [clientY] As Integer
-  '''<Summary>Returns true if the control key was down when the mouse event was fired.</Summary>
+  '''<summary>Returns true if the control key was down when the mouse event was fired.</summary>
   ReadOnly Property [ctrlKey] As Boolean
-  '''<Summary>Returns true if the meta key was down when the mouse event was fired.</Summary>
+  '''<summary>Returns true if the meta key was down when the mouse event was fired.</summary>
   ReadOnly Property [metaKey] As Boolean
-  '''<Summary>The X coordinate of the mouse pointer relative to the position of the last mousemove event.</Summary>
+  '''<summary>The X coordinate of the mouse pointer relative to the position of the last mousemove event.</summary>
   ReadOnly Property [movementX] As Integer
-  '''<Summary>The Y coordinate of the mouse pointer relative to the position of the last mousemove event.</Summary>
+  '''<summary>The Y coordinate of the mouse pointer relative to the position of the last mousemove event.</summary>
   ReadOnly Property [movementY] As Integer
-  '''<Summary>Returns the id of the hit region affected by the event. If no hit region is affected, null is returned.</Summary>
+  '''<summary>Returns the id of the hit region affected by the event. If no hit region is affected, null is returned.</summary>
   ReadOnly Property [region] As String
-  '''<Summary></Summary>
+  '''<Summary></summary>
   ReadOnly Property [relatedTarget] As HTMLElement
-  '''<Summary>The X coordinate of the mouse pointer in global (screen) coordinates.</Summary>
+  '''<summary>The X coordinate of the mouse pointer in global (screen) coordinates.</summary>
   ReadOnly Property [screenX] As Integer
-  '''<Summary>The Y coordinate of the mouse pointer in global (screen) coordinates.</Summary>
+  '''<summary>The Y coordinate of the mouse pointer in global (screen) coordinates.</summary>
   ReadOnly Property [screenY] As Integer
-  '''<Summary>Returns true if the shift key was down when the mouse event was fired.</Summary>
+  '''<summary>Returns true if the shift key was down when the mouse event was fired.</summary>
   ReadOnly Property [shiftKey] As Boolean
 End Interface

@@ -1,14 +1,14 @@
-﻿'''<Summary>The CSSStyleDeclaration interface represents an object that is a CSS declaration block, and exposes style information and various style-related methods and properties.</Summary>
+﻿'''<summary>The CSSStyleDeclaration interface represents an object that is a CSS declaration block, and exposes style information and various style-related methods and properties.</summary>
 <DynamicInterface(GetType(EcmaScriptObject))>
 Public Interface [CSSStyleDeclaration]
-  '''<Summary>Returns the optional priority, "important".</Summary>
+  '''<summary>Returns the optional priority, "important".</summary>
   Function [getPropertyPriority]() As String
-  '''<Summary>Returns the property value given a property name.</Summary>
+  '''<summary>Returns the property value given a property name.</summary>
   Function [getPropertyValue]() As String
-  '''<Summary>Returns a CSS property name by its index, or the empty string if the index is out-of-bounds.</Summary>
+  '''<summary>Returns a CSS property name by its index, or the empty string if the index is out-of-bounds.</summary>
   Function [item]() As String
-  '''<Summary>Removes a property from the CSS declaration block.</Summary>
+  '''<summary>Removes a property from the CSS declaration block.</summary>
   Function [removeProperty]() As String
-  '''<Summary>Modifies an existing CSS property or creates a new CSS property in the declaration block.</Summary>
+  '''<summary>Modifies an existing CSS property or creates a new CSS property in the declaration block.</summary>
   Sub [setProperty]()
 End Interface

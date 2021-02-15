@@ -1,6 +1,6 @@
-﻿'''<Summary>The LinkStyle interface provides access to the associated CSS style sheet of a node.</Summary>
+﻿'''<summary>The LinkStyle interface provides access to the associated CSS style sheet of a node.</summary>
 <DynamicInterface(GetType(EcmaScriptObject))>
 Public Interface [LinkStyle]
-  '''<Summary>Returns the CSSStyleSheet object associated with the given element, or null if there is none.</Summary>
+  '''<summary>Returns the CSSStyleSheet object associated with the given element, or null if there is none.</summary>
   ReadOnly Property [sheet] As CSSStyleSheet
 End Interface

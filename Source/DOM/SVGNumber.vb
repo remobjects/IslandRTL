@@ -1,6 +1,6 @@
-﻿'''<Summary>The SVGNumber interface corresponds to the &lt;number> basic data type.</Summary>
+﻿'''<summary>The SVGNumber interface corresponds to the &lt;number> basic data type.</summary>
 <DynamicInterface(GetType(EcmaScriptObject))>
 Public Interface [SVGNumber]
-  '''<Summary>A float representing the number.</Summary>
+  '''<summary>A float representing the number.</summary>
   Property [value] As String
 End Interface

@@ -1,8 +1,8 @@
-﻿'''<Summary>The SVGFECompositeElement interface corresponds to the &lt;feComposite> element.</Summary>
+﻿'''<summary>The SVGFECompositeElement interface corresponds to the &lt;feComposite> element.</summary>
 <DynamicInterface(GetType(EcmaScriptObject))>
 Public Interface [SVGFECompositeElement]
 Inherits SVGElement, SVGFilterPrimitiveStandardAttributes
 
-  '''<Summary>An SVGAnimatedEnumeration corresponding to the type attribute of the given element. It takes one of the SVG_FECOMPOSITE_OPERATOR_* constants defined on this interface.</Summary>
+  '''<summary>An SVGAnimatedEnumeration corresponding to the type attribute of the given element. It takes one of the SVG_FECOMPOSITE_OPERATOR_* constants defined on this interface.</summary>
   ReadOnly Property [type] As Dynamic
 End Interface

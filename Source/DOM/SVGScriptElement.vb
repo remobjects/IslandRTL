@@ -1,8 +1,8 @@
-﻿'''<Summary>The SVGScriptElement interface corresponds to the SVG &lt;script> element.</Summary>
+﻿'''<summary>The SVGScriptElement interface corresponds to the SVG &lt;script> element.</summary>
 <DynamicInterface(GetType(EcmaScriptObject))>
 Public Interface [SVGScriptElement]
-  '''<Summary>A DOMString corresponding to the type attribute of the given &lt;script&gt; element. A DOMException is raised with the code NO_MODIFICATION_ALLOWED_ERR on an attempt to change the value of a read only attribut.</Summary>
+  '''<summary>A DOMString corresponding to the type attribute of the given &lt;script&gt; element. A DOMException is raised with the code NO_MODIFICATION_ALLOWED_ERR on an attempt to change the value of a read only attribut.</summary>
   ReadOnly Property [type] As Dynamic
-  '''<Summary>A DOMString corresponding to the crossorigin attribute of the given &lt;script&gt; element.</Summary>
+  '''<summary>A DOMString corresponding to the crossorigin attribute of the given &lt;script&gt; element.</summary>
   ReadOnly Property [crossOrigin] As String
 End Interface

@@ -1,6 +1,6 @@
-﻿'''<Summary>The SVGZoomAndPan interface is used to reflect the zoomAndPan attribute, and is mixed in to other interfaces for elements that support this attribute.</Summary>
+﻿'''<summary>The SVGZoomAndPan interface is used to reflect the zoomAndPan attribute, and is mixed in to other interfaces for elements that support this attribute.</summary>
 <DynamicInterface(GetType(EcmaScriptObject))>
 Public Interface [SVGZoomAndPan]
-  '''<Summary>An unsigned short representing the value of the zoomAndPan attribute.</Summary>
+  '''<summary>An unsigned short representing the value of the zoomAndPan attribute.</summary>
   Property [zoomAndPan] As UShort
 End Interface

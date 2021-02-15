@@ -1,4 +1,4 @@
-﻿'''<Summary>See the examples for SubtleCrypto.importKey().</Summary>
+﻿'''<summary>See the examples for SubtleCrypto.importKey().</summary>
 <DynamicInterface(GetType(EcmaScriptObject))>
 Public Interface [EcKeyImportParams]
 End Interface

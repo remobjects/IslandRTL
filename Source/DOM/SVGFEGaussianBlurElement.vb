@@ -1,10 +1,10 @@
-﻿'''<Summary>The SVGFEGaussianBlurElement interface corresponds to the &lt;feGaussianBlur> element.</Summary>
+﻿'''<summary>The SVGFEGaussianBlurElement interface corresponds to the &lt;feGaussianBlur> element.</summary>
 <DynamicInterface(GetType(EcmaScriptObject))>
 Public Interface [SVGFEGaussianBlurElement]
 Inherits SVGElement, SVGFilterPrimitiveStandardAttributes
 
-  '''<Summary>An SVGAnimatedEnumeration corresponding to the edgeMode attribute of the given element. Takes one of the SVG_EDGEMODE_* constants defined on this interface.</Summary>
+  '''<summary>An SVGAnimatedEnumeration corresponding to the edgeMode attribute of the given element. Takes one of the SVG_EDGEMODE_* constants defined on this interface.</summary>
   ReadOnly Property [edgeMode] As Dynamic
-  '''<Summary>Sets the values for the stdDeviation attribute.</Summary>
+  '''<summary>Sets the values for the stdDeviation attribute.</summary>
   Function [setStdDeviation]() As Dynamic
 End Interface

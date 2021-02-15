@@ -1,24 +1,24 @@
-﻿'''<Summary>The WebSocket object provides the API for creating and managing a WebSocket connection to a server, as well as for sending and receiving data on the connection.</Summary>
+﻿'''<summary>The WebSocket object provides the API for creating and managing a WebSocket connection to a server, as well as for sending and receiving data on the connection.</summary>
 <DynamicInterface(GetType(EcmaScriptObject))>
 Public Interface [WebSocket]
-  '''<Summary>The binary data type used by the connection.</Summary>
+  '''<summary>The binary data type used by the connection.</summary>
   Property [binaryType] As Dynamic
-  '''<Summary>The number of bytes of queued data.</Summary>
+  '''<summary>The number of bytes of queued data.</summary>
   ReadOnly Property [bufferedAmount] As Double
-  '''<Summary>The extensions selected by the server.</Summary>
+  '''<summary>The extensions selected by the server.</summary>
   ReadOnly Property [extensions] As String
-  '''<Summary>An event listener to be called when the connection is closed.</Summary>
+  '''<summary>An event listener to be called when the connection is closed.</summary>
   Property [onclose] As Dynamic
-  '''<Summary>An event listener to be called when an error occurs.</Summary>
+  '''<summary>An event listener to be called when an error occurs.</summary>
   Property [onerror] As Dynamic
-  '''<Summary>An event listener to be called when a message is received from the server.</Summary>
+  '''<summary>An event listener to be called when a message is received from the server.</summary>
   Property [onmessage] As Dynamic
-  '''<Summary>An event listener to be called when the connection is opened.</Summary>
+  '''<summary>An event listener to be called when the connection is opened.</summary>
   Property [onopen] As Dynamic
-  '''<Summary>The sub-protocol selected by the server.</Summary>
+  '''<summary>The sub-protocol selected by the server.</summary>
   ReadOnly Property [protocol] As String
-  '''<Summary>The current state of the connection.</Summary>
+  '''<summary>The current state of the connection.</summary>
   ReadOnly Property [readyState] As Dynamic
-  '''<Summary>The absolute URL of the WebSocket.</Summary>
+  '''<summary>The absolute URL of the WebSocket.</summary>
   ReadOnly Property [url] As String
 End Interface

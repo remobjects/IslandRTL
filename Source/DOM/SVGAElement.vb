@@ -1,22 +1,22 @@
-﻿'''<Summary>The SVGAElement interface provides access to the properties of &lt;a> element, as well as methods to manipulate them.</Summary>
+﻿'''<summary>The SVGAElement interface provides access to the properties of &lt;a> element, as well as methods to manipulate them.</summary>
 <DynamicInterface(GetType(EcmaScriptObject))>
 Public Interface [SVGAElement]
 Inherits SVGGraphicsElement, SVGURIReference
 
-  '''<Summary>See HTMLAnchorElement.href.</Summary>
+  '''<summary>See HTMLAnchorElement.href.</summary>
   Property [href] As String
-  '''<Summary>Is a DOMString that reflects the hreflang attribute, indicating the language of the linked resource.</Summary>
+  '''<summary>Is a DOMString that reflects the hreflang attribute, indicating the language of the linked resource.</summary>
   Property [hreflang] As String
-  '''<Summary>Is a DOMString that reflects the ping attribute, containing a space-separated list of URLs to which, when the hyperlink is followed, POST requests with the body PING will be sent by the browser (in the background). Typically used for tracking.</Summary>
+  '''<summary>Is a DOMString that reflects the ping attribute, containing a space-separated list of URLs to which, when the hyperlink is followed, POST requests with the body PING will be sent by the browser (in the background). Typically used for tracking.</summary>
   Property [ping] As String
-  '''<Summary>See HTMLAnchorElement.referrerPolicy.</Summary>
+  '''<summary>See HTMLAnchorElement.referrerPolicy.</summary>
   Property [referrerPolicy] As Dynamic
-  '''<Summary>See HTMLAnchorElement.rel.</Summary>
+  '''<summary>See HTMLAnchorElement.rel.</summary>
   Property [rel] As String
-  '''<Summary>See HTMLAnchorElement.relList.</Summary>
+  '''<summary>See HTMLAnchorElement.relList.</summary>
   Property [relList] As DOMTokenList
-  '''<Summary>Is a DOMString being a synonym for the Node.textContent property.</Summary>
+  '''<summary>Is a DOMString being a synonym for the Node.textContent property.</summary>
   Property [text] As String
-  '''<Summary>Is a DOMString that reflects the type attribute, indicating the MIME type of the linked resource.</Summary>
+  '''<summary>Is a DOMString that reflects the type attribute, indicating the MIME type of the linked resource.</summary>
   Property [type] As Dynamic
 End Interface

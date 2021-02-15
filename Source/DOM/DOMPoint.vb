@@ -1,14 +1,14 @@
-﻿'''<Summary>A DOMPoint object represents a 2D or 3D point in a coordinate system; it includes values for the coordinates in up to three dimensions, as well as an optional perspective value.</Summary>
+﻿'''<summary>A DOMPoint object represents a 2D or 3D point in a coordinate system; it includes values for the coordinates in up to three dimensions, as well as an optional perspective value.</summary>
 <DynamicInterface(GetType(EcmaScriptObject))>
 Public Interface [DOMPoint]
 Inherits DOMPointReadOnly
 
-  '''<Summary>The x coordinate of the DOMPoint.</Summary>
+  '''<summary>The x coordinate of the DOMPoint.</summary>
   Property [x] As Double
-  '''<Summary>The y coordinate of the DOMPoint.</Summary>
+  '''<summary>The y coordinate of the DOMPoint.</summary>
   Property [y] As Double
-  '''<Summary>The z coordinate of the DOMPoint.</Summary>
+  '''<summary>The z coordinate of the DOMPoint.</summary>
   Property [z] As Double
-  '''<Summary>The perspective value of the DOMPoint.</Summary>
+  '''<summary>The perspective value of the DOMPoint.</summary>
   Property [w] As Double
 End Interface

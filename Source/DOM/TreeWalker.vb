@@ -1,10 +1,10 @@
-﻿'''<Summary>The TreeWalker object represents the nodes of a document subtree and a position within them.</Summary>
+﻿'''<summary>The TreeWalker object represents the nodes of a document subtree and a position within them.</summary>
 <DynamicInterface(GetType(EcmaScriptObject))>
 Public Interface [TreeWalker]
-  '''<Summary>Returns a Node representing the root node as specified when the TreeWalker was created.</Summary>
+  '''<summary>Returns a Node representing the root node as specified when the TreeWalker was created.</summary>
   ReadOnly Property [root] As Node
-  '''<Summary>Returns a NodeFilter used to select the relevant nodes.</Summary>
+  '''<summary>Returns a NodeFilter used to select the relevant nodes.</summary>
   ReadOnly Property [filter] As Node
-  '''<Summary>Is the Node on which the TreeWalker is currently pointing at.</Summary>
+  '''<summary>Is the Node on which the TreeWalker is currently pointing at.</summary>
   Property [currentNode] As Node
 End Interface

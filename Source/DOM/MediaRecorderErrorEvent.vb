@@ -1,10 +1,10 @@
-﻿'''<Summary>The MediaRecorderErrorEvent interface represents errors returned by the MediaStream Recording API. It is an Event object that encapsulates a reference to a DOMException describing the error that occurred.</Summary>
+﻿'''<summary>The MediaRecorderErrorEvent interface represents errors returned by the MediaStream Recording API. It is an Event object that encapsulates a reference to a DOMException describing the error that occurred.</summary>
 <DynamicInterface(GetType(EcmaScriptObject))>
 Public Interface [MediaRecorderErrorEvent]
 Inherits [Event]
 
-  '''<Summary>A DOMException containing information about the error that occurred. Read only.</Summary>
+  '''<summary>A DOMException containing information about the error that occurred. Read only.</summary>
   ReadOnly Property [error] As DOMException
-  '''<Summary>Creates and returns a new MediaRecorderErrorEvent event object with the given parameters.</Summary>
+  '''<summary>Creates and returns a new MediaRecorderErrorEvent event object with the given parameters.</summary>
   Property [MediaStreamRecorderEvent] As Dynamic
 End Interface

@@ -1,26 +1,26 @@
-﻿'''<Summary>The AddressErrors dictionary is used by the Payment Request API to to report validation errors in a physical address (typically a billing address or a shipping address).</Summary>
+﻿'''<summary>The AddressErrors dictionary is used by the Payment Request API to to report validation errors in a physical address (typically a billing address or a shipping address).</summary>
 <DynamicInterface(GetType(EcmaScriptObject))>
 Public Interface [AddressErrors]
-  '''<Summary>A DOMString which, if present, indicates that the addressLine property of the PaymentAddress could not be validated. The contents of the string provide a human-readable explanation of the validation failure, and ideally suggestions to correct the problem.</Summary>
+  '''<summary>A DOMString which, if present, indicates that the addressLine property of the PaymentAddress could not be validated. The contents of the string provide a human-readable explanation of the validation failure, and ideally suggestions to correct the problem.</summary>
   Property [addressLine] As String
-  '''<Summary>A DOMString which, if present, indicates that the city property of the PaymentAddress could not be validated. The contents of the string provide a human-readable explanation of the validation failure, and ideally suggestions to correct the problem.</Summary>
+  '''<summary>A DOMString which, if present, indicates that the city property of the PaymentAddress could not be validated. The contents of the string provide a human-readable explanation of the validation failure, and ideally suggestions to correct the problem.</summary>
   Property [city] As String
-  '''<Summary>A DOMString which, if present, indicates that the country property of the PaymentAddress could not be validated. The contents of the string provide a human-readable explanation of the validation failure, and ideally suggestions to correct the problem.</Summary>
+  '''<summary>A DOMString which, if present, indicates that the country property of the PaymentAddress could not be validated. The contents of the string provide a human-readable explanation of the validation failure, and ideally suggestions to correct the problem.</summary>
   Property [country] As String
-  '''<Summary>A DOMString which, if present, indicates that the dependentLocality property of the PaymentAddress could not be validated. The contents of the string provide a human-readable explanation of the validation failure, and ideally suggestions to correct the problem.</Summary>
+  '''<summary>A DOMString which, if present, indicates that the dependentLocality property of the PaymentAddress could not be validated. The contents of the string provide a human-readable explanation of the validation failure, and ideally suggestions to correct the problem.</summary>
   Property [dependentLocality] As String
-  '''<Summary>A DOMString which, if present, indicates that the organization property of the PaymentAddress could not be validated. The contents of the string provide a human-readable explanation of the validation failure, and ideally suggestions to correct the problem.</Summary>
+  '''<summary>A DOMString which, if present, indicates that the organization property of the PaymentAddress could not be validated. The contents of the string provide a human-readable explanation of the validation failure, and ideally suggestions to correct the problem.</summary>
   Property [organization] As String
-  '''<Summary>A DOMString which, if present, indicates that the phone property of the PaymentAddress could not be validated. The contents of the string provide a human-readable explanation of the validation failure, and ideally suggestions to correct the problem.</Summary>
+  '''<summary>A DOMString which, if present, indicates that the phone property of the PaymentAddress could not be validated. The contents of the string provide a human-readable explanation of the validation failure, and ideally suggestions to correct the problem.</summary>
   Property [phone] As String
-  '''<Summary>A DOMString which, if present, indicates that the postalCode property of the PaymentAddress could not be validated. The contents of the string provide a human-readable explanation of the validation failure, and ideally suggestions to correct the problem.</Summary>
+  '''<summary>A DOMString which, if present, indicates that the postalCode property of the PaymentAddress could not be validated. The contents of the string provide a human-readable explanation of the validation failure, and ideally suggestions to correct the problem.</summary>
   Property [postalCode] As String
-  '''<Summary>A DOMString which, if present, indicates that the recipient property of the PaymentAddress could not be validated. The contents of the string provide a human-readable explanation of the validation failure, and ideally suggestions to correct the problem.</Summary>
+  '''<summary>A DOMString which, if present, indicates that the recipient property of the PaymentAddress could not be validated. The contents of the string provide a human-readable explanation of the validation failure, and ideally suggestions to correct the problem.</summary>
   Property [recipient] As String
-  '''<Summary>A DOMString which, if present, indicates that the region property of the PaymentAddress could not be validated. The contents of the string provide a human-readable explanation of the validation failure, and ideally suggestions to correct the problem.</Summary>
+  '''<summary>A DOMString which, if present, indicates that the region property of the PaymentAddress could not be validated. The contents of the string provide a human-readable explanation of the validation failure, and ideally suggestions to correct the problem.</summary>
   Property [region] As String
-  '''<Summary>A DOMString which, if present, indicates that the regionCode property of the PaymentAddress could not be validated. The contents of the string provide a human-readable explanation of the validation failure, and ideally suggestions to correct the problem.</Summary>
+  '''<summary>A DOMString which, if present, indicates that the regionCode property of the PaymentAddress could not be validated. The contents of the string provide a human-readable explanation of the validation failure, and ideally suggestions to correct the problem.</summary>
   Property [regionCode] As String
-  '''<Summary>A DOMString which, if present, indicates that the sortingCode property of the PaymentAddress could not be validated. The contents of the string provide a human-readable explanation of the validation failure, and ideally suggestions to correct the problem.</Summary>
+  '''<summary>A DOMString which, if present, indicates that the sortingCode property of the PaymentAddress could not be validated. The contents of the string provide a human-readable explanation of the validation failure, and ideally suggestions to correct the problem.</summary>
   Property [sortingCode] As String
 End Interface

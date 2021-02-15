@@ -1,22 +1,22 @@
-﻿'''<Summary>The Performance interface provides access to performance-related information for the current page. It's part of the High Resolution Time API, but is enhanced by the Performance Timeline API, the Navigation Timing API, the User Timing API, and the Resource Timing API.</Summary>
+﻿'''<summary>The Performance interface provides access to performance-related information for the current page. It's part of the High Resolution Time API, but is enhanced by the Performance Timeline API, the Navigation Timing API, the User Timing API, and the Resource Timing API.</summary>
 <DynamicInterface(GetType(EcmaScriptObject))>
 Public Interface [Performance]
-  '''<Summary>Removes the given mark from the browser's performance entry buffer.</Summary>
+  '''<summary>Removes the given mark from the browser's performance entry buffer.</summary>
   Sub [clearMarks]()
-  '''<Summary>Removes the given measure from the browser's performance entry buffer.</Summary>
+  '''<summary>Removes the given measure from the browser's performance entry buffer.</summary>
   Sub [clearMeasures]()
-  '''<Summary>Returns a list of PerformanceEntry objects based on the given filter.</Summary>
+  '''<summary>Returns a list of PerformanceEntry objects based on the given filter.</summary>
   Function [getEntries]() As PerformanceEntry()
-  '''<Summary>Returns a list of PerformanceEntry objects based on the given name and entry type.</Summary>
+  '''<summary>Returns a list of PerformanceEntry objects based on the given name and entry type.</summary>
   Function [getEntriesByName]([parname] As Dynamic, [partype] As Dynamic) As PerformanceEntry()
-  '''<Summary>Returns a list of PerformanceEntry objects of the given entry type.</Summary>
+  '''<summary>Returns a list of PerformanceEntry objects of the given entry type.</summary>
   Function [getEntriesByType]([partype] As Dynamic) As PerformanceEntry()
-  '''<Summary>Creates a timestamp in the browser's performance entry buffer with the given name.</Summary>
+  '''<summary>Creates a timestamp in the browser's performance entry buffer with the given name.</summary>
   Function [mark]([parname] As Dynamic) As DateTime
-  '''<Summary>Creates a named timestamp in the browser's performance entry buffer between two specified marks (known as the start mark and end mark, respectively).</Summary>
+  '''<summary>Creates a named timestamp in the browser's performance entry buffer between two specified marks (known as the start mark and end mark, respectively).</summary>
   Function [measure]([parname] As Dynamic) As DateTime
-  '''<Summary>Returns a DOMHighResTimeStamp representing the number of milliseconds elapsed since a reference instant.</Summary>
+  '''<summary>Returns a DOMHighResTimeStamp representing the number of milliseconds elapsed since a reference instant.</summary>
   Function [now]() As Long
-  '''<Summary>Is a jsonizer returning a json object representing the Performance object.</Summary>
+  '''<summary>Is a jsonizer returning a json object representing the Performance object.</summary>
   Function [toJSON]() As Dynamic
 End Interface

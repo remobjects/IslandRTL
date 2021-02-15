@@ -1,28 +1,28 @@
-﻿'''<Summary>The DOMTokenList interface represents a set of space-separated tokens. Such a set is returned by Element.classList, HTMLLinkElement.relList, HTMLAnchorElement.relList, HTMLAreaElement.relList, HTMLIframeElement.sandbox, or HTMLOutputElement.htmlFor. It is indexed beginning with 0 as with JavaScript Array objects. DOMTokenList is always case-sensitive.</Summary>
+﻿'''<summary>The DOMTokenList interface represents a set of space-separated tokens. Such a set is returned by Element.classList, HTMLLinkElement.relList, HTMLAnchorElement.relList, HTMLAreaElement.relList, HTMLIframeElement.sandbox, or HTMLOutputElement.htmlFor. It is indexed beginning with 0 as with JavaScript Array objects. DOMTokenList is always case-sensitive.</summary>
 <DynamicInterface(GetType(EcmaScriptObject))>
 Public Interface [DOMTokenList]
-  '''<Summary>Is an integer representing the number of objects stored in the object.</Summary>
+  '''<summary>Is an integer representing the number of objects stored in the object.</summary>
   ReadOnly Property [length] As Integer
-  '''<Summary>A stringifier property that returns the value of the list as a DOMString.</Summary>
+  '''<summary>A stringifier property that returns the value of the list as a DOMString.</summary>
   Property [value] As String
-  '''<Summary>Returns the item in the list by its index, or undefined if index is greater than or equal to the list's length.</Summary>
+  '''<summary>Returns the item in the list by its index, or undefined if index is greater than or equal to the list's length.</summary>
   Default Property [item]([parindex] As Integer) As Dynamic
-  '''<Summary>Returns true if the list contains the given token, otherwise false.</Summary>
+  '''<summary>Returns true if the list contains the given token, otherwise false.</summary>
   Function [contains]([partoken] As Dynamic) As Boolean
-  '''<Summary>Adds the specified token(s) to the list.</Summary>
+  '''<summary>Adds the specified token(s) to the list.</summary>
   Sub [add]([partoken] As Dynamic)
-  '''<Summary>Removes the specified token(s) from the list.</Summary>
+  '''<summary>Removes the specified token(s) from the list.</summary>
   Sub [remove]([partoken] As Dynamic)
-  '''<Summary>Replaces token with newToken.</Summary>
+  '''<summary>Replaces token with newToken.</summary>
   Sub [replace]([paroldToken] As Dynamic, [parnewToken] As Dynamic)
-  '''<Summary>Removes token from the list if it exists, or adds token to the list if it doesn't. Returns a boolean indicating whether token is in the list after the operation.</Summary>
+  '''<summary>Removes token from the list if it exists, or adds token to the list if it doesn't. Returns a boolean indicating whether token is in the list after the operation.</summary>
   Function [toggle]([partoken] As Dynamic, [parforce] As Dynamic) As Boolean
-  '''<Summary>Returns an iterator, allowing you to go through all key/value pairs contained in this object.</Summary>
+  '''<summary>Returns an iterator, allowing you to go through all key/value pairs contained in this object.</summary>
   Function [entries]() As Dynamic
-  '''<Summary>Executes a provided callback function once per DOMTokenList element.</Summary>
+  '''<summary>Executes a provided callback function once per DOMTokenList element.</summary>
   Sub [forEach]([parcallback] As Dynamic, [parcurrentValue] As Dynamic, [parcurrentIndex] As Dynamic, [parlistObj] As Dynamic)
-  '''<Summary>Returns an iterator, allowing you to go through all keys of the key/value pairs contained in this object.</Summary>
+  '''<summary>Returns an iterator, allowing you to go through all keys of the key/value pairs contained in this object.</summary>
   Function [keys]() As Dynamic
-  '''<Summary>Returns an iterator, allowing you to go through all values of the key/value pairs contained in this object.</Summary>
+  '''<summary>Returns an iterator, allowing you to go through all values of the key/value pairs contained in this object.</summary>
   Function [values]() As Dynamic
 End Interface
