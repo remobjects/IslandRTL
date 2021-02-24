@@ -1,7 +1,7 @@
 ﻿namespace RemObjects.Elements.System;
 
 interface
-{$IFNDEF NOFILES}
+
 type
   Path = public static class
   public
@@ -12,14 +12,18 @@ type
     method GetExtension(FileName: not nullable String): not nullable String;
     method GetFileName(FileName: not nullable String): not nullable String;
     method GetFileNameWithoutExtension(FileName: not nullable String): not nullable String;
-    method GetFullPath(RelativePath: not nullable String): not nullable String;
 
-    property DirectorySeparatorChar: Char read Folder.Separator;
+    property DirectorySeparatorChar: Char read {$IF NOFILES}'/'{$ELSE}Folder.Separator{$ENDIF}; inline;
+
+    {$IFNDEF NOFILES}
+    method GetFullPath(RelativePath: not nullable String): not nullable String;
     property ListSeparator: Char read {$IFDEF WINDOWS}';'{$ELSEIF POSIX}':'{$ELSE}{$ERROR}{$ENDIF};
+    {$ENDIF}
+
   end;
-{$ENDIF}
+
 implementation
-{$IFNDEF NOFILES}
+
 method Path.ChangeExtension(FileName: not nullable String; NewExtension: nullable String): not nullable String;
 begin
   if length(NewExtension) = 0 then
@@ -49,10 +53,10 @@ begin
 
   var LastChar := BasePath[BasePath.Length - 1];
 
-  if LastChar = Folder.Separator then
+  if LastChar = DirectorySeparatorChar then
     result := BasePath + Path
   else
-    result := BasePath + Folder.Separator + Path;
+    result := BasePath + DirectorySeparatorChar + Path;
 end;
 
 method Path.Combine(BasePath: not nullable String; Path1: not nullable String; Path2: not nullable String): not nullable String;
@@ -67,13 +71,13 @@ begin
 
   var LastChar := FileName[FileName.Length - 1];
 
-  if LastChar = Folder.Separator then
+  if LastChar = DirectorySeparatorChar then
     FileName := FileName.Substring(0, FileName.Length - 1);
 
-  if (FileName = Folder.Separator) or ((length(FileName) = 2) and (FileName[1] = ':')) then
+  if (FileName = DirectorySeparatorChar) or ((length(FileName) = 2) and (FileName[1] = ':')) then
     exit nil; // root folder has no parent
 
-  var lIndex := FileName.LastIndexOf(Folder.Separator);
+  var lIndex := FileName.LastIndexOf(DirectorySeparatorChar);
 
   if FileName.StartsWith('\\') then begin
 
@@ -88,7 +92,7 @@ begin
     if lIndex > -1 then
       result := FileName.Substring(0, lIndex)
     else
-      result := FileName+Folder.Separator+'..' // "fake" parent folder by appending ..
+      result := FileName+DirectorySeparatorChar+'..' // "fake" parent folder by appending ..
 
   end;
 end;
@@ -110,10 +114,10 @@ begin
 
   var LastChar: Char := FileName[FileName.Length - 1];
 
-  if LastChar = Folder.Separator then
+  if LastChar = DirectorySeparatorChar then
     FileName := FileName.Substring(0, FileName.Length - 1);
 
-  var lIndex := FileName.LastIndexOf(Folder.Separator);
+  var lIndex := FileName.LastIndexOf(DirectorySeparatorChar);
 
   if (lIndex <> -1) and (lIndex < FileName.Length - 1) then
     exit FileName.Substring(lIndex + 1);
@@ -132,6 +136,7 @@ begin
   exit FileName;
 end;
 
+{$IFNDEF NOFILES}
 method Path.GetFullPath(RelativePath: not nullable String): not nullable String;
 begin
   {$IFDEF WINDOWS}
@@ -162,4 +167,5 @@ begin
   {$ENDIF}
 end;
 {$ENDIF}
+
 end.
