@@ -344,7 +344,7 @@ namespace RemObjects.Elements.MicroTasks
 		/// <summary>
 		/// Registers a completion callback,
 		/// </summary>
-		/// <param name="x"></param>
+		/// <param name="callback"></param>
 		public void OnComplete(IAsyncCompletion callback)
 		{
 			if (this.state >= TaskState.Done)

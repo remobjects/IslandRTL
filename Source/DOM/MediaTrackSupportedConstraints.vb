@@ -33,9 +33,9 @@ Public Interface [MediaTrackSupportedConstraints]
   Property [deviceId] As Integer
   '''<summary>A Boolean value whose value is true if the groupId constraint is supported in the current environment.</summary>
   Property [groupId] As Integer
-  '''<Summary></summary>
+  '''<summary></summary>
   Property [cursor] As Boolean
-  '''<Summary></summary>
+  '''<summary></summary>
   Property [displaySurface] As Boolean
   '''<summary>A Boolean value which is true if the logicalSurface constraint is supported in the current environment.</summary>
   Property [logicalSurface] As Boolean

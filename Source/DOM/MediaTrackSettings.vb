@@ -23,7 +23,7 @@ Public Interface [MediaTrackSettings]
   Property [volume] As Double
   '''<summary>A double-precision floating point value indicating the current value of the aspectRatio property, specified precisely to 10 decimal places. This is the width of the image in pixels divided by its height in pixels. Common values include 1.3333333333 (for the classic television 4:3 "standard" aspect ratio, also used on tablets such as Apple's iPad), 1.7777777778 (for the 16:9 high-definition widescreen aspect ratio), and 1.6 (for the 16:10 aspect ratio common among widescreen computers and tablets).</summary>
   Property [aspectRatio] As Double
-  '''<Summary></summary>
+  '''<summary></summary>
   Property [facingMode] As String
   '''<summary>A double-precision floating point value indicating the current value of the frameRate property, specifying how many frames of video per second the track includes. If the value can't be determined for any reason, the value will match the vertical sync rate of the device the user agent is running on.</summary>
   Property [frameRate] As Double
@@ -31,9 +31,9 @@ Public Interface [MediaTrackSettings]
   Property [height] As Integer
   '''<summary>A long integer value indicating the current value of the width property, specifying the width of the track's video data in pixels.</summary>
   Property [width] As Integer
-  '''<Summary></summary>
+  '''<summary></summary>
   Property [cursor] As String
-  '''<Summary></summary>
+  '''<summary></summary>
   Property [displaySurface] As String
   '''<summary>A Boolean value which, if true, indicates that the video contained in the stream's video track contains a background rendering context, rather than a user-visible one. This is false if the video being captured is coming from a foreground (user-visible) source.</summary>
   Property [logicalSurface] As Boolean

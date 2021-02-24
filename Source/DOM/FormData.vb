@@ -1,4 +1,4 @@
-﻿'''<Summary>/docs/Web/API/FormData</summary>
+﻿'''<summary>/docs/Web/API/FormData</summary>
 <DynamicInterface(GetType(EcmaScriptObject))>
 Public Interface [FormData]
   '''<summary>Returns an iterator allowing to go through all key/value pairs contained in this object.</summary>

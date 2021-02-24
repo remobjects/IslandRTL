@@ -3,7 +3,7 @@
 Public Interface [IDBRequest]
   '''<summary>Returns a DOMException in the event of an unsuccessful request, indicating what went wrong.</summary>
   ReadOnly Property [error] As DOMException
-  '''<Summary></summary>
+  '''<summary></summary>
   ReadOnly Property [result] As Dynamic
   '''<summary>The state of the request. Every request starts in the pending state. The state changes to done when the request completes successfully or when an error occurs.</summary>
   ReadOnly Property [readyState] As Dynamic

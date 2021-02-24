@@ -59,9 +59,9 @@ Public Interface [MediaTrackConstraints]
   Property [height] As Integer
   '''<summary>A ConstrainLong specifying the video width or range of widths which are acceptable and/or required.</summary>
   Property [width] As Integer
-  '''<Summary></summary>
+  '''<summary></summary>
   Property [cursor] As String
-  '''<Summary></summary>
+  '''<summary></summary>
   Property [displaySurface] As String
   '''<summary>A ConstrainBoolean value which may contain a single Boolean value or a set of them, indicating whether or not to allow the user to choose source surfaces which do not directly correspond to display areas. These may include backing buffers for windows to allow capture of window contents that are hidden by other windows in front of them, or buffers containing larger documents that need to be scrolled through to see the entire contents in their windows.</summary>
   Property [logicalSurface] As ConstrainBoolean

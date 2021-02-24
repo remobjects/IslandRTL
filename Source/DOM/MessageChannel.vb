@@ -5,6 +5,6 @@ Public Interface [MessageChannel]
   ReadOnly Property [port1] As MessagePort
   '''<summary>Returns port2 of the channel.</summary>
   ReadOnly Property [port2] As MessagePort
-  '''<Summary></summary>
+  '''<summary></summary>
   Property [MessageChannel] As MessageChannel
 End Interface

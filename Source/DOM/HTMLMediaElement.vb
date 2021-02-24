@@ -5,7 +5,7 @@ Inherits HTMLElement, Element, Node, EventTarget
 
   '''<summary>A AudioTrackList that lists the AudioTrack objects contained in the element.</summary>
   Property [audioTracks] As HTMLElement
-  '''<Summary></summary>
+  '''<summary></summary>
   Property [autoplay] As Dynamic
   '''<summary>Returns a TimeRanges object that indicates the ranges of the media source that the browser has buffered (if any) at the moment the buffered property is accessed.</summary>
   ReadOnly Property [buffered] As TimeRanges

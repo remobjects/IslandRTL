@@ -1,4 +1,4 @@
-﻿'''<Summary>/docs/Web/API/AudioDestinationNode</summary>
+﻿'''<summary>/docs/Web/API/AudioDestinationNode</summary>
 <DynamicInterface(GetType(EcmaScriptObject))>
 Public Interface [AudioDestinationNode]
 Inherits AudioNode

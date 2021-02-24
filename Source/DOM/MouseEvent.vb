@@ -21,7 +21,7 @@ Public Interface [MouseEvent]
   ReadOnly Property [movementY] As Integer
   '''<summary>Returns the id of the hit region affected by the event. If no hit region is affected, null is returned.</summary>
   ReadOnly Property [region] As String
-  '''<Summary></summary>
+  '''<summary></summary>
   ReadOnly Property [relatedTarget] As HTMLElement
   '''<summary>The X coordinate of the mouse pointer in global (screen) coordinates.</summary>
   ReadOnly Property [screenX] As Integer

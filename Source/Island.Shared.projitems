@@ -4,9 +4,8 @@
     <MSBuildAllProjects>$(MSBuildAllProjects);$(MSBuildThisFileFullPath)</MSBuildAllProjects>
     <HasSharedItems>true</HasSharedItems>
     <SharedGUID>8BE19C06-DD7E-41F7-954B-6D269C087E4C</SharedGUID>
-  </PropertyGroup>
-  <PropertyGroup Label="Configuration">
     <Import_RootNamespace>Island.Shared.elements</Import_RootNamespace>
+    <ProjectGuid>{8BE19C06-DD7E-41F7-954B-6D269C087E4C}</ProjectGuid>
   </PropertyGroup>
   <ItemGroup>
     <Compile Include="$(MSBuildThisFileDirectory)Attributes.pas" />

@@ -9,7 +9,7 @@ Inherits HTMLElement
   Property [src] As String
   '''<summary>Is a DOMString representing the character encoding of an external script. It reflects the charset attribute.</summary>
   Property [charset] As String
-  '''<Summary></summary>
+  '''<summary></summary>
   Property [text] As String
   '''<summary>Is a Boolean that if true, stops the script's execution in browsers that support ES2015 modules — used to run fallback scripts in older browsers that do not support JavaScript modules.</summary>
   Property [noModule] As Boolean

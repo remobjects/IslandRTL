@@ -1,4 +1,4 @@
-﻿'''<Summary>/docs/Web/API/PaymentMethodChangeEvent</summary>
+﻿'''<summary>/docs/Web/API/PaymentMethodChangeEvent</summary>
 <DynamicInterface(GetType(EcmaScriptObject))>
 Public Interface [PaymentMethodChangeEvent]
   '''<summary>An object containing payment method-specific data useful when handling a payment method change. If no such information is available, this value is null.</summary>

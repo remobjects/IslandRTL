@@ -3,10 +3,10 @@
 Public Interface [SVGCircleElement]
 Inherits SVGGeometryElement
 
-  '''<Summary></summary>
+  '''<summary></summary>
   ReadOnly Property [cx] As SVGAnimatedLength
-  '''<Summary></summary>
+  '''<summary></summary>
   ReadOnly Property [cy] As SVGAnimatedLength
-  '''<Summary></summary>
+  '''<summary></summary>
   ReadOnly Property [r] As SVGAnimatedLength
 End Interface
