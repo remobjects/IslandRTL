@@ -944,11 +944,8 @@ begin
         if lMine then begin
           var lRecord := ^ElementsException(aEx);
           lRecord := ^ElementsException(@^Byte(lRecord)[-Int32((^Byte(@lRecord^.Unwind) - ^Byte(lRecord)))]);
-
           ExternalCalls.HandlerSwitch := lTypeInfo;
           ExternalCalls.Target := lLandingPad;
-
-
         end;
         exit rtl._Unwind_Reason_Code._URC_HANDLER_FOUND;
       end;
