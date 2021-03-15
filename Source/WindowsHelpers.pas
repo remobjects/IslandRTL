@@ -1378,7 +1378,7 @@ callq *%rcx
 addq $$32, %rsp
 popq %rbp
 retq
-", "", false, false), DisableInlining, DisableOptimizations, LinkOnce]
+", "", false, false), DisableInlining, DisableOptimizations]
 method CallCatch64(aCall: NativeInt; aEBP: NativeInt): NativeInt; external;
 {$ELSEIF i386}
 [DisableInlining]
