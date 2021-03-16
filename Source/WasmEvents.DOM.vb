@@ -3,9 +3,9 @@
   //this code has no meaning in any other language than Mercury, because it works on the Handles clauses (which are Mercury only) that are used in the code.
 
   Public class HTMLElement_EventProxy
-    Implements HTMLElement
+    Implements HtmlElement
 
-    Public ReadOnly Property HtmlElement As HTMLElement Implements Public HTMLElement
+    Public ReadOnly Property HtmlElement As HTMLElement Implements Public HtmlElement
 
     Public Sub New(element As Element)
       _HtmlElement = DirectCast(element, HTMLElement)
@@ -21,1513 +21,1513 @@
 
     Public Delegate Sub OnFullScreenChangeDelegate(sender as HTMLElement, e As Dom.Event)
 
-    Public Event onFullScreenChange As OnFullScreenChangeDelegate ' Add AddOnFullScreenChange Remove RemoveOnFullScreenChange
+    Public Custom Event onFullScreenChange As OnFullScreenChangeDelegate
+      AddHandler(aEvent As Sub(sender as HTMLElement, e As Dom.Event))
+        If Not assigned(_onFullScreenChange) Then
+          RemObjects.Elements.WebAssembly.WasmEvents.SetEvent(_HtmlElement, "onFullScreenChange", Sub(sender as HTMLElement, e As Dynamic) RaiseEvent _onFullScreenChange(sender, CType(e, Dom.Event)))
+        End If
+        AddHandler _onFullScreenChange, Value
+      End AddHandler
+      RemoveHandler(aEvent As OnFullScreenChangeDelegate)
+        RemoveHandler _onFullScreenChange, Value
+        If Not assigned(_onFullScreenChange) then
+          RemObjects.Elements.WebAssembly.WasmEvents.ClearEvent(_HtmlElement, "onFullScreenChange")
+        End If
+      End RemoveHandler
+    End Event
+
     Private Event _onFullScreenChange As OnFullScreenChangeDelegate
-
-    Private Sub AddOnFullScreenChange(aEvent As Sub(sender as HTMLElement, e As Dom.Event))
-      If Not assigned(_onFullScreenChange) Then
-        RemObjects.Elements.WebAssembly.WasmEvents.SetEvent(_HtmlElement, "onFullScreenChange", Sub(sender as HTMLElement, e As Dynamic) RaiseEvent _onFullScreenChange(sender, CType(e, Dom.Event)))
-      End If
-      AddHandler _onFullScreenChange, aEvent
-    End Sub
-
-    Private Sub CantRemove(aEvent As OnFullScreenChangeDelegate)
-      RemoveHandler _onFullScreenChange, aEvent
-      If Not assigned(_onFullScreenChange) then
-        RemObjects.Elements.WebAssembly.WasmEvents.ClearEvent(_HtmlElement, "onFullScreenChange")
-      End If
-    End Sub
 
     ' onFullScreenError
 
     Public Delegate Sub OnFullScreenErrorDelegate(sender as HTMLElement, e As Dom.Event)
 
-    Public Event onFullScreenError As OnFullScreenErrorDelegate ' Add AddOnFullScreenError Remove RemoveOnFullScreenError
+    Public Custom Event onFullScreenError As OnFullScreenErrorDelegate
+      AddHandler(aEvent As Sub(sender as HTMLElement, e As Dom.Event))
+        If Not assigned(_onFullScreenError) Then
+          RemObjects.Elements.WebAssembly.WasmEvents.SetEvent(_HtmlElement, "onFullScreenError", Sub(sender as HTMLElement, e As Dynamic) RaiseEvent _onFullScreenError(sender, CType(e, Dom.Event)))
+        End If
+        AddHandler _onFullScreenError, Value
+      End AddHandler
+      RemoveHandler(aEvent As OnFullScreenErrorDelegate)
+        RemoveHandler _onFullScreenError, Value
+        If Not assigned(_onFullScreenError) then
+          RemObjects.Elements.WebAssembly.WasmEvents.ClearEvent(_HtmlElement, "onFullScreenError")
+        End If
+      End RemoveHandler
+    End Event
+
     Private Event _onFullScreenError As OnFullScreenErrorDelegate
-
-    Private Sub AddOnFullScreenError(aEvent As Sub(sender as HTMLElement, e As Dom.Event))
-      If Not assigned(_onFullScreenError) Then
-        RemObjects.Elements.WebAssembly.WasmEvents.SetEvent(_HtmlElement, "onFullScreenError", Sub(sender as HTMLElement, e As Dynamic) RaiseEvent _onFullScreenError(sender, CType(e, Dom.Event)))
-      End If
-      AddHandler _onFullScreenError, aEvent
-    End Sub
-
-    Private Sub CantRemove(aEvent As OnFullScreenErrorDelegate)
-      RemoveHandler _onFullScreenError, aEvent
-      If Not assigned(_onFullScreenError) then
-        RemObjects.Elements.WebAssembly.WasmEvents.ClearEvent(_HtmlElement, "onFullScreenError")
-      End If
-    End Sub
 
     ' onAbort
 
     Public Delegate Sub OnAbortDelegate(sender as HTMLElement, e As Dom.Event)
 
-    Public Event onAbort As OnAbortDelegate ' Add AddOnAbort Remove RemoveOnAbort
+    Public Custom Event onAbort As OnAbortDelegate
+      AddHandler(aEvent As Sub(sender as HTMLElement, e As Dom.Event))
+        If Not assigned(_onAbort) Then
+          RemObjects.Elements.WebAssembly.WasmEvents.SetEvent(_HtmlElement, "onAbort", Sub(sender as HTMLElement, e As Dynamic) RaiseEvent _onAbort(sender, CType(e, Dom.Event)))
+        End If
+        AddHandler _onAbort, Value
+      End AddHandler
+      RemoveHandler(aEvent As OnAbortDelegate)
+        RemoveHandler _onAbort, Value
+        If Not assigned(_onAbort) then
+          RemObjects.Elements.WebAssembly.WasmEvents.ClearEvent(_HtmlElement, "onAbort")
+        End If
+      End RemoveHandler
+    End Event
+
     Private Event _onAbort As OnAbortDelegate
-
-    Private Sub AddOnAbort(aEvent As Sub(sender as HTMLElement, e As Dom.Event))
-      If Not assigned(_onAbort) Then
-        RemObjects.Elements.WebAssembly.WasmEvents.SetEvent(_HtmlElement, "onAbort", Sub(sender as HTMLElement, e As Dynamic) RaiseEvent _onAbort(sender, CType(e, Dom.Event)))
-      End If
-      AddHandler _onAbort, aEvent
-    End Sub
-
-    Private Sub CantRemove(aEvent As OnAbortDelegate)
-      RemoveHandler _onAbort, aEvent
-      If Not assigned(_onAbort) then
-        RemObjects.Elements.WebAssembly.WasmEvents.ClearEvent(_HtmlElement, "onAbort")
-      End If
-    End Sub
 
     ' onBlur
 
     Public Delegate Sub OnBlurDelegate(sender as HTMLElement, e As Dom.Event)
 
-    Public Event onBlur As OnBlurDelegate ' Add AddOnBlur Remove RemoveOnBlur
+    Public Custom Event onBlur As OnBlurDelegate
+      AddHandler(aEvent As Sub(sender as HTMLElement, e As Dom.Event))
+        If Not assigned(_onBlur) Then
+          RemObjects.Elements.WebAssembly.WasmEvents.SetEvent(_HtmlElement, "onBlur", Sub(sender as HTMLElement, e As Dynamic) RaiseEvent _onBlur(sender, CType(e, Dom.Event)))
+        End If
+        AddHandler _onBlur, Value
+      End AddHandler
+      RemoveHandler(aEvent As OnBlurDelegate)
+        RemoveHandler _onBlur, Value
+        If Not assigned(_onBlur) then
+          RemObjects.Elements.WebAssembly.WasmEvents.ClearEvent(_HtmlElement, "onBlur")
+        End If
+      End RemoveHandler
+    End Event
+
     Private Event _onBlur As OnBlurDelegate
-
-    Private Sub AddOnBlur(aEvent As Sub(sender as HTMLElement, e As Dom.Event))
-      If Not assigned(_onBlur) Then
-        RemObjects.Elements.WebAssembly.WasmEvents.SetEvent(_HtmlElement, "onBlur", Sub(sender as HTMLElement, e As Dynamic) RaiseEvent _onBlur(sender, CType(e, Dom.Event)))
-      End If
-      AddHandler _onBlur, aEvent
-    End Sub
-
-    Private Sub CantRemove(aEvent As OnBlurDelegate)
-      RemoveHandler _onBlur, aEvent
-      If Not assigned(_onBlur) then
-        RemObjects.Elements.WebAssembly.WasmEvents.ClearEvent(_HtmlElement, "onBlur")
-      End If
-    End Sub
 
     ' onError
 
     Public Delegate Sub OnErrorDelegate(sender as HTMLElement, e As UIEvent)
 
-    Public Event onError As OnErrorDelegate ' Add AddOnError Remove RemoveOnError
+    Public Custom Event onError As OnErrorDelegate
+      AddHandler(aEvent As Sub(sender as HTMLElement, e As UIEvent))
+        If Not assigned(_onError) Then
+          RemObjects.Elements.WebAssembly.WasmEvents.SetEvent(_HtmlElement, "onError", Sub(sender as HTMLElement, e As Dynamic) RaiseEvent _onError(sender, CType(e, UIEvent)))
+        End If
+        AddHandler _onError, Value
+      End AddHandler
+      RemoveHandler(aEvent As OnErrorDelegate)
+        RemoveHandler _onError, Value
+        If Not assigned(_onError) then
+          RemObjects.Elements.WebAssembly.WasmEvents.ClearEvent(_HtmlElement, "onError")
+        End If
+      End RemoveHandler
+    End Event
+
     Private Event _onError As OnErrorDelegate
-
-    Private Sub AddOnError(aEvent As Sub(sender as HTMLElement, e As UIEvent))
-      If Not assigned(_onError) Then
-        RemObjects.Elements.WebAssembly.WasmEvents.SetEvent(_HtmlElement, "onError", Sub(sender as HTMLElement, e As Dynamic) RaiseEvent _onError(sender, CType(e, UIEvent)))
-      End If
-      AddHandler _onError, aEvent
-    End Sub
-
-    Private Sub CantRemove(aEvent As OnErrorDelegate)
-      RemoveHandler _onError, aEvent
-      If Not assigned(_onError) then
-        RemObjects.Elements.WebAssembly.WasmEvents.ClearEvent(_HtmlElement, "onError")
-      End If
-    End Sub
 
     ' onFocus
 
     Public Delegate Sub OnFocusDelegate(sender as HTMLElement, e As FocusEvent)
 
-    Public Event onFocus As OnFocusDelegate ' Add AddOnFocus Remove RemoveOnFocus
+    Public Custom Event onFocus As OnFocusDelegate
+      AddHandler(aEvent As Sub(sender as HTMLElement, e As FocusEvent))
+        If Not assigned(_onFocus) Then
+          RemObjects.Elements.WebAssembly.WasmEvents.SetEvent(_HtmlElement, "onFocus", Sub(sender as HTMLElement, e As Dynamic) RaiseEvent _onFocus(sender, CType(e, FocusEvent)))
+        End If
+        AddHandler _onFocus, Value
+      End AddHandler
+      RemoveHandler(aEvent As OnFocusDelegate)
+        RemoveHandler _onFocus, Value
+        If Not assigned(_onFocus) then
+          RemObjects.Elements.WebAssembly.WasmEvents.ClearEvent(_HtmlElement, "onFocus")
+        End If
+      End RemoveHandler
+    End Event
+
     Private Event _onFocus As OnFocusDelegate
-
-    Private Sub AddOnFocus(aEvent As Sub(sender as HTMLElement, e As FocusEvent))
-      If Not assigned(_onFocus) Then
-        RemObjects.Elements.WebAssembly.WasmEvents.SetEvent(_HtmlElement, "onFocus", Sub(sender as HTMLElement, e As Dynamic) RaiseEvent _onFocus(sender, CType(e, FocusEvent)))
-      End If
-      AddHandler _onFocus, aEvent
-    End Sub
-
-    Private Sub CantRemove(aEvent As OnFocusDelegate)
-      RemoveHandler _onFocus, aEvent
-      If Not assigned(_onFocus) then
-        RemObjects.Elements.WebAssembly.WasmEvents.ClearEvent(_HtmlElement, "onFocus")
-      End If
-    End Sub
 
     ' onCancel
 
     Public Delegate Sub OnCancelDelegate(sender as HTMLElement, e As Dom.Event)
 
-    Public Event onCancel As OnCancelDelegate ' Add AddOnCancel Remove RemoveOnCancel
+    Public Custom Event onCancel As OnCancelDelegate
+      AddHandler(aEvent As Sub(sender as HTMLElement, e As Dom.Event))
+        If Not assigned(_onCancel) Then
+          RemObjects.Elements.WebAssembly.WasmEvents.SetEvent(_HtmlElement, "onCancel", Sub(sender as HTMLElement, e As Dynamic) RaiseEvent _onCancel(sender, CType(e, Dom.Event)))
+        End If
+        AddHandler _onCancel, Value
+      End AddHandler
+      RemoveHandler(aEvent As OnCancelDelegate)
+        RemoveHandler _onCancel, Value
+        If Not assigned(_onCancel) then
+          RemObjects.Elements.WebAssembly.WasmEvents.ClearEvent(_HtmlElement, "onCancel")
+        End If
+      End RemoveHandler
+    End Event
+
     Private Event _onCancel As OnCancelDelegate
-
-    Private Sub AddOnCancel(aEvent As Sub(sender as HTMLElement, e As Dom.Event))
-      If Not assigned(_onCancel) Then
-        RemObjects.Elements.WebAssembly.WasmEvents.SetEvent(_HtmlElement, "onCancel", Sub(sender as HTMLElement, e As Dynamic) RaiseEvent _onCancel(sender, CType(e, Dom.Event)))
-      End If
-      AddHandler _onCancel, aEvent
-    End Sub
-
-    Private Sub CantRemove(aEvent As OnCancelDelegate)
-      RemoveHandler _onCancel, aEvent
-      If Not assigned(_onCancel) then
-        RemObjects.Elements.WebAssembly.WasmEvents.ClearEvent(_HtmlElement, "onCancel")
-      End If
-    End Sub
 
     ' onCanplay
 
     Public Delegate Sub OnCanplayDelegate(sender as HTMLElement, e As Dom.Event)
 
-    Public Event onCanplay As OnCanplayDelegate ' Add AddOnCanplay Remove RemoveOnCanplay
+    Public Custom Event onCanplay As OnCanplayDelegate
+      AddHandler(aEvent As Sub(sender as HTMLElement, e As Dom.Event))
+        If Not assigned(_onCanplay) Then
+          RemObjects.Elements.WebAssembly.WasmEvents.SetEvent(_HtmlElement, "onCanplay", Sub(sender as HTMLElement, e As Dynamic) RaiseEvent _onCanplay(sender, CType(e, Dom.Event)))
+        End If
+        AddHandler _onCanplay, Value
+      End AddHandler
+      RemoveHandler(aEvent As OnCanplayDelegate)
+        RemoveHandler _onCanplay, Value
+        If Not assigned(_onCanplay) then
+          RemObjects.Elements.WebAssembly.WasmEvents.ClearEvent(_HtmlElement, "onCanplay")
+        End If
+      End RemoveHandler
+    End Event
+
     Private Event _onCanplay As OnCanplayDelegate
-
-    Private Sub AddOnCanplay(aEvent As Sub(sender as HTMLElement, e As Dom.Event))
-      If Not assigned(_onCanplay) Then
-        RemObjects.Elements.WebAssembly.WasmEvents.SetEvent(_HtmlElement, "onCanplay", Sub(sender as HTMLElement, e As Dynamic) RaiseEvent _onCanplay(sender, CType(e, Dom.Event)))
-      End If
-      AddHandler _onCanplay, aEvent
-    End Sub
-
-    Private Sub CantRemove(aEvent As OnCanplayDelegate)
-      RemoveHandler _onCanplay, aEvent
-      If Not assigned(_onCanplay) then
-        RemObjects.Elements.WebAssembly.WasmEvents.ClearEvent(_HtmlElement, "onCanplay")
-      End If
-    End Sub
 
     ' onCanplayThrough
 
     Public Delegate Sub OnCanplayThroughDelegate(sender as HTMLElement, e As Dom.Event)
 
-    Public Event onCanplayThrough As OnCanplayThroughDelegate ' Add AddOnCanplayThrough Remove RemoveOnCanplayThrough
+    Public Custom Event onCanplayThrough As OnCanplayThroughDelegate
+      AddHandler(aEvent As Sub(sender as HTMLElement, e As Dom.Event))
+        If Not assigned(_onCanplayThrough) Then
+          RemObjects.Elements.WebAssembly.WasmEvents.SetEvent(_HtmlElement, "onCanplayThrough", Sub(sender as HTMLElement, e As Dynamic) RaiseEvent _onCanplayThrough(sender, CType(e, Dom.Event)))
+        End If
+        AddHandler _onCanplayThrough, Value
+      End AddHandler
+      RemoveHandler(aEvent As OnCanplayThroughDelegate)
+        RemoveHandler _onCanplayThrough, Value
+        If Not assigned(_onCanplayThrough) then
+          RemObjects.Elements.WebAssembly.WasmEvents.ClearEvent(_HtmlElement, "onCanplayThrough")
+        End If
+      End RemoveHandler
+    End Event
+
     Private Event _onCanplayThrough As OnCanplayThroughDelegate
-
-    Private Sub AddOnCanplayThrough(aEvent As Sub(sender as HTMLElement, e As Dom.Event))
-      If Not assigned(_onCanplayThrough) Then
-        RemObjects.Elements.WebAssembly.WasmEvents.SetEvent(_HtmlElement, "onCanplayThrough", Sub(sender as HTMLElement, e As Dynamic) RaiseEvent _onCanplayThrough(sender, CType(e, Dom.Event)))
-      End If
-      AddHandler _onCanplayThrough, aEvent
-    End Sub
-
-    Private Sub CantRemove(aEvent As OnCanplayThroughDelegate)
-      RemoveHandler _onCanplayThrough, aEvent
-      If Not assigned(_onCanplayThrough) then
-        RemObjects.Elements.WebAssembly.WasmEvents.ClearEvent(_HtmlElement, "onCanplayThrough")
-      End If
-    End Sub
 
     ' onChange
 
     Public Delegate Sub OnChangeDelegate(sender as HTMLElement, e As Dom.Event)
 
-    Public Event onChange As OnChangeDelegate ' Add AddOnChange Remove RemoveOnChange
+    Public Custom Event onChange As OnChangeDelegate
+      AddHandler(aEvent As Sub(sender as HTMLElement, e As Dom.Event))
+        If Not assigned(_onChange) Then
+          RemObjects.Elements.WebAssembly.WasmEvents.SetEvent(_HtmlElement, "onChange", Sub(sender as HTMLElement, e As Dynamic) RaiseEvent _onChange(sender, CType(e, Dom.Event)))
+        End If
+        AddHandler _onChange, Value
+      End AddHandler
+      RemoveHandler(aEvent As OnChangeDelegate)
+        RemoveHandler _onChange, Value
+        If Not assigned(_onChange) then
+          RemObjects.Elements.WebAssembly.WasmEvents.ClearEvent(_HtmlElement, "onChange")
+        End If
+      End RemoveHandler
+    End Event
+
     Private Event _onChange As OnChangeDelegate
-
-    Private Sub AddOnChange(aEvent As Sub(sender as HTMLElement, e As Dom.Event))
-      If Not assigned(_onChange) Then
-        RemObjects.Elements.WebAssembly.WasmEvents.SetEvent(_HtmlElement, "onChange", Sub(sender as HTMLElement, e As Dynamic) RaiseEvent _onChange(sender, CType(e, Dom.Event)))
-      End If
-      AddHandler _onChange, aEvent
-    End Sub
-
-    Private Sub CantRemove(aEvent As OnChangeDelegate)
-      RemoveHandler _onChange, aEvent
-      If Not assigned(_onChange) then
-        RemObjects.Elements.WebAssembly.WasmEvents.ClearEvent(_HtmlElement, "onChange")
-      End If
-    End Sub
 
     ' onClick
 
     Public Delegate Sub OnClickDelegate(sender as HTMLElement, e As MouseEvent)
 
-    Public Event onClick As OnClickDelegate ' Add AddOnClick Remove RemoveOnClick
+    Public Custom Event onClick As OnClickDelegate
+      AddHandler(aEvent As Sub(sender as HTMLElement, e As MouseEvent))
+        If Not assigned(_onClick) Then
+          RemObjects.Elements.WebAssembly.WasmEvents.SetEvent(_HtmlElement, "onClick", Sub(sender as HTMLElement, e As Dynamic) RaiseEvent _onClick(sender, CType(e, MouseEvent)))
+        End If
+        AddHandler _onClick, Value
+      End AddHandler
+      RemoveHandler(aEvent As OnClickDelegate)
+        RemoveHandler _onClick, Value
+        If Not assigned(_onClick) then
+          RemObjects.Elements.WebAssembly.WasmEvents.ClearEvent(_HtmlElement, "onClick")
+        End If
+      End RemoveHandler
+    End Event
+
     Private Event _onClick As OnClickDelegate
-
-    Private Sub AddOnClick(aEvent As Sub(sender as HTMLElement, e As MouseEvent))
-      If Not assigned(_onClick) Then
-        RemObjects.Elements.WebAssembly.WasmEvents.SetEvent(_HtmlElement, "onClick", Sub(sender as HTMLElement, e As Dynamic) RaiseEvent _onClick(sender, CType(e, MouseEvent)))
-      End If
-      AddHandler _onClick, aEvent
-    End Sub
-
-    Private Sub CantRemove(aEvent As OnClickDelegate)
-      RemoveHandler _onClick, aEvent
-      If Not assigned(_onClick) then
-        RemObjects.Elements.WebAssembly.WasmEvents.ClearEvent(_HtmlElement, "onClick")
-      End If
-    End Sub
 
     ' onClose
 
     Public Delegate Sub OnCloseDelegate(sender as HTMLElement, e As FocusEvent)
 
-    Public Event onClose As OnCloseDelegate ' Add AddOnClose Remove RemoveOnClose
+    Public Custom Event onClose As OnCloseDelegate
+      AddHandler(aEvent As Sub(sender as HTMLElement, e As FocusEvent))
+        If Not assigned(_onClose) Then
+          RemObjects.Elements.WebAssembly.WasmEvents.SetEvent(_HtmlElement, "onClose", Sub(sender as HTMLElement, e As Dynamic) RaiseEvent _onClose(sender, CType(e, FocusEvent)))
+        End If
+        AddHandler _onClose, Value
+      End AddHandler
+      RemoveHandler(aEvent As OnCloseDelegate)
+        RemoveHandler _onClose, Value
+        If Not assigned(_onClose) then
+          RemObjects.Elements.WebAssembly.WasmEvents.ClearEvent(_HtmlElement, "onClose")
+        End If
+      End RemoveHandler
+    End Event
+
     Private Event _onClose As OnCloseDelegate
-
-    Private Sub AddOnClose(aEvent As Sub(sender as HTMLElement, e As FocusEvent))
-      If Not assigned(_onClose) Then
-        RemObjects.Elements.WebAssembly.WasmEvents.SetEvent(_HtmlElement, "onClose", Sub(sender as HTMLElement, e As Dynamic) RaiseEvent _onClose(sender, CType(e, FocusEvent)))
-      End If
-      AddHandler _onClose, aEvent
-    End Sub
-
-    Private Sub CantRemove(aEvent As OnCloseDelegate)
-      RemoveHandler _onClose, aEvent
-      If Not assigned(_onClose) then
-        RemObjects.Elements.WebAssembly.WasmEvents.ClearEvent(_HtmlElement, "onClose")
-      End If
-    End Sub
 
     ' onContextMenu
 
     Public Delegate Sub OnContextMenuDelegate(sender as HTMLElement, e As MouseEvent)
 
-    Public Event onContextMenu As OnContextMenuDelegate ' Add AddOnContextMenu Remove RemoveOnContextMenu
+    Public Custom Event onContextMenu As OnContextMenuDelegate
+      AddHandler(aEvent As Sub(sender as HTMLElement, e As MouseEvent))
+        If Not assigned(_onContextMenu) Then
+          RemObjects.Elements.WebAssembly.WasmEvents.SetEvent(_HtmlElement, "onContextMenu", Sub(sender as HTMLElement, e As Dynamic) RaiseEvent _onContextMenu(sender, CType(e, MouseEvent)))
+        End If
+        AddHandler _onContextMenu, Value
+      End AddHandler
+      RemoveHandler(aEvent As OnContextMenuDelegate)
+        RemoveHandler _onContextMenu, Value
+        If Not assigned(_onContextMenu) then
+          RemObjects.Elements.WebAssembly.WasmEvents.ClearEvent(_HtmlElement, "onContextMenu")
+        End If
+      End RemoveHandler
+    End Event
+
     Private Event _onContextMenu As OnContextMenuDelegate
-
-    Private Sub AddOnContextMenu(aEvent As Sub(sender as HTMLElement, e As MouseEvent))
-      If Not assigned(_onContextMenu) Then
-        RemObjects.Elements.WebAssembly.WasmEvents.SetEvent(_HtmlElement, "onContextMenu", Sub(sender as HTMLElement, e As Dynamic) RaiseEvent _onContextMenu(sender, CType(e, MouseEvent)))
-      End If
-      AddHandler _onContextMenu, aEvent
-    End Sub
-
-    Private Sub CantRemove(aEvent As OnContextMenuDelegate)
-      RemoveHandler _onContextMenu, aEvent
-      If Not assigned(_onContextMenu) then
-        RemObjects.Elements.WebAssembly.WasmEvents.ClearEvent(_HtmlElement, "onContextMenu")
-      End If
-    End Sub
 
     ' onCueChange
 
     Public Delegate Sub OnCueChangeDelegate(sender as HTMLElement, e As FocusEvent)
 
-    Public Event onCueChange As OnCueChangeDelegate ' Add AddOnCueChange Remove RemoveOnCueChange
+    Public Custom Event onCueChange As OnCueChangeDelegate
+      AddHandler(aEvent As Sub(sender as HTMLElement, e As FocusEvent))
+        If Not assigned(_onCueChange) Then
+          RemObjects.Elements.WebAssembly.WasmEvents.SetEvent(_HtmlElement, "onCueChange", Sub(sender as HTMLElement, e As Dynamic) RaiseEvent _onCueChange(sender, CType(e, FocusEvent)))
+        End If
+        AddHandler _onCueChange, Value
+      End AddHandler
+      RemoveHandler(aEvent As OnCueChangeDelegate)
+        RemoveHandler _onCueChange, Value
+        If Not assigned(_onCueChange) then
+          RemObjects.Elements.WebAssembly.WasmEvents.ClearEvent(_HtmlElement, "onCueChange")
+        End If
+      End RemoveHandler
+    End Event
+
     Private Event _onCueChange As OnCueChangeDelegate
-
-    Private Sub AddOnCueChange(aEvent As Sub(sender as HTMLElement, e As FocusEvent))
-      If Not assigned(_onCueChange) Then
-        RemObjects.Elements.WebAssembly.WasmEvents.SetEvent(_HtmlElement, "onCueChange", Sub(sender as HTMLElement, e As Dynamic) RaiseEvent _onCueChange(sender, CType(e, FocusEvent)))
-      End If
-      AddHandler _onCueChange, aEvent
-    End Sub
-
-    Private Sub CantRemove(aEvent As OnCueChangeDelegate)
-      RemoveHandler _onCueChange, aEvent
-      If Not assigned(_onCueChange) then
-        RemObjects.Elements.WebAssembly.WasmEvents.ClearEvent(_HtmlElement, "onCueChange")
-      End If
-    End Sub
 
     ' onDblClick
 
     Public Delegate Sub OnDblClickDelegate(sender as HTMLElement, e As MouseEvent)
 
-    Public Event onDblClick As OnDblClickDelegate ' Add AddOnDblClick Remove RemoveOnDblClick
+    Public Custom Event onDblClick As OnDblClickDelegate
+      AddHandler(aEvent As Sub(sender as HTMLElement, e As MouseEvent))
+        If Not assigned(_onDblClick) Then
+          RemObjects.Elements.WebAssembly.WasmEvents.SetEvent(_HtmlElement, "onDblClick", Sub(sender as HTMLElement, e As Dynamic) RaiseEvent _onDblClick(sender, CType(e, MouseEvent)))
+        End If
+        AddHandler _onDblClick, Value
+      End AddHandler
+      RemoveHandler(aEvent As OnDblClickDelegate)
+        RemoveHandler _onDblClick, Value
+        If Not assigned(_onDblClick) then
+          RemObjects.Elements.WebAssembly.WasmEvents.ClearEvent(_HtmlElement, "onDblClick")
+        End If
+      End RemoveHandler
+    End Event
+
     Private Event _onDblClick As OnDblClickDelegate
-
-    Private Sub AddOnDblClick(aEvent As Sub(sender as HTMLElement, e As MouseEvent))
-      If Not assigned(_onDblClick) Then
-        RemObjects.Elements.WebAssembly.WasmEvents.SetEvent(_HtmlElement, "onDblClick", Sub(sender as HTMLElement, e As Dynamic) RaiseEvent _onDblClick(sender, CType(e, MouseEvent)))
-      End If
-      AddHandler _onDblClick, aEvent
-    End Sub
-
-    Private Sub CantRemove(aEvent As OnDblClickDelegate)
-      RemoveHandler _onDblClick, aEvent
-      If Not assigned(_onDblClick) then
-        RemObjects.Elements.WebAssembly.WasmEvents.ClearEvent(_HtmlElement, "onDblClick")
-      End If
-    End Sub
 
     ' onDrag
 
     Public Delegate Sub OnDragDelegate(sender as HTMLElement, e As DragEvent)
 
-    Public Event onDrag As OnDragDelegate ' Add AddOnDrag Remove RemoveOnDrag
+    Public Custom Event onDrag As OnDragDelegate
+      AddHandler(aEvent As Sub(sender as HTMLElement, e As DragEvent))
+        If Not assigned(_onDrag) Then
+          RemObjects.Elements.WebAssembly.WasmEvents.SetEvent(_HtmlElement, "onDrag", Sub(sender as HTMLElement, e As Dynamic) RaiseEvent _onDrag(sender, CType(e, DragEvent)))
+        End If
+        AddHandler _onDrag, Value
+      End AddHandler
+      RemoveHandler(aEvent As OnDragDelegate)
+        RemoveHandler _onDrag, Value
+        If Not assigned(_onDrag) then
+          RemObjects.Elements.WebAssembly.WasmEvents.ClearEvent(_HtmlElement, "onDrag")
+        End If
+      End RemoveHandler
+    End Event
+
     Private Event _onDrag As OnDragDelegate
-
-    Private Sub AddOnDrag(aEvent As Sub(sender as HTMLElement, e As DragEvent))
-      If Not assigned(_onDrag) Then
-        RemObjects.Elements.WebAssembly.WasmEvents.SetEvent(_HtmlElement, "onDrag", Sub(sender as HTMLElement, e As Dynamic) RaiseEvent _onDrag(sender, CType(e, DragEvent)))
-      End If
-      AddHandler _onDrag, aEvent
-    End Sub
-
-    Private Sub CantRemove(aEvent As OnDragDelegate)
-      RemoveHandler _onDrag, aEvent
-      If Not assigned(_onDrag) then
-        RemObjects.Elements.WebAssembly.WasmEvents.ClearEvent(_HtmlElement, "onDrag")
-      End If
-    End Sub
 
     ' onDragEnd
 
     Public Delegate Sub OnDragEndDelegate(sender as HTMLElement, e As DragEvent)
 
-    Public Event onDragEnd As OnDragEndDelegate ' Add AddOnDragEnd Remove RemoveOnDragEnd
+    Public Custom Event onDragEnd As OnDragEndDelegate
+      AddHandler(aEvent As Sub(sender as HTMLElement, e As DragEvent))
+        If Not assigned(_onDragEnd) Then
+          RemObjects.Elements.WebAssembly.WasmEvents.SetEvent(_HtmlElement, "onDragEnd", Sub(sender as HTMLElement, e As Dynamic) RaiseEvent _onDragEnd(sender, CType(e, DragEvent)))
+        End If
+        AddHandler _onDragEnd, Value
+      End AddHandler
+      RemoveHandler(aEvent As OnDragEndDelegate)
+        RemoveHandler _onDragEnd, Value
+        If Not assigned(_onDragEnd) then
+          RemObjects.Elements.WebAssembly.WasmEvents.ClearEvent(_HtmlElement, "onDragEnd")
+        End If
+      End RemoveHandler
+    End Event
+
     Private Event _onDragEnd As OnDragEndDelegate
-
-    Private Sub AddOnDragEnd(aEvent As Sub(sender as HTMLElement, e As DragEvent))
-      If Not assigned(_onDragEnd) Then
-        RemObjects.Elements.WebAssembly.WasmEvents.SetEvent(_HtmlElement, "onDragEnd", Sub(sender as HTMLElement, e As Dynamic) RaiseEvent _onDragEnd(sender, CType(e, DragEvent)))
-      End If
-      AddHandler _onDragEnd, aEvent
-    End Sub
-
-    Private Sub CantRemove(aEvent As OnDragEndDelegate)
-      RemoveHandler _onDragEnd, aEvent
-      If Not assigned(_onDragEnd) then
-        RemObjects.Elements.WebAssembly.WasmEvents.ClearEvent(_HtmlElement, "onDragEnd")
-      End If
-    End Sub
 
     ' onDragEnter
 
     Public Delegate Sub OnDragEnterDelegate(sender as HTMLElement, e As DragEvent)
 
-    Public Event onDragEnter As OnDragEnterDelegate ' Add AddOnDragEnter Remove RemoveOnDragEnter
+    Public Custom Event onDragEnter As OnDragEnterDelegate
+      AddHandler(aEvent As Sub(sender as HTMLElement, e As DragEvent))
+        If Not assigned(_onDragEnter) Then
+          RemObjects.Elements.WebAssembly.WasmEvents.SetEvent(_HtmlElement, "onDragEnter", Sub(sender as HTMLElement, e As Dynamic) RaiseEvent _onDragEnter(sender, CType(e, DragEvent)))
+        End If
+        AddHandler _onDragEnter, Value
+      End AddHandler
+      RemoveHandler(aEvent As OnDragEnterDelegate)
+        RemoveHandler _onDragEnter, Value
+        If Not assigned(_onDragEnter) then
+          RemObjects.Elements.WebAssembly.WasmEvents.ClearEvent(_HtmlElement, "onDragEnter")
+        End If
+      End RemoveHandler
+    End Event
+
     Private Event _onDragEnter As OnDragEnterDelegate
-
-    Private Sub AddOnDragEnter(aEvent As Sub(sender as HTMLElement, e As DragEvent))
-      If Not assigned(_onDragEnter) Then
-        RemObjects.Elements.WebAssembly.WasmEvents.SetEvent(_HtmlElement, "onDragEnter", Sub(sender as HTMLElement, e As Dynamic) RaiseEvent _onDragEnter(sender, CType(e, DragEvent)))
-      End If
-      AddHandler _onDragEnter, aEvent
-    End Sub
-
-    Private Sub CantRemove(aEvent As OnDragEnterDelegate)
-      RemoveHandler _onDragEnter, aEvent
-      If Not assigned(_onDragEnter) then
-        RemObjects.Elements.WebAssembly.WasmEvents.ClearEvent(_HtmlElement, "onDragEnter")
-      End If
-    End Sub
 
     ' onDragExit
 
     Public Delegate Sub OnDragExitDelegate(sender as HTMLElement, e As DragEvent)
 
-    Public Event onDragExit As OnDragExitDelegate ' Add AddOnDragExit Remove RemoveOnDragExit
+    Public Custom Event onDragExit As OnDragExitDelegate
+      AddHandler(aEvent As Sub(sender as HTMLElement, e As DragEvent))
+        If Not assigned(_onDragExit) Then
+          RemObjects.Elements.WebAssembly.WasmEvents.SetEvent(_HtmlElement, "onDragExit", Sub(sender as HTMLElement, e As Dynamic) RaiseEvent _onDragExit(sender, CType(e, DragEvent)))
+        End If
+        AddHandler _onDragExit, Value
+      End AddHandler
+      RemoveHandler(aEvent As OnDragExitDelegate)
+        RemoveHandler _onDragExit, Value
+        If Not assigned(_onDragExit) then
+          RemObjects.Elements.WebAssembly.WasmEvents.ClearEvent(_HtmlElement, "onDragExit")
+        End If
+      End RemoveHandler
+    End Event
+
     Private Event _onDragExit As OnDragExitDelegate
-
-    Private Sub AddOnDragExit(aEvent As Sub(sender as HTMLElement, e As DragEvent))
-      If Not assigned(_onDragExit) Then
-        RemObjects.Elements.WebAssembly.WasmEvents.SetEvent(_HtmlElement, "onDragExit", Sub(sender as HTMLElement, e As Dynamic) RaiseEvent _onDragExit(sender, CType(e, DragEvent)))
-      End If
-      AddHandler _onDragExit, aEvent
-    End Sub
-
-    Private Sub CantRemove(aEvent As OnDragExitDelegate)
-      RemoveHandler _onDragExit, aEvent
-      If Not assigned(_onDragExit) then
-        RemObjects.Elements.WebAssembly.WasmEvents.ClearEvent(_HtmlElement, "onDragExit")
-      End If
-    End Sub
 
     ' onDragLeave
 
     Public Delegate Sub OnDragLeaveDelegate(sender as HTMLElement, e As DragEvent)
 
-    Public Event onDragLeave As OnDragLeaveDelegate ' Add AddOnDragLeave Remove RemoveOnDragLeave
+    Public Custom Event onDragLeave As OnDragLeaveDelegate
+      AddHandler(aEvent As Sub(sender as HTMLElement, e As DragEvent))
+        If Not assigned(_onDragLeave) Then
+          RemObjects.Elements.WebAssembly.WasmEvents.SetEvent(_HtmlElement, "onDragLeave", Sub(sender as HTMLElement, e As Dynamic) RaiseEvent _onDragLeave(sender, CType(e, DragEvent)))
+        End If
+        AddHandler _onDragLeave, Value
+      End AddHandler
+      RemoveHandler(aEvent As OnDragLeaveDelegate)
+        RemoveHandler _onDragLeave, Value
+        If Not assigned(_onDragLeave) then
+          RemObjects.Elements.WebAssembly.WasmEvents.ClearEvent(_HtmlElement, "onDragLeave")
+        End If
+      End RemoveHandler
+    End Event
+
     Private Event _onDragLeave As OnDragLeaveDelegate
-
-    Private Sub AddOnDragLeave(aEvent As Sub(sender as HTMLElement, e As DragEvent))
-      If Not assigned(_onDragLeave) Then
-        RemObjects.Elements.WebAssembly.WasmEvents.SetEvent(_HtmlElement, "onDragLeave", Sub(sender as HTMLElement, e As Dynamic) RaiseEvent _onDragLeave(sender, CType(e, DragEvent)))
-      End If
-      AddHandler _onDragLeave, aEvent
-    End Sub
-
-    Private Sub CantRemove(aEvent As OnDragLeaveDelegate)
-      RemoveHandler _onDragLeave, aEvent
-      If Not assigned(_onDragLeave) then
-        RemObjects.Elements.WebAssembly.WasmEvents.ClearEvent(_HtmlElement, "onDragLeave")
-      End If
-    End Sub
 
     ' onDragOver
 
     Public Delegate Sub OnDragOverDelegate(sender as HTMLElement, e As DragEvent)
 
-    Public Event onDragOver As OnDragOverDelegate ' Add AddOnDragOver Remove RemoveOnDragOver
+    Public Custom Event onDragOver As OnDragOverDelegate
+      AddHandler(aEvent As Sub(sender as HTMLElement, e As DragEvent))
+        If Not assigned(_onDragOver) Then
+          RemObjects.Elements.WebAssembly.WasmEvents.SetEvent(_HtmlElement, "onDragOver", Sub(sender as HTMLElement, e As Dynamic) RaiseEvent _onDragOver(sender, CType(e, DragEvent)))
+        End If
+        AddHandler _onDragOver, Value
+      End AddHandler
+      RemoveHandler(aEvent As OnDragOverDelegate)
+        RemoveHandler _onDragOver, Value
+        If Not assigned(_onDragOver) then
+          RemObjects.Elements.WebAssembly.WasmEvents.ClearEvent(_HtmlElement, "onDragOver")
+        End If
+      End RemoveHandler
+    End Event
+
     Private Event _onDragOver As OnDragOverDelegate
-
-    Private Sub AddOnDragOver(aEvent As Sub(sender as HTMLElement, e As DragEvent))
-      If Not assigned(_onDragOver) Then
-        RemObjects.Elements.WebAssembly.WasmEvents.SetEvent(_HtmlElement, "onDragOver", Sub(sender as HTMLElement, e As Dynamic) RaiseEvent _onDragOver(sender, CType(e, DragEvent)))
-      End If
-      AddHandler _onDragOver, aEvent
-    End Sub
-
-    Private Sub CantRemove(aEvent As OnDragOverDelegate)
-      RemoveHandler _onDragOver, aEvent
-      If Not assigned(_onDragOver) then
-        RemObjects.Elements.WebAssembly.WasmEvents.ClearEvent(_HtmlElement, "onDragOver")
-      End If
-    End Sub
 
     ' onDragStart
 
     Public Delegate Sub OnDragStartDelegate(sender as HTMLElement, e As DragEvent)
 
-    Public Event onDragStart As OnDragStartDelegate ' Add AddOnDragStart Remove RemoveOnDragStart
+    Public Custom Event onDragStart As OnDragStartDelegate
+      AddHandler(aEvent As Sub(sender as HTMLElement, e As DragEvent))
+        If Not assigned(_onDragStart) Then
+          RemObjects.Elements.WebAssembly.WasmEvents.SetEvent(_HtmlElement, "onDragStart", Sub(sender as HTMLElement, e As Dynamic) RaiseEvent _onDragStart(sender, CType(e, DragEvent)))
+        End If
+        AddHandler _onDragStart, Value
+      End AddHandler
+      RemoveHandler(aEvent As OnDragStartDelegate)
+        RemoveHandler _onDragStart, Value
+        If Not assigned(_onDragStart) then
+          RemObjects.Elements.WebAssembly.WasmEvents.ClearEvent(_HtmlElement, "onDragStart")
+        End If
+      End RemoveHandler
+    End Event
+
     Private Event _onDragStart As OnDragStartDelegate
-
-    Private Sub AddOnDragStart(aEvent As Sub(sender as HTMLElement, e As DragEvent))
-      If Not assigned(_onDragStart) Then
-        RemObjects.Elements.WebAssembly.WasmEvents.SetEvent(_HtmlElement, "onDragStart", Sub(sender as HTMLElement, e As Dynamic) RaiseEvent _onDragStart(sender, CType(e, DragEvent)))
-      End If
-      AddHandler _onDragStart, aEvent
-    End Sub
-
-    Private Sub CantRemove(aEvent As OnDragStartDelegate)
-      RemoveHandler _onDragStart, aEvent
-      If Not assigned(_onDragStart) then
-        RemObjects.Elements.WebAssembly.WasmEvents.ClearEvent(_HtmlElement, "onDragStart")
-      End If
-    End Sub
 
     ' onDrop
 
     Public Delegate Sub OnDropDelegate(sender as HTMLElement, e As DragEvent)
 
-    Public Event onDrop As OnDropDelegate ' Add AddOnDrop Remove RemoveOnDrop
+    Public Custom Event onDrop As OnDropDelegate
+      AddHandler(aEvent As Sub(sender as HTMLElement, e As DragEvent))
+        If Not assigned(_onDrop) Then
+          RemObjects.Elements.WebAssembly.WasmEvents.SetEvent(_HtmlElement, "onDrop", Sub(sender as HTMLElement, e As Dynamic) RaiseEvent _onDrop(sender, CType(e, DragEvent)))
+        End If
+        AddHandler _onDrop, Value
+      End AddHandler
+      RemoveHandler(aEvent As OnDropDelegate)
+        RemoveHandler _onDrop, Value
+        If Not assigned(_onDrop) then
+          RemObjects.Elements.WebAssembly.WasmEvents.ClearEvent(_HtmlElement, "onDrop")
+        End If
+      End RemoveHandler
+    End Event
+
     Private Event _onDrop As OnDropDelegate
-
-    Private Sub AddOnDrop(aEvent As Sub(sender as HTMLElement, e As DragEvent))
-      If Not assigned(_onDrop) Then
-        RemObjects.Elements.WebAssembly.WasmEvents.SetEvent(_HtmlElement, "onDrop", Sub(sender as HTMLElement, e As Dynamic) RaiseEvent _onDrop(sender, CType(e, DragEvent)))
-      End If
-      AddHandler _onDrop, aEvent
-    End Sub
-
-    Private Sub CantRemove(aEvent As OnDropDelegate)
-      RemoveHandler _onDrop, aEvent
-      If Not assigned(_onDrop) then
-        RemObjects.Elements.WebAssembly.WasmEvents.ClearEvent(_HtmlElement, "onDrop")
-      End If
-    End Sub
 
     ' onDurationChange
 
     Public Delegate Sub OnDurationChangeDelegate(sender as HTMLElement, e As Dom.Event)
 
-    Public Event onDurationChange As OnDurationChangeDelegate ' Add AddOnDurationChange Remove RemoveOnDurationChange
+    Public Custom Event onDurationChange As OnDurationChangeDelegate
+      AddHandler(aEvent As Sub(sender as HTMLElement, e As Dom.Event))
+        If Not assigned(_onDurationChange) Then
+          RemObjects.Elements.WebAssembly.WasmEvents.SetEvent(_HtmlElement, "onDurationChange", Sub(sender as HTMLElement, e As Dynamic) RaiseEvent _onDurationChange(sender, CType(e, Dom.Event)))
+        End If
+        AddHandler _onDurationChange, Value
+      End AddHandler
+      RemoveHandler(aEvent As OnDurationChangeDelegate)
+        RemoveHandler _onDurationChange, Value
+        If Not assigned(_onDurationChange) then
+          RemObjects.Elements.WebAssembly.WasmEvents.ClearEvent(_HtmlElement, "onDurationChange")
+        End If
+      End RemoveHandler
+    End Event
+
     Private Event _onDurationChange As OnDurationChangeDelegate
-
-    Private Sub AddOnDurationChange(aEvent As Sub(sender as HTMLElement, e As Dom.Event))
-      If Not assigned(_onDurationChange) Then
-        RemObjects.Elements.WebAssembly.WasmEvents.SetEvent(_HtmlElement, "onDurationChange", Sub(sender as HTMLElement, e As Dynamic) RaiseEvent _onDurationChange(sender, CType(e, Dom.Event)))
-      End If
-      AddHandler _onDurationChange, aEvent
-    End Sub
-
-    Private Sub CantRemove(aEvent As OnDurationChangeDelegate)
-      RemoveHandler _onDurationChange, aEvent
-      If Not assigned(_onDurationChange) then
-        RemObjects.Elements.WebAssembly.WasmEvents.ClearEvent(_HtmlElement, "onDurationChange")
-      End If
-    End Sub
 
     ' onEmptied
 
     Public Delegate Sub OnEmptiedDelegate(sender as HTMLElement, e As Dom.Event)
 
-    Public Event onEmptied As OnEmptiedDelegate ' Add AddOnEmptied Remove RemoveOnEmptied
+    Public Custom Event onEmptied As OnEmptiedDelegate
+      AddHandler(aEvent As Sub(sender as HTMLElement, e As Dom.Event))
+        If Not assigned(_onEmptied) Then
+          RemObjects.Elements.WebAssembly.WasmEvents.SetEvent(_HtmlElement, "onEmptied", Sub(sender as HTMLElement, e As Dynamic) RaiseEvent _onEmptied(sender, CType(e, Dom.Event)))
+        End If
+        AddHandler _onEmptied, Value
+      End AddHandler
+      RemoveHandler(aEvent As OnEmptiedDelegate)
+        RemoveHandler _onEmptied, Value
+        If Not assigned(_onEmptied) then
+          RemObjects.Elements.WebAssembly.WasmEvents.ClearEvent(_HtmlElement, "onEmptied")
+        End If
+      End RemoveHandler
+    End Event
+
     Private Event _onEmptied As OnEmptiedDelegate
-
-    Private Sub AddOnEmptied(aEvent As Sub(sender as HTMLElement, e As Dom.Event))
-      If Not assigned(_onEmptied) Then
-        RemObjects.Elements.WebAssembly.WasmEvents.SetEvent(_HtmlElement, "onEmptied", Sub(sender as HTMLElement, e As Dynamic) RaiseEvent _onEmptied(sender, CType(e, Dom.Event)))
-      End If
-      AddHandler _onEmptied, aEvent
-    End Sub
-
-    Private Sub CantRemove(aEvent As OnEmptiedDelegate)
-      RemoveHandler _onEmptied, aEvent
-      If Not assigned(_onEmptied) then
-        RemObjects.Elements.WebAssembly.WasmEvents.ClearEvent(_HtmlElement, "onEmptied")
-      End If
-    End Sub
 
     ' onEnded
 
     Public Delegate Sub OnEndedDelegate(sender as HTMLElement, e As Dom.Event)
 
-    Public Event onEnded As OnEndedDelegate ' Add AddOnEnded Remove RemoveOnEnded
+    Public Custom Event onEnded As OnEndedDelegate
+      AddHandler(aEvent As Sub(sender as HTMLElement, e As Dom.Event))
+        If Not assigned(_onEnded) Then
+          RemObjects.Elements.WebAssembly.WasmEvents.SetEvent(_HtmlElement, "onEnded", Sub(sender as HTMLElement, e As Dynamic) RaiseEvent _onEnded(sender, CType(e, Dom.Event)))
+        End If
+        AddHandler _onEnded, Value
+      End AddHandler
+      RemoveHandler(aEvent As OnEndedDelegate)
+        RemoveHandler _onEnded, Value
+        If Not assigned(_onEnded) then
+          RemObjects.Elements.WebAssembly.WasmEvents.ClearEvent(_HtmlElement, "onEnded")
+        End If
+      End RemoveHandler
+    End Event
+
     Private Event _onEnded As OnEndedDelegate
-
-    Private Sub AddOnEnded(aEvent As Sub(sender as HTMLElement, e As Dom.Event))
-      If Not assigned(_onEnded) Then
-        RemObjects.Elements.WebAssembly.WasmEvents.SetEvent(_HtmlElement, "onEnded", Sub(sender as HTMLElement, e As Dynamic) RaiseEvent _onEnded(sender, CType(e, Dom.Event)))
-      End If
-      AddHandler _onEnded, aEvent
-    End Sub
-
-    Private Sub CantRemove(aEvent As OnEndedDelegate)
-      RemoveHandler _onEnded, aEvent
-      If Not assigned(_onEnded) then
-        RemObjects.Elements.WebAssembly.WasmEvents.ClearEvent(_HtmlElement, "onEnded")
-      End If
-    End Sub
 
     ' onFormData
 
     Public Delegate Sub OnFormDataDelegate(sender as HTMLElement, e As Dom.Event)
 
-    Public Event onFormData As OnFormDataDelegate ' Add AddOnFormData Remove RemoveOnFormData
+    Public Custom Event onFormData As OnFormDataDelegate
+      AddHandler(aEvent As Sub(sender as HTMLElement, e As Dom.Event))
+        If Not assigned(_onFormData) Then
+          RemObjects.Elements.WebAssembly.WasmEvents.SetEvent(_HtmlElement, "onFormData", Sub(sender as HTMLElement, e As Dynamic) RaiseEvent _onFormData(sender, CType(e, Dom.Event)))
+        End If
+        AddHandler _onFormData, Value
+      End AddHandler
+      RemoveHandler(aEvent As OnFormDataDelegate)
+        RemoveHandler _onFormData, Value
+        If Not assigned(_onFormData) then
+          RemObjects.Elements.WebAssembly.WasmEvents.ClearEvent(_HtmlElement, "onFormData")
+        End If
+      End RemoveHandler
+    End Event
+
     Private Event _onFormData As OnFormDataDelegate
-
-    Private Sub AddOnFormData(aEvent As Sub(sender as HTMLElement, e As Dom.Event))
-      If Not assigned(_onFormData) Then
-        RemObjects.Elements.WebAssembly.WasmEvents.SetEvent(_HtmlElement, "onFormData", Sub(sender as HTMLElement, e As Dynamic) RaiseEvent _onFormData(sender, CType(e, Dom.Event)))
-      End If
-      AddHandler _onFormData, aEvent
-    End Sub
-
-    Private Sub CantRemove(aEvent As OnFormDataDelegate)
-      RemoveHandler _onFormData, aEvent
-      If Not assigned(_onFormData) then
-        RemObjects.Elements.WebAssembly.WasmEvents.ClearEvent(_HtmlElement, "onFormData")
-      End If
-    End Sub
 
     ' onGotPointerCapture
 
     Public Delegate Sub OnGotPointerCaptureDelegate(sender as HTMLElement, e As PointerEvent)
 
-    Public Event onGotPointerCapture As OnGotPointerCaptureDelegate ' Add AddOnGotPointerCapture Remove RemoveOnGotPointerCapture
+    Public Custom Event onGotPointerCapture As OnGotPointerCaptureDelegate
+      AddHandler(aEvent As Sub(sender as HTMLElement, e As PointerEvent))
+        If Not assigned(_onGotPointerCapture) Then
+          RemObjects.Elements.WebAssembly.WasmEvents.SetEvent(_HtmlElement, "onGotPointerCapture", Sub(sender as HTMLElement, e As Dynamic) RaiseEvent _onGotPointerCapture(sender, CType(e, PointerEvent)))
+        End If
+        AddHandler _onGotPointerCapture, Value
+      End AddHandler
+      RemoveHandler(aEvent As OnGotPointerCaptureDelegate)
+        RemoveHandler _onGotPointerCapture, Value
+        If Not assigned(_onGotPointerCapture) then
+          RemObjects.Elements.WebAssembly.WasmEvents.ClearEvent(_HtmlElement, "onGotPointerCapture")
+        End If
+      End RemoveHandler
+    End Event
+
     Private Event _onGotPointerCapture As OnGotPointerCaptureDelegate
-
-    Private Sub AddOnGotPointerCapture(aEvent As Sub(sender as HTMLElement, e As PointerEvent))
-      If Not assigned(_onGotPointerCapture) Then
-        RemObjects.Elements.WebAssembly.WasmEvents.SetEvent(_HtmlElement, "onGotPointerCapture", Sub(sender as HTMLElement, e As Dynamic) RaiseEvent _onGotPointerCapture(sender, CType(e, PointerEvent)))
-      End If
-      AddHandler _onGotPointerCapture, aEvent
-    End Sub
-
-    Private Sub CantRemove(aEvent As OnGotPointerCaptureDelegate)
-      RemoveHandler _onGotPointerCapture, aEvent
-      If Not assigned(_onGotPointerCapture) then
-        RemObjects.Elements.WebAssembly.WasmEvents.ClearEvent(_HtmlElement, "onGotPointerCapture")
-      End If
-    End Sub
 
     ' onInput
 
     Public Delegate Sub OnInputDelegate(sender as HTMLElement, e As Dom.Event)
 
-    Public Event onInput As OnInputDelegate ' Add AddOnInput Remove RemoveOnInput
+    Public Custom Event onInput As OnInputDelegate
+      AddHandler(aEvent As Sub(sender as HTMLElement, e As Dom.Event))
+        If Not assigned(_onInput) Then
+          RemObjects.Elements.WebAssembly.WasmEvents.SetEvent(_HtmlElement, "onInput", Sub(sender as HTMLElement, e As Dynamic) RaiseEvent _onInput(sender, CType(e, Dom.Event)))
+        End If
+        AddHandler _onInput, Value
+      End AddHandler
+      RemoveHandler(aEvent As OnInputDelegate)
+        RemoveHandler _onInput, Value
+        If Not assigned(_onInput) then
+          RemObjects.Elements.WebAssembly.WasmEvents.ClearEvent(_HtmlElement, "onInput")
+        End If
+      End RemoveHandler
+    End Event
+
     Private Event _onInput As OnInputDelegate
-
-    Private Sub AddOnInput(aEvent As Sub(sender as HTMLElement, e As Dom.Event))
-      If Not assigned(_onInput) Then
-        RemObjects.Elements.WebAssembly.WasmEvents.SetEvent(_HtmlElement, "onInput", Sub(sender as HTMLElement, e As Dynamic) RaiseEvent _onInput(sender, CType(e, Dom.Event)))
-      End If
-      AddHandler _onInput, aEvent
-    End Sub
-
-    Private Sub CantRemove(aEvent As OnInputDelegate)
-      RemoveHandler _onInput, aEvent
-      If Not assigned(_onInput) then
-        RemObjects.Elements.WebAssembly.WasmEvents.ClearEvent(_HtmlElement, "onInput")
-      End If
-    End Sub
 
     ' onInvalid
 
     Public Delegate Sub OnInvalidDelegate(sender as HTMLElement, e As Dom.Event)
 
-    Public Event onInvalid As OnInvalidDelegate ' Add AddOnInvalid Remove RemoveOnInvalid
+    Public Custom Event onInvalid As OnInvalidDelegate
+      AddHandler(aEvent As Sub(sender as HTMLElement, e As Dom.Event))
+        If Not assigned(_onInvalid) Then
+          RemObjects.Elements.WebAssembly.WasmEvents.SetEvent(_HtmlElement, "onInvalid", Sub(sender as HTMLElement, e As Dynamic) RaiseEvent _onInvalid(sender, CType(e, Dom.Event)))
+        End If
+        AddHandler _onInvalid, Value
+      End AddHandler
+      RemoveHandler(aEvent As OnInvalidDelegate)
+        RemoveHandler _onInvalid, Value
+        If Not assigned(_onInvalid) then
+          RemObjects.Elements.WebAssembly.WasmEvents.ClearEvent(_HtmlElement, "onInvalid")
+        End If
+      End RemoveHandler
+    End Event
+
     Private Event _onInvalid As OnInvalidDelegate
-
-    Private Sub AddOnInvalid(aEvent As Sub(sender as HTMLElement, e As Dom.Event))
-      If Not assigned(_onInvalid) Then
-        RemObjects.Elements.WebAssembly.WasmEvents.SetEvent(_HtmlElement, "onInvalid", Sub(sender as HTMLElement, e As Dynamic) RaiseEvent _onInvalid(sender, CType(e, Dom.Event)))
-      End If
-      AddHandler _onInvalid, aEvent
-    End Sub
-
-    Private Sub CantRemove(aEvent As OnInvalidDelegate)
-      RemoveHandler _onInvalid, aEvent
-      If Not assigned(_onInvalid) then
-        RemObjects.Elements.WebAssembly.WasmEvents.ClearEvent(_HtmlElement, "onInvalid")
-      End If
-    End Sub
 
     ' onKeyDown
 
     Public Delegate Sub OnKeyDownDelegate(sender as HTMLElement, e As KeyboardEvent)
 
-    Public Event onKeyDown As OnKeyDownDelegate ' Add AddOnKeyDown Remove RemoveOnKeyDown
+    Public Custom Event onKeyDown As OnKeyDownDelegate
+      AddHandler(aEvent As Sub(sender as HTMLElement, e As KeyboardEvent))
+        If Not assigned(_onKeyDown) Then
+          RemObjects.Elements.WebAssembly.WasmEvents.SetEvent(_HtmlElement, "onKeyDown", Sub(sender as HTMLElement, e As Dynamic) RaiseEvent _onKeyDown(sender, CType(e, KeyboardEvent)))
+        End If
+        AddHandler _onKeyDown, Value
+      End AddHandler
+      RemoveHandler(aEvent As OnKeyDownDelegate)
+        RemoveHandler _onKeyDown, Value
+        If Not assigned(_onKeyDown) then
+          RemObjects.Elements.WebAssembly.WasmEvents.ClearEvent(_HtmlElement, "onKeyDown")
+        End If
+      End RemoveHandler
+    End Event
+
     Private Event _onKeyDown As OnKeyDownDelegate
-
-    Private Sub AddOnKeyDown(aEvent As Sub(sender as HTMLElement, e As KeyboardEvent))
-      If Not assigned(_onKeyDown) Then
-        RemObjects.Elements.WebAssembly.WasmEvents.SetEvent(_HtmlElement, "onKeyDown", Sub(sender as HTMLElement, e As Dynamic) RaiseEvent _onKeyDown(sender, CType(e, KeyboardEvent)))
-      End If
-      AddHandler _onKeyDown, aEvent
-    End Sub
-
-    Private Sub CantRemove(aEvent As OnKeyDownDelegate)
-      RemoveHandler _onKeyDown, aEvent
-      If Not assigned(_onKeyDown) then
-        RemObjects.Elements.WebAssembly.WasmEvents.ClearEvent(_HtmlElement, "onKeyDown")
-      End If
-    End Sub
 
     ' onKeyPress
 
     Public Delegate Sub OnKeyPressDelegate(sender as HTMLElement, e As KeyboardEvent)
 
-    Public Event onKeyPress As OnKeyPressDelegate ' Add AddOnKeyPress Remove RemoveOnKeyPress
+    Public Custom Event onKeyPress As OnKeyPressDelegate
+      AddHandler(aEvent As Sub(sender as HTMLElement, e As KeyboardEvent))
+        If Not assigned(_onKeyPress) Then
+          RemObjects.Elements.WebAssembly.WasmEvents.SetEvent(_HtmlElement, "onKeyPress", Sub(sender as HTMLElement, e As Dynamic) RaiseEvent _onKeyPress(sender, CType(e, KeyboardEvent)))
+        End If
+        AddHandler _onKeyPress, Value
+      End AddHandler
+      RemoveHandler(aEvent As OnKeyPressDelegate)
+        RemoveHandler _onKeyPress, Value
+        If Not assigned(_onKeyPress) then
+          RemObjects.Elements.WebAssembly.WasmEvents.ClearEvent(_HtmlElement, "onKeyPress")
+        End If
+      End RemoveHandler
+    End Event
+
     Private Event _onKeyPress As OnKeyPressDelegate
-
-    Private Sub AddOnKeyPress(aEvent As Sub(sender as HTMLElement, e As KeyboardEvent))
-      If Not assigned(_onKeyPress) Then
-        RemObjects.Elements.WebAssembly.WasmEvents.SetEvent(_HtmlElement, "onKeyPress", Sub(sender as HTMLElement, e As Dynamic) RaiseEvent _onKeyPress(sender, CType(e, KeyboardEvent)))
-      End If
-      AddHandler _onKeyPress, aEvent
-    End Sub
-
-    Private Sub CantRemove(aEvent As OnKeyPressDelegate)
-      RemoveHandler _onKeyPress, aEvent
-      If Not assigned(_onKeyPress) then
-        RemObjects.Elements.WebAssembly.WasmEvents.ClearEvent(_HtmlElement, "onKeyPress")
-      End If
-    End Sub
 
     ' onKeyUp
 
     Public Delegate Sub OnKeyUpDelegate(sender as HTMLElement, e As KeyboardEvent)
 
-    Public Event onKeyUp As OnKeyUpDelegate ' Add AddOnKeyUp Remove RemoveOnKeyUp
+    Public Custom Event onKeyUp As OnKeyUpDelegate
+      AddHandler(aEvent As Sub(sender as HTMLElement, e As KeyboardEvent))
+        If Not assigned(_onKeyUp) Then
+          RemObjects.Elements.WebAssembly.WasmEvents.SetEvent(_HtmlElement, "onKeyUp", Sub(sender as HTMLElement, e As Dynamic) RaiseEvent _onKeyUp(sender, CType(e, KeyboardEvent)))
+        End If
+        AddHandler _onKeyUp, Value
+      End AddHandler
+      RemoveHandler(aEvent As OnKeyUpDelegate)
+        RemoveHandler _onKeyUp, Value
+        If Not assigned(_onKeyUp) then
+          RemObjects.Elements.WebAssembly.WasmEvents.ClearEvent(_HtmlElement, "onKeyUp")
+        End If
+      End RemoveHandler
+    End Event
+
     Private Event _onKeyUp As OnKeyUpDelegate
-
-    Private Sub AddOnKeyUp(aEvent As Sub(sender as HTMLElement, e As KeyboardEvent))
-      If Not assigned(_onKeyUp) Then
-        RemObjects.Elements.WebAssembly.WasmEvents.SetEvent(_HtmlElement, "onKeyUp", Sub(sender as HTMLElement, e As Dynamic) RaiseEvent _onKeyUp(sender, CType(e, KeyboardEvent)))
-      End If
-      AddHandler _onKeyUp, aEvent
-    End Sub
-
-    Private Sub CantRemove(aEvent As OnKeyUpDelegate)
-      RemoveHandler _onKeyUp, aEvent
-      If Not assigned(_onKeyUp) then
-        RemObjects.Elements.WebAssembly.WasmEvents.ClearEvent(_HtmlElement, "onKeyUp")
-      End If
-    End Sub
 
     ' onLoad
 
     Public Delegate Sub OnLoadDelegate(sender as HTMLElement, e As Dom.Event)
 
-    Public Event onLoad As OnLoadDelegate ' Add AddOnLoad Remove RemoveOnLoad
+    Public Custom Event onLoad As OnLoadDelegate
+      AddHandler(aEvent As Sub(sender as HTMLElement, e As Dom.Event))
+        If Not assigned(_onLoad) Then
+          RemObjects.Elements.WebAssembly.WasmEvents.SetEvent(_HtmlElement, "onLoad", Sub(sender as HTMLElement, e As Dynamic) RaiseEvent _onLoad(sender, CType(e, Dom.Event)))
+        End If
+        AddHandler _onLoad, Value
+      End AddHandler
+      RemoveHandler(aEvent As OnLoadDelegate)
+        RemoveHandler _onLoad, Value
+        If Not assigned(_onLoad) then
+          RemObjects.Elements.WebAssembly.WasmEvents.ClearEvent(_HtmlElement, "onLoad")
+        End If
+      End RemoveHandler
+    End Event
+
     Private Event _onLoad As OnLoadDelegate
-
-    Private Sub AddOnLoad(aEvent As Sub(sender as HTMLElement, e As Dom.Event))
-      If Not assigned(_onLoad) Then
-        RemObjects.Elements.WebAssembly.WasmEvents.SetEvent(_HtmlElement, "onLoad", Sub(sender as HTMLElement, e As Dynamic) RaiseEvent _onLoad(sender, CType(e, Dom.Event)))
-      End If
-      AddHandler _onLoad, aEvent
-    End Sub
-
-    Private Sub CantRemove(aEvent As OnLoadDelegate)
-      RemoveHandler _onLoad, aEvent
-      If Not assigned(_onLoad) then
-        RemObjects.Elements.WebAssembly.WasmEvents.ClearEvent(_HtmlElement, "onLoad")
-      End If
-    End Sub
 
     ' onLoadedData
 
     Public Delegate Sub OnLoadedDataDelegate(sender as HTMLElement, e As Dom.Event)
 
-    Public Event onLoadedData As OnLoadedDataDelegate ' Add AddOnLoadedData Remove RemoveOnLoadedData
+    Public Custom Event onLoadedData As OnLoadedDataDelegate
+      AddHandler(aEvent As Sub(sender as HTMLElement, e As Dom.Event))
+        If Not assigned(_onLoadedData) Then
+          RemObjects.Elements.WebAssembly.WasmEvents.SetEvent(_HtmlElement, "onLoadedData", Sub(sender as HTMLElement, e As Dynamic) RaiseEvent _onLoadedData(sender, CType(e, Dom.Event)))
+        End If
+        AddHandler _onLoadedData, Value
+      End AddHandler
+      RemoveHandler(aEvent As OnLoadedDataDelegate)
+        RemoveHandler _onLoadedData, Value
+        If Not assigned(_onLoadedData) then
+          RemObjects.Elements.WebAssembly.WasmEvents.ClearEvent(_HtmlElement, "onLoadedData")
+        End If
+      End RemoveHandler
+    End Event
+
     Private Event _onLoadedData As OnLoadedDataDelegate
-
-    Private Sub AddOnLoadedData(aEvent As Sub(sender as HTMLElement, e As Dom.Event))
-      If Not assigned(_onLoadedData) Then
-        RemObjects.Elements.WebAssembly.WasmEvents.SetEvent(_HtmlElement, "onLoadedData", Sub(sender as HTMLElement, e As Dynamic) RaiseEvent _onLoadedData(sender, CType(e, Dom.Event)))
-      End If
-      AddHandler _onLoadedData, aEvent
-    End Sub
-
-    Private Sub CantRemove(aEvent As OnLoadedDataDelegate)
-      RemoveHandler _onLoadedData, aEvent
-      If Not assigned(_onLoadedData) then
-        RemObjects.Elements.WebAssembly.WasmEvents.ClearEvent(_HtmlElement, "onLoadedData")
-      End If
-    End Sub
 
     ' onLoadedMetaData
 
     Public Delegate Sub OnLoadedMetaDataDelegate(sender as HTMLElement, e As Dom.Event)
 
-    Public Event onLoadedMetaData As OnLoadedMetaDataDelegate ' Add AddOnLoadedMetaData Remove RemoveOnLoadedMetaData
+    Public Custom Event onLoadedMetaData As OnLoadedMetaDataDelegate
+      AddHandler(aEvent As Sub(sender as HTMLElement, e As Dom.Event))
+        If Not assigned(_onLoadedMetaData) Then
+          RemObjects.Elements.WebAssembly.WasmEvents.SetEvent(_HtmlElement, "onLoadedMetaData", Sub(sender as HTMLElement, e As Dynamic) RaiseEvent _onLoadedMetaData(sender, CType(e, Dom.Event)))
+        End If
+        AddHandler _onLoadedMetaData, Value
+      End AddHandler
+      RemoveHandler(aEvent As OnLoadedMetaDataDelegate)
+        RemoveHandler _onLoadedMetaData, Value
+        If Not assigned(_onLoadedMetaData) then
+          RemObjects.Elements.WebAssembly.WasmEvents.ClearEvent(_HtmlElement, "onLoadedMetaData")
+        End If
+      End RemoveHandler
+    End Event
+
     Private Event _onLoadedMetaData As OnLoadedMetaDataDelegate
-
-    Private Sub AddOnLoadedMetaData(aEvent As Sub(sender as HTMLElement, e As Dom.Event))
-      If Not assigned(_onLoadedMetaData) Then
-        RemObjects.Elements.WebAssembly.WasmEvents.SetEvent(_HtmlElement, "onLoadedMetaData", Sub(sender as HTMLElement, e As Dynamic) RaiseEvent _onLoadedMetaData(sender, CType(e, Dom.Event)))
-      End If
-      AddHandler _onLoadedMetaData, aEvent
-    End Sub
-
-    Private Sub CantRemove(aEvent As OnLoadedMetaDataDelegate)
-      RemoveHandler _onLoadedMetaData, aEvent
-      If Not assigned(_onLoadedMetaData) then
-        RemObjects.Elements.WebAssembly.WasmEvents.ClearEvent(_HtmlElement, "onLoadedMetaData")
-      End If
-    End Sub
 
     ' onLoadEnd
 
     Public Delegate Sub OnLoadEndDelegate(sender as HTMLElement, e As ProgressEvent)
 
-    Public Event onLoadEnd As OnLoadEndDelegate ' Add AddOnLoadEnd Remove RemoveOnLoadEnd
+    Public Custom Event onLoadEnd As OnLoadEndDelegate
+      AddHandler(aEvent As Sub(sender as HTMLElement, e As ProgressEvent))
+        If Not assigned(_onLoadEnd) Then
+          RemObjects.Elements.WebAssembly.WasmEvents.SetEvent(_HtmlElement, "onLoadEnd", Sub(sender as HTMLElement, e As Dynamic) RaiseEvent _onLoadEnd(sender, CType(e, ProgressEvent)))
+        End If
+        AddHandler _onLoadEnd, Value
+      End AddHandler
+      RemoveHandler(aEvent As OnLoadEndDelegate)
+        RemoveHandler _onLoadEnd, Value
+        If Not assigned(_onLoadEnd) then
+          RemObjects.Elements.WebAssembly.WasmEvents.ClearEvent(_HtmlElement, "onLoadEnd")
+        End If
+      End RemoveHandler
+    End Event
+
     Private Event _onLoadEnd As OnLoadEndDelegate
-
-    Private Sub AddOnLoadEnd(aEvent As Sub(sender as HTMLElement, e As ProgressEvent))
-      If Not assigned(_onLoadEnd) Then
-        RemObjects.Elements.WebAssembly.WasmEvents.SetEvent(_HtmlElement, "onLoadEnd", Sub(sender as HTMLElement, e As Dynamic) RaiseEvent _onLoadEnd(sender, CType(e, ProgressEvent)))
-      End If
-      AddHandler _onLoadEnd, aEvent
-    End Sub
-
-    Private Sub CantRemove(aEvent As OnLoadEndDelegate)
-      RemoveHandler _onLoadEnd, aEvent
-      If Not assigned(_onLoadEnd) then
-        RemObjects.Elements.WebAssembly.WasmEvents.ClearEvent(_HtmlElement, "onLoadEnd")
-      End If
-    End Sub
 
     ' onLoadStart
 
     Public Delegate Sub OnLoadStartDelegate(sender as HTMLElement, e As ProgressEvent)
 
-    Public Event onLoadStart As OnLoadStartDelegate ' Add AddOnLoadStart Remove RemoveOnLoadStart
+    Public Custom Event onLoadStart As OnLoadStartDelegate
+      AddHandler(aEvent As Sub(sender as HTMLElement, e As ProgressEvent))
+        If Not assigned(_onLoadStart) Then
+          RemObjects.Elements.WebAssembly.WasmEvents.SetEvent(_HtmlElement, "onLoadStart", Sub(sender as HTMLElement, e As Dynamic) RaiseEvent _onLoadStart(sender, CType(e, ProgressEvent)))
+        End If
+        AddHandler _onLoadStart, Value
+      End AddHandler
+      RemoveHandler(aEvent As OnLoadStartDelegate)
+        RemoveHandler _onLoadStart, Value
+        If Not assigned(_onLoadStart) then
+          RemObjects.Elements.WebAssembly.WasmEvents.ClearEvent(_HtmlElement, "onLoadStart")
+        End If
+      End RemoveHandler
+    End Event
+
     Private Event _onLoadStart As OnLoadStartDelegate
-
-    Private Sub AddOnLoadStart(aEvent As Sub(sender as HTMLElement, e As ProgressEvent))
-      If Not assigned(_onLoadStart) Then
-        RemObjects.Elements.WebAssembly.WasmEvents.SetEvent(_HtmlElement, "onLoadStart", Sub(sender as HTMLElement, e As Dynamic) RaiseEvent _onLoadStart(sender, CType(e, ProgressEvent)))
-      End If
-      AddHandler _onLoadStart, aEvent
-    End Sub
-
-    Private Sub CantRemove(aEvent As OnLoadStartDelegate)
-      RemoveHandler _onLoadStart, aEvent
-      If Not assigned(_onLoadStart) then
-        RemObjects.Elements.WebAssembly.WasmEvents.ClearEvent(_HtmlElement, "onLoadStart")
-      End If
-    End Sub
 
     ' onLostPointerCapture
 
     Public Delegate Sub OnLostPointerCaptureDelegate(sender as HTMLElement, e As PointerEvent)
 
-    Public Event onLostPointerCapture As OnLostPointerCaptureDelegate ' Add AddOnLostPointerCapture Remove RemoveOnLostPointerCapture
+    Public Custom Event onLostPointerCapture As OnLostPointerCaptureDelegate
+      AddHandler(aEvent As Sub(sender as HTMLElement, e As PointerEvent))
+        If Not assigned(_onLostPointerCapture) Then
+          RemObjects.Elements.WebAssembly.WasmEvents.SetEvent(_HtmlElement, "onLostPointerCapture", Sub(sender as HTMLElement, e As Dynamic) RaiseEvent _onLostPointerCapture(sender, CType(e, PointerEvent)))
+        End If
+        AddHandler _onLostPointerCapture, Value
+      End AddHandler
+      RemoveHandler(aEvent As OnLostPointerCaptureDelegate)
+        RemoveHandler _onLostPointerCapture, Value
+        If Not assigned(_onLostPointerCapture) then
+          RemObjects.Elements.WebAssembly.WasmEvents.ClearEvent(_HtmlElement, "onLostPointerCapture")
+        End If
+      End RemoveHandler
+    End Event
+
     Private Event _onLostPointerCapture As OnLostPointerCaptureDelegate
-
-    Private Sub AddOnLostPointerCapture(aEvent As Sub(sender as HTMLElement, e As PointerEvent))
-      If Not assigned(_onLostPointerCapture) Then
-        RemObjects.Elements.WebAssembly.WasmEvents.SetEvent(_HtmlElement, "onLostPointerCapture", Sub(sender as HTMLElement, e As Dynamic) RaiseEvent _onLostPointerCapture(sender, CType(e, PointerEvent)))
-      End If
-      AddHandler _onLostPointerCapture, aEvent
-    End Sub
-
-    Private Sub CantRemove(aEvent As OnLostPointerCaptureDelegate)
-      RemoveHandler _onLostPointerCapture, aEvent
-      If Not assigned(_onLostPointerCapture) then
-        RemObjects.Elements.WebAssembly.WasmEvents.ClearEvent(_HtmlElement, "onLostPointerCapture")
-      End If
-    End Sub
 
     ' onMouseDown
 
     Public Delegate Sub OnMouseDownDelegate(sender as HTMLElement, e As MouseEvent)
 
-    Public Event onMouseDown As OnMouseDownDelegate ' Add AddOnMouseDown Remove RemoveOnMouseDown
+    Public Custom Event onMouseDown As OnMouseDownDelegate
+      AddHandler(aEvent As Sub(sender as HTMLElement, e As MouseEvent))
+        If Not assigned(_onMouseDown) Then
+          RemObjects.Elements.WebAssembly.WasmEvents.SetEvent(_HtmlElement, "onMouseDown", Sub(sender as HTMLElement, e As Dynamic) RaiseEvent _onMouseDown(sender, CType(e, MouseEvent)))
+        End If
+        AddHandler _onMouseDown, Value
+      End AddHandler
+      RemoveHandler(aEvent As OnMouseDownDelegate)
+        RemoveHandler _onMouseDown, Value
+        If Not assigned(_onMouseDown) then
+          RemObjects.Elements.WebAssembly.WasmEvents.ClearEvent(_HtmlElement, "onMouseDown")
+        End If
+      End RemoveHandler
+    End Event
+
     Private Event _onMouseDown As OnMouseDownDelegate
-
-    Private Sub AddOnMouseDown(aEvent As Sub(sender as HTMLElement, e As MouseEvent))
-      If Not assigned(_onMouseDown) Then
-        RemObjects.Elements.WebAssembly.WasmEvents.SetEvent(_HtmlElement, "onMouseDown", Sub(sender as HTMLElement, e As Dynamic) RaiseEvent _onMouseDown(sender, CType(e, MouseEvent)))
-      End If
-      AddHandler _onMouseDown, aEvent
-    End Sub
-
-    Private Sub CantRemove(aEvent As OnMouseDownDelegate)
-      RemoveHandler _onMouseDown, aEvent
-      If Not assigned(_onMouseDown) then
-        RemObjects.Elements.WebAssembly.WasmEvents.ClearEvent(_HtmlElement, "onMouseDown")
-      End If
-    End Sub
 
     ' onMouseEnter
 
     Public Delegate Sub OnMouseEnterDelegate(sender as HTMLElement, e As MouseEvent)
 
-    Public Event onMouseEnter As OnMouseEnterDelegate ' Add AddOnMouseEnter Remove RemoveOnMouseEnter
+    Public Custom Event onMouseEnter As OnMouseEnterDelegate
+      AddHandler(aEvent As Sub(sender as HTMLElement, e As MouseEvent))
+        If Not assigned(_onMouseEnter) Then
+          RemObjects.Elements.WebAssembly.WasmEvents.SetEvent(_HtmlElement, "onMouseEnter", Sub(sender as HTMLElement, e As Dynamic) RaiseEvent _onMouseEnter(sender, CType(e, MouseEvent)))
+        End If
+        AddHandler _onMouseEnter, Value
+      End AddHandler
+      RemoveHandler(aEvent As OnMouseEnterDelegate)
+        RemoveHandler _onMouseEnter, Value
+        If Not assigned(_onMouseEnter) then
+          RemObjects.Elements.WebAssembly.WasmEvents.ClearEvent(_HtmlElement, "onMouseEnter")
+        End If
+      End RemoveHandler
+    End Event
+
     Private Event _onMouseEnter As OnMouseEnterDelegate
-
-    Private Sub AddOnMouseEnter(aEvent As Sub(sender as HTMLElement, e As MouseEvent))
-      If Not assigned(_onMouseEnter) Then
-        RemObjects.Elements.WebAssembly.WasmEvents.SetEvent(_HtmlElement, "onMouseEnter", Sub(sender as HTMLElement, e As Dynamic) RaiseEvent _onMouseEnter(sender, CType(e, MouseEvent)))
-      End If
-      AddHandler _onMouseEnter, aEvent
-    End Sub
-
-    Private Sub CantRemove(aEvent As OnMouseEnterDelegate)
-      RemoveHandler _onMouseEnter, aEvent
-      If Not assigned(_onMouseEnter) then
-        RemObjects.Elements.WebAssembly.WasmEvents.ClearEvent(_HtmlElement, "onMouseEnter")
-      End If
-    End Sub
 
     ' onMouseLeave
 
     Public Delegate Sub OnMouseLeaveDelegate(sender as HTMLElement, e As MouseEvent)
 
-    Public Event onMouseLeave As OnMouseLeaveDelegate ' Add AddOnMouseLeave Remove RemoveOnMouseLeave
+    Public Custom Event onMouseLeave As OnMouseLeaveDelegate
+      AddHandler(aEvent As Sub(sender as HTMLElement, e As MouseEvent))
+        If Not assigned(_onMouseLeave) Then
+          RemObjects.Elements.WebAssembly.WasmEvents.SetEvent(_HtmlElement, "onMouseLeave", Sub(sender as HTMLElement, e As Dynamic) RaiseEvent _onMouseLeave(sender, CType(e, MouseEvent)))
+        End If
+        AddHandler _onMouseLeave, Value
+      End AddHandler
+      RemoveHandler(aEvent As OnMouseLeaveDelegate)
+        RemoveHandler _onMouseLeave, Value
+        If Not assigned(_onMouseLeave) then
+          RemObjects.Elements.WebAssembly.WasmEvents.ClearEvent(_HtmlElement, "onMouseLeave")
+        End If
+      End RemoveHandler
+    End Event
+
     Private Event _onMouseLeave As OnMouseLeaveDelegate
-
-    Private Sub AddOnMouseLeave(aEvent As Sub(sender as HTMLElement, e As MouseEvent))
-      If Not assigned(_onMouseLeave) Then
-        RemObjects.Elements.WebAssembly.WasmEvents.SetEvent(_HtmlElement, "onMouseLeave", Sub(sender as HTMLElement, e As Dynamic) RaiseEvent _onMouseLeave(sender, CType(e, MouseEvent)))
-      End If
-      AddHandler _onMouseLeave, aEvent
-    End Sub
-
-    Private Sub CantRemove(aEvent As OnMouseLeaveDelegate)
-      RemoveHandler _onMouseLeave, aEvent
-      If Not assigned(_onMouseLeave) then
-        RemObjects.Elements.WebAssembly.WasmEvents.ClearEvent(_HtmlElement, "onMouseLeave")
-      End If
-    End Sub
 
     ' onMouseMove
 
     Public Delegate Sub OnMouseMoveDelegate(sender as HTMLElement, e As MouseEvent)
 
-    Public Event onMouseMove As OnMouseMoveDelegate ' Add AddOnMouseMove Remove RemoveOnMouseMove
+    Public Custom Event onMouseMove As OnMouseMoveDelegate
+      AddHandler(aEvent As Sub(sender as HTMLElement, e As MouseEvent))
+        If Not assigned(_onMouseMove) Then
+          RemObjects.Elements.WebAssembly.WasmEvents.SetEvent(_HtmlElement, "onMouseMove", Sub(sender as HTMLElement, e As Dynamic) RaiseEvent _onMouseMove(sender, CType(e, MouseEvent)))
+        End If
+        AddHandler _onMouseMove, Value
+      End AddHandler
+      RemoveHandler(aEvent As OnMouseMoveDelegate)
+        RemoveHandler _onMouseMove, Value
+        If Not assigned(_onMouseMove) then
+          RemObjects.Elements.WebAssembly.WasmEvents.ClearEvent(_HtmlElement, "onMouseMove")
+        End If
+      End RemoveHandler
+    End Event
+
     Private Event _onMouseMove As OnMouseMoveDelegate
-
-    Private Sub AddOnMouseMove(aEvent As Sub(sender as HTMLElement, e As MouseEvent))
-      If Not assigned(_onMouseMove) Then
-        RemObjects.Elements.WebAssembly.WasmEvents.SetEvent(_HtmlElement, "onMouseMove", Sub(sender as HTMLElement, e As Dynamic) RaiseEvent _onMouseMove(sender, CType(e, MouseEvent)))
-      End If
-      AddHandler _onMouseMove, aEvent
-    End Sub
-
-    Private Sub CantRemove(aEvent As OnMouseMoveDelegate)
-      RemoveHandler _onMouseMove, aEvent
-      If Not assigned(_onMouseMove) then
-        RemObjects.Elements.WebAssembly.WasmEvents.ClearEvent(_HtmlElement, "onMouseMove")
-      End If
-    End Sub
 
     ' onMouseOut
 
     Public Delegate Sub OnMouseOutDelegate(sender as HTMLElement, e As MouseEvent)
 
-    Public Event onMouseOut As OnMouseOutDelegate ' Add AddOnMouseOut Remove RemoveOnMouseOut
+    Public Custom Event onMouseOut As OnMouseOutDelegate
+      AddHandler(aEvent As Sub(sender as HTMLElement, e As MouseEvent))
+        If Not assigned(_onMouseOut) Then
+          RemObjects.Elements.WebAssembly.WasmEvents.SetEvent(_HtmlElement, "onMouseOut", Sub(sender as HTMLElement, e As Dynamic) RaiseEvent _onMouseOut(sender, CType(e, MouseEvent)))
+        End If
+        AddHandler _onMouseOut, Value
+      End AddHandler
+      RemoveHandler(aEvent As OnMouseOutDelegate)
+        RemoveHandler _onMouseOut, Value
+        If Not assigned(_onMouseOut) then
+          RemObjects.Elements.WebAssembly.WasmEvents.ClearEvent(_HtmlElement, "onMouseOut")
+        End If
+      End RemoveHandler
+    End Event
+
     Private Event _onMouseOut As OnMouseOutDelegate
-
-    Private Sub AddOnMouseOut(aEvent As Sub(sender as HTMLElement, e As MouseEvent))
-      If Not assigned(_onMouseOut) Then
-        RemObjects.Elements.WebAssembly.WasmEvents.SetEvent(_HtmlElement, "onMouseOut", Sub(sender as HTMLElement, e As Dynamic) RaiseEvent _onMouseOut(sender, CType(e, MouseEvent)))
-      End If
-      AddHandler _onMouseOut, aEvent
-    End Sub
-
-    Private Sub CantRemove(aEvent As OnMouseOutDelegate)
-      RemoveHandler _onMouseOut, aEvent
-      If Not assigned(_onMouseOut) then
-        RemObjects.Elements.WebAssembly.WasmEvents.ClearEvent(_HtmlElement, "onMouseOut")
-      End If
-    End Sub
 
     ' onWheel
 
     Public Delegate Sub OnWheelDelegate(sender as HTMLElement, e As WheelEvent)
 
-    Public Event onWheel As OnWheelDelegate ' Add AddOnWheel Remove RemoveOnWheel
+    Public Custom Event onWheel As OnWheelDelegate
+      AddHandler(aEvent As Sub(sender as HTMLElement, e As WheelEvent))
+        If Not assigned(_onWheel) Then
+          RemObjects.Elements.WebAssembly.WasmEvents.SetEvent(_HtmlElement, "onWheel", Sub(sender as HTMLElement, e As Dynamic) RaiseEvent _onWheel(sender, CType(e, WheelEvent)))
+        End If
+        AddHandler _onWheel, Value
+      End AddHandler
+      RemoveHandler(aEvent As OnWheelDelegate)
+        RemoveHandler _onWheel, Value
+        If Not assigned(_onWheel) then
+          RemObjects.Elements.WebAssembly.WasmEvents.ClearEvent(_HtmlElement, "onWheel")
+        End If
+      End RemoveHandler
+    End Event
+
     Private Event _onWheel As OnWheelDelegate
-
-    Private Sub AddOnWheel(aEvent As Sub(sender as HTMLElement, e As WheelEvent))
-      If Not assigned(_onWheel) Then
-        RemObjects.Elements.WebAssembly.WasmEvents.SetEvent(_HtmlElement, "onWheel", Sub(sender as HTMLElement, e As Dynamic) RaiseEvent _onWheel(sender, CType(e, WheelEvent)))
-      End If
-      AddHandler _onWheel, aEvent
-    End Sub
-
-    Private Sub CantRemove(aEvent As OnWheelDelegate)
-      RemoveHandler _onWheel, aEvent
-      If Not assigned(_onWheel) then
-        RemObjects.Elements.WebAssembly.WasmEvents.ClearEvent(_HtmlElement, "onWheel")
-      End If
-    End Sub
 
     ' onPause
 
     Public Delegate Sub OnPauseDelegate(sender as HTMLElement, e As Dom.Event)
 
-    Public Event onPause As OnPauseDelegate ' Add AddOnPause Remove RemoveOnPause
+    Public Custom Event onPause As OnPauseDelegate
+      AddHandler(aEvent As Sub(sender as HTMLElement, e As Dom.Event))
+        If Not assigned(_onPause) Then
+          RemObjects.Elements.WebAssembly.WasmEvents.SetEvent(_HtmlElement, "onPause", Sub(sender as HTMLElement, e As Dynamic) RaiseEvent _onPause(sender, CType(e, Dom.Event)))
+        End If
+        AddHandler _onPause, Value
+      End AddHandler
+      RemoveHandler(aEvent As OnPauseDelegate)
+        RemoveHandler _onPause, Value
+        If Not assigned(_onPause) then
+          RemObjects.Elements.WebAssembly.WasmEvents.ClearEvent(_HtmlElement, "onPause")
+        End If
+      End RemoveHandler
+    End Event
+
     Private Event _onPause As OnPauseDelegate
-
-    Private Sub AddOnPause(aEvent As Sub(sender as HTMLElement, e As Dom.Event))
-      If Not assigned(_onPause) Then
-        RemObjects.Elements.WebAssembly.WasmEvents.SetEvent(_HtmlElement, "onPause", Sub(sender as HTMLElement, e As Dynamic) RaiseEvent _onPause(sender, CType(e, Dom.Event)))
-      End If
-      AddHandler _onPause, aEvent
-    End Sub
-
-    Private Sub CantRemove(aEvent As OnPauseDelegate)
-      RemoveHandler _onPause, aEvent
-      If Not assigned(_onPause) then
-        RemObjects.Elements.WebAssembly.WasmEvents.ClearEvent(_HtmlElement, "onPause")
-      End If
-    End Sub
 
     ' onPlay
 
     Public Delegate Sub OnPlayDelegate(sender as HTMLElement, e As Dom.Event)
 
-    Public Event onPlay As OnPlayDelegate ' Add AddOnPlay Remove RemoveOnPlay
+    Public Custom Event onPlay As OnPlayDelegate
+      AddHandler(aEvent As Sub(sender as HTMLElement, e As Dom.Event))
+        If Not assigned(_onPlay) Then
+          RemObjects.Elements.WebAssembly.WasmEvents.SetEvent(_HtmlElement, "onPlay", Sub(sender as HTMLElement, e As Dynamic) RaiseEvent _onPlay(sender, CType(e, Dom.Event)))
+        End If
+        AddHandler _onPlay, Value
+      End AddHandler
+      RemoveHandler(aEvent As OnPlayDelegate)
+        RemoveHandler _onPlay, Value
+        If Not assigned(_onPlay) then
+          RemObjects.Elements.WebAssembly.WasmEvents.ClearEvent(_HtmlElement, "onPlay")
+        End If
+      End RemoveHandler
+    End Event
+
     Private Event _onPlay As OnPlayDelegate
-
-    Private Sub AddOnPlay(aEvent As Sub(sender as HTMLElement, e As Dom.Event))
-      If Not assigned(_onPlay) Then
-        RemObjects.Elements.WebAssembly.WasmEvents.SetEvent(_HtmlElement, "onPlay", Sub(sender as HTMLElement, e As Dynamic) RaiseEvent _onPlay(sender, CType(e, Dom.Event)))
-      End If
-      AddHandler _onPlay, aEvent
-    End Sub
-
-    Private Sub CantRemove(aEvent As OnPlayDelegate)
-      RemoveHandler _onPlay, aEvent
-      If Not assigned(_onPlay) then
-        RemObjects.Elements.WebAssembly.WasmEvents.ClearEvent(_HtmlElement, "onPlay")
-      End If
-    End Sub
 
     ' onPlaying
 
     Public Delegate Sub OnPlayingDelegate(sender as HTMLElement, e As Dom.Event)
 
-    Public Event onPlaying As OnPlayingDelegate ' Add AddOnPlaying Remove RemoveOnPlaying
+    Public Custom Event onPlaying As OnPlayingDelegate
+      AddHandler(aEvent As Sub(sender as HTMLElement, e As Dom.Event))
+        If Not assigned(_onPlaying) Then
+          RemObjects.Elements.WebAssembly.WasmEvents.SetEvent(_HtmlElement, "onPlaying", Sub(sender as HTMLElement, e As Dynamic) RaiseEvent _onPlaying(sender, CType(e, Dom.Event)))
+        End If
+        AddHandler _onPlaying, Value
+      End AddHandler
+      RemoveHandler(aEvent As OnPlayingDelegate)
+        RemoveHandler _onPlaying, Value
+        If Not assigned(_onPlaying) then
+          RemObjects.Elements.WebAssembly.WasmEvents.ClearEvent(_HtmlElement, "onPlaying")
+        End If
+      End RemoveHandler
+    End Event
+
     Private Event _onPlaying As OnPlayingDelegate
-
-    Private Sub AddOnPlaying(aEvent As Sub(sender as HTMLElement, e As Dom.Event))
-      If Not assigned(_onPlaying) Then
-        RemObjects.Elements.WebAssembly.WasmEvents.SetEvent(_HtmlElement, "onPlaying", Sub(sender as HTMLElement, e As Dynamic) RaiseEvent _onPlaying(sender, CType(e, Dom.Event)))
-      End If
-      AddHandler _onPlaying, aEvent
-    End Sub
-
-    Private Sub CantRemove(aEvent As OnPlayingDelegate)
-      RemoveHandler _onPlaying, aEvent
-      If Not assigned(_onPlaying) then
-        RemObjects.Elements.WebAssembly.WasmEvents.ClearEvent(_HtmlElement, "onPlaying")
-      End If
-    End Sub
 
     ' onPointerDown
 
     Public Delegate Sub OnPointerDownDelegate(sender as HTMLElement, e As PointerEvent)
 
-    Public Event onPointerDown As OnPointerDownDelegate ' Add AddOnPointerDown Remove RemoveOnPointerDown
+    Public Custom Event onPointerDown As OnPointerDownDelegate
+      AddHandler(aEvent As Sub(sender as HTMLElement, e As PointerEvent))
+        If Not assigned(_onPointerDown) Then
+          RemObjects.Elements.WebAssembly.WasmEvents.SetEvent(_HtmlElement, "onPointerDown", Sub(sender as HTMLElement, e As Dynamic) RaiseEvent _onPointerDown(sender, CType(e, PointerEvent)))
+        End If
+        AddHandler _onPointerDown, Value
+      End AddHandler
+      RemoveHandler(aEvent As OnPointerDownDelegate)
+        RemoveHandler _onPointerDown, Value
+        If Not assigned(_onPointerDown) then
+          RemObjects.Elements.WebAssembly.WasmEvents.ClearEvent(_HtmlElement, "onPointerDown")
+        End If
+      End RemoveHandler
+    End Event
+
     Private Event _onPointerDown As OnPointerDownDelegate
-
-    Private Sub AddOnPointerDown(aEvent As Sub(sender as HTMLElement, e As PointerEvent))
-      If Not assigned(_onPointerDown) Then
-        RemObjects.Elements.WebAssembly.WasmEvents.SetEvent(_HtmlElement, "onPointerDown", Sub(sender as HTMLElement, e As Dynamic) RaiseEvent _onPointerDown(sender, CType(e, PointerEvent)))
-      End If
-      AddHandler _onPointerDown, aEvent
-    End Sub
-
-    Private Sub CantRemove(aEvent As OnPointerDownDelegate)
-      RemoveHandler _onPointerDown, aEvent
-      If Not assigned(_onPointerDown) then
-        RemObjects.Elements.WebAssembly.WasmEvents.ClearEvent(_HtmlElement, "onPointerDown")
-      End If
-    End Sub
 
     ' onPointerMove
 
     Public Delegate Sub OnPointerMoveDelegate(sender as HTMLElement, e As PointerEvent)
 
-    Public Event onPointerMove As OnPointerMoveDelegate ' Add AddOnPointerMove Remove RemoveOnPointerMove
+    Public Custom Event onPointerMove As OnPointerMoveDelegate
+      AddHandler(aEvent As Sub(sender as HTMLElement, e As PointerEvent))
+        If Not assigned(_onPointerMove) Then
+          RemObjects.Elements.WebAssembly.WasmEvents.SetEvent(_HtmlElement, "onPointerMove", Sub(sender as HTMLElement, e As Dynamic) RaiseEvent _onPointerMove(sender, CType(e, PointerEvent)))
+        End If
+        AddHandler _onPointerMove, Value
+      End AddHandler
+      RemoveHandler(aEvent As OnPointerMoveDelegate)
+        RemoveHandler _onPointerMove, Value
+        If Not assigned(_onPointerMove) then
+          RemObjects.Elements.WebAssembly.WasmEvents.ClearEvent(_HtmlElement, "onPointerMove")
+        End If
+      End RemoveHandler
+    End Event
+
     Private Event _onPointerMove As OnPointerMoveDelegate
-
-    Private Sub AddOnPointerMove(aEvent As Sub(sender as HTMLElement, e As PointerEvent))
-      If Not assigned(_onPointerMove) Then
-        RemObjects.Elements.WebAssembly.WasmEvents.SetEvent(_HtmlElement, "onPointerMove", Sub(sender as HTMLElement, e As Dynamic) RaiseEvent _onPointerMove(sender, CType(e, PointerEvent)))
-      End If
-      AddHandler _onPointerMove, aEvent
-    End Sub
-
-    Private Sub CantRemove(aEvent As OnPointerMoveDelegate)
-      RemoveHandler _onPointerMove, aEvent
-      If Not assigned(_onPointerMove) then
-        RemObjects.Elements.WebAssembly.WasmEvents.ClearEvent(_HtmlElement, "onPointerMove")
-      End If
-    End Sub
 
     ' onPointerUp
 
     Public Delegate Sub OnPointerUpDelegate(sender as HTMLElement, e As PointerEvent)
 
-    Public Event onPointerUp As OnPointerUpDelegate ' Add AddOnPointerUp Remove RemoveOnPointerUp
+    Public Custom Event onPointerUp As OnPointerUpDelegate
+      AddHandler(aEvent As Sub(sender as HTMLElement, e As PointerEvent))
+        If Not assigned(_onPointerUp) Then
+          RemObjects.Elements.WebAssembly.WasmEvents.SetEvent(_HtmlElement, "onPointerUp", Sub(sender as HTMLElement, e As Dynamic) RaiseEvent _onPointerUp(sender, CType(e, PointerEvent)))
+        End If
+        AddHandler _onPointerUp, Value
+      End AddHandler
+      RemoveHandler(aEvent As OnPointerUpDelegate)
+        RemoveHandler _onPointerUp, Value
+        If Not assigned(_onPointerUp) then
+          RemObjects.Elements.WebAssembly.WasmEvents.ClearEvent(_HtmlElement, "onPointerUp")
+        End If
+      End RemoveHandler
+    End Event
+
     Private Event _onPointerUp As OnPointerUpDelegate
-
-    Private Sub AddOnPointerUp(aEvent As Sub(sender as HTMLElement, e As PointerEvent))
-      If Not assigned(_onPointerUp) Then
-        RemObjects.Elements.WebAssembly.WasmEvents.SetEvent(_HtmlElement, "onPointerUp", Sub(sender as HTMLElement, e As Dynamic) RaiseEvent _onPointerUp(sender, CType(e, PointerEvent)))
-      End If
-      AddHandler _onPointerUp, aEvent
-    End Sub
-
-    Private Sub CantRemove(aEvent As OnPointerUpDelegate)
-      RemoveHandler _onPointerUp, aEvent
-      If Not assigned(_onPointerUp) then
-        RemObjects.Elements.WebAssembly.WasmEvents.ClearEvent(_HtmlElement, "onPointerUp")
-      End If
-    End Sub
 
     ' onPointerCancel
 
     Public Delegate Sub OnPointerCancelDelegate(sender as HTMLElement, e As PointerEvent)
 
-    Public Event onPointerCancel As OnPointerCancelDelegate ' Add AddOnPointerCancel Remove RemoveOnPointerCancel
+    Public Custom Event onPointerCancel As OnPointerCancelDelegate
+      AddHandler(aEvent As Sub(sender as HTMLElement, e As PointerEvent))
+        If Not assigned(_onPointerCancel) Then
+          RemObjects.Elements.WebAssembly.WasmEvents.SetEvent(_HtmlElement, "onPointerCancel", Sub(sender as HTMLElement, e As Dynamic) RaiseEvent _onPointerCancel(sender, CType(e, PointerEvent)))
+        End If
+        AddHandler _onPointerCancel, Value
+      End AddHandler
+      RemoveHandler(aEvent As OnPointerCancelDelegate)
+        RemoveHandler _onPointerCancel, Value
+        If Not assigned(_onPointerCancel) then
+          RemObjects.Elements.WebAssembly.WasmEvents.ClearEvent(_HtmlElement, "onPointerCancel")
+        End If
+      End RemoveHandler
+    End Event
+
     Private Event _onPointerCancel As OnPointerCancelDelegate
-
-    Private Sub AddOnPointerCancel(aEvent As Sub(sender as HTMLElement, e As PointerEvent))
-      If Not assigned(_onPointerCancel) Then
-        RemObjects.Elements.WebAssembly.WasmEvents.SetEvent(_HtmlElement, "onPointerCancel", Sub(sender as HTMLElement, e As Dynamic) RaiseEvent _onPointerCancel(sender, CType(e, PointerEvent)))
-      End If
-      AddHandler _onPointerCancel, aEvent
-    End Sub
-
-    Private Sub CantRemove(aEvent As OnPointerCancelDelegate)
-      RemoveHandler _onPointerCancel, aEvent
-      If Not assigned(_onPointerCancel) then
-        RemObjects.Elements.WebAssembly.WasmEvents.ClearEvent(_HtmlElement, "onPointerCancel")
-      End If
-    End Sub
 
     ' onPointerOver
 
     Public Delegate Sub OnPointerOverDelegate(sender as HTMLElement, e As PointerEvent)
 
-    Public Event onPointerOver As OnPointerOverDelegate ' Add AddOnPointerOver Remove RemoveOnPointerOver
+    Public Custom Event onPointerOver As OnPointerOverDelegate
+      AddHandler(aEvent As Sub(sender as HTMLElement, e As PointerEvent))
+        If Not assigned(_onPointerOver) Then
+          RemObjects.Elements.WebAssembly.WasmEvents.SetEvent(_HtmlElement, "onPointerOver", Sub(sender as HTMLElement, e As Dynamic) RaiseEvent _onPointerOver(sender, CType(e, PointerEvent)))
+        End If
+        AddHandler _onPointerOver, Value
+      End AddHandler
+      RemoveHandler(aEvent As OnPointerOverDelegate)
+        RemoveHandler _onPointerOver, Value
+        If Not assigned(_onPointerOver) then
+          RemObjects.Elements.WebAssembly.WasmEvents.ClearEvent(_HtmlElement, "onPointerOver")
+        End If
+      End RemoveHandler
+    End Event
+
     Private Event _onPointerOver As OnPointerOverDelegate
-
-    Private Sub AddOnPointerOver(aEvent As Sub(sender as HTMLElement, e As PointerEvent))
-      If Not assigned(_onPointerOver) Then
-        RemObjects.Elements.WebAssembly.WasmEvents.SetEvent(_HtmlElement, "onPointerOver", Sub(sender as HTMLElement, e As Dynamic) RaiseEvent _onPointerOver(sender, CType(e, PointerEvent)))
-      End If
-      AddHandler _onPointerOver, aEvent
-    End Sub
-
-    Private Sub CantRemove(aEvent As OnPointerOverDelegate)
-      RemoveHandler _onPointerOver, aEvent
-      If Not assigned(_onPointerOver) then
-        RemObjects.Elements.WebAssembly.WasmEvents.ClearEvent(_HtmlElement, "onPointerOver")
-      End If
-    End Sub
 
     ' onPointerOut
 
     Public Delegate Sub OnPointerOutDelegate(sender as HTMLElement, e As PointerEvent)
 
-    Public Event onPointerOut As OnPointerOutDelegate ' Add AddOnPointerOut Remove RemoveOnPointerOut
+    Public Custom Event onPointerOut As OnPointerOutDelegate
+      AddHandler(aEvent As Sub(sender as HTMLElement, e As PointerEvent))
+        If Not assigned(_onPointerOut) Then
+          RemObjects.Elements.WebAssembly.WasmEvents.SetEvent(_HtmlElement, "onPointerOut", Sub(sender as HTMLElement, e As Dynamic) RaiseEvent _onPointerOut(sender, CType(e, PointerEvent)))
+        End If
+        AddHandler _onPointerOut, Value
+      End AddHandler
+      RemoveHandler(aEvent As OnPointerOutDelegate)
+        RemoveHandler _onPointerOut, Value
+        If Not assigned(_onPointerOut) then
+          RemObjects.Elements.WebAssembly.WasmEvents.ClearEvent(_HtmlElement, "onPointerOut")
+        End If
+      End RemoveHandler
+    End Event
+
     Private Event _onPointerOut As OnPointerOutDelegate
-
-    Private Sub AddOnPointerOut(aEvent As Sub(sender as HTMLElement, e As PointerEvent))
-      If Not assigned(_onPointerOut) Then
-        RemObjects.Elements.WebAssembly.WasmEvents.SetEvent(_HtmlElement, "onPointerOut", Sub(sender as HTMLElement, e As Dynamic) RaiseEvent _onPointerOut(sender, CType(e, PointerEvent)))
-      End If
-      AddHandler _onPointerOut, aEvent
-    End Sub
-
-    Private Sub CantRemove(aEvent As OnPointerOutDelegate)
-      RemoveHandler _onPointerOut, aEvent
-      If Not assigned(_onPointerOut) then
-        RemObjects.Elements.WebAssembly.WasmEvents.ClearEvent(_HtmlElement, "onPointerOut")
-      End If
-    End Sub
 
     ' onPointerEnter
 
     Public Delegate Sub OnPointerEnterDelegate(sender as HTMLElement, e As PointerEvent)
 
-    Public Event onPointerEnter As OnPointerEnterDelegate ' Add AddOnPointerEnter Remove RemoveOnPointerEnter
+    Public Custom Event onPointerEnter As OnPointerEnterDelegate
+      AddHandler(aEvent As Sub(sender as HTMLElement, e As PointerEvent))
+        If Not assigned(_onPointerEnter) Then
+          RemObjects.Elements.WebAssembly.WasmEvents.SetEvent(_HtmlElement, "onPointerEnter", Sub(sender as HTMLElement, e As Dynamic) RaiseEvent _onPointerEnter(sender, CType(e, PointerEvent)))
+        End If
+        AddHandler _onPointerEnter, Value
+      End AddHandler
+      RemoveHandler(aEvent As OnPointerEnterDelegate)
+        RemoveHandler _onPointerEnter, Value
+        If Not assigned(_onPointerEnter) then
+          RemObjects.Elements.WebAssembly.WasmEvents.ClearEvent(_HtmlElement, "onPointerEnter")
+        End If
+      End RemoveHandler
+    End Event
+
     Private Event _onPointerEnter As OnPointerEnterDelegate
-
-    Private Sub AddOnPointerEnter(aEvent As Sub(sender as HTMLElement, e As PointerEvent))
-      If Not assigned(_onPointerEnter) Then
-        RemObjects.Elements.WebAssembly.WasmEvents.SetEvent(_HtmlElement, "onPointerEnter", Sub(sender as HTMLElement, e As Dynamic) RaiseEvent _onPointerEnter(sender, CType(e, PointerEvent)))
-      End If
-      AddHandler _onPointerEnter, aEvent
-    End Sub
-
-    Private Sub CantRemove(aEvent As OnPointerEnterDelegate)
-      RemoveHandler _onPointerEnter, aEvent
-      If Not assigned(_onPointerEnter) then
-        RemObjects.Elements.WebAssembly.WasmEvents.ClearEvent(_HtmlElement, "onPointerEnter")
-      End If
-    End Sub
 
     ' onPointerLeave
 
     Public Delegate Sub OnPointerLeaveDelegate(sender as HTMLElement, e As PointerEvent)
 
-    Public Event onPointerLeave As OnPointerLeaveDelegate ' Add AddOnPointerLeave Remove RemoveOnPointerLeave
+    Public Custom Event onPointerLeave As OnPointerLeaveDelegate
+      AddHandler(aEvent As Sub(sender as HTMLElement, e As PointerEvent))
+        If Not assigned(_onPointerLeave) Then
+          RemObjects.Elements.WebAssembly.WasmEvents.SetEvent(_HtmlElement, "onPointerLeave", Sub(sender as HTMLElement, e As Dynamic) RaiseEvent _onPointerLeave(sender, CType(e, PointerEvent)))
+        End If
+        AddHandler _onPointerLeave, Value
+      End AddHandler
+      RemoveHandler(aEvent As OnPointerLeaveDelegate)
+        RemoveHandler _onPointerLeave, Value
+        If Not assigned(_onPointerLeave) then
+          RemObjects.Elements.WebAssembly.WasmEvents.ClearEvent(_HtmlElement, "onPointerLeave")
+        End If
+      End RemoveHandler
+    End Event
+
     Private Event _onPointerLeave As OnPointerLeaveDelegate
-
-    Private Sub AddOnPointerLeave(aEvent As Sub(sender as HTMLElement, e As PointerEvent))
-      If Not assigned(_onPointerLeave) Then
-        RemObjects.Elements.WebAssembly.WasmEvents.SetEvent(_HtmlElement, "onPointerLeave", Sub(sender as HTMLElement, e As Dynamic) RaiseEvent _onPointerLeave(sender, CType(e, PointerEvent)))
-      End If
-      AddHandler _onPointerLeave, aEvent
-    End Sub
-
-    Private Sub CantRemove(aEvent As OnPointerLeaveDelegate)
-      RemoveHandler _onPointerLeave, aEvent
-      If Not assigned(_onPointerLeave) then
-        RemObjects.Elements.WebAssembly.WasmEvents.ClearEvent(_HtmlElement, "onPointerLeave")
-      End If
-    End Sub
 
     ' onProgress
 
     Public Delegate Sub OnProgressDelegate(sender as HTMLElement, e As ProgressEvent)
 
-    Public Event onProgress As OnProgressDelegate ' Add AddOnProgress Remove RemoveOnProgress
+    Public Custom Event onProgress As OnProgressDelegate
+      AddHandler(aEvent As Sub(sender as HTMLElement, e As ProgressEvent))
+        If Not assigned(_onProgress) Then
+          RemObjects.Elements.WebAssembly.WasmEvents.SetEvent(_HtmlElement, "onProgress", Sub(sender as HTMLElement, e As Dynamic) RaiseEvent _onProgress(sender, CType(e, ProgressEvent)))
+        End If
+        AddHandler _onProgress, Value
+      End AddHandler
+      RemoveHandler(aEvent As OnProgressDelegate)
+        RemoveHandler _onProgress, Value
+        If Not assigned(_onProgress) then
+          RemObjects.Elements.WebAssembly.WasmEvents.ClearEvent(_HtmlElement, "onProgress")
+        End If
+      End RemoveHandler
+    End Event
+
     Private Event _onProgress As OnProgressDelegate
-
-    Private Sub AddOnProgress(aEvent As Sub(sender as HTMLElement, e As ProgressEvent))
-      If Not assigned(_onProgress) Then
-        RemObjects.Elements.WebAssembly.WasmEvents.SetEvent(_HtmlElement, "onProgress", Sub(sender as HTMLElement, e As Dynamic) RaiseEvent _onProgress(sender, CType(e, ProgressEvent)))
-      End If
-      AddHandler _onProgress, aEvent
-    End Sub
-
-    Private Sub CantRemove(aEvent As OnProgressDelegate)
-      RemoveHandler _onProgress, aEvent
-      If Not assigned(_onProgress) then
-        RemObjects.Elements.WebAssembly.WasmEvents.ClearEvent(_HtmlElement, "onProgress")
-      End If
-    End Sub
 
     ' onRateChange
 
     Public Delegate Sub OnRateChangeDelegate(sender as HTMLElement, e As Dom.Event)
 
-    Public Event onRateChange As OnRateChangeDelegate ' Add AddOnRateChange Remove RemoveOnRateChange
+    Public Custom Event onRateChange As OnRateChangeDelegate
+      AddHandler(aEvent As Sub(sender as HTMLElement, e As Dom.Event))
+        If Not assigned(_onRateChange) Then
+          RemObjects.Elements.WebAssembly.WasmEvents.SetEvent(_HtmlElement, "onRateChange", Sub(sender as HTMLElement, e As Dynamic) RaiseEvent _onRateChange(sender, CType(e, Dom.Event)))
+        End If
+        AddHandler _onRateChange, Value
+      End AddHandler
+      RemoveHandler(aEvent As OnRateChangeDelegate)
+        RemoveHandler _onRateChange, Value
+        If Not assigned(_onRateChange) then
+          RemObjects.Elements.WebAssembly.WasmEvents.ClearEvent(_HtmlElement, "onRateChange")
+        End If
+      End RemoveHandler
+    End Event
+
     Private Event _onRateChange As OnRateChangeDelegate
-
-    Private Sub AddOnRateChange(aEvent As Sub(sender as HTMLElement, e As Dom.Event))
-      If Not assigned(_onRateChange) Then
-        RemObjects.Elements.WebAssembly.WasmEvents.SetEvent(_HtmlElement, "onRateChange", Sub(sender as HTMLElement, e As Dynamic) RaiseEvent _onRateChange(sender, CType(e, Dom.Event)))
-      End If
-      AddHandler _onRateChange, aEvent
-    End Sub
-
-    Private Sub CantRemove(aEvent As OnRateChangeDelegate)
-      RemoveHandler _onRateChange, aEvent
-      If Not assigned(_onRateChange) then
-        RemObjects.Elements.WebAssembly.WasmEvents.ClearEvent(_HtmlElement, "onRateChange")
-      End If
-    End Sub
 
     ' onReset
 
     Public Delegate Sub OnResetDelegate(sender as HTMLElement, e As Dom.Event)
 
-    Public Event onReset As OnResetDelegate ' Add AddOnReset Remove RemoveOnReset
+    Public Custom Event onReset As OnResetDelegate
+      AddHandler(aEvent As Sub(sender as HTMLElement, e As Dom.Event))
+        If Not assigned(_onReset) Then
+          RemObjects.Elements.WebAssembly.WasmEvents.SetEvent(_HtmlElement, "onReset", Sub(sender as HTMLElement, e As Dynamic) RaiseEvent _onReset(sender, CType(e, Dom.Event)))
+        End If
+        AddHandler _onReset, Value
+      End AddHandler
+      RemoveHandler(aEvent As OnResetDelegate)
+        RemoveHandler _onReset, Value
+        If Not assigned(_onReset) then
+          RemObjects.Elements.WebAssembly.WasmEvents.ClearEvent(_HtmlElement, "onReset")
+        End If
+      End RemoveHandler
+    End Event
+
     Private Event _onReset As OnResetDelegate
-
-    Private Sub AddOnReset(aEvent As Sub(sender as HTMLElement, e As Dom.Event))
-      If Not assigned(_onReset) Then
-        RemObjects.Elements.WebAssembly.WasmEvents.SetEvent(_HtmlElement, "onReset", Sub(sender as HTMLElement, e As Dynamic) RaiseEvent _onReset(sender, CType(e, Dom.Event)))
-      End If
-      AddHandler _onReset, aEvent
-    End Sub
-
-    Private Sub CantRemove(aEvent As OnResetDelegate)
-      RemoveHandler _onReset, aEvent
-      If Not assigned(_onReset) then
-        RemObjects.Elements.WebAssembly.WasmEvents.ClearEvent(_HtmlElement, "onReset")
-      End If
-    End Sub
 
     ' onResize
 
     Public Delegate Sub OnResizeDelegate(sender as HTMLElement, e As UIEvent)
 
-    Public Event onResize As OnResizeDelegate ' Add AddOnResize Remove RemoveOnResize
+    Public Custom Event onResize As OnResizeDelegate
+      AddHandler(aEvent As Sub(sender as HTMLElement, e As UIEvent))
+        If Not assigned(_onResize) Then
+          RemObjects.Elements.WebAssembly.WasmEvents.SetEvent(_HtmlElement, "onResize", Sub(sender as HTMLElement, e As Dynamic) RaiseEvent _onResize(sender, CType(e, UIEvent)))
+        End If
+        AddHandler _onResize, Value
+      End AddHandler
+      RemoveHandler(aEvent As OnResizeDelegate)
+        RemoveHandler _onResize, Value
+        If Not assigned(_onResize) then
+          RemObjects.Elements.WebAssembly.WasmEvents.ClearEvent(_HtmlElement, "onResize")
+        End If
+      End RemoveHandler
+    End Event
+
     Private Event _onResize As OnResizeDelegate
-
-    Private Sub AddOnResize(aEvent As Sub(sender as HTMLElement, e As UIEvent))
-      If Not assigned(_onResize) Then
-        RemObjects.Elements.WebAssembly.WasmEvents.SetEvent(_HtmlElement, "onResize", Sub(sender as HTMLElement, e As Dynamic) RaiseEvent _onResize(sender, CType(e, UIEvent)))
-      End If
-      AddHandler _onResize, aEvent
-    End Sub
-
-    Private Sub CantRemove(aEvent As OnResizeDelegate)
-      RemoveHandler _onResize, aEvent
-      If Not assigned(_onResize) then
-        RemObjects.Elements.WebAssembly.WasmEvents.ClearEvent(_HtmlElement, "onResize")
-      End If
-    End Sub
 
     ' onScroll
 
     Public Delegate Sub OnScrollDelegate(sender as HTMLElement, e As Dom.Event)
 
-    Public Event onScroll As OnScrollDelegate ' Add AddOnScroll Remove RemoveOnScroll
+    Public Custom Event onScroll As OnScrollDelegate
+      AddHandler(aEvent As Sub(sender as HTMLElement, e As Dom.Event))
+        If Not assigned(_onScroll) Then
+          RemObjects.Elements.WebAssembly.WasmEvents.SetEvent(_HtmlElement, "onScroll", Sub(sender as HTMLElement, e As Dynamic) RaiseEvent _onScroll(sender, CType(e, Dom.Event)))
+        End If
+        AddHandler _onScroll, Value
+      End AddHandler
+      RemoveHandler(aEvent As OnScrollDelegate)
+        RemoveHandler _onScroll, Value
+        If Not assigned(_onScroll) then
+          RemObjects.Elements.WebAssembly.WasmEvents.ClearEvent(_HtmlElement, "onScroll")
+        End If
+      End RemoveHandler
+    End Event
+
     Private Event _onScroll As OnScrollDelegate
-
-    Private Sub AddOnScroll(aEvent As Sub(sender as HTMLElement, e As Dom.Event))
-      If Not assigned(_onScroll) Then
-        RemObjects.Elements.WebAssembly.WasmEvents.SetEvent(_HtmlElement, "onScroll", Sub(sender as HTMLElement, e As Dynamic) RaiseEvent _onScroll(sender, CType(e, Dom.Event)))
-      End If
-      AddHandler _onScroll, aEvent
-    End Sub
-
-    Private Sub CantRemove(aEvent As OnScrollDelegate)
-      RemoveHandler _onScroll, aEvent
-      If Not assigned(_onScroll) then
-        RemObjects.Elements.WebAssembly.WasmEvents.ClearEvent(_HtmlElement, "onScroll")
-      End If
-    End Sub
 
     ' onSeeked
 
     Public Delegate Sub OnSeekedDelegate(sender as HTMLElement, e As Dom.Event)
 
-    Public Event onSeeked As OnSeekedDelegate ' Add AddOnSeeked Remove RemoveOnSeeked
+    Public Custom Event onSeeked As OnSeekedDelegate
+      AddHandler(aEvent As Sub(sender as HTMLElement, e As Dom.Event))
+        If Not assigned(_onSeeked) Then
+          RemObjects.Elements.WebAssembly.WasmEvents.SetEvent(_HtmlElement, "onSeeked", Sub(sender as HTMLElement, e As Dynamic) RaiseEvent _onSeeked(sender, CType(e, Dom.Event)))
+        End If
+        AddHandler _onSeeked, Value
+      End AddHandler
+      RemoveHandler(aEvent As OnSeekedDelegate)
+        RemoveHandler _onSeeked, Value
+        If Not assigned(_onSeeked) then
+          RemObjects.Elements.WebAssembly.WasmEvents.ClearEvent(_HtmlElement, "onSeeked")
+        End If
+      End RemoveHandler
+    End Event
+
     Private Event _onSeeked As OnSeekedDelegate
-
-    Private Sub AddOnSeeked(aEvent As Sub(sender as HTMLElement, e As Dom.Event))
-      If Not assigned(_onSeeked) Then
-        RemObjects.Elements.WebAssembly.WasmEvents.SetEvent(_HtmlElement, "onSeeked", Sub(sender as HTMLElement, e As Dynamic) RaiseEvent _onSeeked(sender, CType(e, Dom.Event)))
-      End If
-      AddHandler _onSeeked, aEvent
-    End Sub
-
-    Private Sub CantRemove(aEvent As OnSeekedDelegate)
-      RemoveHandler _onSeeked, aEvent
-      If Not assigned(_onSeeked) then
-        RemObjects.Elements.WebAssembly.WasmEvents.ClearEvent(_HtmlElement, "onSeeked")
-      End If
-    End Sub
 
     ' onSeeking
 
     Public Delegate Sub OnSeekingDelegate(sender as HTMLElement, e As Dom.Event)
 
-    Public Event onSeeking As OnSeekingDelegate ' Add AddOnSeeking Remove RemoveOnSeeking
+    Public Custom Event onSeeking As OnSeekingDelegate
+      AddHandler(aEvent As Sub(sender as HTMLElement, e As Dom.Event))
+        If Not assigned(_onSeeking) Then
+          RemObjects.Elements.WebAssembly.WasmEvents.SetEvent(_HtmlElement, "onSeeking", Sub(sender as HTMLElement, e As Dynamic) RaiseEvent _onSeeking(sender, CType(e, Dom.Event)))
+        End If
+        AddHandler _onSeeking, Value
+      End AddHandler
+      RemoveHandler(aEvent As OnSeekingDelegate)
+        RemoveHandler _onSeeking, Value
+        If Not assigned(_onSeeking) then
+          RemObjects.Elements.WebAssembly.WasmEvents.ClearEvent(_HtmlElement, "onSeeking")
+        End If
+      End RemoveHandler
+    End Event
+
     Private Event _onSeeking As OnSeekingDelegate
-
-    Private Sub AddOnSeeking(aEvent As Sub(sender as HTMLElement, e As Dom.Event))
-      If Not assigned(_onSeeking) Then
-        RemObjects.Elements.WebAssembly.WasmEvents.SetEvent(_HtmlElement, "onSeeking", Sub(sender as HTMLElement, e As Dynamic) RaiseEvent _onSeeking(sender, CType(e, Dom.Event)))
-      End If
-      AddHandler _onSeeking, aEvent
-    End Sub
-
-    Private Sub CantRemove(aEvent As OnSeekingDelegate)
-      RemoveHandler _onSeeking, aEvent
-      If Not assigned(_onSeeking) then
-        RemObjects.Elements.WebAssembly.WasmEvents.ClearEvent(_HtmlElement, "onSeeking")
-      End If
-    End Sub
 
     ' onSelect
 
     Public Delegate Sub OnSelectDelegate(sender as HTMLElement, e As UIEvent)
 
-    Public Event onSelect As OnSelectDelegate ' Add AddOnSelect Remove RemoveOnSelect
+    Public Custom Event onSelect As OnSelectDelegate
+      AddHandler(aEvent As Sub(sender as HTMLElement, e As UIEvent))
+        If Not assigned(_onSelect) Then
+          RemObjects.Elements.WebAssembly.WasmEvents.SetEvent(_HtmlElement, "onSelect", Sub(sender as HTMLElement, e As Dynamic) RaiseEvent _onSelect(sender, CType(e, UIEvent)))
+        End If
+        AddHandler _onSelect, Value
+      End AddHandler
+      RemoveHandler(aEvent As OnSelectDelegate)
+        RemoveHandler _onSelect, Value
+        If Not assigned(_onSelect) then
+          RemObjects.Elements.WebAssembly.WasmEvents.ClearEvent(_HtmlElement, "onSelect")
+        End If
+      End RemoveHandler
+    End Event
+
     Private Event _onSelect As OnSelectDelegate
-
-    Private Sub AddOnSelect(aEvent As Sub(sender as HTMLElement, e As UIEvent))
-      If Not assigned(_onSelect) Then
-        RemObjects.Elements.WebAssembly.WasmEvents.SetEvent(_HtmlElement, "onSelect", Sub(sender as HTMLElement, e As Dynamic) RaiseEvent _onSelect(sender, CType(e, UIEvent)))
-      End If
-      AddHandler _onSelect, aEvent
-    End Sub
-
-    Private Sub CantRemove(aEvent As OnSelectDelegate)
-      RemoveHandler _onSelect, aEvent
-      If Not assigned(_onSelect) then
-        RemObjects.Elements.WebAssembly.WasmEvents.ClearEvent(_HtmlElement, "onSelect")
-      End If
-    End Sub
 
     ' onSelectStart
 
     Public Delegate Sub OnSelectStartDelegate(sender as HTMLElement, e As Dom.Event)
 
-    Public Event onSelectStart As OnSelectStartDelegate ' Add AddOnSelectStart Remove RemoveOnSelectStart
+    Public Custom Event onSelectStart As OnSelectStartDelegate
+      AddHandler(aEvent As Sub(sender as HTMLElement, e As Dom.Event))
+        If Not assigned(_onSelectStart) Then
+          RemObjects.Elements.WebAssembly.WasmEvents.SetEvent(_HtmlElement, "onSelectStart", Sub(sender as HTMLElement, e As Dynamic) RaiseEvent _onSelectStart(sender, CType(e, Dom.Event)))
+        End If
+        AddHandler _onSelectStart, Value
+      End AddHandler
+      RemoveHandler(aEvent As OnSelectStartDelegate)
+        RemoveHandler _onSelectStart, Value
+        If Not assigned(_onSelectStart) then
+          RemObjects.Elements.WebAssembly.WasmEvents.ClearEvent(_HtmlElement, "onSelectStart")
+        End If
+      End RemoveHandler
+    End Event
+
     Private Event _onSelectStart As OnSelectStartDelegate
-
-    Private Sub AddOnSelectStart(aEvent As Sub(sender as HTMLElement, e As Dom.Event))
-      If Not assigned(_onSelectStart) Then
-        RemObjects.Elements.WebAssembly.WasmEvents.SetEvent(_HtmlElement, "onSelectStart", Sub(sender as HTMLElement, e As Dynamic) RaiseEvent _onSelectStart(sender, CType(e, Dom.Event)))
-      End If
-      AddHandler _onSelectStart, aEvent
-    End Sub
-
-    Private Sub CantRemove(aEvent As OnSelectStartDelegate)
-      RemoveHandler _onSelectStart, aEvent
-      If Not assigned(_onSelectStart) then
-        RemObjects.Elements.WebAssembly.WasmEvents.ClearEvent(_HtmlElement, "onSelectStart")
-      End If
-    End Sub
 
     ' onSelectionChange
 
     Public Delegate Sub OnSelectionChangeDelegate(sender as HTMLElement, e As Dom.Event)
 
-    Public Event onSelectionChange As OnSelectionChangeDelegate ' Add AddOnSelectionChange Remove RemoveOnSelectionChange
+    Public Custom Event onSelectionChange As OnSelectionChangeDelegate
+      AddHandler(aEvent As Sub(sender as HTMLElement, e As Dom.Event))
+        If Not assigned(_onSelectionChange) Then
+          RemObjects.Elements.WebAssembly.WasmEvents.SetEvent(_HtmlElement, "onSelectionChange", Sub(sender as HTMLElement, e As Dynamic) RaiseEvent _onSelectionChange(sender, CType(e, Dom.Event)))
+        End If
+        AddHandler _onSelectionChange, Value
+      End AddHandler
+      RemoveHandler(aEvent As OnSelectionChangeDelegate)
+        RemoveHandler _onSelectionChange, Value
+        If Not assigned(_onSelectionChange) then
+          RemObjects.Elements.WebAssembly.WasmEvents.ClearEvent(_HtmlElement, "onSelectionChange")
+        End If
+      End RemoveHandler
+    End Event
+
     Private Event _onSelectionChange As OnSelectionChangeDelegate
-
-    Private Sub AddOnSelectionChange(aEvent As Sub(sender as HTMLElement, e As Dom.Event))
-      If Not assigned(_onSelectionChange) Then
-        RemObjects.Elements.WebAssembly.WasmEvents.SetEvent(_HtmlElement, "onSelectionChange", Sub(sender as HTMLElement, e As Dynamic) RaiseEvent _onSelectionChange(sender, CType(e, Dom.Event)))
-      End If
-      AddHandler _onSelectionChange, aEvent
-    End Sub
-
-    Private Sub CantRemove(aEvent As OnSelectionChangeDelegate)
-      RemoveHandler _onSelectionChange, aEvent
-      If Not assigned(_onSelectionChange) then
-        RemObjects.Elements.WebAssembly.WasmEvents.ClearEvent(_HtmlElement, "onSelectionChange")
-      End If
-    End Sub
 
     ' onStalled
 
     Public Delegate Sub OnStalledDelegate(sender as HTMLElement, e As Dom.Event)
 
-    Public Event onStalled As OnStalledDelegate ' Add AddOnStalled Remove RemoveOnStalled
+    Public Custom Event onStalled As OnStalledDelegate
+      AddHandler(aEvent As Sub(sender as HTMLElement, e As Dom.Event))
+        If Not assigned(_onStalled) Then
+          RemObjects.Elements.WebAssembly.WasmEvents.SetEvent(_HtmlElement, "onStalled", Sub(sender as HTMLElement, e As Dynamic) RaiseEvent _onStalled(sender, CType(e, Dom.Event)))
+        End If
+        AddHandler _onStalled, Value
+      End AddHandler
+      RemoveHandler(aEvent As OnStalledDelegate)
+        RemoveHandler _onStalled, Value
+        If Not assigned(_onStalled) then
+          RemObjects.Elements.WebAssembly.WasmEvents.ClearEvent(_HtmlElement, "onStalled")
+        End If
+      End RemoveHandler
+    End Event
+
     Private Event _onStalled As OnStalledDelegate
-
-    Private Sub AddOnStalled(aEvent As Sub(sender as HTMLElement, e As Dom.Event))
-      If Not assigned(_onStalled) Then
-        RemObjects.Elements.WebAssembly.WasmEvents.SetEvent(_HtmlElement, "onStalled", Sub(sender as HTMLElement, e As Dynamic) RaiseEvent _onStalled(sender, CType(e, Dom.Event)))
-      End If
-      AddHandler _onStalled, aEvent
-    End Sub
-
-    Private Sub CantRemove(aEvent As OnStalledDelegate)
-      RemoveHandler _onStalled, aEvent
-      If Not assigned(_onStalled) then
-        RemObjects.Elements.WebAssembly.WasmEvents.ClearEvent(_HtmlElement, "onStalled")
-      End If
-    End Sub
 
     ' onSubmit
 
     Public Delegate Sub OnSubmitDelegate(sender as HTMLElement, e As SubmitEvent)
 
-    Public Event onSubmit As OnSubmitDelegate ' Add AddOnSubmit Remove RemoveOnSubmit
+    Public Custom Event onSubmit As OnSubmitDelegate
+      AddHandler(aEvent As Sub(sender as HTMLElement, e As SubmitEvent))
+        If Not assigned(_onSubmit) Then
+          RemObjects.Elements.WebAssembly.WasmEvents.SetEvent(_HtmlElement, "onSubmit", Sub(sender as HTMLElement, e As Dynamic) RaiseEvent _onSubmit(sender, CType(e, SubmitEvent)))
+        End If
+        AddHandler _onSubmit, Value
+      End AddHandler
+      RemoveHandler(aEvent As OnSubmitDelegate)
+        RemoveHandler _onSubmit, Value
+        If Not assigned(_onSubmit) then
+          RemObjects.Elements.WebAssembly.WasmEvents.ClearEvent(_HtmlElement, "onSubmit")
+        End If
+      End RemoveHandler
+    End Event
+
     Private Event _onSubmit As OnSubmitDelegate
-
-    Private Sub AddOnSubmit(aEvent As Sub(sender as HTMLElement, e As SubmitEvent))
-      If Not assigned(_onSubmit) Then
-        RemObjects.Elements.WebAssembly.WasmEvents.SetEvent(_HtmlElement, "onSubmit", Sub(sender as HTMLElement, e As Dynamic) RaiseEvent _onSubmit(sender, CType(e, SubmitEvent)))
-      End If
-      AddHandler _onSubmit, aEvent
-    End Sub
-
-    Private Sub CantRemove(aEvent As OnSubmitDelegate)
-      RemoveHandler _onSubmit, aEvent
-      If Not assigned(_onSubmit) then
-        RemObjects.Elements.WebAssembly.WasmEvents.ClearEvent(_HtmlElement, "onSubmit")
-      End If
-    End Sub
 
     ' onSuspend
 
     Public Delegate Sub OnSuspendDelegate(sender as HTMLElement, e As Dom.Event)
 
-    Public Event onSuspend As OnSuspendDelegate ' Add AddOnSuspend Remove RemoveOnSuspend
+    Public Custom Event onSuspend As OnSuspendDelegate
+      AddHandler(aEvent As Sub(sender as HTMLElement, e As Dom.Event))
+        If Not assigned(_onSuspend) Then
+          RemObjects.Elements.WebAssembly.WasmEvents.SetEvent(_HtmlElement, "onSuspend", Sub(sender as HTMLElement, e As Dynamic) RaiseEvent _onSuspend(sender, CType(e, Dom.Event)))
+        End If
+        AddHandler _onSuspend, Value
+      End AddHandler
+      RemoveHandler(aEvent As OnSuspendDelegate)
+        RemoveHandler _onSuspend, Value
+        If Not assigned(_onSuspend) then
+          RemObjects.Elements.WebAssembly.WasmEvents.ClearEvent(_HtmlElement, "onSuspend")
+        End If
+      End RemoveHandler
+    End Event
+
     Private Event _onSuspend As OnSuspendDelegate
-
-    Private Sub AddOnSuspend(aEvent As Sub(sender as HTMLElement, e As Dom.Event))
-      If Not assigned(_onSuspend) Then
-        RemObjects.Elements.WebAssembly.WasmEvents.SetEvent(_HtmlElement, "onSuspend", Sub(sender as HTMLElement, e As Dynamic) RaiseEvent _onSuspend(sender, CType(e, Dom.Event)))
-      End If
-      AddHandler _onSuspend, aEvent
-    End Sub
-
-    Private Sub CantRemove(aEvent As OnSuspendDelegate)
-      RemoveHandler _onSuspend, aEvent
-      If Not assigned(_onSuspend) then
-        RemObjects.Elements.WebAssembly.WasmEvents.ClearEvent(_HtmlElement, "onSuspend")
-      End If
-    End Sub
 
     ' onTimeUpdate
 
     Public Delegate Sub OnTimeUpdateDelegate(sender as HTMLElement, e As Dom.Event)
 
-    Public Event onTimeUpdate As OnTimeUpdateDelegate ' Add AddOnTimeUpdate Remove RemoveOnTimeUpdate
+    Public Custom Event onTimeUpdate As OnTimeUpdateDelegate
+      AddHandler(aEvent As Sub(sender as HTMLElement, e As Dom.Event))
+        If Not assigned(_onTimeUpdate) Then
+          RemObjects.Elements.WebAssembly.WasmEvents.SetEvent(_HtmlElement, "onTimeUpdate", Sub(sender as HTMLElement, e As Dynamic) RaiseEvent _onTimeUpdate(sender, CType(e, Dom.Event)))
+        End If
+        AddHandler _onTimeUpdate, Value
+      End AddHandler
+      RemoveHandler(aEvent As OnTimeUpdateDelegate)
+        RemoveHandler _onTimeUpdate, Value
+        If Not assigned(_onTimeUpdate) then
+          RemObjects.Elements.WebAssembly.WasmEvents.ClearEvent(_HtmlElement, "onTimeUpdate")
+        End If
+      End RemoveHandler
+    End Event
+
     Private Event _onTimeUpdate As OnTimeUpdateDelegate
-
-    Private Sub AddOnTimeUpdate(aEvent As Sub(sender as HTMLElement, e As Dom.Event))
-      If Not assigned(_onTimeUpdate) Then
-        RemObjects.Elements.WebAssembly.WasmEvents.SetEvent(_HtmlElement, "onTimeUpdate", Sub(sender as HTMLElement, e As Dynamic) RaiseEvent _onTimeUpdate(sender, CType(e, Dom.Event)))
-      End If
-      AddHandler _onTimeUpdate, aEvent
-    End Sub
-
-    Private Sub CantRemove(aEvent As OnTimeUpdateDelegate)
-      RemoveHandler _onTimeUpdate, aEvent
-      If Not assigned(_onTimeUpdate) then
-        RemObjects.Elements.WebAssembly.WasmEvents.ClearEvent(_HtmlElement, "onTimeUpdate")
-      End If
-    End Sub
 
     ' onVolumeChange
 
     Public Delegate Sub OnVolumeChangeDelegate(sender as HTMLElement, e As Dom.Event)
 
-    Public Event onVolumeChange As OnVolumeChangeDelegate ' Add AddOnVolumeChange Remove RemoveOnVolumeChange
+    Public Custom Event onVolumeChange As OnVolumeChangeDelegate
+      AddHandler(aEvent As Sub(sender as HTMLElement, e As Dom.Event))
+        If Not assigned(_onVolumeChange) Then
+          RemObjects.Elements.WebAssembly.WasmEvents.SetEvent(_HtmlElement, "onVolumeChange", Sub(sender as HTMLElement, e As Dynamic) RaiseEvent _onVolumeChange(sender, CType(e, Dom.Event)))
+        End If
+        AddHandler _onVolumeChange, Value
+      End AddHandler
+      RemoveHandler(aEvent As OnVolumeChangeDelegate)
+        RemoveHandler _onVolumeChange, Value
+        If Not assigned(_onVolumeChange) then
+          RemObjects.Elements.WebAssembly.WasmEvents.ClearEvent(_HtmlElement, "onVolumeChange")
+        End If
+      End RemoveHandler
+    End Event
+
     Private Event _onVolumeChange As OnVolumeChangeDelegate
-
-    Private Sub AddOnVolumeChange(aEvent As Sub(sender as HTMLElement, e As Dom.Event))
-      If Not assigned(_onVolumeChange) Then
-        RemObjects.Elements.WebAssembly.WasmEvents.SetEvent(_HtmlElement, "onVolumeChange", Sub(sender as HTMLElement, e As Dynamic) RaiseEvent _onVolumeChange(sender, CType(e, Dom.Event)))
-      End If
-      AddHandler _onVolumeChange, aEvent
-    End Sub
-
-    Private Sub CantRemove(aEvent As OnVolumeChangeDelegate)
-      RemoveHandler _onVolumeChange, aEvent
-      If Not assigned(_onVolumeChange) then
-        RemObjects.Elements.WebAssembly.WasmEvents.ClearEvent(_HtmlElement, "onVolumeChange")
-      End If
-    End Sub
 
     ' onWaiting
 
     Public Delegate Sub OnWaitingDelegate(sender as HTMLElement, e As Dom.Event)
 
-    Public Event onWaiting As OnWaitingDelegate ' Add AddOnWaiting Remove RemoveOnWaiting
+    Public Custom Event onWaiting As OnWaitingDelegate
+      AddHandler(aEvent As Sub(sender as HTMLElement, e As Dom.Event))
+        If Not assigned(_onWaiting) Then
+          RemObjects.Elements.WebAssembly.WasmEvents.SetEvent(_HtmlElement, "onWaiting", Sub(sender as HTMLElement, e As Dynamic) RaiseEvent _onWaiting(sender, CType(e, Dom.Event)))
+        End If
+        AddHandler _onWaiting, Value
+      End AddHandler
+      RemoveHandler(aEvent As OnWaitingDelegate)
+        RemoveHandler _onWaiting, Value
+        If Not assigned(_onWaiting) then
+          RemObjects.Elements.WebAssembly.WasmEvents.ClearEvent(_HtmlElement, "onWaiting")
+        End If
+      End RemoveHandler
+    End Event
+
     Private Event _onWaiting As OnWaitingDelegate
-
-    Private Sub AddOnWaiting(aEvent As Sub(sender as HTMLElement, e As Dom.Event))
-      If Not assigned(_onWaiting) Then
-        RemObjects.Elements.WebAssembly.WasmEvents.SetEvent(_HtmlElement, "onWaiting", Sub(sender as HTMLElement, e As Dynamic) RaiseEvent _onWaiting(sender, CType(e, Dom.Event)))
-      End If
-      AddHandler _onWaiting, aEvent
-    End Sub
-
-    Private Sub CantRemove(aEvent As OnWaitingDelegate)
-      RemoveHandler _onWaiting, aEvent
-      If Not assigned(_onWaiting) then
-        RemObjects.Elements.WebAssembly.WasmEvents.ClearEvent(_HtmlElement, "onWaiting")
-      End If
-    End Sub
 
   End Class
 

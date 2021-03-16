@@ -3,9 +3,9 @@
   //this code has no meaning in any other language than Mercury, because it works on the Handles clauses (which are Mercury only) that are used in the code.
 
   Public Class WithEvents_HTMLElement
+    Implements HtmlElement
   
-  
-    Public ReadOnly Property HtmlElement As HTMLElement ' Implements Public HtmlElement
+    Public ReadOnly Property HtmlElement As HTMLElement Implements Public HtmlElement
 
     Public Sub New(element As Element)
       _HtmlElement = DirectCast(element, HTMLElement)
