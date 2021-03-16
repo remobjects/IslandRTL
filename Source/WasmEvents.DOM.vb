@@ -3,9 +3,9 @@
   //this code has no meaning in any other language than Mercury, because it works on the Handles clauses (which are Mercury only) that are used in the code.
 
   Public class HTMLElement_EventProxy
+    Implements HTMLElement
 
-
-    Public ReadOnly Property HtmlElement As HTMLElement ' Implements Public HtmlElement
+    Public ReadOnly Property HtmlElement As HTMLElement Implements Public HTMLElement
 
     Public Sub New(element As Element)
       _HtmlElement = DirectCast(element, HTMLElement)
@@ -1533,9 +1533,9 @@
 
   Public class HTMLAnchorElement_EventProxy
     Inherits HTMLElement_EventProxy
-    ' Implements HTMLAnchorElement
+    Implements HTMLAnchorElement
 
-    Public Shadows ReadOnly Property HtmlElement As HTMLAnchorElement' Implements Public HTMLAnchorElement
+    Public Shadows ReadOnly Property HtmlElement As HTMLAnchorElement Implements Public HTMLAnchorElement
       Get
         Return DirectCast(MyBase.HtmlElement, HTMLAnchorElement)
       End Get
@@ -1544,9 +1544,9 @@
 
   Public class HTMLDListElement_EventProxy
     Inherits HTMLElement_EventProxy
-    ' Implements HTMLDListElement
+    Implements HTMLDListElement
 
-    Public Shadows ReadOnly Property HtmlElement As HTMLDListElement' Implements Public HTMLDListElement
+    Public Shadows ReadOnly Property HtmlElement As HTMLDListElement Implements Public HTMLDListElement
       Get
         Return DirectCast(MyBase.HtmlElement, HTMLDListElement)
       End Get
@@ -1555,9 +1555,9 @@
 
   Public class HTMLHeadingElement_EventProxy
     Inherits HTMLElement_EventProxy
-    ' Implements HTMLHeadingElement
+    Implements HTMLHeadingElement
 
-    Public Shadows ReadOnly Property HtmlElement As HTMLHeadingElement' Implements Public HTMLHeadingElement
+    Public Shadows ReadOnly Property HtmlElement As HTMLHeadingElement Implements Public HTMLHeadingElement
       Get
         Return DirectCast(MyBase.HtmlElement, HTMLHeadingElement)
       End Get
@@ -1566,9 +1566,9 @@
 
   Public class HTMLImageElement_EventProxy
     Inherits HTMLElement_EventProxy
-    ' Implements HTMLImageElement
+    Implements HTMLImageElement
 
-    Public Shadows ReadOnly Property HtmlElement As HTMLImageElement' Implements Public HTMLImageElement
+    Public Shadows ReadOnly Property HtmlElement As HTMLImageElement Implements Public HTMLImageElement
       Get
         Return DirectCast(MyBase.HtmlElement, HTMLImageElement)
       End Get
@@ -1577,9 +1577,9 @@
 
   Public class HTMLAreaElement_EventProxy
     Inherits HTMLElement_EventProxy
-    ' Implements HTMLAreaElement
+    Implements HTMLAreaElement
 
-    Public Shadows ReadOnly Property HtmlElement As HTMLAreaElement' Implements Public HTMLAreaElement
+    Public Shadows ReadOnly Property HtmlElement As HTMLAreaElement Implements Public HTMLAreaElement
       Get
         Return DirectCast(MyBase.HtmlElement, HTMLAreaElement)
       End Get
@@ -1588,9 +1588,9 @@
 
   Public class HTMLAudioElement_EventProxy
     Inherits HTMLElement_EventProxy
-    ' Implements HTMLAudioElement
+    Implements HTMLAudioElement
 
-    Public Shadows ReadOnly Property HtmlElement As HTMLAudioElement' Implements Public HTMLAudioElement
+    Public Shadows ReadOnly Property HtmlElement As HTMLAudioElement Implements Public HTMLAudioElement
       Get
         Return DirectCast(MyBase.HtmlElement, HTMLAudioElement)
       End Get
@@ -1599,9 +1599,9 @@
 
   Public class HTMLBRElement_EventProxy
     Inherits HTMLElement_EventProxy
-    ' Implements HTMLBRElement
+    Implements HTMLBRElement
 
-    Public Shadows ReadOnly Property HtmlElement As HTMLBRElement' Implements Public HTMLBRElement
+    Public Shadows ReadOnly Property HtmlElement As HTMLBRElement Implements Public HTMLBRElement
       Get
         Return DirectCast(MyBase.HtmlElement, HTMLBRElement)
       End Get
@@ -1610,9 +1610,9 @@
 
   Public class HTMLBodyElement_EventProxy
     Inherits HTMLElement_EventProxy
-    ' Implements HTMLBodyElement
+    Implements HTMLBodyElement
 
-    Public Shadows ReadOnly Property HtmlElement As HTMLBodyElement' Implements Public HTMLBodyElement
+    Public Shadows ReadOnly Property HtmlElement As HTMLBodyElement Implements Public HTMLBodyElement
       Get
         Return DirectCast(MyBase.HtmlElement, HTMLBodyElement)
       End Get
@@ -1622,9 +1622,9 @@
   Public class HTMLButtonElement_EventProxy
     Inherits HTMLElement_EventProxy
     Implements HTMLButtonElement
-    ' Implements HTMLButtonElement
+    Implements HTMLButtonElement
 
-    Public Shadows ReadOnly Property HtmlElement As HTMLButtonElement' Implements Public HTMLButtonElement
+    Public Shadows ReadOnly Property HtmlElement As HTMLButtonElement Implements Public HTMLButtonElement
       Implements HTMLButtonElement
       Get
         Return DirectCast(MyBase.HtmlElement, HTMLButtonElement)
@@ -1634,9 +1634,9 @@
 
   Public class HTMLCanvasElement_EventProxy
     Inherits HTMLElement_EventProxy
-    ' Implements HTMLCanvasElement
+    Implements HTMLCanvasElement
 
-    Public Shadows ReadOnly Property HtmlElement As HTMLCanvasElement' Implements Public HTMLCanvasElement
+    Public Shadows ReadOnly Property HtmlElement As HTMLCanvasElement Implements Public HTMLCanvasElement
       Get
         Return DirectCast(MyBase.HtmlElement, HTMLCanvasElement)
       End Get
@@ -1645,9 +1645,9 @@
 
   Public class HTMLDataElement_EventProxy
     Inherits HTMLElement_EventProxy
-    ' Implements HTMLDataElement
+    Implements HTMLDataElement
 
-    Public Shadows ReadOnly Property HtmlElement As HTMLDataElement' Implements Public HTMLDataElement
+    Public Shadows ReadOnly Property HtmlElement As HTMLDataElement Implements Public HTMLDataElement
       Get
         Return DirectCast(MyBase.HtmlElement, HTMLDataElement)
       End Get
@@ -1656,9 +1656,9 @@
 
   Public class HTMLDataListElement_EventProxy
     Inherits HTMLElement_EventProxy
-    ' Implements HTMLDataListElement
+    Implements HTMLDataListElement
 
-    Public Shadows ReadOnly Property HtmlElement As HTMLDataListElement' Implements Public HTMLDataListElement
+    Public Shadows ReadOnly Property HtmlElement As HTMLDataListElement Implements Public HTMLDataListElement
       Get
         Return DirectCast(MyBase.HtmlElement, HTMLDataListElement)
       End Get
@@ -1667,9 +1667,9 @@
 
   Public class HTMLDetailsElement_EventProxy
     Inherits HTMLElement_EventProxy
-    ' Implements HTMLDetailsElement
+    Implements HTMLDetailsElement
 
-    Public Shadows ReadOnly Property HtmlElement As HTMLDetailsElement' Implements Public HTMLDetailsElement
+    Public Shadows ReadOnly Property HtmlElement As HTMLDetailsElement Implements Public HTMLDetailsElement
       Get
         Return DirectCast(MyBase.HtmlElement, HTMLDetailsElement)
       End Get
@@ -1678,9 +1678,9 @@
 
   Public class HTMLDivElement_EventProxy
     Inherits HTMLElement_EventProxy
-    ' Implements HTMLDivElement
+    Implements HTMLDivElement
 
-    Public Shadows ReadOnly Property HtmlElement As HTMLDivElement' Implements Public HTMLDivElement
+    Public Shadows ReadOnly Property HtmlElement As HTMLDivElement Implements Public HTMLDivElement
       Get
         Return DirectCast(MyBase.HtmlElement, HTMLDivElement)
       End Get
@@ -1689,9 +1689,9 @@
 
   Public class HTMLEmbedElement_EventProxy
     Inherits HTMLElement_EventProxy
-    ' Implements HTMLEmbedElement
+    Implements HTMLEmbedElement
 
-    Public Shadows ReadOnly Property HtmlElement As HTMLEmbedElement' Implements Public HTMLEmbedElement
+    Public Shadows ReadOnly Property HtmlElement As HTMLEmbedElement Implements Public HTMLEmbedElement
       Get
         Return DirectCast(MyBase.HtmlElement, HTMLEmbedElement)
       End Get
@@ -1700,9 +1700,9 @@
 
   Public class HTMLFieldSetElement_EventProxy
     Inherits HTMLElement_EventProxy
-    ' Implements HTMLFieldSetElement
+    Implements HTMLFieldSetElement
 
-    Public Shadows ReadOnly Property HtmlElement As HTMLFieldSetElement' Implements Public HTMLFieldSetElement
+    Public Shadows ReadOnly Property HtmlElement As HTMLFieldSetElement Implements Public HTMLFieldSetElement
       Get
         Return DirectCast(MyBase.HtmlElement, HTMLFieldSetElement)
       End Get
@@ -1711,9 +1711,9 @@
 
   Public class HTMLFormElement_EventProxy
     Inherits HTMLElement_EventProxy
-    ' Implements HTMLFormElement
+    Implements HTMLFormElement
 
-    Public Shadows ReadOnly Property HtmlElement As HTMLFormElement' Implements Public HTMLFormElement
+    Public Shadows ReadOnly Property HtmlElement As HTMLFormElement Implements Public HTMLFormElement
       Get
         Return DirectCast(MyBase.HtmlElement, HTMLFormElement)
       End Get
@@ -1722,9 +1722,9 @@
 
   Public class HTMLHRElement_EventProxy
     Inherits HTMLElement_EventProxy
-    ' Implements HTMLHRElement
+    Implements HTMLHRElement
 
-    Public Shadows ReadOnly Property HtmlElement As HTMLHRElement' Implements Public HTMLHRElement
+    Public Shadows ReadOnly Property HtmlElement As HTMLHRElement Implements Public HTMLHRElement
       Get
         Return DirectCast(MyBase.HtmlElement, HTMLHRElement)
       End Get
@@ -1733,9 +1733,9 @@
 
   Public class HTMLIFrameElement_EventProxy
     Inherits HTMLElement_EventProxy
-    ' Implements HTMLIFrameElement
+    Implements HTMLIFrameElement
 
-    Public Shadows ReadOnly Property HtmlElement As HTMLIFrameElement' Implements Public HTMLIFrameElement
+    Public Shadows ReadOnly Property HtmlElement As HTMLIFrameElement Implements Public HTMLIFrameElement
       Get
         Return DirectCast(MyBase.HtmlElement, HTMLIFrameElement)
       End Get
@@ -1744,9 +1744,9 @@
 
   Public class HTMLInputElement_EventProxy
     Inherits HTMLElement_EventProxy
-    ' Implements HTMLInputElement
+    Implements HTMLInputElement
 
-    Public Shadows ReadOnly Property HtmlElement As HTMLInputElement' Implements Public HTMLInputElement
+    Public Shadows ReadOnly Property HtmlElement As HTMLInputElement Implements Public HTMLInputElement
       Get
         Return DirectCast(MyBase.HtmlElement, HTMLInputElement)
       End Get
@@ -1755,9 +1755,9 @@
 
   Public class HTMLLIElement_EventProxy
     Inherits HTMLElement_EventProxy
-    ' Implements HTMLLIElement
+    Implements HTMLLIElement
 
-    Public Shadows ReadOnly Property HtmlElement As HTMLLIElement' Implements Public HTMLLIElement
+    Public Shadows ReadOnly Property HtmlElement As HTMLLIElement Implements Public HTMLLIElement
       Get
         Return DirectCast(MyBase.HtmlElement, HTMLLIElement)
       End Get
@@ -1766,9 +1766,9 @@
 
   Public class HTMLLabelElement_EventProxy
     Inherits HTMLElement_EventProxy
-    ' Implements HTMLLabelElement
+    Implements HTMLLabelElement
 
-    Public Shadows ReadOnly Property HtmlElement As HTMLLabelElement' Implements Public HTMLLabelElement
+    Public Shadows ReadOnly Property HtmlElement As HTMLLabelElement Implements Public HTMLLabelElement
       Get
         Return DirectCast(MyBase.HtmlElement, HTMLLabelElement)
       End Get
@@ -1777,9 +1777,9 @@
 
   Public class HTMLLegendElement_EventProxy
     Inherits HTMLElement_EventProxy
-    ' Implements HTMLLegendElement
+    Implements HTMLLegendElement
 
-    Public Shadows ReadOnly Property HtmlElement As HTMLLegendElement' Implements Public HTMLLegendElement
+    Public Shadows ReadOnly Property HtmlElement As HTMLLegendElement Implements Public HTMLLegendElement
       Get
         Return DirectCast(MyBase.HtmlElement, HTMLLegendElement)
       End Get
@@ -1788,9 +1788,9 @@
 
   Public class HTMLLinkElement_EventProxy
     Inherits HTMLElement_EventProxy
-    ' Implements HTMLLinkElement
+    Implements HTMLLinkElement
 
-    Public Shadows ReadOnly Property HtmlElement As HTMLLinkElement' Implements Public HTMLLinkElement
+    Public Shadows ReadOnly Property HtmlElement As HTMLLinkElement Implements Public HTMLLinkElement
       Get
         Return DirectCast(MyBase.HtmlElement, HTMLLinkElement)
       End Get
@@ -1799,9 +1799,9 @@
 
   Public class HTMLMapElement_EventProxy
     Inherits HTMLElement_EventProxy
-    ' Implements HTMLMapElement
+    Implements HTMLMapElement
 
-    Public Shadows ReadOnly Property HtmlElement As HTMLMapElement' Implements Public HTMLMapElement
+    Public Shadows ReadOnly Property HtmlElement As HTMLMapElement Implements Public HTMLMapElement
       Get
         Return DirectCast(MyBase.HtmlElement, HTMLMapElement)
       End Get
@@ -1810,9 +1810,9 @@
 
   Public class HTMLMediaElement_EventProxy
     Inherits HTMLElement_EventProxy
-    ' Implements HTMLMediaElement
+    Implements HTMLMediaElement
 
-    Public Shadows ReadOnly Property HtmlElement As HTMLMediaElement' Implements Public HTMLMediaElement
+    Public Shadows ReadOnly Property HtmlElement As HTMLMediaElement Implements Public HTMLMediaElement
       Get
         Return DirectCast(MyBase.HtmlElement, HTMLMediaElement)
       End Get
@@ -1821,9 +1821,9 @@
 
   Public class HTMLMetaElement_EventProxy
     Inherits HTMLElement_EventProxy
-    ' Implements HTMLMetaElement
+    Implements HTMLMetaElement
 
-    Public Shadows ReadOnly Property HtmlElement As HTMLMetaElement' Implements Public HTMLMetaElement
+    Public Shadows ReadOnly Property HtmlElement As HTMLMetaElement Implements Public HTMLMetaElement
       Get
         Return DirectCast(MyBase.HtmlElement, HTMLMetaElement)
       End Get
@@ -1832,9 +1832,9 @@
 
   Public class HTMLMeterElement_EventProxy
     Inherits HTMLElement_EventProxy
-    ' Implements HTMLMeterElement
+    Implements HTMLMeterElement
 
-    Public Shadows ReadOnly Property HtmlElement As HTMLMeterElement' Implements Public HTMLMeterElement
+    Public Shadows ReadOnly Property HtmlElement As HTMLMeterElement Implements Public HTMLMeterElement
       Get
         Return DirectCast(MyBase.HtmlElement, HTMLMeterElement)
       End Get
@@ -1843,9 +1843,9 @@
 
   Public class HTMLModElement_EventProxy
     Inherits HTMLElement_EventProxy
-    ' Implements HTMLModElement
+    Implements HTMLModElement
 
-    Public Shadows ReadOnly Property HtmlElement As HTMLModElement' Implements Public HTMLModElement
+    Public Shadows ReadOnly Property HtmlElement As HTMLModElement Implements Public HTMLModElement
       Get
         Return DirectCast(MyBase.HtmlElement, HTMLModElement)
       End Get
@@ -1854,9 +1854,9 @@
 
   Public class HTMLOListElement_EventProxy
     Inherits HTMLElement_EventProxy
-    ' Implements HTMLOListElement
+    Implements HTMLOListElement
 
-    Public Shadows ReadOnly Property HtmlElement As HTMLOListElement' Implements Public HTMLOListElement
+    Public Shadows ReadOnly Property HtmlElement As HTMLOListElement Implements Public HTMLOListElement
       Get
         Return DirectCast(MyBase.HtmlElement, HTMLOListElement)
       End Get
@@ -1865,9 +1865,9 @@
 
   Public class HTMLObjectElement_EventProxy
     Inherits HTMLElement_EventProxy
-    ' Implements HTMLObjectElement
+    Implements HTMLObjectElement
 
-    Public Shadows ReadOnly Property HtmlElement As HTMLObjectElement' Implements Public HTMLObjectElement
+    Public Shadows ReadOnly Property HtmlElement As HTMLObjectElement Implements Public HTMLObjectElement
       Get
         Return DirectCast(MyBase.HtmlElement, HTMLObjectElement)
       End Get
@@ -1876,9 +1876,9 @@
 
   Public class HTMLOptGroupElement_EventProxy
     Inherits HTMLElement_EventProxy
-    ' Implements HTMLOptGroupElement
+    Implements HTMLOptGroupElement
 
-    Public Shadows ReadOnly Property HtmlElement As HTMLOptGroupElement' Implements Public HTMLOptGroupElement
+    Public Shadows ReadOnly Property HtmlElement As HTMLOptGroupElement Implements Public HTMLOptGroupElement
       Get
         Return DirectCast(MyBase.HtmlElement, HTMLOptGroupElement)
       End Get
@@ -1887,9 +1887,9 @@
 
   Public class HTMLOptionElement_EventProxy
     Inherits HTMLElement_EventProxy
-    ' Implements HTMLOptionElement
+    Implements HTMLOptionElement
 
-    Public Shadows ReadOnly Property HtmlElement As HTMLOptionElement' Implements Public HTMLOptionElement
+    Public Shadows ReadOnly Property HtmlElement As HTMLOptionElement Implements Public HTMLOptionElement
       Get
         Return DirectCast(MyBase.HtmlElement, HTMLOptionElement)
       End Get
@@ -1898,9 +1898,9 @@
 
   Public class HTMLOutputElement_EventProxy
     Inherits HTMLElement_EventProxy
-    ' Implements HTMLOutputElement
+    Implements HTMLOutputElement
 
-    Public Shadows ReadOnly Property HtmlElement As HTMLOutputElement' Implements Public HTMLOutputElement
+    Public Shadows ReadOnly Property HtmlElement As HTMLOutputElement Implements Public HTMLOutputElement
       Get
         Return DirectCast(MyBase.HtmlElement, HTMLOutputElement)
       End Get
@@ -1909,9 +1909,9 @@
 
   Public class HTMLParagraphElement_EventProxy
     Inherits HTMLElement_EventProxy
-    ' Implements HTMLParagraphElement
+    Implements HTMLParagraphElement
 
-    Public Shadows ReadOnly Property HtmlElement As HTMLParagraphElement' Implements Public HTMLParagraphElement
+    Public Shadows ReadOnly Property HtmlElement As HTMLParagraphElement Implements Public HTMLParagraphElement
       Get
         Return DirectCast(MyBase.HtmlElement, HTMLParagraphElement)
       End Get
@@ -1920,9 +1920,9 @@
 
   Public class HTMLParamElement_EventProxy
     Inherits HTMLElement_EventProxy
-    ' Implements HTMLParamElement
+    Implements HTMLParamElement
 
-    Public Shadows ReadOnly Property HtmlElement As HTMLParamElement' Implements Public HTMLParamElement
+    Public Shadows ReadOnly Property HtmlElement As HTMLParamElement Implements Public HTMLParamElement
       Get
         Return DirectCast(MyBase.HtmlElement, HTMLParamElement)
       End Get
@@ -1931,9 +1931,9 @@
 
   Public class HTMLPreElement_EventProxy
     Inherits HTMLElement_EventProxy
-    ' Implements HTMLPreElement
+    Implements HTMLPreElement
 
-    Public Shadows ReadOnly Property HtmlElement As HTMLPreElement' Implements Public HTMLPreElement
+    Public Shadows ReadOnly Property HtmlElement As HTMLPreElement Implements Public HTMLPreElement
       Get
         Return DirectCast(MyBase.HtmlElement, HTMLPreElement)
       End Get
@@ -1942,9 +1942,9 @@
 
   Public class HTMLProgressElement_EventProxy
     Inherits HTMLElement_EventProxy
-    ' Implements HTMLProgressElement
+    Implements HTMLProgressElement
 
-    Public Shadows ReadOnly Property HtmlElement As HTMLProgressElement' Implements Public HTMLProgressElement
+    Public Shadows ReadOnly Property HtmlElement As HTMLProgressElement Implements Public HTMLProgressElement
       Get
         Return DirectCast(MyBase.HtmlElement, HTMLProgressElement)
       End Get
@@ -1953,9 +1953,9 @@
 
   Public class HTMLQuoteElement_EventProxy
     Inherits HTMLElement_EventProxy
-    ' Implements HTMLQuoteElement
+    Implements HTMLQuoteElement
 
-    Public Shadows ReadOnly Property HtmlElement As HTMLQuoteElement' Implements Public HTMLQuoteElement
+    Public Shadows ReadOnly Property HtmlElement As HTMLQuoteElement Implements Public HTMLQuoteElement
       Get
         Return DirectCast(MyBase.HtmlElement, HTMLQuoteElement)
       End Get
@@ -1964,9 +1964,9 @@
 
   Public class HTMLScriptElement_EventProxy
     Inherits HTMLElement_EventProxy
-    ' Implements HTMLScriptElement
+    Implements HTMLScriptElement
 
-    Public Shadows ReadOnly Property HtmlElement As HTMLScriptElement' Implements Public HTMLScriptElement
+    Public Shadows ReadOnly Property HtmlElement As HTMLScriptElement Implements Public HTMLScriptElement
       Get
         Return DirectCast(MyBase.HtmlElement, HTMLScriptElement)
       End Get
@@ -1975,9 +1975,9 @@
 
   Public class HTMLSelectElement_EventProxy
     Inherits HTMLElement_EventProxy
-    ' Implements HTMLSelectElement
+    Implements HTMLSelectElement
 
-    Public Shadows ReadOnly Property HtmlElement As HTMLSelectElement' Implements Public HTMLSelectElement
+    Public Shadows ReadOnly Property HtmlElement As HTMLSelectElement Implements Public HTMLSelectElement
       Get
         Return DirectCast(MyBase.HtmlElement, HTMLSelectElement)
       End Get
@@ -1986,9 +1986,9 @@
 
   Public class HTMLSlotElement_EventProxy
     Inherits HTMLElement_EventProxy
-    ' Implements HTMLSlotElement
+    Implements HTMLSlotElement
 
-    Public Shadows ReadOnly Property HtmlElement As HTMLSlotElement' Implements Public HTMLSlotElement
+    Public Shadows ReadOnly Property HtmlElement As HTMLSlotElement Implements Public HTMLSlotElement
       Get
         Return DirectCast(MyBase.HtmlElement, HTMLSlotElement)
       End Get
@@ -1997,9 +1997,9 @@
 
   Public class HTMLSourceElement_EventProxy
     Inherits HTMLElement_EventProxy
-    ' Implements HTMLSourceElement
+    Implements HTMLSourceElement
 
-    Public Shadows ReadOnly Property HtmlElement As HTMLSourceElement' Implements Public HTMLSourceElement
+    Public Shadows ReadOnly Property HtmlElement As HTMLSourceElement Implements Public HTMLSourceElement
       Get
         Return DirectCast(MyBase.HtmlElement, HTMLSourceElement)
       End Get
@@ -2008,9 +2008,9 @@
 
   Public class HTMLSpanElement_EventProxy
     Inherits HTMLElement_EventProxy
-    ' Implements HTMLSpanElement
+    Implements HTMLSpanElement
 
-    Public Shadows ReadOnly Property HtmlElement As HTMLSpanElement' Implements Public HTMLSpanElement
+    Public Shadows ReadOnly Property HtmlElement As HTMLSpanElement Implements Public HTMLSpanElement
       Get
         Return DirectCast(MyBase.HtmlElement, HTMLSpanElement)
       End Get
@@ -2019,9 +2019,9 @@
 
   Public class HTMLStyleElement_EventProxy
     Inherits HTMLElement_EventProxy
-    ' Implements HTMLStyleElement
+    Implements HTMLStyleElement
 
-    Public Shadows ReadOnly Property HtmlElement As HTMLStyleElement' Implements Public HTMLStyleElement
+    Public Shadows ReadOnly Property HtmlElement As HTMLStyleElement Implements Public HTMLStyleElement
       Get
         Return DirectCast(MyBase.HtmlElement, HTMLStyleElement)
       End Get
@@ -2030,9 +2030,9 @@
 
   Public class HTMLTableCaptionElement_EventProxy
     Inherits HTMLElement_EventProxy
-    ' Implements HTMLTableCaptionElement
+    Implements HTMLTableCaptionElement
 
-    Public Shadows ReadOnly Property HtmlElement As HTMLTableCaptionElement' Implements Public HTMLTableCaptionElement
+    Public Shadows ReadOnly Property HtmlElement As HTMLTableCaptionElement Implements Public HTMLTableCaptionElement
       Get
         Return DirectCast(MyBase.HtmlElement, HTMLTableCaptionElement)
       End Get
@@ -2041,9 +2041,9 @@
 
   Public class HTMLTableCellElement_EventProxy
     Inherits HTMLElement_EventProxy
-    ' Implements HTMLTableCellElement
+    Implements HTMLTableCellElement
 
-    Public Shadows ReadOnly Property HtmlElement As HTMLTableCellElement' Implements Public HTMLTableCellElement
+    Public Shadows ReadOnly Property HtmlElement As HTMLTableCellElement Implements Public HTMLTableCellElement
       Get
         Return DirectCast(MyBase.HtmlElement, HTMLTableCellElement)
       End Get
@@ -2052,9 +2052,9 @@
 
   Public class HTMLTableColElement_EventProxy
     Inherits HTMLElement_EventProxy
-    ' Implements HTMLTableColElement
+    Implements HTMLTableColElement
 
-    Public Shadows ReadOnly Property HtmlElement As HTMLTableColElement' Implements Public HTMLTableColElement
+    Public Shadows ReadOnly Property HtmlElement As HTMLTableColElement Implements Public HTMLTableColElement
       Get
         Return DirectCast(MyBase.HtmlElement, HTMLTableColElement)
       End Get
@@ -2063,9 +2063,9 @@
 
   Public class HTMLTableElement_EventProxy
     Inherits HTMLElement_EventProxy
-    ' Implements HTMLTableElement
+    Implements HTMLTableElement
 
-    Public Shadows ReadOnly Property HtmlElement As HTMLTableElement' Implements Public HTMLTableElement
+    Public Shadows ReadOnly Property HtmlElement As HTMLTableElement Implements Public HTMLTableElement
       Get
         Return DirectCast(MyBase.HtmlElement, HTMLTableElement)
       End Get
@@ -2074,9 +2074,9 @@
 
   Public class HTMLTableRowElement_EventProxy
     Inherits HTMLElement_EventProxy
-    ' Implements HTMLTableRowElement
+    Implements HTMLTableRowElement
 
-    Public Shadows ReadOnly Property HtmlElement As HTMLTableRowElement' Implements Public HTMLTableRowElement
+    Public Shadows ReadOnly Property HtmlElement As HTMLTableRowElement Implements Public HTMLTableRowElement
       Get
         Return DirectCast(MyBase.HtmlElement, HTMLTableRowElement)
       End Get
@@ -2085,9 +2085,9 @@
 
   Public class HTMLTableSectionElement_EventProxy
     Inherits HTMLElement_EventProxy
-    ' Implements HTMLTableSectionElement
+    Implements HTMLTableSectionElement
 
-    Public Shadows ReadOnly Property HtmlElement As HTMLTableSectionElement' Implements Public HTMLTableSectionElement
+    Public Shadows ReadOnly Property HtmlElement As HTMLTableSectionElement Implements Public HTMLTableSectionElement
       Get
         Return DirectCast(MyBase.HtmlElement, HTMLTableSectionElement)
       End Get
@@ -2096,9 +2096,9 @@
 
   Public class HTMLTemplateElement_EventProxy
     Inherits HTMLElement_EventProxy
-    ' Implements HTMLTemplateElement
+    Implements HTMLTemplateElement
 
-    Public Shadows ReadOnly Property HtmlElement As HTMLTemplateElement' Implements Public HTMLTemplateElement
+    Public Shadows ReadOnly Property HtmlElement As HTMLTemplateElement Implements Public HTMLTemplateElement
       Get
         Return DirectCast(MyBase.HtmlElement, HTMLTemplateElement)
       End Get
@@ -2107,9 +2107,9 @@
 
   Public class HTMLTextAreaElement_EventProxy
     Inherits HTMLElement_EventProxy
-    ' Implements HTMLTextAreaElement
+    Implements HTMLTextAreaElement
 
-    Public Shadows ReadOnly Property HtmlElement As HTMLTextAreaElement' Implements Public HTMLTextAreaElement
+    Public Shadows ReadOnly Property HtmlElement As HTMLTextAreaElement Implements Public HTMLTextAreaElement
       Get
         Return DirectCast(MyBase.HtmlElement, HTMLTextAreaElement)
       End Get
@@ -2118,9 +2118,9 @@
 
   Public class HTMLTimeElement_EventProxy
     Inherits HTMLElement_EventProxy
-    ' Implements HTMLElement
+    Implements HTMLElement
 
-    Public Shadows ReadOnly Property HtmlTimeElement As HTMLElement' Implements Public HTMLElement
+    Public Shadows ReadOnly Property HtmlTimeElement As HTMLElement Implements Public HTMLElement
       Get
         Return DirectCast(MyBase.HtmlElement, HTMLTimeElement)
       End Get
@@ -2129,9 +2129,9 @@
 
   Public class HTMLTitleElement_EventProxy
     Inherits HTMLElement_EventProxy
-    ' Implements HTMLTitleElement
+    Implements HTMLTitleElement
 
-    Public Shadows ReadOnly Property HtmlElement As HTMLTitleElement' Implements Public HTMLTitleElement
+    Public Shadows ReadOnly Property HtmlElement As HTMLTitleElement Implements Public HTMLTitleElement
       Get
         Return DirectCast(MyBase.HtmlElement, HTMLTitleElement)
       End Get
@@ -2140,9 +2140,9 @@
 
   Public class HTMLTrackElement_EventProxy
     Inherits HTMLElement_EventProxy
-    ' Implements HTMLTrackElement
+    Implements HTMLTrackElement
 
-    Public Shadows ReadOnly Property HtmlElement As HTMLTrackElement' Implements Public HTMLTrackElement
+    Public Shadows ReadOnly Property HtmlElement As HTMLTrackElement Implements Public HTMLTrackElement
       Get
         Return DirectCast(MyBase.HtmlElement, HTMLTrackElement)
       End Get
@@ -2151,9 +2151,9 @@
 
   Public class HTMLVideoElement_EventProxy
     Inherits HTMLElement_EventProxy
-    ' Implements HTMLVideoElement
+    Implements HTMLVideoElement
 
-    Public Shadows ReadOnly Property HtmlElement As HTMLVideoElement' Implements Public HTMLVideoElement
+    Public Shadows ReadOnly Property HtmlElement As HTMLVideoElement Implements Public HTMLVideoElement
       Get
         Return DirectCast(MyBase.HtmlElement, HTMLVideoElement)
       End Get
