@@ -1239,7 +1239,8 @@ type
     property GenericArguments: sequence of &Type read get_GenericArguments;
     property COMGuids: sequence of Guid read get_COMGuids;
 
-    method Instantiate<T>: Object; where T is ILifetimeStrategy<T>; // Creates a new instance of this type and calls the default constructor, fails if none is present!
+    // Creates a new instance of this type and calls the default constructor, fails if none is present!
+    method Instantiate<T>: Object; where T is ILifetimeStrategy<T>;
     begin
       var lCtor: MethodInfo := Methods.FirstOrDefault(a -> (MethodFlags.Constructor in a.Flags) and (not a.Arguments.Any) and (not a.IsStatic));
       if lCtor = nil then raise new Exception('No default constructor could be found on type '+Name);
