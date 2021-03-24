@@ -6,7 +6,7 @@
     else if (typeof define === "function" && define.amd) {
         define(["require", "exports"], factory);
     }
-    else { factory(function(name){return this;}, this); }
+else { factory(function(name){return this;}, this); }
 })(function (require, exports) {
     "use strict";
     exports.__esModule = true;
@@ -270,6 +270,50 @@
             res.__elements_instance = objectptr;
             return res;
         }
+        function addEvent(self, name, objectptr) {
+            var current = self[name];
+            var newcurrent = function () {
+                arguments["this"] = this;
+                for (var i = 0; i < newcurrent.list.length; i++) {
+                    var h = createHandle(arguments);
+                    result.instance.exports["__island_call_delegate"](newcurrent.list[i], h);
+                }
+            };
+            newcurrent.isTrigger = true;
+            newcurrent.list = [];
+            if (current && current.isTrigger) {
+                newcurrent.list = current.list.slice();
+            }
+            current = newcurrent;
+            if (current.list.indexOf(objectptr) == -1) {
+                current.list.push(objectptr);
+                AddReference(objectptr);
+            }
+            self[name] = current;
+        }
+        function removeEvent(self, name, objectptr) {
+            var current = self[name];
+            if (!current || !current.isTrigger)
+                return;
+            var n = current.list.indexOf(objectptr);
+            if (n == -1)
+                return;
+            if (current.list.length == 1) {
+                ReleaseReference(objectptr);
+                self[name] = undefined;
+                return;
+            }
+            var newcurrent = function () {
+                arguments["this"] = this;
+                for (var i = 0; i < newcurrent.list.length; i++) {
+                    var h = createHandle(arguments);
+                    result.instance.exports["__island_call_delegate"](newcurrent.list[i], h);
+                }
+            };
+            newcurrent.isTrigger = true;
+            newcurrent.list = current.list.slice().splice(n);
+            self[name] = newcurrent;
+        }
         function defineElementsSystemFunctions(imp) {
             imp.env.__island_consolelogint = function (val) {
                 console.log("Value: " + val);
@@ -351,6 +395,12 @@
             };
             imp.env.__island_clone_handle = function (val) {
                 return createHandle(getHandleValue(val));
+            };
+            imp.env.__island_add_event = function (self, name, instance) {
+                addEvent(getHandleValue(self), readStringFromMemory(name), instance);
+            };
+            imp.env.__island_remove_event = function (self, name, instance) {
+                removeEvent(getHandleValue(self), readStringFromMemory(name), instance);
             };
             imp.env.__island_call = function (thisval, name, args, argcount, releaseArgs) {
                 var nargs = [];

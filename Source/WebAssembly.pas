@@ -163,6 +163,12 @@ type
     [DllImport('', EntryPoint := '__island_clone_handle')]
     class method CloneHandle(aHandle: IntPtr): IntPtr; external;
 
+    [DllImport('', EntryPoint := '__island_add_event')]
+    class method AddEvent(aSelf: IntPtr; aName: String; inst: WebAssemblyDelegate); external;
+
+    [DllImport('', EntryPoint := '__island_remove_event')]
+    class method RemoveEvent(aSelf: IntPtr; aName: String; inst: WebAssemblyDelegate); external;
+
     [DllImport('', EntryPoint := '__island_call')]
     class method Call(aSelf: IntPtr; aName: String; aArgs: ^IntPtr; aArgCount: IntPtr; aReleaseArgs: Boolean): IntPtr; external;
 
@@ -328,6 +334,7 @@ type
       raise new Exception('Array accessors not allowed in EcmaScript');
     end;
 
+
     method SetMember(aName: String; aGetFlags: Integer; aArgs: array of Object): Object;
     begin
       if (aArgs.Length = 2) and (not String.IsNullOrEmpty(aName)) then begin
@@ -405,6 +412,17 @@ type
     method DefineProperty(aName: String; aValue: Object; aFlags: EcmaScriptPropertyFlags := EcmaScriptPropertyFlags.All);
     begin
       WebAssemblyCalls.DefineValueProperty(fHandle, aName, WebAssembly.CreateHandle(aValue), aFlags);
+    end;
+
+
+    method AddEvent(aName: String; aValue: WebAssemblyDelegate);
+    begin
+      WebAssemblyCalls.AddEvent(fHandle, aName, aValue);
+    end;
+
+    method RemoveEvent(aName: String; aValue: WebAssemblyDelegate);
+    begin
+      WebAssemblyCalls.RemoveEvent(fHandle, aName, aValue);
     end;
 
     method DefineProperty(aName: String; aGet: Func<Object>; aSet: Action<Object>; aFlags: EcmaScriptPropertyFlags := EcmaScriptPropertyFlags.All);
