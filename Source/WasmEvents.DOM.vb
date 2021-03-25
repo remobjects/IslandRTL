@@ -1,13 +1,86 @@
 ﻿Namespace Global.RemObjects.Elements.WebAssembly.DOM
 
+  Public Class Delegates
+    Public Delegate Sub OnFullScreenChangeDelegate(sender as HTMLElement, e As Dom.Event)
+    Public Delegate Sub OnFullScreenErrorDelegate(sender as HTMLElement, e As Dom.Event)
+    Public Delegate Sub OnAbortDelegate(sender as HTMLElement, e As Dom.Event)
+    Public Delegate Sub OnBlurDelegate(sender as HTMLElement, e As Dom.Event)
+    Public Delegate Sub OnErrorDelegate(sender as HTMLElement, e As Dom.UIEvent)
+    Public Delegate Sub OnFocusDelegate(sender as HTMLElement, e As Dom.FocusEvent)
+    Public Delegate Sub OnCancelDelegate(sender as HTMLElement, e As Dom.Event)
+    Public Delegate Sub OnCanplayDelegate(sender as HTMLElement, e As Dom.Event)
+    Public Delegate Sub OnCanplayThroughDelegate(sender as HTMLElement, e As Dom.Event)
+    Public Delegate Sub OnChangeDelegate(sender as HTMLElement, e As Dom.Event)
+    Public Delegate Sub OnClickDelegate(sender as HTMLElement, e As Dom.MouseEvent)
+    Public Delegate Sub OnCloseDelegate(sender as HTMLElement, e As Dom.FocusEvent)
+    Public Delegate Sub OnContextMenuDelegate(sender as HTMLElement, e As Dom.MouseEvent)
+    Public Delegate Sub OnCueChangeDelegate(sender as HTMLElement, e As Dom.FocusEvent)
+    Public Delegate Sub OnDblClickDelegate(sender as HTMLElement, e As Dom.MouseEvent)
+    Public Delegate Sub OnDragDelegate(sender as HTMLElement, e As Dom.DragEvent)
+    Public Delegate Sub OnDragEndDelegate(sender as HTMLElement, e As Dom.DragEvent)
+    Public Delegate Sub OnDragEnterDelegate(sender as HTMLElement, e As Dom.DragEvent)
+    Public Delegate Sub OnDragExitDelegate(sender as HTMLElement, e As Dom.DragEvent)
+    Public Delegate Sub OnDragLeaveDelegate(sender as HTMLElement, e As Dom.DragEvent)
+    Public Delegate Sub OnDragOverDelegate(sender as HTMLElement, e As Dom.DragEvent)
+    Public Delegate Sub OnDragStartDelegate(sender as HTMLElement, e As Dom.DragEvent)
+    Public Delegate Sub OnDropDelegate(sender as HTMLElement, e As Dom.DragEvent)
+    Public Delegate Sub OnDurationChangeDelegate(sender as HTMLElement, e As Dom.Event)
+    Public Delegate Sub OnEmptiedDelegate(sender as HTMLElement, e As Dom.Event)
+    Public Delegate Sub OnEndedDelegate(sender as HTMLElement, e As Dom.Event)
+    Public Delegate Sub OnFormDataDelegate(sender as HTMLElement, e As Dom.Event)
+    Public Delegate Sub OnGotPointerCaptureDelegate(sender as HTMLElement, e As Dom.PointerEvent)
+    Public Delegate Sub OnInputDelegate(sender as HTMLElement, e As Dom.Event)
+    Public Delegate Sub OnInvalidDelegate(sender as HTMLElement, e As Dom.Event)
+    Public Delegate Sub OnKeyDownDelegate(sender as HTMLElement, e As Dom.KeyboardEvent)
+    Public Delegate Sub OnKeyPressDelegate(sender as HTMLElement, e As Dom.KeyboardEvent)
+    Public Delegate Sub OnKeyUpDelegate(sender as HTMLElement, e As Dom.KeyboardEvent)
+    Public Delegate Sub OnLoadDelegate(sender as HTMLElement, e As Dom.Event)
+    Public Delegate Sub OnLoadedDataDelegate(sender as HTMLElement, e As Dom.Event)
+    Public Delegate Sub OnLoadedMetaDataDelegate(sender as HTMLElement, e As Dom.Event)
+    Public Delegate Sub OnLoadEndDelegate(sender as HTMLElement, e As Dom.ProgressEvent)
+    Public Delegate Sub OnLoadStartDelegate(sender as HTMLElement, e As Dom.ProgressEvent)
+    Public Delegate Sub OnLostPointerCaptureDelegate(sender as HTMLElement, e As Dom.PointerEvent)
+    Public Delegate Sub OnMouseDownDelegate(sender as HTMLElement, e As Dom.MouseEvent)
+    Public Delegate Sub OnMouseEnterDelegate(sender as HTMLElement, e As Dom.MouseEvent)
+    Public Delegate Sub OnMouseLeaveDelegate(sender as HTMLElement, e As Dom.MouseEvent)
+    Public Delegate Sub OnMouseMoveDelegate(sender as HTMLElement, e As Dom.MouseEvent)
+    Public Delegate Sub OnMouseOutDelegate(sender as HTMLElement, e As Dom.MouseEvent)
+    Public Delegate Sub OnWheelDelegate(sender as HTMLElement, e As Dom.WheelEvent)
+    Public Delegate Sub OnPauseDelegate(sender as HTMLElement, e As Dom.Event)
+    Public Delegate Sub OnPlayDelegate(sender as HTMLElement, e As Dom.Event)
+    Public Delegate Sub OnPlayingDelegate(sender as HTMLElement, e As Dom.Event)
+    Public Delegate Sub OnPointerDownDelegate(sender as HTMLElement, e As Dom.PointerEvent)
+    Public Delegate Sub OnPointerMoveDelegate(sender as HTMLElement, e As Dom.PointerEvent)
+    Public Delegate Sub OnPointerUpDelegate(sender as HTMLElement, e As Dom.PointerEvent)
+    Public Delegate Sub OnPointerCancelDelegate(sender as HTMLElement, e As Dom.PointerEvent)
+    Public Delegate Sub OnPointerOverDelegate(sender as HTMLElement, e As Dom.PointerEvent)
+    Public Delegate Sub OnPointerOutDelegate(sender as HTMLElement, e As Dom.PointerEvent)
+    Public Delegate Sub OnPointerEnterDelegate(sender as HTMLElement, e As Dom.PointerEvent)
+    Public Delegate Sub OnPointerLeaveDelegate(sender as HTMLElement, e As Dom.PointerEvent)
+    Public Delegate Sub OnProgressDelegate(sender as HTMLElement, e As Dom.ProgressEvent)
+    Public Delegate Sub OnRateChangeDelegate(sender as HTMLElement, e As Dom.Event)
+    Public Delegate Sub OnResetDelegate(sender as HTMLElement, e As Dom.Event)
+    Public Delegate Sub OnResizeDelegate(sender as HTMLElement, e As Dom.UIEvent)
+    Public Delegate Sub OnScrollDelegate(sender as HTMLElement, e As Dom.Event)
+    Public Delegate Sub OnSeekedDelegate(sender as HTMLElement, e As Dom.Event)
+    Public Delegate Sub OnSeekingDelegate(sender as HTMLElement, e As Dom.Event)
+    Public Delegate Sub OnSelectDelegate(sender as HTMLElement, e As Dom.UIEvent)
+    Public Delegate Sub OnSelectStartDelegate(sender as HTMLElement, e As Dom.Event)
+    Public Delegate Sub OnSelectionChangeDelegate(sender as HTMLElement, e As Dom.Event)
+    Public Delegate Sub OnStalledDelegate(sender as HTMLElement, e As Dom.Event)
+    Public Delegate Sub OnSubmitDelegate(sender as HTMLElement, e As Dom.SubmitEvent)
+    Public Delegate Sub OnSuspendDelegate(sender as HTMLElement, e As Dom.Event)
+    Public Delegate Sub OnTimeUpdateDelegate(sender as HTMLElement, e As Dom.Event)
+    Public Delegate Sub OnVolumeChangeDelegate(sender as HTMLElement, e As Dom.Event)
+    Public Delegate Sub OnWaitingDelegate(sender as HTMLElement, e As Dom.Event)
+  End Class
+
   Public Class HTMLElement_Events
     Extends HTMLElement
 
     ' onfullscreenchange
 
-    Public Delegate Sub OnFullScreenChangeDelegate(sender as HTMLElement, e As Dom.Event)
-
-    Public Custom Event onfullscreenchange As OnFullScreenChangeDelegate
+    Public Custom Event onfullscreenchange As Delegates.OnFullScreenChangeDelegate
       AddHandler(Value As Sub(sender as HTMLElement, e As Dom.Event))
         CType(Me, EcmaScriptObject).AddEvent("onfullscreenchange", Sub(e As EcmaScriptObject) RaiseEvent Value(Me, CType(e(0), Dom.Event)))
       End AddHandler
@@ -15,9 +88,7 @@
 
     ' onfullscreenerror
 
-    Public Delegate Sub OnFullScreenErrorDelegate(sender as HTMLElement, e As Dom.Event)
-
-    Public Custom Event onfullscreenerror As OnFullScreenErrorDelegate
+    Public Custom Event onfullscreenerror As Delegates.OnFullScreenErrorDelegate
       AddHandler(Value As Sub(sender as HTMLElement, e As Dom.Event))
         CType(Me, EcmaScriptObject).AddEvent("onfullscreenerror", Sub(e As EcmaScriptObject) RaiseEvent Value(Me, CType(e(0), Dom.Event)))
       End AddHandler
@@ -25,9 +96,7 @@
 
     ' onabort
 
-    Public Delegate Sub OnAbortDelegate(sender as HTMLElement, e As Dom.Event)
-
-    Public Custom Event onabort As OnAbortDelegate
+    Public Custom Event onabort As Delegates.OnAbortDelegate
       AddHandler(Value As Sub(sender as HTMLElement, e As Dom.Event))
         CType(Me, EcmaScriptObject).AddEvent("onabort", Sub(e As EcmaScriptObject) RaiseEvent Value(Me, CType(e(0), Dom.Event)))
       End AddHandler
@@ -35,9 +104,7 @@
 
     ' onblur
 
-    Public Delegate Sub OnBlurDelegate(sender as HTMLElement, e As Dom.Event)
-
-    Public Custom Event onblur As OnBlurDelegate
+    Public Custom Event onblur As Delegates.OnBlurDelegate
       AddHandler(Value As Sub(sender as HTMLElement, e As Dom.Event))
         CType(Me, EcmaScriptObject).AddEvent("onblur", Sub(e As EcmaScriptObject) RaiseEvent Value(Me, CType(e(0), Dom.Event)))
       End AddHandler
@@ -45,29 +112,23 @@
 
     ' onerror
 
-    Public Delegate Sub OnErrorDelegate(sender as HTMLElement, e As UIEvent)
-
-    Public Custom Event onerror As OnErrorDelegate
-      AddHandler(Value As Sub(sender as HTMLElement, e As UIEvent))
-        CType(Me, EcmaScriptObject).AddEvent("onerror", Sub(e As EcmaScriptObject) RaiseEvent Value(Me, CType(e(0), UIEvent)))
+    Public Custom Event onerror As Delegates.OnErrorDelegate
+      AddHandler(Value As Sub(sender as HTMLElement, e As Dom.UIEvent))
+        CType(Me, EcmaScriptObject).AddEvent("onerror", Sub(e As EcmaScriptObject) RaiseEvent Value(Me, CType(e(0), Dom.UIEvent)))
       End AddHandler
     End Event
 
     ' onfocus
 
-    Public Delegate Sub OnFocusDelegate(sender as HTMLElement, e As FocusEvent)
-
-    Public Custom Event onfocus As OnFocusDelegate
-      AddHandler(Value As Sub(sender as HTMLElement, e As FocusEvent))
-        CType(Me, EcmaScriptObject).AddEvent("onfocus", Sub(e As EcmaScriptObject) RaiseEvent Value(Me, CType(e(0), FocusEvent)))
+    Public Custom Event onfocus As Delegates.OnFocusDelegate
+      AddHandler(Value As Sub(sender as HTMLElement, e As Dom.FocusEvent))
+        CType(Me, EcmaScriptObject).AddEvent("onfocus", Sub(e As EcmaScriptObject) RaiseEvent Value(Me, CType(e(0), Dom.FocusEvent)))
       End AddHandler
     End Event
 
     ' oncancel
 
-    Public Delegate Sub OnCancelDelegate(sender as HTMLElement, e As Dom.Event)
-
-    Public Custom Event oncancel As OnCancelDelegate
+    Public Custom Event oncancel As Delegates.OnCancelDelegate
       AddHandler(Value As Sub(sender as HTMLElement, e As Dom.Event))
         CType(Me, EcmaScriptObject).AddEvent("oncancel", Sub(e As EcmaScriptObject) RaiseEvent Value(Me, CType(e(0), Dom.Event)))
       End AddHandler
@@ -75,9 +136,7 @@
 
     ' oncanplay
 
-    Public Delegate Sub OnCanplayDelegate(sender as HTMLElement, e As Dom.Event)
-
-    Public Custom Event oncanplay As OnCanplayDelegate
+    Public Custom Event oncanplay As Delegates.OnCanplayDelegate
       AddHandler(Value As Sub(sender as HTMLElement, e As Dom.Event))
         CType(Me, EcmaScriptObject).AddEvent("oncanplay", Sub(e As EcmaScriptObject) RaiseEvent Value(Me, CType(e(0), Dom.Event)))
       End AddHandler
@@ -85,9 +144,7 @@
 
     ' oncanplaythrough
 
-    Public Delegate Sub OnCanplayThroughDelegate(sender as HTMLElement, e As Dom.Event)
-
-    Public Custom Event oncanplaythrough As OnCanplayThroughDelegate
+    Public Custom Event oncanplaythrough As Delegates.OnCanplayThroughDelegate
       AddHandler(Value As Sub(sender as HTMLElement, e As Dom.Event))
         CType(Me, EcmaScriptObject).AddEvent("oncanplaythrough", Sub(e As EcmaScriptObject) RaiseEvent Value(Me, CType(e(0), Dom.Event)))
       End AddHandler
@@ -95,9 +152,7 @@
 
     ' onchange
 
-    Public Delegate Sub OnChangeDelegate(sender as HTMLElement, e As Dom.Event)
-
-    Public Custom Event onchange As OnChangeDelegate
+    Public Custom Event onchange As Delegates.OnChangeDelegate
       AddHandler(Value As Sub(sender as HTMLElement, e As Dom.Event))
         CType(Me, EcmaScriptObject).AddEvent("onchange", Sub(e As EcmaScriptObject) RaiseEvent Value(Me, CType(e(0), Dom.Event)))
       End AddHandler
@@ -105,139 +160,111 @@
 
     ' onclick
 
-    Public Delegate Sub OnClickDelegate(sender as HTMLElement, e As MouseEvent)
-
-    Public Custom Event onclick As OnClickDelegate
-      AddHandler(Value As Sub(sender as HTMLElement, e As MouseEvent))
-        CType(Me, EcmaScriptObject).AddEvent("onclick", Sub(e As EcmaScriptObject) RaiseEvent Value(Me, CType(e(0), MouseEvent)))
+    Public Custom Event onclick As Delegates.OnClickDelegate
+      AddHandler(Value As Sub(sender as HTMLElement, e As Dom.MouseEvent))
+        CType(Me, EcmaScriptObject).AddEvent("onclick", Sub(e As EcmaScriptObject) RaiseEvent Value(Me, CType(e(0), Dom.MouseEvent)))
       End AddHandler
     End Event
 
     ' onclose
 
-    Public Delegate Sub OnCloseDelegate(sender as HTMLElement, e As FocusEvent)
-
-    Public Custom Event onclose As OnCloseDelegate
-      AddHandler(Value As Sub(sender as HTMLElement, e As FocusEvent))
-        CType(Me, EcmaScriptObject).AddEvent("onclose", Sub(e As EcmaScriptObject) RaiseEvent Value(Me, CType(e(0), FocusEvent)))
+    Public Custom Event onclose As Delegates.OnCloseDelegate
+      AddHandler(Value As Sub(sender as HTMLElement, e As Dom.FocusEvent))
+        CType(Me, EcmaScriptObject).AddEvent("onclose", Sub(e As EcmaScriptObject) RaiseEvent Value(Me, CType(e(0), Dom.FocusEvent)))
       End AddHandler
     End Event
 
     ' oncontextmenu
 
-    Public Delegate Sub OnContextMenuDelegate(sender as HTMLElement, e As MouseEvent)
-
-    Public Custom Event oncontextmenu As OnContextMenuDelegate
-      AddHandler(Value As Sub(sender as HTMLElement, e As MouseEvent))
-        CType(Me, EcmaScriptObject).AddEvent("oncontextmenu", Sub(e As EcmaScriptObject) RaiseEvent Value(Me, CType(e(0), MouseEvent)))
+    Public Custom Event oncontextmenu As Delegates.OnContextMenuDelegate
+      AddHandler(Value As Sub(sender as HTMLElement, e As Dom.MouseEvent))
+        CType(Me, EcmaScriptObject).AddEvent("oncontextmenu", Sub(e As EcmaScriptObject) RaiseEvent Value(Me, CType(e(0), Dom.MouseEvent)))
       End AddHandler
     End Event
 
     ' oncuechange
 
-    Public Delegate Sub OnCueChangeDelegate(sender as HTMLElement, e As FocusEvent)
-
-    Public Custom Event oncuechange As OnCueChangeDelegate
-      AddHandler(Value As Sub(sender as HTMLElement, e As FocusEvent))
-        CType(Me, EcmaScriptObject).AddEvent("oncuechange", Sub(e As EcmaScriptObject) RaiseEvent Value(Me, CType(e(0), FocusEvent)))
+    Public Custom Event oncuechange As Delegates.OnCueChangeDelegate
+      AddHandler(Value As Sub(sender as HTMLElement, e As Dom.FocusEvent))
+        CType(Me, EcmaScriptObject).AddEvent("oncuechange", Sub(e As EcmaScriptObject) RaiseEvent Value(Me, CType(e(0), Dom.FocusEvent)))
       End AddHandler
     End Event
 
     ' ondblclick
 
-    Public Delegate Sub OnDblClickDelegate(sender as HTMLElement, e As MouseEvent)
-
-    Public Custom Event ondblclick As OnDblClickDelegate
-      AddHandler(Value As Sub(sender as HTMLElement, e As MouseEvent))
-        CType(Me, EcmaScriptObject).AddEvent("ondblclick", Sub(e As EcmaScriptObject) RaiseEvent Value(Me, CType(e(0), MouseEvent)))
+    Public Custom Event ondblclick As Delegates.OnDblClickDelegate
+      AddHandler(Value As Sub(sender as HTMLElement, e As Dom.MouseEvent))
+        CType(Me, EcmaScriptObject).AddEvent("ondblclick", Sub(e As EcmaScriptObject) RaiseEvent Value(Me, CType(e(0), Dom.MouseEvent)))
       End AddHandler
     End Event
 
     ' ondrag
 
-    Public Delegate Sub OnDragDelegate(sender as HTMLElement, e As DragEvent)
-
-    Public Custom Event ondrag As OnDragDelegate
-      AddHandler(Value As Sub(sender as HTMLElement, e As DragEvent))
-        CType(Me, EcmaScriptObject).AddEvent("ondrag", Sub(e As EcmaScriptObject) RaiseEvent Value(Me, CType(e(0), DragEvent)))
+    Public Custom Event ondrag As Delegates.OnDragDelegate
+      AddHandler(Value As Sub(sender as HTMLElement, e As Dom.DragEvent))
+        CType(Me, EcmaScriptObject).AddEvent("ondrag", Sub(e As EcmaScriptObject) RaiseEvent Value(Me, CType(e(0), Dom.DragEvent)))
       End AddHandler
     End Event
 
     ' ondragend
 
-    Public Delegate Sub OnDragEndDelegate(sender as HTMLElement, e As DragEvent)
-
-    Public Custom Event ondragend As OnDragEndDelegate
-      AddHandler(Value As Sub(sender as HTMLElement, e As DragEvent))
-        CType(Me, EcmaScriptObject).AddEvent("ondragend", Sub(e As EcmaScriptObject) RaiseEvent Value(Me, CType(e(0), DragEvent)))
+    Public Custom Event ondragend As Delegates.OnDragEndDelegate
+      AddHandler(Value As Sub(sender as HTMLElement, e As Dom.DragEvent))
+        CType(Me, EcmaScriptObject).AddEvent("ondragend", Sub(e As EcmaScriptObject) RaiseEvent Value(Me, CType(e(0), Dom.DragEvent)))
       End AddHandler
     End Event
 
     ' ondragenter
 
-    Public Delegate Sub OnDragEnterDelegate(sender as HTMLElement, e As DragEvent)
-
-    Public Custom Event ondragenter As OnDragEnterDelegate
-      AddHandler(Value As Sub(sender as HTMLElement, e As DragEvent))
-        CType(Me, EcmaScriptObject).AddEvent("ondragenter", Sub(e As EcmaScriptObject) RaiseEvent Value(Me, CType(e(0), DragEvent)))
+    Public Custom Event ondragenter As Delegates.OnDragEnterDelegate
+      AddHandler(Value As Sub(sender as HTMLElement, e As Dom.DragEvent))
+        CType(Me, EcmaScriptObject).AddEvent("ondragenter", Sub(e As EcmaScriptObject) RaiseEvent Value(Me, CType(e(0), Dom.DragEvent)))
       End AddHandler
     End Event
 
     ' ondragexit
 
-    Public Delegate Sub OnDragExitDelegate(sender as HTMLElement, e As DragEvent)
-
-    Public Custom Event ondragexit As OnDragExitDelegate
-      AddHandler(Value As Sub(sender as HTMLElement, e As DragEvent))
-        CType(Me, EcmaScriptObject).AddEvent("ondragexit", Sub(e As EcmaScriptObject) RaiseEvent Value(Me, CType(e(0), DragEvent)))
+    Public Custom Event ondragexit As Delegates.OnDragExitDelegate
+      AddHandler(Value As Sub(sender as HTMLElement, e As Dom.DragEvent))
+        CType(Me, EcmaScriptObject).AddEvent("ondragexit", Sub(e As EcmaScriptObject) RaiseEvent Value(Me, CType(e(0), Dom.DragEvent)))
       End AddHandler
     End Event
 
     ' ondragleave
 
-    Public Delegate Sub OnDragLeaveDelegate(sender as HTMLElement, e As DragEvent)
-
-    Public Custom Event ondragleave As OnDragLeaveDelegate
-      AddHandler(Value As Sub(sender as HTMLElement, e As DragEvent))
-        CType(Me, EcmaScriptObject).AddEvent("ondragleave", Sub(e As EcmaScriptObject) RaiseEvent Value(Me, CType(e(0), DragEvent)))
+    Public Custom Event ondragleave As Delegates.OnDragLeaveDelegate
+      AddHandler(Value As Sub(sender as HTMLElement, e As Dom.DragEvent))
+        CType(Me, EcmaScriptObject).AddEvent("ondragleave", Sub(e As EcmaScriptObject) RaiseEvent Value(Me, CType(e(0), Dom.DragEvent)))
       End AddHandler
     End Event
 
     ' ondragover
 
-    Public Delegate Sub OnDragOverDelegate(sender as HTMLElement, e As DragEvent)
-
-    Public Custom Event ondragover As OnDragOverDelegate
-      AddHandler(Value As Sub(sender as HTMLElement, e As DragEvent))
-        CType(Me, EcmaScriptObject).AddEvent("ondragover", Sub(e As EcmaScriptObject) RaiseEvent Value(Me, CType(e(0), DragEvent)))
+    Public Custom Event ondragover As Delegates.OnDragOverDelegate
+      AddHandler(Value As Sub(sender as HTMLElement, e As Dom.DragEvent))
+        CType(Me, EcmaScriptObject).AddEvent("ondragover", Sub(e As EcmaScriptObject) RaiseEvent Value(Me, CType(e(0), Dom.DragEvent)))
       End AddHandler
     End Event
 
     ' ondragstart
 
-    Public Delegate Sub OnDragStartDelegate(sender as HTMLElement, e As DragEvent)
-
-    Public Custom Event ondragstart As OnDragStartDelegate
-      AddHandler(Value As Sub(sender as HTMLElement, e As DragEvent))
-        CType(Me, EcmaScriptObject).AddEvent("ondragstart", Sub(e As EcmaScriptObject) RaiseEvent Value(Me, CType(e(0), DragEvent)))
+    Public Custom Event ondragstart As Delegates.OnDragStartDelegate
+      AddHandler(Value As Sub(sender as HTMLElement, e As Dom.DragEvent))
+        CType(Me, EcmaScriptObject).AddEvent("ondragstart", Sub(e As EcmaScriptObject) RaiseEvent Value(Me, CType(e(0), Dom.DragEvent)))
       End AddHandler
     End Event
 
     ' ondrop
 
-    Public Delegate Sub OnDropDelegate(sender as HTMLElement, e As DragEvent)
-
-    Public Custom Event ondrop As OnDropDelegate
-      AddHandler(Value As Sub(sender as HTMLElement, e As DragEvent))
-        CType(Me, EcmaScriptObject).AddEvent("ondrop", Sub(e As EcmaScriptObject) RaiseEvent Value(Me, CType(e(0), DragEvent)))
+    Public Custom Event ondrop As Delegates.OnDropDelegate
+      AddHandler(Value As Sub(sender as HTMLElement, e As Dom.DragEvent))
+        CType(Me, EcmaScriptObject).AddEvent("ondrop", Sub(e As EcmaScriptObject) RaiseEvent Value(Me, CType(e(0), Dom.DragEvent)))
       End AddHandler
     End Event
 
     ' ondurationchange
 
-    Public Delegate Sub OnDurationChangeDelegate(sender as HTMLElement, e As Dom.Event)
-
-    Public Custom Event ondurationchange As OnDurationChangeDelegate
+    Public Custom Event ondurationchange As Delegates.OnDurationChangeDelegate
       AddHandler(Value As Sub(sender as HTMLElement, e As Dom.Event))
         CType(Me, EcmaScriptObject).AddEvent("ondurationchange", Sub(e As EcmaScriptObject) RaiseEvent Value(Me, CType(e(0), Dom.Event)))
       End AddHandler
@@ -245,9 +272,7 @@
 
     ' onemptied
 
-    Public Delegate Sub OnEmptiedDelegate(sender as HTMLElement, e As Dom.Event)
-
-    Public Custom Event onemptied As OnEmptiedDelegate
+    Public Custom Event onemptied As Delegates.OnEmptiedDelegate
       AddHandler(Value As Sub(sender as HTMLElement, e As Dom.Event))
         CType(Me, EcmaScriptObject).AddEvent("onemptied", Sub(e As EcmaScriptObject) RaiseEvent Value(Me, CType(e(0), Dom.Event)))
       End AddHandler
@@ -255,9 +280,7 @@
 
     ' onended
 
-    Public Delegate Sub OnEndedDelegate(sender as HTMLElement, e As Dom.Event)
-
-    Public Custom Event onended As OnEndedDelegate
+    Public Custom Event onended As Delegates.OnEndedDelegate
       AddHandler(Value As Sub(sender as HTMLElement, e As Dom.Event))
         CType(Me, EcmaScriptObject).AddEvent("onended", Sub(e As EcmaScriptObject) RaiseEvent Value(Me, CType(e(0), Dom.Event)))
       End AddHandler
@@ -265,9 +288,7 @@
 
     ' onformdata
 
-    Public Delegate Sub OnFormDataDelegate(sender as HTMLElement, e As Dom.Event)
-
-    Public Custom Event onformdata As OnFormDataDelegate
+    Public Custom Event onformdata As Delegates.OnFormDataDelegate
       AddHandler(Value As Sub(sender as HTMLElement, e As Dom.Event))
         CType(Me, EcmaScriptObject).AddEvent("onformdata", Sub(e As EcmaScriptObject) RaiseEvent Value(Me, CType(e(0), Dom.Event)))
       End AddHandler
@@ -275,19 +296,15 @@
 
     ' ongotpointercapture
 
-    Public Delegate Sub OnGotPointerCaptureDelegate(sender as HTMLElement, e As PointerEvent)
-
-    Public Custom Event ongotpointercapture As OnGotPointerCaptureDelegate
-      AddHandler(Value As Sub(sender as HTMLElement, e As PointerEvent))
-        CType(Me, EcmaScriptObject).AddEvent("ongotpointercapture", Sub(e As EcmaScriptObject) RaiseEvent Value(Me, CType(e(0), PointerEvent)))
+    Public Custom Event ongotpointercapture As Delegates.OnGotPointerCaptureDelegate
+      AddHandler(Value As Sub(sender as HTMLElement, e As Dom.PointerEvent))
+        CType(Me, EcmaScriptObject).AddEvent("ongotpointercapture", Sub(e As EcmaScriptObject) RaiseEvent Value(Me, CType(e(0), Dom.PointerEvent)))
       End AddHandler
     End Event
 
     ' oninput
 
-    Public Delegate Sub OnInputDelegate(sender as HTMLElement, e As Dom.Event)
-
-    Public Custom Event oninput As OnInputDelegate
+    Public Custom Event oninput As Delegates.OnInputDelegate
       AddHandler(Value As Sub(sender as HTMLElement, e As Dom.Event))
         CType(Me, EcmaScriptObject).AddEvent("oninput", Sub(e As EcmaScriptObject) RaiseEvent Value(Me, CType(e(0), Dom.Event)))
       End AddHandler
@@ -295,9 +312,7 @@
 
     ' oninvalid
 
-    Public Delegate Sub OnInvalidDelegate(sender as HTMLElement, e As Dom.Event)
-
-    Public Custom Event oninvalid As OnInvalidDelegate
+    Public Custom Event oninvalid As Delegates.OnInvalidDelegate
       AddHandler(Value As Sub(sender as HTMLElement, e As Dom.Event))
         CType(Me, EcmaScriptObject).AddEvent("oninvalid", Sub(e As EcmaScriptObject) RaiseEvent Value(Me, CType(e(0), Dom.Event)))
       End AddHandler
@@ -305,39 +320,31 @@
 
     ' onkeydown
 
-    Public Delegate Sub OnKeyDownDelegate(sender as HTMLElement, e As KeyboardEvent)
-
-    Public Custom Event onkeydown As OnKeyDownDelegate
-      AddHandler(Value As Sub(sender as HTMLElement, e As KeyboardEvent))
-        CType(Me, EcmaScriptObject).AddEvent("onkeydown", Sub(e As EcmaScriptObject) RaiseEvent Value(Me, CType(e(0), KeyboardEvent)))
+    Public Custom Event onkeydown As Delegates.OnKeyDownDelegate
+      AddHandler(Value As Sub(sender as HTMLElement, e As Dom.KeyboardEvent))
+        CType(Me, EcmaScriptObject).AddEvent("onkeydown", Sub(e As EcmaScriptObject) RaiseEvent Value(Me, CType(e(0), Dom.KeyboardEvent)))
       End AddHandler
     End Event
 
     ' onkeypress
 
-    Public Delegate Sub OnKeyPressDelegate(sender as HTMLElement, e As KeyboardEvent)
-
-    Public Custom Event onkeypress As OnKeyPressDelegate
-      AddHandler(Value As Sub(sender as HTMLElement, e As KeyboardEvent))
-        CType(Me, EcmaScriptObject).AddEvent("onkeypress", Sub(e As EcmaScriptObject) RaiseEvent Value(Me, CType(e(0), KeyboardEvent)))
+    Public Custom Event onkeypress As Delegates.OnKeyPressDelegate
+      AddHandler(Value As Sub(sender as HTMLElement, e As Dom.KeyboardEvent))
+        CType(Me, EcmaScriptObject).AddEvent("onkeypress", Sub(e As EcmaScriptObject) RaiseEvent Value(Me, CType(e(0), Dom.KeyboardEvent)))
       End AddHandler
     End Event
 
     ' onkeyup
 
-    Public Delegate Sub OnKeyUpDelegate(sender as HTMLElement, e As KeyboardEvent)
-
-    Public Custom Event onkeyup As OnKeyUpDelegate
-      AddHandler(Value As Sub(sender as HTMLElement, e As KeyboardEvent))
-        CType(Me, EcmaScriptObject).AddEvent("onkeyup", Sub(e As EcmaScriptObject) RaiseEvent Value(Me, CType(e(0), KeyboardEvent)))
+    Public Custom Event onkeyup As Delegates.OnKeyUpDelegate
+      AddHandler(Value As Sub(sender as HTMLElement, e As Dom.KeyboardEvent))
+        CType(Me, EcmaScriptObject).AddEvent("onkeyup", Sub(e As EcmaScriptObject) RaiseEvent Value(Me, CType(e(0), Dom.KeyboardEvent)))
       End AddHandler
     End Event
 
     ' onload
 
-    Public Delegate Sub OnLoadDelegate(sender as HTMLElement, e As Dom.Event)
-
-    Public Custom Event onload As OnLoadDelegate
+    Public Custom Event onload As Delegates.OnLoadDelegate
       AddHandler(Value As Sub(sender as HTMLElement, e As Dom.Event))
         CType(Me, EcmaScriptObject).AddEvent("onload", Sub(e As EcmaScriptObject) RaiseEvent Value(Me, CType(e(0), Dom.Event)))
       End AddHandler
@@ -345,9 +352,7 @@
 
     ' onloadeddata
 
-    Public Delegate Sub OnLoadedDataDelegate(sender as HTMLElement, e As Dom.Event)
-
-    Public Custom Event onloadeddata As OnLoadedDataDelegate
+    Public Custom Event onloadeddata As Delegates.OnLoadedDataDelegate
       AddHandler(Value As Sub(sender as HTMLElement, e As Dom.Event))
         CType(Me, EcmaScriptObject).AddEvent("onloadeddata", Sub(e As EcmaScriptObject) RaiseEvent Value(Me, CType(e(0), Dom.Event)))
       End AddHandler
@@ -355,9 +360,7 @@
 
     ' onloadedmetadata
 
-    Public Delegate Sub OnLoadedMetaDataDelegate(sender as HTMLElement, e As Dom.Event)
-
-    Public Custom Event onloadedmetadata As OnLoadedMetaDataDelegate
+    Public Custom Event onloadedmetadata As Delegates.OnLoadedMetaDataDelegate
       AddHandler(Value As Sub(sender as HTMLElement, e As Dom.Event))
         CType(Me, EcmaScriptObject).AddEvent("onloadedmetadata", Sub(e As EcmaScriptObject) RaiseEvent Value(Me, CType(e(0), Dom.Event)))
       End AddHandler
@@ -365,99 +368,79 @@
 
     ' onloadend
 
-    Public Delegate Sub OnLoadEndDelegate(sender as HTMLElement, e As ProgressEvent)
-
-    Public Custom Event onloadend As OnLoadEndDelegate
-      AddHandler(Value As Sub(sender as HTMLElement, e As ProgressEvent))
-        CType(Me, EcmaScriptObject).AddEvent("onloadend", Sub(e As EcmaScriptObject) RaiseEvent Value(Me, CType(e(0), ProgressEvent)))
+    Public Custom Event onloadend As Delegates.OnLoadEndDelegate
+      AddHandler(Value As Sub(sender as HTMLElement, e As Dom.ProgressEvent))
+        CType(Me, EcmaScriptObject).AddEvent("onloadend", Sub(e As EcmaScriptObject) RaiseEvent Value(Me, CType(e(0), Dom.ProgressEvent)))
       End AddHandler
     End Event
 
     ' onloadstart
 
-    Public Delegate Sub OnLoadStartDelegate(sender as HTMLElement, e As ProgressEvent)
-
-    Public Custom Event onloadstart As OnLoadStartDelegate
-      AddHandler(Value As Sub(sender as HTMLElement, e As ProgressEvent))
-        CType(Me, EcmaScriptObject).AddEvent("onloadstart", Sub(e As EcmaScriptObject) RaiseEvent Value(Me, CType(e(0), ProgressEvent)))
+    Public Custom Event onloadstart As Delegates.OnLoadStartDelegate
+      AddHandler(Value As Sub(sender as HTMLElement, e As Dom.ProgressEvent))
+        CType(Me, EcmaScriptObject).AddEvent("onloadstart", Sub(e As EcmaScriptObject) RaiseEvent Value(Me, CType(e(0), Dom.ProgressEvent)))
       End AddHandler
     End Event
 
     ' onlostpointercapture
 
-    Public Delegate Sub OnLostPointerCaptureDelegate(sender as HTMLElement, e As PointerEvent)
-
-    Public Custom Event onlostpointercapture As OnLostPointerCaptureDelegate
-      AddHandler(Value As Sub(sender as HTMLElement, e As PointerEvent))
-        CType(Me, EcmaScriptObject).AddEvent("onlostpointercapture", Sub(e As EcmaScriptObject) RaiseEvent Value(Me, CType(e(0), PointerEvent)))
+    Public Custom Event onlostpointercapture As Delegates.OnLostPointerCaptureDelegate
+      AddHandler(Value As Sub(sender as HTMLElement, e As Dom.PointerEvent))
+        CType(Me, EcmaScriptObject).AddEvent("onlostpointercapture", Sub(e As EcmaScriptObject) RaiseEvent Value(Me, CType(e(0), Dom.PointerEvent)))
       End AddHandler
     End Event
 
     ' onmousedown
 
-    Public Delegate Sub OnMouseDownDelegate(sender as HTMLElement, e As MouseEvent)
-
-    Public Custom Event onmousedown As OnMouseDownDelegate
-      AddHandler(Value As Sub(sender as HTMLElement, e As MouseEvent))
-        CType(Me, EcmaScriptObject).AddEvent("onmousedown", Sub(e As EcmaScriptObject) RaiseEvent Value(Me, CType(e(0), MouseEvent)))
+    Public Custom Event onmousedown As Delegates.OnMouseDownDelegate
+      AddHandler(Value As Sub(sender as HTMLElement, e As Dom.MouseEvent))
+        CType(Me, EcmaScriptObject).AddEvent("onmousedown", Sub(e As EcmaScriptObject) RaiseEvent Value(Me, CType(e(0), Dom.MouseEvent)))
       End AddHandler
     End Event
 
     ' onmouseenter
 
-    Public Delegate Sub OnMouseEnterDelegate(sender as HTMLElement, e As MouseEvent)
-
-    Public Custom Event onmouseenter As OnMouseEnterDelegate
-      AddHandler(Value As Sub(sender as HTMLElement, e As MouseEvent))
-        CType(Me, EcmaScriptObject).AddEvent("onmouseenter", Sub(e As EcmaScriptObject) RaiseEvent Value(Me, CType(e(0), MouseEvent)))
+    Public Custom Event onmouseenter As Delegates.OnMouseEnterDelegate
+      AddHandler(Value As Sub(sender as HTMLElement, e As Dom.MouseEvent))
+        CType(Me, EcmaScriptObject).AddEvent("onmouseenter", Sub(e As EcmaScriptObject) RaiseEvent Value(Me, CType(e(0), Dom.MouseEvent)))
       End AddHandler
     End Event
 
     ' onmouseleave
 
-    Public Delegate Sub OnMouseLeaveDelegate(sender as HTMLElement, e As MouseEvent)
-
-    Public Custom Event onmouseleave As OnMouseLeaveDelegate
-      AddHandler(Value As Sub(sender as HTMLElement, e As MouseEvent))
-        CType(Me, EcmaScriptObject).AddEvent("onmouseleave", Sub(e As EcmaScriptObject) RaiseEvent Value(Me, CType(e(0), MouseEvent)))
+    Public Custom Event onmouseleave As Delegates.OnMouseLeaveDelegate
+      AddHandler(Value As Sub(sender as HTMLElement, e As Dom.MouseEvent))
+        CType(Me, EcmaScriptObject).AddEvent("onmouseleave", Sub(e As EcmaScriptObject) RaiseEvent Value(Me, CType(e(0), Dom.MouseEvent)))
       End AddHandler
     End Event
 
     ' onmousemove
 
-    Public Delegate Sub OnMouseMoveDelegate(sender as HTMLElement, e As MouseEvent)
-
-    Public Custom Event onmousemove As OnMouseMoveDelegate
-      AddHandler(Value As Sub(sender as HTMLElement, e As MouseEvent))
-        CType(Me, EcmaScriptObject).AddEvent("onmousemove", Sub(e As EcmaScriptObject) RaiseEvent Value(Me, CType(e(0), MouseEvent)))
+    Public Custom Event onmousemove As Delegates.OnMouseMoveDelegate
+      AddHandler(Value As Sub(sender as HTMLElement, e As Dom.MouseEvent))
+        CType(Me, EcmaScriptObject).AddEvent("onmousemove", Sub(e As EcmaScriptObject) RaiseEvent Value(Me, CType(e(0), Dom.MouseEvent)))
       End AddHandler
     End Event
 
     ' onmouseout
 
-    Public Delegate Sub OnMouseOutDelegate(sender as HTMLElement, e As MouseEvent)
-
-    Public Custom Event onmouseout As OnMouseOutDelegate
-      AddHandler(Value As Sub(sender as HTMLElement, e As MouseEvent))
-        CType(Me, EcmaScriptObject).AddEvent("onmouseout", Sub(e As EcmaScriptObject) RaiseEvent Value(Me, CType(e(0), MouseEvent)))
+    Public Custom Event onmouseout As Delegates.OnMouseOutDelegate
+      AddHandler(Value As Sub(sender as HTMLElement, e As Dom.MouseEvent))
+        CType(Me, EcmaScriptObject).AddEvent("onmouseout", Sub(e As EcmaScriptObject) RaiseEvent Value(Me, CType(e(0), Dom.MouseEvent)))
       End AddHandler
     End Event
 
     ' onwheel
 
-    Public Delegate Sub OnWheelDelegate(sender as HTMLElement, e As WheelEvent)
-
-    Public Custom Event onwheel As OnWheelDelegate
-      AddHandler(Value As Sub(sender as HTMLElement, e As WheelEvent))
-        CType(Me, EcmaScriptObject).AddEvent("onwheel", Sub(e As EcmaScriptObject) RaiseEvent Value(Me, CType(e(0), WheelEvent)))
+    Public Custom Event onwheel As Delegates.OnWheelDelegate
+      AddHandler(Value As Sub(sender as HTMLElement, e As Dom.WheelEvent))
+        CType(Me, EcmaScriptObject).AddEvent("onwheel", Sub(e As EcmaScriptObject) RaiseEvent Value(Me, CType(e(0), Dom.WheelEvent)))
       End AddHandler
     End Event
 
     ' onpause
 
-    Public Delegate Sub OnPauseDelegate(sender as HTMLElement, e As Dom.Event)
-
-    Public Custom Event onpause As OnPauseDelegate
+    Public Custom Event onpause As Delegates.OnPauseDelegate
       AddHandler(Value As Sub(sender as HTMLElement, e As Dom.Event))
         CType(Me, EcmaScriptObject).AddEvent("onpause", Sub(e As EcmaScriptObject) RaiseEvent Value(Me, CType(e(0), Dom.Event)))
       End AddHandler
@@ -465,9 +448,7 @@
 
     ' onplay
 
-    Public Delegate Sub OnPlayDelegate(sender as HTMLElement, e As Dom.Event)
-
-    Public Custom Event onplay As OnPlayDelegate
+    Public Custom Event onplay As Delegates.OnPlayDelegate
       AddHandler(Value As Sub(sender as HTMLElement, e As Dom.Event))
         CType(Me, EcmaScriptObject).AddEvent("onplay", Sub(e As EcmaScriptObject) RaiseEvent Value(Me, CType(e(0), Dom.Event)))
       End AddHandler
@@ -475,9 +456,7 @@
 
     ' onplaying
 
-    Public Delegate Sub OnPlayingDelegate(sender as HTMLElement, e As Dom.Event)
-
-    Public Custom Event onplaying As OnPlayingDelegate
+    Public Custom Event onplaying As Delegates.OnPlayingDelegate
       AddHandler(Value As Sub(sender as HTMLElement, e As Dom.Event))
         CType(Me, EcmaScriptObject).AddEvent("onplaying", Sub(e As EcmaScriptObject) RaiseEvent Value(Me, CType(e(0), Dom.Event)))
       End AddHandler
@@ -485,99 +464,79 @@
 
     ' onpointerdown
 
-    Public Delegate Sub OnPointerDownDelegate(sender as HTMLElement, e As PointerEvent)
-
-    Public Custom Event onpointerdown As OnPointerDownDelegate
-      AddHandler(Value As Sub(sender as HTMLElement, e As PointerEvent))
-        CType(Me, EcmaScriptObject).AddEvent("onpointerdown", Sub(e As EcmaScriptObject) RaiseEvent Value(Me, CType(e(0), PointerEvent)))
+    Public Custom Event onpointerdown As Delegates.OnPointerDownDelegate
+      AddHandler(Value As Sub(sender as HTMLElement, e As Dom.PointerEvent))
+        CType(Me, EcmaScriptObject).AddEvent("onpointerdown", Sub(e As EcmaScriptObject) RaiseEvent Value(Me, CType(e(0), Dom.PointerEvent)))
       End AddHandler
     End Event
 
     ' onpointermove
 
-    Public Delegate Sub OnPointerMoveDelegate(sender as HTMLElement, e As PointerEvent)
-
-    Public Custom Event onpointermove As OnPointerMoveDelegate
-      AddHandler(Value As Sub(sender as HTMLElement, e As PointerEvent))
-        CType(Me, EcmaScriptObject).AddEvent("onpointermove", Sub(e As EcmaScriptObject) RaiseEvent Value(Me, CType(e(0), PointerEvent)))
+    Public Custom Event onpointermove As Delegates.OnPointerMoveDelegate
+      AddHandler(Value As Sub(sender as HTMLElement, e As Dom.PointerEvent))
+        CType(Me, EcmaScriptObject).AddEvent("onpointermove", Sub(e As EcmaScriptObject) RaiseEvent Value(Me, CType(e(0), Dom.PointerEvent)))
       End AddHandler
     End Event
 
     ' onpointerup
 
-    Public Delegate Sub OnPointerUpDelegate(sender as HTMLElement, e As PointerEvent)
-
-    Public Custom Event onpointerup As OnPointerUpDelegate
-      AddHandler(Value As Sub(sender as HTMLElement, e As PointerEvent))
-        CType(Me, EcmaScriptObject).AddEvent("onpointerup", Sub(e As EcmaScriptObject) RaiseEvent Value(Me, CType(e(0), PointerEvent)))
+    Public Custom Event onpointerup As Delegates.OnPointerUpDelegate
+      AddHandler(Value As Sub(sender as HTMLElement, e As Dom.PointerEvent))
+        CType(Me, EcmaScriptObject).AddEvent("onpointerup", Sub(e As EcmaScriptObject) RaiseEvent Value(Me, CType(e(0), Dom.PointerEvent)))
       End AddHandler
     End Event
 
     ' onpointercancel
 
-    Public Delegate Sub OnPointerCancelDelegate(sender as HTMLElement, e As PointerEvent)
-
-    Public Custom Event onpointercancel As OnPointerCancelDelegate
-      AddHandler(Value As Sub(sender as HTMLElement, e As PointerEvent))
-        CType(Me, EcmaScriptObject).AddEvent("onpointercancel", Sub(e As EcmaScriptObject) RaiseEvent Value(Me, CType(e(0), PointerEvent)))
+    Public Custom Event onpointercancel As Delegates.OnPointerCancelDelegate
+      AddHandler(Value As Sub(sender as HTMLElement, e As Dom.PointerEvent))
+        CType(Me, EcmaScriptObject).AddEvent("onpointercancel", Sub(e As EcmaScriptObject) RaiseEvent Value(Me, CType(e(0), Dom.PointerEvent)))
       End AddHandler
     End Event
 
     ' onpointerover
 
-    Public Delegate Sub OnPointerOverDelegate(sender as HTMLElement, e As PointerEvent)
-
-    Public Custom Event onpointerover As OnPointerOverDelegate
-      AddHandler(Value As Sub(sender as HTMLElement, e As PointerEvent))
-        CType(Me, EcmaScriptObject).AddEvent("onpointerover", Sub(e As EcmaScriptObject) RaiseEvent Value(Me, CType(e(0), PointerEvent)))
+    Public Custom Event onpointerover As Delegates.OnPointerOverDelegate
+      AddHandler(Value As Sub(sender as HTMLElement, e As Dom.PointerEvent))
+        CType(Me, EcmaScriptObject).AddEvent("onpointerover", Sub(e As EcmaScriptObject) RaiseEvent Value(Me, CType(e(0), Dom.PointerEvent)))
       End AddHandler
     End Event
 
     ' onpointerout
 
-    Public Delegate Sub OnPointerOutDelegate(sender as HTMLElement, e As PointerEvent)
-
-    Public Custom Event onpointerout As OnPointerOutDelegate
-      AddHandler(Value As Sub(sender as HTMLElement, e As PointerEvent))
-        CType(Me, EcmaScriptObject).AddEvent("onpointerout", Sub(e As EcmaScriptObject) RaiseEvent Value(Me, CType(e(0), PointerEvent)))
+    Public Custom Event onpointerout As Delegates.OnPointerOutDelegate
+      AddHandler(Value As Sub(sender as HTMLElement, e As Dom.PointerEvent))
+        CType(Me, EcmaScriptObject).AddEvent("onpointerout", Sub(e As EcmaScriptObject) RaiseEvent Value(Me, CType(e(0), Dom.PointerEvent)))
       End AddHandler
     End Event
 
     ' onpointerenter
 
-    Public Delegate Sub OnPointerEnterDelegate(sender as HTMLElement, e As PointerEvent)
-
-    Public Custom Event onpointerenter As OnPointerEnterDelegate
-      AddHandler(Value As Sub(sender as HTMLElement, e As PointerEvent))
-        CType(Me, EcmaScriptObject).AddEvent("onpointerenter", Sub(e As EcmaScriptObject) RaiseEvent Value(Me, CType(e(0), PointerEvent)))
+    Public Custom Event onpointerenter As Delegates.OnPointerEnterDelegate
+      AddHandler(Value As Sub(sender as HTMLElement, e As Dom.PointerEvent))
+        CType(Me, EcmaScriptObject).AddEvent("onpointerenter", Sub(e As EcmaScriptObject) RaiseEvent Value(Me, CType(e(0), Dom.PointerEvent)))
       End AddHandler
     End Event
 
     ' onpointerleave
 
-    Public Delegate Sub OnPointerLeaveDelegate(sender as HTMLElement, e As PointerEvent)
-
-    Public Custom Event onpointerleave As OnPointerLeaveDelegate
-      AddHandler(Value As Sub(sender as HTMLElement, e As PointerEvent))
-        CType(Me, EcmaScriptObject).AddEvent("onpointerleave", Sub(e As EcmaScriptObject) RaiseEvent Value(Me, CType(e(0), PointerEvent)))
+    Public Custom Event onpointerleave As Delegates.OnPointerLeaveDelegate
+      AddHandler(Value As Sub(sender as HTMLElement, e As Dom.PointerEvent))
+        CType(Me, EcmaScriptObject).AddEvent("onpointerleave", Sub(e As EcmaScriptObject) RaiseEvent Value(Me, CType(e(0), Dom.PointerEvent)))
       End AddHandler
     End Event
 
     ' onprogress
 
-    Public Delegate Sub OnProgressDelegate(sender as HTMLElement, e As ProgressEvent)
-
-    Public Custom Event onprogress As OnProgressDelegate
-      AddHandler(Value As Sub(sender as HTMLElement, e As ProgressEvent))
-        CType(Me, EcmaScriptObject).AddEvent("onprogress", Sub(e As EcmaScriptObject) RaiseEvent Value(Me, CType(e(0), ProgressEvent)))
+    Public Custom Event onprogress As Delegates.OnProgressDelegate
+      AddHandler(Value As Sub(sender as HTMLElement, e As Dom.ProgressEvent))
+        CType(Me, EcmaScriptObject).AddEvent("onprogress", Sub(e As EcmaScriptObject) RaiseEvent Value(Me, CType(e(0), Dom.ProgressEvent)))
       End AddHandler
     End Event
 
     ' onratechange
 
-    Public Delegate Sub OnRateChangeDelegate(sender as HTMLElement, e As Dom.Event)
-
-    Public Custom Event onratechange As OnRateChangeDelegate
+    Public Custom Event onratechange As Delegates.OnRateChangeDelegate
       AddHandler(Value As Sub(sender as HTMLElement, e As Dom.Event))
         CType(Me, EcmaScriptObject).AddEvent("onratechange", Sub(e As EcmaScriptObject) RaiseEvent Value(Me, CType(e(0), Dom.Event)))
       End AddHandler
@@ -585,9 +544,7 @@
 
     ' onreset
 
-    Public Delegate Sub OnResetDelegate(sender as HTMLElement, e As Dom.Event)
-
-    Public Custom Event onreset As OnResetDelegate
+    Public Custom Event onreset As Delegates.OnResetDelegate
       AddHandler(Value As Sub(sender as HTMLElement, e As Dom.Event))
         CType(Me, EcmaScriptObject).AddEvent("onreset", Sub(e As EcmaScriptObject) RaiseEvent Value(Me, CType(e(0), Dom.Event)))
       End AddHandler
@@ -595,19 +552,15 @@
 
     ' onresize
 
-    Public Delegate Sub OnResizeDelegate(sender as HTMLElement, e As UIEvent)
-
-    Public Custom Event onresize As OnResizeDelegate
-      AddHandler(Value As Sub(sender as HTMLElement, e As UIEvent))
-        CType(Me, EcmaScriptObject).AddEvent("onresize", Sub(e As EcmaScriptObject) RaiseEvent Value(Me, CType(e(0), UIEvent)))
+    Public Custom Event onresize As Delegates.OnResizeDelegate
+      AddHandler(Value As Sub(sender as HTMLElement, e As Dom.UIEvent))
+        CType(Me, EcmaScriptObject).AddEvent("onresize", Sub(e As EcmaScriptObject) RaiseEvent Value(Me, CType(e(0), Dom.UIEvent)))
       End AddHandler
     End Event
 
     ' onscroll
 
-    Public Delegate Sub OnScrollDelegate(sender as HTMLElement, e As Dom.Event)
-
-    Public Custom Event onscroll As OnScrollDelegate
+    Public Custom Event onscroll As Delegates.OnScrollDelegate
       AddHandler(Value As Sub(sender as HTMLElement, e As Dom.Event))
         CType(Me, EcmaScriptObject).AddEvent("onscroll", Sub(e As EcmaScriptObject) RaiseEvent Value(Me, CType(e(0), Dom.Event)))
       End AddHandler
@@ -615,9 +568,7 @@
 
     ' onseeked
 
-    Public Delegate Sub OnSeekedDelegate(sender as HTMLElement, e As Dom.Event)
-
-    Public Custom Event onseeked As OnSeekedDelegate
+    Public Custom Event onseeked As Delegates.OnSeekedDelegate
       AddHandler(Value As Sub(sender as HTMLElement, e As Dom.Event))
         CType(Me, EcmaScriptObject).AddEvent("onseeked", Sub(e As EcmaScriptObject) RaiseEvent Value(Me, CType(e(0), Dom.Event)))
       End AddHandler
@@ -625,9 +576,7 @@
 
     ' onseeking
 
-    Public Delegate Sub OnSeekingDelegate(sender as HTMLElement, e As Dom.Event)
-
-    Public Custom Event onseeking As OnSeekingDelegate
+    Public Custom Event onseeking As Delegates.OnSeekingDelegate
       AddHandler(Value As Sub(sender as HTMLElement, e As Dom.Event))
         CType(Me, EcmaScriptObject).AddEvent("onseeking", Sub(e As EcmaScriptObject) RaiseEvent Value(Me, CType(e(0), Dom.Event)))
       End AddHandler
@@ -635,19 +584,15 @@
 
     ' onselect
 
-    Public Delegate Sub OnSelectDelegate(sender as HTMLElement, e As UIEvent)
-
-    Public Custom Event onselect As OnSelectDelegate
-      AddHandler(Value As Sub(sender as HTMLElement, e As UIEvent))
-        CType(Me, EcmaScriptObject).AddEvent("onselect", Sub(e As EcmaScriptObject) RaiseEvent Value(Me, CType(e(0), UIEvent)))
+    Public Custom Event onselect As Delegates.OnSelectDelegate
+      AddHandler(Value As Sub(sender as HTMLElement, e As Dom.UIEvent))
+        CType(Me, EcmaScriptObject).AddEvent("onselect", Sub(e As EcmaScriptObject) RaiseEvent Value(Me, CType(e(0), Dom.UIEvent)))
       End AddHandler
     End Event
 
     ' onselectstart
 
-    Public Delegate Sub OnSelectStartDelegate(sender as HTMLElement, e As Dom.Event)
-
-    Public Custom Event onselectstart As OnSelectStartDelegate
+    Public Custom Event onselectstart As Delegates.OnSelectStartDelegate
       AddHandler(Value As Sub(sender as HTMLElement, e As Dom.Event))
         CType(Me, EcmaScriptObject).AddEvent("onselectstart", Sub(e As EcmaScriptObject) RaiseEvent Value(Me, CType(e(0), Dom.Event)))
       End AddHandler
@@ -655,9 +600,7 @@
 
     ' onselectionchange
 
-    Public Delegate Sub OnSelectionChangeDelegate(sender as HTMLElement, e As Dom.Event)
-
-    Public Custom Event onselectionchange As OnSelectionChangeDelegate
+    Public Custom Event onselectionchange As Delegates.OnSelectionChangeDelegate
       AddHandler(Value As Sub(sender as HTMLElement, e As Dom.Event))
         CType(Me, EcmaScriptObject).AddEvent("onselectionchange", Sub(e As EcmaScriptObject) RaiseEvent Value(Me, CType(e(0), Dom.Event)))
       End AddHandler
@@ -665,9 +608,7 @@
 
     ' onstalled
 
-    Public Delegate Sub OnStalledDelegate(sender as HTMLElement, e As Dom.Event)
-
-    Public Custom Event onstalled As OnStalledDelegate
+    Public Custom Event onstalled As Delegates.OnStalledDelegate
       AddHandler(Value As Sub(sender as HTMLElement, e As Dom.Event))
         CType(Me, EcmaScriptObject).AddEvent("onstalled", Sub(e As EcmaScriptObject) RaiseEvent Value(Me, CType(e(0), Dom.Event)))
       End AddHandler
@@ -675,19 +616,15 @@
 
     ' onsubmit
 
-    Public Delegate Sub OnSubmitDelegate(sender as HTMLElement, e As SubmitEvent)
-
-    Public Custom Event onsubmit As OnSubmitDelegate
-      AddHandler(Value As Sub(sender as HTMLElement, e As SubmitEvent))
-        CType(Me, EcmaScriptObject).AddEvent("onsubmit", Sub(e As EcmaScriptObject) RaiseEvent Value(Me, CType(e(0), SubmitEvent)))
+    Public Custom Event onsubmit As Delegates.OnSubmitDelegate
+      AddHandler(Value As Sub(sender as HTMLElement, e As Dom.SubmitEvent))
+        CType(Me, EcmaScriptObject).AddEvent("onsubmit", Sub(e As EcmaScriptObject) RaiseEvent Value(Me, CType(e(0), Dom.SubmitEvent)))
       End AddHandler
     End Event
 
     ' onsuspend
 
-    Public Delegate Sub OnSuspendDelegate(sender as HTMLElement, e As Dom.Event)
-
-    Public Custom Event onsuspend As OnSuspendDelegate
+    Public Custom Event onsuspend As Delegates.OnSuspendDelegate
       AddHandler(Value As Sub(sender as HTMLElement, e As Dom.Event))
         CType(Me, EcmaScriptObject).AddEvent("onsuspend", Sub(e As EcmaScriptObject) RaiseEvent Value(Me, CType(e(0), Dom.Event)))
       End AddHandler
@@ -695,9 +632,7 @@
 
     ' ontimeupdate
 
-    Public Delegate Sub OnTimeUpdateDelegate(sender as HTMLElement, e As Dom.Event)
-
-    Public Custom Event ontimeupdate As OnTimeUpdateDelegate
+    Public Custom Event ontimeupdate As Delegates.OnTimeUpdateDelegate
       AddHandler(Value As Sub(sender as HTMLElement, e As Dom.Event))
         CType(Me, EcmaScriptObject).AddEvent("ontimeupdate", Sub(e As EcmaScriptObject) RaiseEvent Value(Me, CType(e(0), Dom.Event)))
       End AddHandler
@@ -705,9 +640,7 @@
 
     ' onvolumechange
 
-    Public Delegate Sub OnVolumeChangeDelegate(sender as HTMLElement, e As Dom.Event)
-
-    Public Custom Event onvolumechange As OnVolumeChangeDelegate
+    Public Custom Event onvolumechange As Delegates.OnVolumeChangeDelegate
       AddHandler(Value As Sub(sender as HTMLElement, e As Dom.Event))
         CType(Me, EcmaScriptObject).AddEvent("onvolumechange", Sub(e As EcmaScriptObject) RaiseEvent Value(Me, CType(e(0), Dom.Event)))
       End AddHandler
@@ -715,9 +648,7 @@
 
     ' onwaiting
 
-    Public Delegate Sub OnWaitingDelegate(sender as HTMLElement, e As Dom.Event)
-
-    Public Custom Event onwaiting As OnWaitingDelegate
+    Public Custom Event onwaiting As Delegates.OnWaitingDelegate
       AddHandler(Value As Sub(sender as HTMLElement, e As Dom.Event))
         CType(Me, EcmaScriptObject).AddEvent("onwaiting", Sub(e As EcmaScriptObject) RaiseEvent Value(Me, CType(e(0), Dom.Event)))
       End AddHandler
