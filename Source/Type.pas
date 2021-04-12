@@ -615,6 +615,9 @@ type
         lParams[0] := aInstance;
         var lDeclaringType := DeclaringType;
         if Utilities.IsInstance(aInstance, lDeclaringType.fValue) = nil then raise new ArgumentException('Instance must be compatible with method declaring type');
+        {$IFDEF WEBASSEMBLY}
+        lParams[0] := ^IntPtr(@aInstance)^ + DeclaringType.BoxedDataOffset;
+        {$ENDIF}
         if lDeclaringType.IsValueType then
           lModes[0] := ArgumentMode.Var
         else
