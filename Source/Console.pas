@@ -97,7 +97,10 @@ begin
   while true do begin
     var ch := ReadChar();
     if ch = #0 then break; // problem with Read
-    if ch in [#10, #13] then break; //CR was detected
+    {$IFDEF WINDOWS}
+    if ch = #13 then continue; // we need to read the #10 too
+    {$ENDIF}
+    if ch = #10 then break; //CR was detected
     buf[offset] := ch;
     inc(offset);
     if offset > bufsize then begin
