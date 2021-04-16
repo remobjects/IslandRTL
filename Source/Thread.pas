@@ -488,7 +488,11 @@ begin
     lThreadNameInfo.FThreadID := fThreadID;
     lThreadNameInfo.FFlags := 0;
     try
-      rtl.RaiseException( $406D1388, 0, sizeOf(lThreadNameInfo) / sizeOf(NativeUInt), {$IFDEF _WIN64}^UInt64{$ELSE}^UInt32{$ENDIF}(^Void(@lThreadNameInfo)));
+      {$IFDEF _WIN64}
+      rtl.RaiseException( $406D1388, 0, sizeOf(lThreadNameInfo) / sizeOf(NativeUInt), ^UInt64(^Void(@lThreadNameInfo)));
+      {$ELSE}
+      rtl.RaiseException( $406D1388, 0, sizeOf(lThreadNameInfo) / sizeOf(NativeUInt), ^UInt32(^Void(@lThreadNameInfo)));
+      {$ENDIF}
     except
     end;
     {$ELSE}
