@@ -54,7 +54,7 @@ begin
     result := fEndTicks - fStartTicks;
 
   if Milliseconds and (result > 0) then
-    result := result / 1000;
+    result := result / 10 000;
 end;
 
 end.
