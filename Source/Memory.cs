@@ -59,6 +59,11 @@
         {
             Value = (T)aValue;
         }
+        
+        public Memory<TN> Cast<TN>() 
+        {
+            return new Memory<TN>(inst, offset);
+        }
 
         public static bool operator null (Memory<T> a)
 		{
