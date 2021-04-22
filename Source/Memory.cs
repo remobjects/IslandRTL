@@ -70,7 +70,7 @@
 			var realVal = val as Memory<T>;
 			if (realVal == null) return false;
 
-			return (val.inst == inst) && (val.offset == offset);
+			return (realVal.inst == inst) && (realVal.offset == offset);
 		}
 
 		public Memory<TN> Cast<TN>()
