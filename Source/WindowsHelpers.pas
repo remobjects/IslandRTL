@@ -1635,10 +1635,21 @@ begin
   var args_s := new String[cnt-1];
   for i: Integer := 1 to cnt-1 do
     args_s[i-1] := String.FromPChar(args[i]);
-  result := UserEntryPoint(args_s);
-  while ExternalCalls.atexitlist <> nil do begin
-    ExternalCalls.atexitlist^.func();
-    ExternalCalls.atexitlist := ExternalCalls.atexitlist^.next;
+  try
+    try
+      result := UserEntryPoint(args_s);
+    finally
+      while ExternalCalls.atexitlist <> nil do begin
+        ExternalCalls.atexitlist^.func();
+        ExternalCalls.atexitlist := ExternalCalls.atexitlist^.next;
+      end;
+    end;
+  except
+    on E: RuntimeException do begin
+      writeLn(E.Message);
+      Environment.Exit(E.Code);
+    end;
+    on E: Exception do raise;
   end;
 end;
 
