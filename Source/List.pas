@@ -149,8 +149,7 @@ type
 
     constructor(aSequence: ISequence<T>);
     begin
-      var lLength := aSequence.Count; // ineffficient; looks the sequence twice :(
-      if lLength > 0 then begin
+      if aSequence.Any then begin
         for each s in aSequence do
           &PrivateAdd(s);
       end
