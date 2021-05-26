@@ -1260,6 +1260,12 @@ type
       exit Instantiate<DefaultGC>();
     end;
 
+    method InstantiateArray(aSize: IntPtr): &Array;
+    begin
+      if (IslandTypeFlags.TypeKindMask and fValue^.Ext^.Flags) <> IslandTypeFlags.Array then raise new Exception('Can only call InstantiateArray on arrays');
+      exit InternalCalls.Cast<&Array>(Utilities.NewArray(RTTI, if SubType.IsValueType then SubType.SizeOfType else sizeOf(^Void), aSize));
+    end;
+
     method IsAssignableFrom(aOrg: &Type): Boolean;
     begin
       if aOrg = nil then exit false;
