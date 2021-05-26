@@ -20,7 +20,7 @@ Inherits Element
   '''<summary>Returns a DOMSettableTokenList reflecting the dropzone global attribute and describing the behavior of the element regarding a drop operation.</summary>
   ReadOnly Property [dropzone] As DOMTokenList
   '''<summary>Is a Boolean indicating if the element is hidden or not.</summary>
-  Property [hidden] As HTMLElement
+  Property [hidden] As Boolean
   '''<summary>Is a Boolean indicating whether the user agent must act as though the given node is absent for the purposes of user interaction events, in-page text searches ("find in page"), and text selection.</summary>
   Property [inert] As Boolean
   '''<summary>Represents the "rendered" text content of a node and its descendants. As a getter, it approximates the text the user would get if they highlighted the contents of the element with the cursor and then copied it to the clipboard.</summary>

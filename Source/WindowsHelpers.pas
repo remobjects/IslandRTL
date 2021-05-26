@@ -32,6 +32,7 @@ type
     class var atexitlist: ^atexitrec; assembly;
     class var processheap: rtl.HANDLE;
     class var fModuleHandle: rtl.HMODULE; assembly;
+    class var fMainThreadID: rtl.DWORD; assembly;
     class method getModuleHandle: rtl.HMODULE;
     begin
       if fModuleHandle = nil then fModuleHandle := rtl.GetModuleHandleW(nil);
@@ -389,6 +390,7 @@ type
     class method RaiseException(aRaiseAddress: ^Void; aRaiseFrame: ^Void; aRaiseObject: Object);
 
     class property ModuleHandle: rtl.HMODULE read fModuleHandle;
+    class property MainThreadID: rtl.DWORD read fMainThreadID;
 
     const ElementsExceptionCode = $E0428819;
 
@@ -851,6 +853,7 @@ var
   [SymbolName('__guard_iat_count')] var __guard_iat_count: Integer; external;
   [SymbolName('__guard_longjmp_table')] var __guard_longjmp_table: Integer; external;
   [SymbolName('__guard_longjmp_count')] var __guard_longjmp_count: Integer; external;
+  [Used]var ModuleIsLib: Boolean := false;
 
 [SymbolName('__elements_tls_callback_method'), Used, CallingConvention(CallingConvention.Stdcall)]
 method elements_tls_callback(aHandle: ^Void; aReason: rtl.DWORD; aReserved: ^Void); public;
@@ -1632,16 +1635,28 @@ begin
   var args_s := new String[cnt-1];
   for i: Integer := 1 to cnt-1 do
     args_s[i-1] := String.FromPChar(args[i]);
-  result := UserEntryPoint(args_s);
-  while ExternalCalls.atexitlist <> nil do begin
-    ExternalCalls.atexitlist^.func();
-    ExternalCalls.atexitlist := ExternalCalls.atexitlist^.next;
+  try
+    try
+      result := UserEntryPoint(args_s);
+    finally
+      while ExternalCalls.atexitlist <> nil do begin
+        ExternalCalls.atexitlist^.func();
+        ExternalCalls.atexitlist := ExternalCalls.atexitlist^.next;
+      end;
+    end;
+  except
+    on E: RuntimeException do begin
+      writeLn(E.Message);
+      Environment.Exit(E.Code);
+    end;
+    on E: Exception do raise;
   end;
 end;
 
 method mainCRTStartup: Integer;
 begin
   ExternalCalls.fModuleHandle := rtl.GetModuleHandle(nil);
+  ExternalCalls.fMainThreadID := rtl.GetCurrentThreadId;
   var lMain := main;
   BoehmGC.UnloadGC;
   ExternalCalls.exit(lMain);
@@ -1658,22 +1673,23 @@ end;
 type
   VoidMethod = method;
 
-  method DllMainCRTStartup(aModule: rtl.HMODULE; aReason: rtl.DWORD; aReserved: ^Void): Boolean;
-  begin
-    var lMain: ^DllMainType := @_dllmain;
-    ExternalCalls.fModuleHandle := aModule;
-    try
-      if lMain^ = nil then exit true;
-      exit lMain^(aModule, aReason, aReserved);
-    finally
-      if (aReason = rtl.DLL_PROCESS_DETACH) then begin
-        while ExternalCalls.atexitlist <> nil do begin
-          ExternalCalls.atexitlist^.func();
-          ExternalCalls.atexitlist := ExternalCalls.atexitlist^.next;
-        end;
-        BoehmGC.UnloadGC;
+method DllMainCRTStartup(aModule: rtl.HMODULE; aReason: rtl.DWORD; aReserved: ^Void): Boolean;
+begin   
+  var lMain: ^DllMainType := @_dllmain;
+  ExternalCalls.fModuleHandle := aModule;
+  ModuleIsLib := true;
+  try
+    if lMain^ = nil then exit true;
+    exit lMain^(aModule, aReason, aReserved);
+  finally
+    if (aReason = rtl.DLL_PROCESS_DETACH) then begin
+      while ExternalCalls.atexitlist <> nil do begin
+        ExternalCalls.atexitlist^.func();
+        ExternalCalls.atexitlist := ExternalCalls.atexitlist^.next;
       end;
+      BoehmGC.UnloadGC;
     end;
   end;
+end;
 
 end.

@@ -92,6 +92,7 @@
     </Compile>
     <Compile Include="$(MSBuildThisFileDirectory)Range.pas" />
     <Compile Include="$(MSBuildThisFileDirectory)Resources.pas" />
+    <Compile Include="$(MSBuildThisFileDirectory)Memory.cs" />
   </ItemGroup>
   <ItemGroup>
     <Folder Include="Streams">

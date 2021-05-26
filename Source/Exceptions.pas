@@ -19,6 +19,19 @@ type
     end;
   end;
 
+  RuntimeException = public class(Exception)
+  private
+    fCode: Cardinal;
+  public
+    constructor(aCode: Cardinal);
+    begin
+      inherited constructor('Runtime Error: '+aCode.ToString);
+      fCode := aCode;
+    end;
+
+    property Code: Cardinal read fCode;
+  end;
+
   WindowsException = public class(Exception)
   private
     fCode: Cardinal;

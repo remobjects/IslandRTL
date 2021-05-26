@@ -70,6 +70,88 @@ type
         Convert.UInt64ToHexString(Data4_7,2);
     end;
 
+    method ToString(Format: String): String;
+    begin
+      if String.IsNullOrEmpty(Format) then exit ToString('D');
+      case Format of
+        'N': begin
+          exit
+            Convert.UInt64ToHexString(Data1,8)+
+            Convert.UInt64ToHexString(Data2,4)+
+            Convert.UInt64ToHexString(Data3,4)+
+            Convert.UInt64ToHexString(Data4_0,2)+
+            Convert.UInt64ToHexString(Data4_1,2)+
+            Convert.UInt64ToHexString(Data4_2,2)+
+            Convert.UInt64ToHexString(Data4_3,2)+
+            Convert.UInt64ToHexString(Data4_4,2)+
+            Convert.UInt64ToHexString(Data4_5,2)+
+            Convert.UInt64ToHexString(Data4_6,2)+
+            Convert.UInt64ToHexString(Data4_7,2);
+        end;
+        'D': begin
+          exit
+            Convert.UInt64ToHexString(Data1,8)+'-'+
+            Convert.UInt64ToHexString(Data2,4)+'-'+
+            Convert.UInt64ToHexString(Data3,4)+'-'+
+            Convert.UInt64ToHexString(Data4_0,2)+
+            Convert.UInt64ToHexString(Data4_1,2)+'-'+
+            Convert.UInt64ToHexString(Data4_2,2)+
+            Convert.UInt64ToHexString(Data4_3,2)+
+            Convert.UInt64ToHexString(Data4_4,2)+
+            Convert.UInt64ToHexString(Data4_5,2)+
+            Convert.UInt64ToHexString(Data4_6,2)+
+            Convert.UInt64ToHexString(Data4_7,2);
+        end;
+        'B': begin
+          exit '{'+
+            Convert.UInt64ToHexString(Data1,8)+'-'+
+            Convert.UInt64ToHexString(Data2,4)+'-'+
+            Convert.UInt64ToHexString(Data3,4)+'-'+
+            Convert.UInt64ToHexString(Data4_0,2)+
+            Convert.UInt64ToHexString(Data4_1,2)+'-'+
+            Convert.UInt64ToHexString(Data4_2,2)+
+            Convert.UInt64ToHexString(Data4_3,2)+
+            Convert.UInt64ToHexString(Data4_4,2)+
+            Convert.UInt64ToHexString(Data4_5,2)+
+            Convert.UInt64ToHexString(Data4_6,2)+
+            Convert.UInt64ToHexString(Data4_7,2)+
+            '}';
+        end;
+        'P': begin
+          exit '('+
+            Convert.UInt64ToHexString(Data1,8)+'-'+
+            Convert.UInt64ToHexString(Data2,4)+'-'+
+            Convert.UInt64ToHexString(Data3,4)+'-'+
+            Convert.UInt64ToHexString(Data4_0,2)+
+            Convert.UInt64ToHexString(Data4_1,2)+'-'+
+            Convert.UInt64ToHexString(Data4_2,2)+
+            Convert.UInt64ToHexString(Data4_3,2)+
+            Convert.UInt64ToHexString(Data4_4,2)+
+            Convert.UInt64ToHexString(Data4_5,2)+
+            Convert.UInt64ToHexString(Data4_6,2)+
+            Convert.UInt64ToHexString(Data4_7,2)+
+            ')';
+        end;
+        'X': begin
+          exit '{'+
+            '0x'+Convert.UInt64ToHexString(Data1,8)+','+
+            '0x'+Convert.UInt64ToHexString(Data2,4)+','+
+            '0x'+Convert.UInt64ToHexString(Data3,4)+','+
+           '{0x'+Convert.UInt64ToHexString(Data4_0,2)+','+
+            '0x'+Convert.UInt64ToHexString(Data4_1,2)+','+
+            '0x'+Convert.UInt64ToHexString(Data4_2,2)+','+
+            '0x'+Convert.UInt64ToHexString(Data4_3,2)+','+
+            '0x'+Convert.UInt64ToHexString(Data4_4,2)+','+
+            '0x'+Convert.UInt64ToHexString(Data4_5,2)+','+
+            '0x'+Convert.UInt64ToHexString(Data4_6,2)+','+
+            '0x'+Convert.UInt64ToHexString(Data4_7,2)+ '}}';
+        end;
+        else
+          raise new Exception('Invalid format string.')
+        end;
+    end;
+
+
     method ToByteArray: array of Byte;
     begin
       result := new array of Byte(16);
