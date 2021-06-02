@@ -62,6 +62,19 @@ type
         exit GetMember(aInstance, coalesce(lName, 'Item'), 0, aArgs);
     end;
 
+    class method HasImplicit(aType1: &Type; aType2: &Type): Boolean;
+    begin
+      var lImplicits := aType1.Methods.Where(m -> (MethodFlags.Operator in m.Flags) and (m.Name = 'op_Implicit'));
+      for lImplicit in lImplicits do begin
+        if lImplicit.Arguments.Count > 0 then begin
+          var lArg := lImplicit.Arguments.First;
+          if lArg.Type = aType2 then
+            exit true;
+        end;
+      end;
+      result := false;
+    end;
+
     method FindBestMatch(aItems: DynamicMethodGroup; aArgs: array of Object): &MethodInfo;
     begin
       for i: Integer := 0 to aItems.Count -1 do begin
@@ -84,6 +97,7 @@ type
             if lPars[j].Type.IsFloat and aArgs[j].GetType.IsIntegerOrFloat then begin
             end else if lPars[j].Type.IsInteger and aArgs[j].GetType.IsInteger then begin
             end else if lPars[j].Type.IsEnum and aArgs[j].GetType.IsInteger then begin
+            end else if HasImplicit(lPars[j].Type, aArgs[j].GetType) then begin
             end else begin
               lPars := nil;
               break;
@@ -178,12 +192,22 @@ type
       raise new DynamicInvokeException('No element with this name: '+aName);
     end;
 
+    class method UnwrapValue(o: Object): Object;
+    begin
+      var lStr := IString(o);
+      if lStr <> nil then
+        exit lStr.ToString;
+      exit o;
+    end;
+
     method SetMember(aInstance: Object; aName: String; aGetFlags: Integer; aArgs: array of Object);
     begin
       if aInstance = nil then begin
         if DynamicGetFlags.NilSafe in DynamicGetFlags(aGetFlags) then exit ;
         raise new NullReferenceException;
       end;
+      for i: Integer := 0 to aArgs.Length -1 do aArgs[i] := UnwrapValue(aArgs[i]);
+
       var lDyn := IDynamicObject(aInstance);
       if lDyn <> nil then begin
         lDyn.SetMember(aName, aGetFlags, aArgs);
@@ -204,7 +228,7 @@ type
           for each el in lCL.Fields do begin
             if (not lStatic or el.IsStatic)
              and if DynamicGetFlags.CaseSensitive in DynamicGetFlags(aGetFlags) then el.Name = aName else el.Name.EqualsIgnoreCase(aName) then begin
-               el.SetValue(aInstance, aArgs[0]);
+              el.SetValue(aInstance, aArgs[0]);
               exit;
             end;
           end;
@@ -228,6 +252,7 @@ type
 
     method Invoke(aInstance: Object; aName: String; aGetFlags: Integer; aArgs: array of Object): Object;
     begin
+      for i: Integer := 0 to aArgs.Length -1 do aArgs[i] := UnwrapValue(aArgs[i]);
       var lDyn := IDynamicObject(aInstance);
       if lDyn <> nil then exit lDyn.Invoke(aName, aGetFlags, aArgs);
 
