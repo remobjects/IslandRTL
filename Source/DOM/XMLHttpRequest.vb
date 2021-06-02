@@ -57,7 +57,7 @@ Public Interface [XMLHttpRequest]
   Function [getAllResponseHeaders]() As String
   '''<summary>Returns the string containing the text of the specified header, or null if either the response has not yet been received or the header doesn't exist in the response.</summary>
   Function [getResponseHeader]([parheaderName] As Dynamic) As String
-  Sub [open](method As Dynamic, url As Dynamic, Optional [Async] As Boolean, Optional user As Dynamic, Optional password As Dynamic)
+  Sub [open](method As String, url As String, Optional [Async] As Boolean, Optional user As String, Optional password As String)
   '''<summary>Overrides the MIME type returned by the server.</summary>
   Function [overrideMimeType]([parmimeType] As Dynamic) As String
   '''<summary>Sends the request. If the request is asynchronous (which is the default), this method returns as soon as the request is sent.</summary>
