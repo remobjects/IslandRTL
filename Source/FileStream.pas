@@ -25,7 +25,6 @@ type
     fHandle: PlatformHandle;
     {$ENDIF}
     fAccess: FileAccess;
-    method GetLength: Int64;
   protected
     method IsValid: Boolean; override;
   public
@@ -40,7 +39,6 @@ type
     method Close; override;
     method &Read(aSpan: Span<Byte>): Int32; override;
     method &Write(aSpan: ImmutableSpan<Byte>): Int32; override;
-    property Length: Int64 read GetLength; override;
     method SetLength(value: Int64); override;
     property Name: String; readonly;
   end;
@@ -190,11 +188,6 @@ begin
   {$ELSE}
     {$ERROR}
   {$ENDIF}
-end;
-
-method FileStream.GetLength: Int64;
-begin
-  result := inherited Length;
 end;
 
 method FileStream.&Read(aSpan: Span<Byte>): Int32;
