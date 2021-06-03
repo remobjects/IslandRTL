@@ -558,7 +558,7 @@ type
 
   public
 
-    property Global: dynamic := new EcmaScriptObject(-1); lazy;
+    property &Global: dynamic := new EcmaScriptObject(-1); lazy;
     property Object: dynamic := EcmaScriptObject(&Global)['Object']; lazy;
 
     class method CreateProxy(o: Object): EcmaScriptObject;
