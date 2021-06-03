@@ -5,6 +5,11 @@ type
   private
     fMessage: String;
   public
+    constructor;
+    begin
+      fMessage := $"Exception of type '{typeOf(self).Name}' was thrown.";
+    end;
+
     constructor(aMessage: String);
     begin
       fMessage := aMessage;
