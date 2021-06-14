@@ -217,6 +217,39 @@ type
       rtl.exit(aCode);
       {$ENDIF}
     end;
+
+    method GetCommandLine: String;
+    begin
+      {$IFDEF WINDOWS}
+      var buf := rtl.GetCommandLine;
+      if ExternalCalls.wcslen(buf) > 0 then
+        result := String.FromPChar(@buf[0])
+      else
+        result := '';
+      {$ELSEIF POSIX}
+      result := '';
+      for i: Integer := 0 to ExternalCalls.nargs - 1 do
+        if i = 0 then
+          result := String.FromPAnsiChars(ExternalCalls.args[i])
+        else
+          result := result + ' ' + String.FromPAnsiChars(ExternalCalls.args[i])
+      {$ENDIF}
+    end;
+
+    method GetCommandLineArgs: array of String;
+    begin
+      {$IFDEF WINDOWS}
+      var lCount: Int32;
+      var lArgs := rtl.CommandLineToArgvW(rtl.GetCommandLineW(), @lCount);
+      result := new String[lCount - 1];
+      for i: Integer := 1 to lCount - 1 do
+        result[i - 1] := String.FromPChar(lArgs[i]);
+      {$ELSEIF POSIX}
+      result := new String[ExternalCalls.nargs - 1];
+      for i: Integer := 1 to ExternalCalls.nargs - 1 do
+        result[i - 1] := String.FromPAnsiChars(ExternalCalls.args[i]);
+      {$ENDIF}
+    end;
   end;
 
 end.
