@@ -140,6 +140,95 @@ type
 			exit new DateTime(fTicks -  fTicks mod TicksPerDay);
 		end;
 
+		method TryToExpandFormat(aFormat: String; aLocale: Locale): String;
+		begin
+			case aFormat of
+				'd': exit ""; // short date
+				'D': exit ""; // long date
+				'f': exit ""; // long date, short time
+				'F': exit ""; // long date, long time
+				'g': exit ""; // general date and time, short time
+				'G': exit ""; // general date and time, long time
+				'M', 'm': exit ""; // month, day
+				'O', 'o': exit "";
+				'R', 'r': exit ""; //RFC 1123
+				's': exit ""; // sortable
+				't': exit ""; // short time
+				'T': exit ""; // long time
+				'u': exit ""; // universal
+				'U': exit ""; // universal (long)
+				'Y', 'y': exit ""; // month, year
+
+				default: exit aFormat;
+			end;
+		end;
+
+		method GetNextFormatToken(var aFormat: String): String;
+		begin
+			result := '';
+			if aFormat.Length > 0 then begin
+				var lChar := aFormat[0];
+				var lSize := 0;
+				case lChar of
+					':', '/': begin result := lChar; lSize := 1; end;
+
+					'%', '\': begin
+						if aFormat.Length > 1 then
+							result := lChar + aFormat[1]
+						else
+							result := lChar;
+						lSize := 2;
+					end;
+
+					'''', '"': begin
+						var i := 1;
+						while (i < aFormat.Length) do begin
+							if aFormat[i] = lChar then begin
+								lSize := i - 1; // skip " "
+								break;
+							end;
+						end;
+						result := aFormat.Substring(0, i - 1);
+					end;
+
+					'd', 'f', 'F', 'g', 'h', 'H', 'K', 'm',
+						'M', 's', 't', 'y', 'z': begin
+						var lMax: Integer;
+						case lChar of
+							'K': lMax := 1;
+							'f', 'F': lMax := 7;
+							'g', 'h', 'H', 'm', 's', 't': lMax := 2;
+							'z': lMax := 3;
+							'd', 'M': lMax := 4;
+							'y': lMax := 5;
+						end;
+						var i := 1;
+						while (i < aFormat.Length) and (aFormat[i] = lChar) and (i < lMax) do
+							inc(i);
+						lSize := i;
+						result := aFormat.Substring(0, i - 1);
+					end;
+				end;
+				aFormat := aFormat.Substring(lSize);
+			end;
+		end;
+
+		method InternalToString(Format: String; aLocale: Locale := nil; aTimeZone: TimeZone := nil): String;
+		begin
+			var lLocale := coalesce(aLocale, Locale.Current);
+			var lTimeZone := coalesce(aTimeZone, TimeZone.Utc);
+			AddMinutes(lTimeZone.OffsetToUTC);
+			var lFormat := TryToExpandFormat(Format, lLocale);
+
+			var i := 0;
+			var lSb := new StringBuilder(lFormat.Length + (lFormat.Length / 2));
+			var lToken := GetNextFormatToken(var lFormat);
+			case lToken of
+
+			end;
+			exit lSb.ToString;
+		end;
+
 	public
 		const MillisPerSecond     : Int32 = 1000;
 		const MillisPerMinute     : Int32 = 60 * 1000;          // = 60000;
@@ -328,9 +417,63 @@ type
 			Result := fTicks - Value.Ticks;
 		end;
 
-		//method ToString(aTimeZone: TimeZone): String;
-		//method ToString(Format: String; aTimeZone: TimeZone := nil): String;
-		//method ToString(Format: String; Culture: String; aTimeZone: TimeZone := nil): String;
+		method ToString(aTimeZone: TimeZone): String;
+		begin
+			exit ToString(Locale.Current.DateTimeFormat.LongDatePattern + ' ' + Locale.Current.DateTimeFormat.LongTimePattern, Locale.Current, aTimeZone);
+		end;
+
+		method ToString(Format: String; aTimeZone: TimeZone := nil): String;
+		begin
+			exit ToString(Format, Locale.Current, aTimeZone);
+		end;
+
+		method ToString(Format: String; Culture: String; aTimeZone: TimeZone := nil): String;
+		begin
+			exit ToString(Format, new Locale(Culture), aTimeZone);
+		end;
+
+		method ToString(Format: String; aLocale: Locale := nil; aTimeZone: TimeZone := nil): String;
+		begin
+
+
+			/*writeLn(Format);
+			var lLocale := coalesce(aLocale, Locale.Current);
+			var lTimeZone := coalesce(aTimeZone, TimeZone.Utc);
+			AddMinutes(lTimeZone.OffsetToUTC);
+			{$IFDEF WINDOWS}
+			var sysdate := ToSystemTime;
+			//var local := new array of Char(rtl.LOCALE_NAME_MAX_LENGTH+1);
+			//var l1 := rtl.LPWSTR(@local[0]);
+			//rtl.GetUserDefaultLocaleName(l1, rtl.LOCALE_NAME_MAX_LENGTH);
+			var l1 := lLocale.Identifier.ToLPCWSTR;
+			var lFormat := Format.ToLPCWSTR;
+			var k := rtl.GetDateFormatEx(l1, 0, @sysdate, lFormat, nil, 0, nil);
+			if k = 0 then CheckForLastError;
+			var buf := new array of Char(k + 1);
+			var k1 := rtl.GetDateFormatEx(l1, 0, @sysdate, lFormat, rtl.LPWSTR(@buf[0]), k, nil);
+			writeLn(k1);
+			//exit String.FromPChar(@buf[0],k1).TrimEnd([#0]);
+
+
+			k := rtl.GetTimeFormatEx(l1, 0, @sysdate, @lFormat[0], nil, 0);
+			if k = 0 then CheckForLastError;
+			var buf2 := new array of Char(k + 1);
+			var k2 := rtl.GetTimeFormatEx(l1, 0, @sysdate, @lFormat[0], rtl.LPWSTR(@buf2[0]), k);
+
+			var lDateStr := String.FromPChar(@buf[0], k1);
+			var lTimeStr := String.FromPChar(@buf2[0], k2);
+			lDateStr := lDateStr.Replace(Format, '').Trim;
+			lTimeStr := lTimeStr.Replace(Format, '').Trim;
+			result := '';
+			if lDateStr.Length > 0 then
+				result := lDateStr;
+			if lTimeStr.Length > 0 then begin
+				if result.Length > 0 then
+					result := result + ' ';
+				result := result + lTimeStr;
+			end;
+			{$ENDIF}*/
+		end;
 
 		//method ToShortDateString(aTimeZone: TimeZone := nil): String;
 		//method ToShortTimeString(aTimeZone: TimeZone := nil): String;
