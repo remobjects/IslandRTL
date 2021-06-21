@@ -89,6 +89,13 @@ type
 
   end;
 
+  _Unwind_LamdingPadContext = public class
+  public
+    lpad_index: UIntPtr;
+    lsda: UIntPtr;
+    &selector: UInt64;
+  end;
+
   WebAssemblyCalls = public static class
   public
     [DllImport('', EntryPoint := '__island_consolelogint')]
@@ -739,6 +746,8 @@ type
   public
     [SymbolName('elements_webassembly_current_exception')]
     class var CurrentException: Exception;
+    [SymbolName('llvm.wasm.throw')]
+    class method InternalThrow(aCode: Int32; aValue: ^Void); external;
     [SymbolName('llvm.trap')]
     class method trap; external;
     method RaiseException(aRaiseAddress: ^Void; aRaiseFrame: ^Void; aRaiseObject: Object);
@@ -746,14 +755,28 @@ type
       CurrentException := Exception(aRaiseObject);
       IntRaiseException(aRaiseAddress, aRaiseFrame, aRaiseObject);
     end;
+    {$IFDEF WASMEH}
     [SymbolName('ElementsRaiseException'), Used, DllExport]
     method IntRaiseException(aRaiseAddress: ^Void; aRaiseFrame: ^Void; aRaiseObject: Object);
     begin
-      // Not supported atm!
+      InternalThrow(0, InternalCalls.Cast(aRaiseObject));
+    end;
+    {$ELSE}
+    [SymbolName('ElementsRaiseException'), Used, DllExport]
+    method IntRaiseException(aRaiseAddress: ^Void; aRaiseFrame: ^Void; aRaiseObject: Object);
+    begin
       var s: ^Char := 'Fatal exception in WebAssembly!';
       WebAssemblyCalls.ConsoleLog(s, wcslen(s));
       writeLn('Exception: '+aRaiseObject);
       trap;
+    end;
+    {$ENDIF}
+
+
+    [SymbolName('_Unwind_CallPersonality')]
+    class method _Unwind_CallPersonality(ex: ^Void): Integer; public;
+    begin
+
     end;
 
     [SymbolName('__island_call_delegate'), Used, DllExport]
@@ -939,6 +962,7 @@ type
     end;
     rpmalloc.rpfree(v);
   end;
+
 
   [SymbolName('__elements_get_stack_pointer'), Used, DllExport]
   method GetStackPointer: IntPtr;
