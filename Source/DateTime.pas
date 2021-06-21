@@ -159,8 +159,9 @@ type
 				'U': exit ""; // universal (long)
 				'Y', 'y': exit ""; // month, year
 
-				default: exit aFormat;
+				//default: exit aFormat;
 			end;
+			exit aFormat;
 		end;
 
 		method GetNextFormatToken(var aFormat: String): String;
@@ -206,10 +207,201 @@ type
 						while (i < aFormat.Length) and (aFormat[i] = lChar) and (i < lMax) do
 							inc(i);
 						lSize := i;
-						result := aFormat.Substring(0, i - 1);
+						result := aFormat.Substring(0, i);
+					end;
+
+					else begin
+						lSize := 1;
+						result := lChar;
 					end;
 				end;
-				aFormat := aFormat.Substring(lSize);
+				if lSize < aFormat.Length then
+					aFormat := aFormat.Substring(lSize)
+				else
+					aFormat := '';
+			end;
+		end;
+
+		method ProcessToStringToken(aLocale: Locale; aOutput: StringBuilder; aToken: String);
+		begin
+			case aToken of
+				'd', 'dd': begin // month day, 1-31
+					if aToken.Length = 1 then
+						aOutput.Append(Day.ToString)
+					else
+						aOutput.Append(Day.ToString.PadStart(2, '0'));
+				end;
+
+				'ddd': begin // abbreviated dayweek
+
+				end;
+
+				'dddd': begin // fullname dayweek
+
+				end;
+
+				'f', 'F', 'ff', 'FF', 'fff', 'FFF',
+				'ffff', 'FFFF', 'fffff', 'FFFFF',
+				'ffffff', 'FFFFFF', 'fffffff', 'FFFFFFF': begin
+					var lZero := aToken[0] = 'f';
+					var lValue := (fTicks div Int64(Math.Pow(10, (7 - aToken.Length)))) mod Int64(Math.Pow(10, aToken.Length));
+					if (Milliseconds > 0) or lZero then
+						aOutput.Append(lValue.ToString.PadStart(aToken.Length, '0'));
+				end;
+
+
+				{'f', 'F': begin // tenths of a second
+					var lZero := aToken[0] = 'f';
+					var lValue := (fTicks div 1000000) mod 10;
+					if (Milliseconds > 0) or lZero then
+						aOutput.Append(lValue.ToString.PadStart(aToken.Length, '0'));
+				end;
+
+				'ff', 'FF': begin // hundredths of a second
+					var lZero := aToken[0] = 'f';
+					var lValue := (fTicks div 100000) mod 100;
+					if (Milliseconds > 0) or lZero then
+						aOutput.Append(lValue.ToString.PadStart(aToken.Length, '0'));
+				end;
+
+				'fff', 'FFF': begin // thousandths of a second
+					var lZero := aToken[0] = 'f';
+					if (Milliseconds > 0) or lZero then
+						aOutput.Append(Milliseconds.ToString.PadStart(aToken.Length, '0'));
+				end;
+
+				'ffff', 'FFFF': begin // ten thousandths of a second
+					var lZero := aToken[0] = 'f';
+					var lValue := (fTicks div 1000) mod 10000;
+					if (Milliseconds > 0) or lZero then
+						aOutput.Append(lValue.ToString.PadStart(aToken.Length, '0'));
+				end;
+
+				'fffff', 'FFFFF': begin // hundred thousandths of a second
+					var lZero := aToken[0] = 'f';
+					var lValue := (fTicks div 100) mod 100000;
+					if (Milliseconds > 0) or lZero then
+						aOutput.Append(lValue.ToString.PadStart(aToken.Length, '0'));
+				end;
+
+				'ffffff', 'FFFFFF': begin // millionths of a second
+					var lZero := aToken[0] = 'f';
+					var lValue := (fTicks div 10) mod 1000000;
+					if (Milliseconds > 0) or lZero then
+						aOutput.Append(lValue.ToString.PadStart(aToken.Length, '0'));
+				end;
+
+				'fffffff', 'FFFFFFF': begin // diezmillonésimas de segundo
+					var lZero := aToken[0] = 'f';
+					var lValue := fTicks mod 10000000;
+					if (Milliseconds > 0) or lZero then
+						aOutput.Append(lValue.ToString.PadStart(aToken.Length, '0'));
+				end;}
+
+				'g', 'gg': begin // era
+
+				end;
+
+				'h', 'hh': begin // hour, 1-12
+					var lHour := if Hour > 12 then Hour - 12 else Hour;
+					if aToken.Length = 1 then
+						aOutput.Append(lHour.ToString)
+					else
+						aOutput.Append(lHour.ToString.PadStart(2, '0'));
+				end;
+
+				'H', 'HH': begin // hour, 1-23
+					if aToken.Length = 1 then
+						aOutput.Append(Hour.ToString)
+					else
+						aOutput.Append(Hour.ToString.PadStart(2, '0'));
+				end;
+
+				'K': begin // Timezone info
+
+				end;
+
+				'm', 'mm': begin // minute, 0-59
+					if aToken.Length = 1 then
+						aOutput.Append(Minute.ToString)
+					else
+						aOutput.Append(Minute.ToString.PadStart(2, '0'));
+				end;
+
+				'M', 'MM': begin // month, 1-12
+					if aToken.Length = 1 then
+						aOutput.Append(Month.ToString)
+					else
+						aOutput.Append(Month.ToString.PadStart(2, '0'));
+				end;
+
+				'MMM': begin // month name, abbreviated
+
+				end;
+
+				'MMMM': begin // month name
+
+				end;
+
+				's', 'ss': begin // seconds, 0-59
+					if aToken.Length = 1 then
+						aOutput.Append(Second.ToString)
+					else
+						aOutput.Append(Second.ToString.PadStart(2, '0'));
+				end;
+
+				't': begin // first AM/PM character
+
+				end;
+
+				'tt': begin // AM/PM
+
+				end;
+
+				'y', 'yy', 'yyy', 'yyyy', 'yyyyy': begin // year
+					if aToken.Length = 1 then
+						aOutput.Append(Year.ToString)
+					else
+						aOutput.Append(Year.ToString.PadStart(aToken.Length, '0'));
+				end;
+
+				'z', 'zz': begin // hours from UTC
+
+				end;
+
+				'zzz': begin // hours and minutes from UTC
+
+				end;
+
+				':': begin // hour separator
+					aOutput.Append(aLocale.DateTimeFormat.TimeSeparator);
+				end;
+
+				'/': begin // date separator
+					aOutput.Append(aLocale.DateTimeFormat.DateSeparator);
+				end;
+
+				else begin
+					case aToken[0] of
+						'''', '"': begin
+						 aOutput.Append(aToken.Substring(1, aToken.Length - 2));
+						end;
+
+						'%': begin
+
+						end;
+
+						'\': begin
+							if aToken.Length = 2 then
+								aOutput.Append(aToken[1]);
+						end;
+
+						else begin
+							aOutput.Append(aToken);
+						end;
+					end;
+				end;
+
 			end;
 		end;
 
@@ -220,11 +412,13 @@ type
 			AddMinutes(lTimeZone.OffsetToUTC);
 			var lFormat := TryToExpandFormat(Format, lLocale);
 
-			var i := 0;
 			var lSb := new StringBuilder(lFormat.Length + (lFormat.Length / 2));
 			var lToken := GetNextFormatToken(var lFormat);
-			case lToken of
-
+			while lToken ≠ '' do begin
+				writeLn(lToken);
+				writeLn(lFormat);
+				ProcessToStringToken(aLocale, lSb, lToken);
+				lToken := GetNextFormatToken(var lFormat);
 			end;
 			exit lSb.ToString;
 		end;
@@ -435,7 +629,7 @@ type
 		method ToString(Format: String; aLocale: Locale := nil; aTimeZone: TimeZone := nil): String;
 		begin
 
-
+			exit InternalToString(Format, aLocale, aTimeZone);
 			/*writeLn(Format);
 			var lLocale := coalesce(aLocale, Locale.Current);
 			var lTimeZone := coalesce(aTimeZone, TimeZone.Utc);
