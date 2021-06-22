@@ -185,11 +185,17 @@ type
 						var i := 1;
 						while (i < aFormat.Length) do begin
 							if aFormat[i] = lChar then begin
-								lSize := i - 1; // skip " "
+								lSize := i + 1;
 								break;
 							end;
+							inc(i);
 						end;
-						result := aFormat.Substring(0, i - 1);
+						if lSize = 0 then begin // no matching ' or " found
+							lSize := 1;
+							result := lChar;
+						end
+						else
+							result := aFormat.Substring(0, i + 1);
 					end;
 
 					'd', 'f', 'F', 'g', 'h', 'H', 'K', 'm',
@@ -222,7 +228,7 @@ type
 			end;
 		end;
 
-		method ProcessToStringToken(aLocale: Locale; aOutput: StringBuilder; aToken: String);
+		method ProcessToStringToken(aLocale: Locale; aTimeZone: TimeZone; aOutput: StringBuilder; aToken: String);
 		begin
 			case aToken of
 				'd', 'dd': begin // month day, 1-31
@@ -233,11 +239,11 @@ type
 				end;
 
 				'ddd': begin // abbreviated dayweek
-
+					aOutput.Append(aLocale.DateTimeFormat.ShortDayNames[DayOfWeek]);
 				end;
 
 				'dddd': begin // fullname dayweek
-
+					aOutput.Append(aLocale.DateTimeFormat.LongDayNames[DayOfWeek]);
 				end;
 
 				'f', 'F', 'ff', 'FF', 'fff', 'FFF',
@@ -318,7 +324,7 @@ type
 				end;
 
 				'K': begin // Timezone info
-
+					aOutput.Append(aTimeZone.Identifier);
 				end;
 
 				'm', 'mm': begin // minute, 0-59
@@ -336,11 +342,11 @@ type
 				end;
 
 				'MMM': begin // month name, abbreviated
-
+					aOutput.Append(aLocale.DateTimeFormat.ShortMonthNames[Month]);
 				end;
 
 				'MMMM': begin // month name
-
+					aOutput.Append(aLocale.DateTimeFormat.LongMonthNames[Month]);
 				end;
 
 				's', 'ss': begin // seconds, 0-59
@@ -351,11 +357,15 @@ type
 				end;
 
 				't': begin // first AM/PM character
-
+					var lData := if Hour > 12 then aLocale.DateTimeFormat.PMString else aLocale.DateTimeFormat.AMString;
+					if lData.Length > 0 then
+						aOutput.Append(lData[0]);
 				end;
 
 				'tt': begin // AM/PM
-
+					var lData := if Hour > 12 then aLocale.DateTimeFormat.PMString else aLocale.DateTimeFormat.AMString;
+					if lData.Length > 0 then
+						aOutput.Append(lData);
 				end;
 
 				'y', 'yy', 'yyy', 'yyyy', 'yyyyy': begin // year
@@ -366,11 +376,17 @@ type
 				end;
 
 				'z', 'zz': begin // hours from UTC
-
+					var lData := aTimeZone.OffsetToUTC div 60;
+					if aToken.Length = 1 then
+						aOutput.Append(lData.ToString)
+					else
+						aOutput.Append(lData.ToString.PadStart(aToken.Length, '0'));
 				end;
 
 				'zzz': begin // hours and minutes from UTC
-
+					var lHours := aTimeZone.OffsetToUTC div 60;
+					var lMinutes := aTimeZone.OffsetToUTC mod 60;
+					aOutput.Append(lHours.ToString.PadStart(2, '0') + aLocale.DateTimeFormat.TimeSeparator + lMinutes.ToString.PadStart(2, '0'));
 				end;
 
 				':': begin // hour separator
@@ -384,11 +400,17 @@ type
 				else begin
 					case aToken[0] of
 						'''', '"': begin
-						 aOutput.Append(aToken.Substring(1, aToken.Length - 2));
+							if aToken.Length ≥ 2 then
+								aOutput.Append(aToken.Substring(1, aToken.Length - 2))
+							else
+								aOutput.Append(aToken);
 						end;
 
 						'%': begin
-
+							if aToken.Length = 2 then
+								aOutput.Append(InternalToString(aToken[1], aLocale, aTimeZone))
+							else
+								aOutput.Append(aToken);
 						end;
 
 						'\': begin
@@ -401,7 +423,6 @@ type
 						end;
 					end;
 				end;
-
 			end;
 		end;
 
@@ -415,9 +436,7 @@ type
 			var lSb := new StringBuilder(lFormat.Length + (lFormat.Length / 2));
 			var lToken := GetNextFormatToken(var lFormat);
 			while lToken ≠ '' do begin
-				writeLn(lToken);
-				writeLn(lFormat);
-				ProcessToStringToken(aLocale, lSb, lToken);
+				ProcessToStringToken(lLocale, lTimeZone, lSb, lToken);
 				lToken := GetNextFormatToken(var lFormat);
 			end;
 			exit lSb.ToString;
@@ -628,49 +647,18 @@ type
 
 		method ToString(Format: String; aLocale: Locale := nil; aTimeZone: TimeZone := nil): String;
 		begin
-
 			exit InternalToString(Format, aLocale, aTimeZone);
-			/*writeLn(Format);
-			var lLocale := coalesce(aLocale, Locale.Current);
-			var lTimeZone := coalesce(aTimeZone, TimeZone.Utc);
-			AddMinutes(lTimeZone.OffsetToUTC);
-			{$IFDEF WINDOWS}
-			var sysdate := ToSystemTime;
-			//var local := new array of Char(rtl.LOCALE_NAME_MAX_LENGTH+1);
-			//var l1 := rtl.LPWSTR(@local[0]);
-			//rtl.GetUserDefaultLocaleName(l1, rtl.LOCALE_NAME_MAX_LENGTH);
-			var l1 := lLocale.Identifier.ToLPCWSTR;
-			var lFormat := Format.ToLPCWSTR;
-			var k := rtl.GetDateFormatEx(l1, 0, @sysdate, lFormat, nil, 0, nil);
-			if k = 0 then CheckForLastError;
-			var buf := new array of Char(k + 1);
-			var k1 := rtl.GetDateFormatEx(l1, 0, @sysdate, lFormat, rtl.LPWSTR(@buf[0]), k, nil);
-			writeLn(k1);
-			//exit String.FromPChar(@buf[0],k1).TrimEnd([#0]);
-
-
-			k := rtl.GetTimeFormatEx(l1, 0, @sysdate, @lFormat[0], nil, 0);
-			if k = 0 then CheckForLastError;
-			var buf2 := new array of Char(k + 1);
-			var k2 := rtl.GetTimeFormatEx(l1, 0, @sysdate, @lFormat[0], rtl.LPWSTR(@buf2[0]), k);
-
-			var lDateStr := String.FromPChar(@buf[0], k1);
-			var lTimeStr := String.FromPChar(@buf2[0], k2);
-			lDateStr := lDateStr.Replace(Format, '').Trim;
-			lTimeStr := lTimeStr.Replace(Format, '').Trim;
-			result := '';
-			if lDateStr.Length > 0 then
-				result := lDateStr;
-			if lTimeStr.Length > 0 then begin
-				if result.Length > 0 then
-					result := result + ' ';
-				result := result + lTimeStr;
-			end;
-			{$ENDIF}*/
 		end;
 
-		//method ToShortDateString(aTimeZone: TimeZone := nil): String;
-		//method ToShortTimeString(aTimeZone: TimeZone := nil): String;
+		method ToShortDateString(aTimeZone: TimeZone := nil): String;
+		begin
+			exit ToString(Locale.Current.DateTimeFormat.ShortDatePattern, aTimeZone);
+		end;
+
+		method ToShortTimeString(aTimeZone: TimeZone := nil): String;
+		begin
+			exit ToString(Locale.Current.DateTimeFormat.ShortTimePattern, aTimeZone);
+		end;
 
 		method ToShortPrettyDateString(aTimeZone: TimeZone := nil): String;
 		begin
