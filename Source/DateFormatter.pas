@@ -6,23 +6,21 @@ type
     method TryToExpandFormat(aFormat: String; aLocale: Locale): String;
     begin
       case aFormat of
-        'd': exit ""; // short date
-        'D': exit ""; // long date
-        'f': exit ""; // long date, short time
-        'F': exit ""; // long date, long time
-        'g': exit ""; // general date and time, short time
-        'G': exit ""; // general date and time, long time
-        'M', 'm': exit ""; // month, day
-        'O', 'o': exit "";
-        'R', 'r': exit ""; //RFC 1123
-        's': exit ""; // sortable
-        't': exit ""; // short time
-        'T': exit ""; // long time
-        'u': exit ""; // universal
-        'U': exit ""; // universal (long)
-        'Y', 'y': exit ""; // month, year
-
-        //default: exit aFormat;
+        'd': exit aLocale.DateTimeFormat.ShortDatePattern; // short date
+        'D': exit aLocale.DateTimeFormat.LongDatePattern; // long date
+        'f': exit aLocale.DateTimeFormat.LongDatePattern + ' ' + aLocale.DateTimeFormat.ShortTimePattern; // long date, short time
+        'F': exit aLocale.DateTimeFormat.LongDatePattern + ' ' + aLocale.DateTimeFormat.LongTimePattern; // long date, long time
+        'g': exit aLocale.DateTimeFormat.ShortDatePattern + ' ' + aLocale.DateTimeFormat.ShortTimePattern; // general date and time, short time
+        'G': exit aLocale.DateTimeFormat.ShortDatePattern + ' ' + aLocale.DateTimeFormat.LongTimePattern; // general date and time, long time
+        'M', 'm': exit "MMMM dd"; // month, day
+        'O', 'o': exit "yyyy-MM-ddTHH:mm:ss.fffffffK";
+        'R', 'r': exit "ddd, dd MMM yyyy HH':'mm':'ss 'GMT'"; //RFC 1123
+        's': exit "yyyy-MM-dd'T'HH:mm:ss"; // sortable
+        't': exit aLocale.DateTimeFormat.ShortTimePattern; // short time
+        'T': exit aLocale.DateTimeFormat.LongTimePattern; // long time
+        //'u': exit ""; // universal
+        //'U': exit ""; // universal (long)
+        'Y', 'y': exit "MMMM yyyy"; // month, year
       end;
       exit aFormat;
     end;
@@ -117,55 +115,6 @@ type
           if (Milliseconds > 0) or lZero then
             aOutput.Append(lValue.ToString.PadStart(aToken.Length, '0'));
         end;
-
-
-        {'f', 'F': begin // tenths of a second
-          var lZero := aToken[0] = 'f';
-          var lValue := (fTicks div 1000000) mod 10;
-          if (Milliseconds > 0) or lZero then
-            aOutput.Append(lValue.ToString.PadStart(aToken.Length, '0'));
-        end;
-
-        'ff', 'FF': begin // hundredths of a second
-          var lZero := aToken[0] = 'f';
-          var lValue := (fTicks div 100000) mod 100;
-          if (Milliseconds > 0) or lZero then
-            aOutput.Append(lValue.ToString.PadStart(aToken.Length, '0'));
-        end;
-
-        'fff', 'FFF': begin // thousandths of a second
-          var lZero := aToken[0] = 'f';
-          if (Milliseconds > 0) or lZero then
-            aOutput.Append(Milliseconds.ToString.PadStart(aToken.Length, '0'));
-        end;
-
-        'ffff', 'FFFF': begin // ten thousandths of a second
-          var lZero := aToken[0] = 'f';
-          var lValue := (fTicks div 1000) mod 10000;
-          if (Milliseconds > 0) or lZero then
-            aOutput.Append(lValue.ToString.PadStart(aToken.Length, '0'));
-        end;
-
-        'fffff', 'FFFFF': begin // hundred thousandths of a second
-          var lZero := aToken[0] = 'f';
-          var lValue := (fTicks div 100) mod 100000;
-          if (Milliseconds > 0) or lZero then
-            aOutput.Append(lValue.ToString.PadStart(aToken.Length, '0'));
-        end;
-
-        'ffffff', 'FFFFFF': begin // millionths of a second
-          var lZero := aToken[0] = 'f';
-          var lValue := (fTicks div 10) mod 1000000;
-          if (Milliseconds > 0) or lZero then
-            aOutput.Append(lValue.ToString.PadStart(aToken.Length, '0'));
-        end;
-
-        'fffffff', 'FFFFFFF': begin // diezmillonésimas de segundo
-          var lZero := aToken[0] = 'f';
-          var lValue := fTicks mod 10000000;
-          if (Milliseconds > 0) or lZero then
-            aOutput.Append(lValue.ToString.PadStart(aToken.Length, '0'));
-        end;}
 
         'g', 'gg': begin // era
 
