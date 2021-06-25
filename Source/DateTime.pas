@@ -376,7 +376,11 @@ type
 			{$ELSE}{$ERROR}
 			{$ENDIF}
 		end;
-		//method ToLongPrettyDateString(aTimeZone: TimeZone := nil): String;
+
+		method ToLongPrettyDateString(aTimeZone: TimeZone := nil): String;
+		begin
+			result := ToString(Locale.Current.DateTimeFormat.LongDatePattern, aTimeZone);
+		end;
 
 		method ToString: String; override;
 		begin
