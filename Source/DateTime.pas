@@ -3,7 +3,7 @@
 type
 	DateTimePart = enum (Year, Month, Day, Hour, Minute, Second, MilliSeconds, DayOfWeek);
 
-	DateTime = public record
+	DateTime = public partial record
 	private
 		fTicks : Int64;
 	private
@@ -139,6 +139,7 @@ type
 		begin
 			exit new DateTime(fTicks -  fTicks mod TicksPerDay);
 		end;
+
 
 	public
 		const MillisPerSecond     : Int32 = 1000;
@@ -328,12 +329,35 @@ type
 			Result := fTicks - Value.Ticks;
 		end;
 
-		//method ToString(aTimeZone: TimeZone): String;
-		//method ToString(Format: String; aTimeZone: TimeZone := nil): String;
-		//method ToString(Format: String; Culture: String; aTimeZone: TimeZone := nil): String;
+		method ToString(aTimeZone: TimeZone): String;
+		begin
+			exit ToString(Locale.Current.DateTimeFormat.LongDatePattern + ' ' + Locale.Current.DateTimeFormat.LongTimePattern, Locale.Current, aTimeZone);
+		end;
 
-		//method ToShortDateString(aTimeZone: TimeZone := nil): String;
-		//method ToShortTimeString(aTimeZone: TimeZone := nil): String;
+		method ToString(Format: String; aTimeZone: TimeZone := nil): String;
+		begin
+			exit ToString(Format, Locale.Current, aTimeZone);
+		end;
+
+		method ToString(Format: String; Culture: String; aTimeZone: TimeZone := nil): String;
+		begin
+			exit ToString(Format, new Locale(Culture), aTimeZone);
+		end;
+
+		method ToString(Format: String; aLocale: Locale := nil; aTimeZone: TimeZone := nil): String;
+		begin
+			exit InternalToString(Format, aLocale, aTimeZone);
+		end;
+
+		method ToShortDateString(aTimeZone: TimeZone := nil): String;
+		begin
+			exit ToString(Locale.Current.DateTimeFormat.ShortDatePattern, aTimeZone);
+		end;
+
+		method ToShortTimeString(aTimeZone: TimeZone := nil): String;
+		begin
+			exit ToString(Locale.Current.DateTimeFormat.ShortTimePattern, aTimeZone);
+		end;
 
 		method ToShortPrettyDateString(aTimeZone: TimeZone := nil): String;
 		begin
@@ -375,6 +399,36 @@ type
 			exit String.Format('{0}-{1}-{2} {3}:{4}:{5}',[Year.ToString,TwoCharStr(Month),TwoCharStr(Day),TwoCharStr(Hour),TwoCharStr(Minute), TwoCharStr(Second)]);
 			{$ELSE}{$ERROR}
 			{$ENDIF}
+		end;
+
+		class method TryParse(aDateTime: String; aOptions: DateParserOptions := []): nullable DateTime;
+		begin
+			if DateParser.TryParse(aDateTime, out var lResult, aOptions) then
+			result := lResult;
+		end;
+
+		class method TryParse(aDateTime: String; aLocale: Locale; aOptions: DateParserOptions := []): nullable DateTime;
+		begin
+			if DateParser.TryParse(aDateTime, aLocale, out var lResult, aOptions) then
+			result := lResult;
+		end;
+
+		class method TryParse(aDateTime: String; aFormat: String; aOptions: DateParserOptions := []): nullable DateTime;
+		begin
+			if DateParser.TryParse(aDateTime, aFormat, out var lResult, aOptions) then
+			result := lResult;
+		end;
+
+		class method TryParseISO8601(aDateTime: String): nullable DateTime;
+		begin
+			if DateParser.TryParseISO8601(aDateTime, out var lResult) then
+			result := lResult;
+		end;
+
+		class method TryParse(aDateTime: String; aFormat: String; aLocale: Locale; aOptions: DateParserOptions := []): nullable DateTime;
+		begin
+			if DateParser.TryParse(aDateTime, aFormat, aLocale, out var lResult, aOptions) then
+			result := lResult;
 		end;
 
 		method &Equals(obj: Object): Boolean; override;
