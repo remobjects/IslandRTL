@@ -45,10 +45,12 @@
   </PropertyGroup>
   <ItemGroup>
     <Reference Include="gc" />
-    <Reference Include="Island" />
     <Reference Include="rtl" />
     <Reference Include="EUnit" />
     <Reference Include="Elements" />
+    <Reference Include="Island">
+      <HintPath>..\Source\Bin\Debug\Windows\x86_64\Island.fx</HintPath>
+    </Reference>
   </ItemGroup>
   <ItemGroup>
     <Compile Include="Program.pas" />
