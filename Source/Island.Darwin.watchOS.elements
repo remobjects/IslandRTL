@@ -17,6 +17,7 @@
     <DefineConstants>POSIX;DARWIN;MACOS;x86_64</DefineConstants>
     <SDK>watchOS</SDK>
     <DefaultGlobalsToPublic>True</DefaultGlobalsToPublic>
+    <DeploymentTargetVersion>3.0</DeploymentTargetVersion>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)' == 'Debug'">
     <OutputPath>Bin\Debug</OutputPath>

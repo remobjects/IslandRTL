@@ -17,6 +17,7 @@
     <DefineConstants>POSIX;DARWIN;MACOS;x86_64</DefineConstants>
     <SDK>macOS</SDK>
     <DefaultGlobalsToPublic>True</DefaultGlobalsToPublic>
+    <DeploymentTargetVersion>10.12</DeploymentTargetVersion>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)' == 'Debug'">
     <OutputPath>Bin\Debug</OutputPath>

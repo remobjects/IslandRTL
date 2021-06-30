@@ -18,6 +18,7 @@
     <SDK>iOS</SDK>
     <SupportUIKitForMac>True</SupportUIKitForMac>
     <DefaultGlobalsToPublic>True</DefaultGlobalsToPublic>
+    <DeploymentTargetVersion>9.0</DeploymentTargetVersion>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)' == 'Debug'">
     <OutputPath>Bin\Debug</OutputPath>
