@@ -1,4 +1,4 @@
-﻿namespace Elements.RTL2.Tests.Shared;
+﻿namespace Island.Tests.Shared;
 
 uses
   RemObjects.Elements.EUnit;
@@ -11,7 +11,7 @@ type
     begin
       var s := 'usage: %s server-name';
       var s1 := String.Format(s,['1']);
-      Assert.AreEqual(s, s1);    
+      Assert.AreEqual(s, s1);
     end;
 
   end;

@@ -442,6 +442,25 @@ begin
   lFormatter := CFDateFormatterCreate(nil, aLocale, CFDateFormatterStyle.ShortStyle, CFDateFormatterStyle.NoStyle);
   fShortDatePattern := bridge<Foundation.NSString>(CFDateFormatterGetFormat(lFormatter));
 
+  lFormatter := CFDateFormatterCreate(nil, aLocale, CFDateFormatterStyle.LongStyle, CFDateFormatterStyle.FullStyle);
+  lData := CFDateFormatterCopyProperty(lFormatter, kCFDateFormatterWeekdaySymbols);
+  var lData2 := CFDateFormatterCopyProperty(lFormatter, kCFDateFormatterShortWeekdaySymbols);
+  var lArray: NSArray := bridge<Foundation.NSArray>(CFArrayRef(lData));
+  var lArray2: NSArray := bridge<Foundation.NSArray>(CFArrayRef(lData2));
+  for i: Integer := 0 to 6 do begin
+    fShortDayNames[i] := lArray2[i] as NSString; 
+    fLongDayNames[i] := lArray[i] as NSString;
+  end;
+
+  lData := CFDateFormatterCopyProperty(lFormatter, kCFDateFormatterMonthSymbols);
+  lData2 := CFDateFormatterCopyProperty(lFormatter, kCFDateFormatterShortMonthSymbols);
+  lArray := bridge<Foundation.NSArray>(CFArrayRef(lData));
+  lArray2 := bridge<Foundation.NSArray>(CFArrayRef(lData2));
+  for i: Integer := 0 to 11 do begin
+    fShortMonthNames[i] := lArray2[i] as NSString;
+    fLongMonthNames[i] := lArray[i] as NSString;
+  end;  
+
   //fDateSeparator := GetDateSeparator(fShortDatePattern);
   //fTimeSeparator := GetTimeSeparator(fShortTimePattern);
   fDateSeparator := '/';

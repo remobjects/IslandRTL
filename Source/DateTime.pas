@@ -3,7 +3,7 @@
 type
 	DateTimePart = enum (Year, Month, Day, Hour, Minute, Second, MilliSeconds, DayOfWeek);
 
-	DateTime = public record
+	DateTime = public partial record
 	private
 		fTicks : Int64;
 	private
@@ -139,6 +139,7 @@ type
 		begin
 			exit new DateTime(fTicks -  fTicks mod TicksPerDay);
 		end;
+
 
 	public
 		const MillisPerSecond     : Int32 = 1000;
@@ -328,53 +329,104 @@ type
 			Result := fTicks - Value.Ticks;
 		end;
 
-		//method ToString(aTimeZone: TimeZone): String;
-		//method ToString(Format: String; aTimeZone: TimeZone := nil): String;
-		//method ToString(Format: String; Culture: String; aTimeZone: TimeZone := nil): String;
-
-		//method ToShortDateString(aTimeZone: TimeZone := nil): String;
-		//method ToShortTimeString(aTimeZone: TimeZone := nil): String;
-
-		method ToShortPrettyDateString(aTimeZone: TimeZone := nil): String;
+		method ToString(aTimeZone: TimeZone): String;
 		begin
-			{$IFDEF WINDOWS}
-			var sysdate:= ToSystemTime;
-			var local := new array of Char(rtl.LOCALE_NAME_MAX_LENGTH+1);
-			var l1 := rtl.LPWSTR(@local[0]);
-			rtl.GetUserDefaultLocaleName(l1,rtl.LOCALE_NAME_MAX_LENGTH);
-			var k := rtl.GetDateFormatEx(l1,0,@sysdate,nil,nil,0, nil);
-			if k = 0 then CheckForLastError;
-			var buf:= new array of Char(k+1);
-			var k1 := rtl.GetDateFormatEx(l1,0,@sysdate,nil,rtl.LPWSTR(@buf[0]),k, nil);
-			exit String.FromPChar(@buf[0],k1).TrimEnd([#0]);
-			{$ELSEIF POSIX or WEBASSEMBLY}
+			exit ToString(Locale.Current.DateTimeFormat.LongDatePattern + ' ' + Locale.Current.DateTimeFormat.LongTimePattern, Locale.Current, aTimeZone);
+		end;
+
+		method ToString(Format: String; aTimeZone: TimeZone := nil): String;
+		begin
+			exit ToString(Format, Locale.Current, aTimeZone);
+		end;
+
+		method ToString(Format: String; Culture: String; aTimeZone: TimeZone := nil): String;
+		begin
+			exit ToString(Format, new Locale(Culture), aTimeZone);
+		end;
+
+		method ToString(Format: String; aLocale: Locale := nil; aTimeZone: TimeZone := nil): String;
+		begin
+			exit InternalToString(Format, aLocale, aTimeZone);
+		end;
+
+		method ToShortDateString(aTimeZone: TimeZone := nil): String;
+		begin
+			{$IFDEF WINDOWS OR POSIX}
+			exit ToString(Locale.Current.DateTimeFormat.ShortDatePattern, aTimeZone);
+			{$ELSEIF WEBASSEMBLY}
 			exit String.Format('{0}-{1}-{2}',[Year.ToString,TwoCharStr(Month),TwoCharStr(Day)]);
 			{$ELSE}{$ERROR}
 			{$ENDIF}
 		end;
-		//method ToLongPrettyDateString(aTimeZone: TimeZone := nil): String;
+
+		method ToShortTimeString(aTimeZone: TimeZone := nil): String;
+		begin
+			{$IFDEF WINDOWS OR POSIX}
+			exit ToString(Locale.Current.DateTimeFormat.ShortTimePattern, aTimeZone);
+			{$ELSEIF WEBASSEMBLY}
+			exit String.Format('{0}:{1}:{2}',[TwoCharStr(Hour),TwoCharStr(Minute), TwoCharStr(Second)]);
+			{$ELSE}{$ERROR}
+			{$ENDIF}
+		end;
+
+		method ToShortPrettyDateString(aTimeZone: TimeZone := nil): String;
+		begin
+			{$IFDEF WINDOWS OR POSIX}
+			exit ToString(Locale.Current.DateTimeFormat.ShortDatePattern);
+			{$ELSEIF WEBASSEMBLY}
+			exit String.Format('{0}-{1}-{2}',[Year.ToString,TwoCharStr(Month),TwoCharStr(Day)]);
+			{$ELSE}{$ERROR}
+			{$ENDIF}
+		end;
+
+		method ToLongPrettyDateString(aTimeZone: TimeZone := nil): String;
+		begin
+			{$IFDEF WINDOWS OR POSIX}
+			result := ToString(Locale.Current.DateTimeFormat.LongDatePattern, aTimeZone);
+			{$ELSEIF WEBASSEMBLY}
+			exit String.Format('{0}-{1}-{2}',[Year.ToString,TwoCharStr(Month),TwoCharStr(Day)]);
+			{$ELSE}{$ERROR}
+			{$ENDIF}
+		end;
 
 		method ToString: String; override;
 		begin
-			{$IFDEF WINDOWS}
-			var sysdate:= ToSystemTime;
-			var local := new array of Char(rtl.LOCALE_NAME_MAX_LENGTH+1);
-			var l1 := rtl.LPWSTR(@local[0]);
-			rtl.GetUserDefaultLocaleName(l1,rtl.LOCALE_NAME_MAX_LENGTH);
-			var k := rtl.GetDateFormatEx(l1,0,@sysdate,nil,nil,0, nil);
-			if k = 0 then CheckForLastError;
-			var buf:= new array of Char(k+1);
-			var k1 := rtl.GetDateFormatEx(l1,0,@sysdate,nil,rtl.LPWSTR(@buf[0]),k+1, nil);
-			var r := String.FromPChar(@buf[0],k1);
-
-			k := rtl.GetTimeFormatEx(l1,0,@sysdate,nil,nil,0);
-			var buf1:= new array of Char(k+1);
-			k1 := rtl.GetTimeFormatEx(l1,0,@sysdate,nil,rtl.LPWSTR(@buf1[0]),k+1);
-			exit r.TrimEnd+' ' + String.FromPChar(@buf1[0],k1).TrimEnd;
-			{$ELSEIF POSIX or WEBASSEMBLY}
+			{$IFDEF WINDOWS OR POSIX}
+			exit ToString(Locale.Current.DateTimeFormat.ShortDatePattern + ' ' + Locale.Current.DateTimeFormat.LongTimePattern);
+			{$ELSEIF WEBASSEMBLY}
 			exit String.Format('{0}-{1}-{2} {3}:{4}:{5}',[Year.ToString,TwoCharStr(Month),TwoCharStr(Day),TwoCharStr(Hour),TwoCharStr(Minute), TwoCharStr(Second)]);
 			{$ELSE}{$ERROR}
 			{$ENDIF}
+		end;
+
+		class method TryParse(aDateTime: String; aOptions: DateParserOptions := []): nullable DateTime;
+		begin
+			if DateParser.TryParse(aDateTime, out var lResult, aOptions) then
+			result := lResult;
+		end;
+
+		class method TryParse(aDateTime: String; aLocale: Locale; aOptions: DateParserOptions := []): nullable DateTime;
+		begin
+			if DateParser.TryParse(aDateTime, aLocale, out var lResult, aOptions) then
+			result := lResult;
+		end;
+
+		class method TryParse(aDateTime: String; aFormat: String; aOptions: DateParserOptions := []): nullable DateTime;
+		begin
+			if DateParser.TryParse(aDateTime, aFormat, out var lResult, aOptions) then
+			result := lResult;
+		end;
+
+		class method TryParseISO8601(aDateTime: String): nullable DateTime;
+		begin
+			if DateParser.TryParseISO8601(aDateTime, out var lResult) then
+			result := lResult;
+		end;
+
+		class method TryParse(aDateTime: String; aFormat: String; aLocale: Locale; aOptions: DateParserOptions := []): nullable DateTime;
+		begin
+			if DateParser.TryParse(aDateTime, aFormat, aLocale, out var lResult, aOptions) then
+			result := lResult;
 		end;
 
 		method &Equals(obj: Object): Boolean; override;
