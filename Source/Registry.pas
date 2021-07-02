@@ -224,9 +224,20 @@ type
     method DeleteValue(KeyName: String; ValueName: String): Boolean;
     begin
       var subKeyName: String;
-      var lrootkey := ParseKeyName(KeyName, out subKeyName);
+      var lrootkey := ParseKeyName(KeyName, out subKeyName);      
       var lsubKey := subKeyName.ToLPCWSTR;
       var res := rtl.RegDeleteKeyValueW(lrootkey, lsubKey, ValueName.ToLPCWSTR);
+      if res <> rtl.ERROR_SUCCESS then
+        raise new Exception('error code is '+res.ToString);
+    end;
+
+    method DeleteKey(KeyName: String): Boolean;
+    begin
+      var subKeyName: String;
+      var lrootkey := ParseKeyName(KeyName, out subKeyName);
+      if String.IsNullOrEmpty(subKeyName) then raise new Exception(String.Format('cannot delete {0} key',[KeyName]));
+      var lsubKey := subKeyName.ToLPCWSTR;
+      var res := rtl.RegDeleteKeyW(lrootkey, lsubKey);
       if res <> rtl.ERROR_SUCCESS then
         raise new Exception('error code is '+res.ToString);
     end;
