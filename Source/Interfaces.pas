@@ -37,6 +37,11 @@ type
     method Release(): ULONG;
   end;
 
+  IComDispose = public interface
+    // triggered when refcount reaches zero.
+    method ComDispose;
+  end;
+
 var IElementsObject_UID: Guid := new RemObjects.Elements.System.Guid(Data1 := $5b9e00e5, Data2 := $c1da, Data3 := $4f0d, Data4_0 := $8d, Data4_1 := $92, Data4_2 := $e0,  Data4_3 := $68,  Data4_4 := $42,  Data4_5 := $bd,  Data4_6 := $5d,  Data4_7 := $f5); public; readonly;
 
 type
@@ -98,6 +103,7 @@ type
       var lHandle := InternalCalls.Exchange(var ^NativeInt(@aGCHandle)^, 0);
       if lHandle <> 0 then
         ^GCHandle(@lHandle)^.Dispose;
+      IComDispose(aObj):ComDispose;
     end;
   end;
 
