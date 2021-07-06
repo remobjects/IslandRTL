@@ -207,19 +207,19 @@ type
         end;
       end
       else begin
-        Registry.DeleteKey(basekey + '\' + srv_type);
-        Registry.DeleteKey(basekey + '\VersionIndependentProgID');
+        Registry.DeleteExistedKey(basekey + '\' + srv_type);
+        Registry.DeleteExistedKey(basekey + '\VersionIndependentProgID');
         if ClassName <> '' then begin
-          Registry.DeleteKey(basekey + '\ProgID');
-          Registry.DeleteKey(basekeyProgID + '\CLSID');
+          Registry.DeleteExistedKey(basekey + '\ProgID');
+          Registry.DeleteExistedKey(basekeyProgID + '\CLSID');
           if ClassVersion <> '' then begin
-            Registry.DeleteKey(basekeyProgID + '\CurVer');
-            Registry.DeleteKey(basekeyProgID + '.' + ClassVersion + '\CLSID');
-            Registry.DeleteKey(basekeyProgID + '.' + ClassVersion);
+            Registry.DeleteExistedKey(basekeyProgID + '\CurVer');
+            Registry.DeleteExistedKey(basekeyProgID + '.' + ClassVersion + '\CLSID');
+            Registry.DeleteExistedKey(basekeyProgID + '.' + ClassVersion);
           end;
-          Registry.DeleteKey(basekeyProgID);
+          Registry.DeleteExistedKey(basekeyProgID);
         end;
-        Registry.DeleteKey(basekey);
+        Registry.DeleteExistedKey(basekey);
       end;
     end;
 
@@ -428,7 +428,7 @@ type
   end;
 
 var
-  ComServer: ComServerObject := new ComServerObject;
+  ComServer: ComServerObject;
 
 method CreateComObject(const clsid: Guid): IUnknown;
 begin
@@ -475,7 +475,7 @@ end;
 
 method DllCanUnloadNow: rtl.HRESULT;
 begin
-  if ComServer.CanUnloadNow then
+  if ComServer:CanUnloadNow then
     exit rtl.S_OK
   else
     exit rtl.S_FALSE;
@@ -484,7 +484,7 @@ end;
 method DllRegisterServer: rtl.HRESULT;
 begin
   try
-    ComServer.RegisterServer;
+    ComServer:RegisterServer;
     exit rtl.S_OK;
   except
     exit rtl.E_FAIL;
@@ -494,7 +494,7 @@ end;
 method DllUnregisterServer: rtl.HRESULT;
 begin
   try
-    ComServer.UnregisterServer;
+    ComServer:UnregisterServer;
     exit rtl.S_OK;
   except
     exit rtl.E_FAIL;

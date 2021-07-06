@@ -224,7 +224,7 @@ type
     method DeleteValue(KeyName: String; ValueName: String): Boolean;
     begin
       var subKeyName: String;
-      var lrootkey := ParseKeyName(KeyName, out subKeyName);      
+      var lrootkey := ParseKeyName(KeyName, out subKeyName);
       var lsubKey := subKeyName.ToLPCWSTR;
       var res := rtl.RegDeleteKeyValueW(lrootkey, lsubKey, ValueName.ToLPCWSTR);
       if res <> rtl.ERROR_SUCCESS then
@@ -240,6 +240,24 @@ type
       var res := rtl.RegDeleteKeyW(lrootkey, lsubKey);
       if res <> rtl.ERROR_SUCCESS then
         raise new Exception('error code is '+res.ToString);
+    end;
+
+    method DeleteExistedKey(KeyName: String): Boolean;
+    begin
+      Result := not KeyExists(KeyName) or DeleteKey(KeyName);
+    end;
+
+    method KeyExists(KeyName: String): Boolean;
+    begin
+      var subKeyName: String;
+      var lrootkey := ParseKeyName(KeyName, out subKeyName);
+      if String.IsNullOrEmpty(subKeyName) then raise new Exception(String.Format('subkey is empty: {0}',[KeyName]));
+      var tmpkey: rtl.HKEY;
+      if rtl.RegOpenKeyEx(lrootkey, subKeyName.ToLPCWSTR, 0, rtl.STANDARD_RIGHTS_READ, @tmpkey) = rtl.ERROR_SUCCESS then begin
+        rtl.RegCloseKey(tmpkey);
+        exit True;
+      end;
+      exit False;
     end;
   end;
 
