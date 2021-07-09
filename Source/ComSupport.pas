@@ -49,12 +49,15 @@ type
     [CallingConvention(CallingConvention.Stdcall)]
     method InterfaceSupportsErrorInfo(riid: ^rtl.GUID): rtl.HRESULT;
     begin
-      var Obj: ^Void;
+      var Obj: IUnknown;
       var g: Guid := ^Guid(riid)^;
-      if QueryInterface(var g, out Obj) then
-        exit rtl.S_OK
-      else
+      if QueryInterface(var g, out ^^Void(@Obj)^) then begin
+        Obj := nil;
+        exit rtl.S_OK;
+      end
+      else begin
         exit rtl.S_FALSE;
+      end;
     end;
     {$ENDREGION}
   public
@@ -432,10 +435,13 @@ var
 
 method CreateComObject(const clsid: Guid): IUnknown;
 begin
-  var res : rtl.LPVOID;
+  var res : IUnknown;
   var IID_IUnknown: rtl.GUID := new Guid('{00000000-0000-0000-C000-000000000046}');
-  OleCheck(rtl.CoCreateInstance(^rtl.GUID(@clsid), nil, rtl.DWORD(rtl.CLSCTX.CLSCTX_INPROC_SERVER or rtl.CLSCTX.CLSCTX_LOCAL_SERVER), @IID_IUnknown, @res));
-  exit IUnknown(res);
+  OleCheck(rtl.CoCreateInstance(^rtl.GUID(@clsid), nil,
+                                rtl.DWORD(rtl.CLSCTX.CLSCTX_INPROC_SERVER or rtl.CLSCTX.CLSCTX_LOCAL_SERVER),
+                                @IID_IUnknown,
+                                ^rtl.LPVOID(@res)));
+  exit res;
 end;
 
 function HandleSafeCallException(ExceptObject: Object; ExceptAddr: ^Void; const ErrorIID: Guid; const ProgID, HelpFileName: String): rtl.HRESULT;
@@ -452,10 +458,10 @@ begin
       if (ExceptObject is OleError) and (OleError(ExceptObject).ErrorCode < 0) then
         Result := OleError(ExceptObject).ErrorCode;
     end;
-    var ErrorInfo: ^Void;
+    var ErrorInfo: rtl.IErrorInfo;
     var temp: rtl.GUID := new Guid('{1CF2B120-547D-101B-8E65-08002B2BD119}');
-    if _CreateErrorInfo.QueryInterface(@temp, @ErrorInfo) = rtl.S_OK then
-      rtl.SetErrorInfo(0, rtl.IErrorInfo(ErrorInfo));
+    if _CreateErrorInfo.QueryInterface(@temp, ^^Void(@ErrorInfo)) = rtl.S_OK then
+      rtl.SetErrorInfo(0, ErrorInfo);
   end;
 end;
 
