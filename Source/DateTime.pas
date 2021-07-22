@@ -3,7 +3,7 @@
 type
 	DateTimePart = enum (Year, Month, Day, Hour, Minute, Second, MilliSeconds, DayOfWeek);
 
-	DateTime = public partial record
+	DateTime = public partial record(IComparable)
 	private
 		fTicks : Int64;
 	private
@@ -21,6 +21,13 @@ type
 		 [31, 29, 31, 30, 31, 30, 31, 31, 30, 31, 30, 31]];
 }
 	private
+		method CompareTo(a: Object): Integer; public;
+    begin 
+			if a is DateTime then 
+				exit fTicks.CompareTo(DateTime(a).fTicks);
+			exit -1;
+    end;
+
 		method GetDaysPerMonth(aLeapYear: Boolean; aMonth: Integer): Integer;
 		begin
 			// bug 75466 - can't use arrays
