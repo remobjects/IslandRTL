@@ -1,4 +1,5 @@
 ﻿namespace RemObjects.Elements.System;
+
 {$IF not WATCHOS and not TVOS}
 type
   SwiftStrong<T> = public lifetimestrategy (SwiftStrong) T;
@@ -125,6 +126,7 @@ type
   SwiftVWTgetEnumTag = public function(obj: IntPtr; aSelf: ^SwiftTypeRecord): UInt32;
   SwiftVWTdestructiveProjectEnumData = public procedure(obj: IntPtr; aSelf: ^SwiftTypeRecord);
   SwiftVWTdestructiveInjectEnumTag = public procedure(obj: IntPtr; tag: UInt32; aSelf: ^SwiftTypeRecord);
+
   SwiftValueWitnessTable = public record
   public
     // Given an invalid buffer, initialize it as a copy of the
@@ -584,4 +586,5 @@ type
   simd.simd_quatf = public rtl.simd_quatf;
   simd.simd_quatd = public rtl.simd_quatd;
 {$ENDIF}
+
 end.

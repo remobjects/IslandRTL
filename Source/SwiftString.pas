@@ -25,6 +25,7 @@ type
     [DelayLoadDllImport('libswiftCore.dylib', '$sSS9UTF16ViewVys6UInt16VSS5IndexVcig'), CallingConvention(CallingConvention.Swift)]
     class method UTF16GetChar(aIndex: Int64; aVal1: UInt64; aVal2: ^Void): Char; external;
   end;
+
   //[Swift]
   [SwiftFixedLayout]
   UnicodeScalarView nested in SwiftString = public record
@@ -34,8 +35,8 @@ type
     _countAndFlagsBits: UInt64;
     _object: ^Void;
   {$SHOW H8}
-
   end;
+
   [SwiftFixedLayout]
   UTF32View nested in SwiftString= public record
   public
@@ -59,6 +60,7 @@ type
     [DelayLoadDllImport('libswiftCore.dylib', '$sSS9UTF16ViewVys6UInt16VSS5IndexVcig'), CallingConvention(CallingConvention.Swift)]
     class method UTF16GetChar(aIndex: Int64; aVal1: UInt64; aVal2: ^Void): Char; external;
   end;
+
   [SwiftFixedLayout]
   UTF8View nested in SwiftString = public record
   public
@@ -82,6 +84,7 @@ type
     [DelayLoadDllImport('libswiftCore.dylib', '$sSS9UTF16ViewVys6UInt16VSS5IndexVcig'), CallingConvention(CallingConvention.Swift)]
     class method UTF16GetChar(aIndex: Int64; aVal1: UInt64; aVal2: ^Void): Char; external;
   end;
+
   [SwiftFixedLayout]
   SwiftString = public record
   private
@@ -173,6 +176,5 @@ type
     end;
 
   end;
-
 
 end.
