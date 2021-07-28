@@ -113,6 +113,12 @@ begin
   end;
 end;
 
+extension method ISequence<T>.Cast<U>: /*not nullable*/ ISequence<U>; public; iterator;
+begin
+  for each el in self do
+    yield el as U;
+end;
+
 extension method IEnumerable.Cast<U>: /*not nullable*/ ISequence<U>; public; iterator;
 begin
   for each el in self do
