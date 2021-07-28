@@ -75,7 +75,6 @@ type
 
   end;
 
-
   [Island]
   IIslandGetCocoaWrapper = public interface
   method «$__CreateCocoaWrapper»: Foundation.NSObject;
@@ -89,7 +88,6 @@ type
   INSFastEnumeration<T> = public interface mapped to Foundation.INSFastEnumeration
     method countByEnumeratingWithState(aState: ^NSFastEnumerationState) objects(stackbuf: ^T) count(len: NSUInteger): NSUInteger; mapped to countByEnumeratingWithState(aState) objects(^id(stackbuf)) count(len);
   end;
-
 
   operator Implicit<T>(aIn: NSArray<T>): sequence of T; public;
   begin
@@ -118,6 +116,7 @@ type
   begin
     exit INSFastEnumeration<id>(self).GetSequence;
   end;
+
 type
   NSFastExtByte = public extension class(INSFastEnumeration<nullable not nullable Byte>)
   public
@@ -128,7 +127,6 @@ type
         yield Byte(el);
     end;
   end;
-
 
   NSFastExtSByte = public extension class(INSFastEnumeration<nullable not nullable SByte>)
   public
@@ -150,7 +148,6 @@ type
     end;
   end;
 
-
   NSFastExtUInt16 = public extension class(INSFastEnumeration<nullable not nullable UInt16>)
   public
 
@@ -160,8 +157,6 @@ type
         yield UInt16(el);
     end;
   end;
-
-
 
   NSFastExtInt32 = public extension class(INSFastEnumeration<nullable not nullable Int32>)
   public
@@ -173,7 +168,6 @@ type
     end;
   end;
 
-
   NSFastExtUInt32 = public extension class(INSFastEnumeration<nullable not nullable UInt32>)
   public
 
@@ -183,7 +177,6 @@ type
         yield UInt32(el);
     end;
   end;
-
 
   NSFastExtInt64 = public extension class(INSFastEnumeration<nullable not nullable Int64>)
   public
@@ -195,7 +188,6 @@ type
     end;
   end;
 
-
   NSFastExtUInt64 = public extension class(INSFastEnumeration<nullable not nullable UInt64>)
   public
 
@@ -205,7 +197,6 @@ type
         yield UInt64(el);
     end;
   end;
-
 
 [Obsolete("Use ToNSArray() instead")]
 extension method Foundation.INSFastEnumeration.array: not nullable NSArray; public; inline;
@@ -222,7 +213,14 @@ begin
   exit lRes;
 end;
 
-type IDBlock = public block(aItem: not nullable id): id;
+extension method INSFastEnumeration.Cast<T>(): sequence of T; iterator;
+begin
+  for each el in self do
+    yield el as T;
+end;
+
+type
+  IDBlock = public block(aItem: not nullable id): id;
 
 extension method Foundation.INSFastEnumeration.dictionary(aKeyBlock: IDBlock; aValueBlock: IDBlock): not nullable NSDictionary; public;
 begin
@@ -231,7 +229,6 @@ begin
   for each i in lArray do
     NSMutableDictionary(result)[aKeyBlock(i)] := aValueBlock(i);
 end;
-
 
 extension method IEnumerable<T>.array<T>: not nullable NSArray<T>; public;
 begin
@@ -257,25 +254,20 @@ begin
   exit self.GetSequence.Where(aBlock);
 end;
 
-
 extension method INSFastEnumeration<T>.Select<T, K>(aBlock: not nullable block(aItem: not nullable T): K): sequence of K; public;
 begin
   exit self.GetSequence.Select(aBlock);
 end;
-
 
 extension method INSFastEnumeration<T>.FirstOrDefault<T>(aBlock: not nullable block(aItem: not nullable T): Boolean): T; public;
 begin
   exit self.GetSequence.FirstOrDefault(aBlock);
 end;
 
-
 extension method INSFastEnumeration<T>.FirstOrDefault<T>(): T; public;
 begin
   exit self.GetSequence.FirstOrDefault();
 end;
-
-
 
 [SymbolName('__elements_ObjcClassInfoToString'), Used]
 method __elements_ObjcClassInfoToString(clz: &Class): String;
@@ -311,7 +303,6 @@ begin
   end;
   rtl.free(methods);
   sb.EndList;
-
 
   begin
     sb.SelectProperty(false, 'properties');
@@ -369,7 +360,6 @@ begin
 
   clz := objc_getMetaClass(class_getName(clz));
 
-
   sb.SelectProperty(false, 'classMethods');
   sb.StartList;
   methodCount := 0;
@@ -390,7 +380,6 @@ begin
   rtl.free(methods);
   sb.EndList;
 
-
   begin
     sb.SelectProperty(false, 'classProperties');
     sb.StartList;
@@ -410,12 +399,10 @@ begin
     sb.EndList;
   end;
 
-
   sb.EndObject;
 
   exit sb.ToString;
 end;
-
 
 {$ENDIF}
 
