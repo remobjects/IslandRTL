@@ -3,43 +3,50 @@
 type
   DateTimePart = enum (Year, Month, Day, Hour, Minute, Second, MilliSeconds, DayOfWeek);
 
-  DateTime = public partial record
-  private
-    fTicks : Int64;
-  private
-    method TwoCharStr(aInt: Integer): String;inline;
-    begin
-      if aInt < 10 then
-        exit '0'+aInt.ToString
-      else
-        exit aInt.ToString;
-    end;
+	DateTime = public partial record(IComparable)
+	private
+		fTicks : Int64;
+	private
+		method TwoCharStr(aInt: Integer): String;inline;
+		begin
+			if aInt < 10 then
+				exit '0'+aInt.ToString
+			else
+				exit aInt.ToString;
+		end;
 
 {
     const DaysPerMonth: array [Boolean, 1..12] of Integer =
     [[31, 28, 31, 30, 31, 30, 31, 31, 30, 31, 30, 31],
      [31, 29, 31, 30, 31, 30, 31, 31, 30, 31, 30, 31]];
 }
-  private
-    method GetDaysPerMonth(aLeapYear: Boolean; aMonth: Integer): Integer;
-    begin
-      // bug 75466 - can't use arrays
-      // exit DaysPerMonth[aLeapYear, aMonth];
-      case aMonth of
-        1: exit 31;
-        2: exit if aLeapYear then 29 else 28;
-        3: exit 31;
-        4: exit 30;
-        5: exit 31;
-        6: exit 30;
-        7: exit 31;
-        8: exit 31;
-        9: exit 30;
-        10: exit 31;
-        11: exit 30;
-        12: exit 31;
-      end;
+	private
+		method CompareTo(a: Object): Integer; public;
+    begin 
+			if a is DateTime then 
+				exit fTicks.CompareTo(DateTime(a).fTicks);
+			exit -1;
     end;
+
+		method GetDaysPerMonth(aLeapYear: Boolean; aMonth: Integer): Integer;
+		begin
+			// bug 75466 - can't use arrays
+			// exit DaysPerMonth[aLeapYear, aMonth];
+			case aMonth of
+				1: exit 31;
+				2: exit if aLeapYear then 29 else 28;
+				3: exit 31;
+				4: exit 30;
+				5: exit 31;
+				6: exit 30;
+				7: exit 31;
+				8: exit 31;
+				9: exit 30;
+				10: exit 31;
+				11: exit 30;
+				12: exit 31;
+			end;
+		end;
 
     method ParseTicks(Index: DateTimePart): Integer;
     begin

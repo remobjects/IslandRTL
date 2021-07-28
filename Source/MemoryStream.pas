@@ -136,7 +136,7 @@ begin
   SetLength(0);
   self.Capacity := fs.Length;
   fs.Position := 0;
-  fLength := fs.Read(new Span<Byte>(fbuf, 0, fLength));
+  fLength := fs.Read(new Span<Byte>(fbuf, 0, fs.Length));
   fs.Close;
 end;
 
