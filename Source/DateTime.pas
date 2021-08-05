@@ -348,7 +348,7 @@ type
 
     method ToString(Format: String; Culture: String; aTimeZone: TimeZone := nil): String;
     begin
-      exit ToString(Format, new Locale(Culture), aTimeZone);
+      exit ToString(Format, if String.IsNullOrEmpty(Culture) then Locale.Current else new Locale(Culture), aTimeZone);
     end;
 
     method ToString(Format: String; aLocale: Locale := nil; aTimeZone: TimeZone := nil): String;
