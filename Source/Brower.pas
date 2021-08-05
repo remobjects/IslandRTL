@@ -42,14 +42,16 @@ type
       exit new EcmaScriptObject(WebAssemblyCalls.GetWindowObject) as RemObjects.Elements.WebAssembly.DOM.Window;
     end;
 
-    class method AjaxRequest(url: String): String;
+    class property Url: String read Browser.GetWindowObject().location.href;
+
+    class method AjaxRequest(aUrl: String): String;
     begin
-      exit WebAssembly.GetStringFromHandle(WebAssemblyCalls.AjaxRequest(@url.fFirstChar, url.Length));
+      exit WebAssembly.GetStringFromHandle(WebAssemblyCalls.AjaxRequest(@aUrl.fFirstChar, aUrl.Length));
     end;
 
-    class method AjaxRequestBinary(url: String): array of Byte;
+    class method AjaxRequestBinary(aUrl: String): array of Byte;
     begin
-      var lArray := WebAssemblyCalls.AjaxRequestBinary(@url.fFirstChar, url.Length);
+      var lArray := WebAssemblyCalls.AjaxRequestBinary(@aUrl.fFirstChar, aUrl.Length);
       var lTotal := WebAssemblyCalls.GetStringLength(lArray);
       result := new Byte[lTotal];
       WebAssemblyCalls.ResponseBinaryTextToArray(lArray, @result[0]);
@@ -64,11 +66,6 @@ type
     begin
       exit new EcmaScriptObject(WebAssemblyCalls.New_WebSocket(s)) as RemObjects.Elements.WebAssembly.DOM.WebSocket;
     end;
-
-    // Auto-generated
-
-
-    // Auto-generated end
 
   end;
 
