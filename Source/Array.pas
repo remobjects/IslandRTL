@@ -193,6 +193,11 @@ type
       result := SubArray(self, aStart, aEnd-aStart);
     end;
 
+    method ToString: String; override;
+    begin
+      exit $"{Integer(InternalCalls.Cast(self)).ToString.PadStart(if defined("CPU64") then 16 else 8, '0')} Count: {Count}";
+    end;
+
   end;
 
 end.
