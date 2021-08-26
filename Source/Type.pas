@@ -1182,7 +1182,29 @@ type
     class property AllTypes: sequence of &Type read get_AllTypes;
 
     property RTTI: ^IslandTypeInfo read fValue;
-    property &Name: String read if fValue = nil then nil else String.FromPAnsiChars(fValue^.Ext^.Name);
+    property &Name: String read -> begin
+      if fValue = nil then
+        exit nil;
+      if IslandTypeFlags.Generic in fValue^.Ext^.Flags then begin
+        var lSub := new &Type(fValue^.Ext^.SubType);
+        if lSub = typeOf(Array<1>) then
+          exit GenericArguments.First.Name+'[]';
+        result := StripGenerics(lSub.Name);
+        result := result + '<'+ String.Join(',', GenericArguments.Select(e -> e.Name)) + '>';
+        exit;
+      end;
+      exit String.FromPAnsiChars(fValue^.Ext^.Name);
+    end;
+
+    class method StripGenerics(s: String): String; private;
+    begin
+      if s = nil then exit '';
+      var lIndex := s.LastIndexOf('`');
+      if lIndex >= 0 then
+        exit s.Substring(0, lIndex);
+      exit s;
+    end;
+
     property &Flags: IslandTypeFlags read fValue^.Ext^.Flags;
     method Equals(other: Object): Boolean; override;
     begin
@@ -1227,6 +1249,11 @@ type
     property SizeOfType: Integer read get_SizeOfType;
     property BoxedDataOffset: Integer read get_BoxedDataOffset;
     property SubType: &Type read get_SubType;
+
+    method ToString: String; override;
+    begin
+      exit Name;
+    end;
 
     class method TypeIsValueType(aType: ^IslandTypeInfo): Boolean;
     begin
