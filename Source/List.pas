@@ -330,6 +330,10 @@ type
 
     property Count: Integer read fCount;
     property Item[i: Integer]: T read GetItem protected write SetItem; virtual; default;
+    method ToString: String; override;
+    begin
+      exit $"{Integer(InternalCalls.Cast(self)).ToString.PadStart(if defined("CPU64") then 16 else 8, '0')} Count: {Count}";
+    end;
   end;
 
   List<T> = public class(ImmutableList<T>, ICollection<T>, IList, IList<T>)
