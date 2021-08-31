@@ -1187,7 +1187,7 @@ type
         exit nil;
       if IslandTypeFlags.Generic in fValue^.Ext^.Flags then begin
         var lSub := new &Type(fValue^.Ext^.SubType);
-        if lSub = typeOf(Array<1>) then
+        if lSub = typeof(Array<1>) then
           exit GenericArguments.First.Name+'[]';
         result := StripGenerics(lSub.Name);
         result := result + '<'+ String.Join(',', GenericArguments.Select(e -> e.Name)) + '>';
@@ -1293,8 +1293,11 @@ type
 
     method InstantiateArray(aSize: IntPtr): &Array;
     begin
-      if (IslandTypeFlags.TypeKindMask and fValue^.Ext^.Flags) <> IslandTypeFlags.Array then raise new Exception('Can only call InstantiateArray on arrays');
-      exit InternalCalls.Cast<&Array>(Utilities.NewArray(RTTI, if SubType.IsValueType then SubType.SizeOfType else sizeOf(^Void), aSize));
+      var lSub := new &Type(fValue^.Ext^.SubType);
+      if (IslandTypeFlags.Generic not in fValue^.Ext^.Flags) or (lSub <> typeOf(Array<1>)) then
+        raise new Exception('Can only call InstantiateArray on arrays');
+
+      exit InternalCalls.Cast<&Array>(Utilities.NewArray(RTTI, if lSub.IsValueType then lSub.SizeOfType else sizeOf(^Void), aSize));
     end;
 
     method IsAssignableFrom(aOrg: &Type): Boolean;
