@@ -27,11 +27,16 @@ type
 
     method Exists: Boolean; override;
 
-    method IsReadOnly: Boolean;
-
     class method Exists(aFile: String): Boolean;
     begin
       exit FileUtils.FileExists(aFile);
+    end;
+
+    method IsReadOnly: Boolean;
+
+    class method IsReadOnly(aFile: String): Boolean;
+    begin
+      exit FileUtils.FileIsReadOnly(aFile);
     end;
 
     method Move(NewFile: not nullable File);
