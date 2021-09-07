@@ -27,6 +27,7 @@ type
 
     method Exists: Boolean; override;
 
+    method IsReadOnly: Boolean;
 
     class method Exists(aFile: String): Boolean;
     begin
@@ -164,6 +165,12 @@ end;
 method File.Exists: Boolean;
 begin
   exit FileUtils.FileExists(fFullName)
+end;
+
+method File.IsReadOnly: Boolean;
+begin
+  if not Exists then raise new Exception('File is not found:' + FullName);
+  exit FileUtils.FileIsReadOnly(fFullName);
 end;
 
 method File.Validate;

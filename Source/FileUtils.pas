@@ -61,6 +61,15 @@ type
       {$ENDIF}
     end;
 
+    class method FileIsReadOnly(aFullName: not nullable String): Boolean;
+    begin
+      {$IFDEF WINDOWS}
+      exit (rtl.GetFileAttributesW(aFullName.ToFileName()) and rtl.FILE_ATTRIBUTE_READONLY) = rtl.FILE_ATTRIBUTE_READONLY;
+      {$ELSE POSIX}
+      exit rtl.access(aFullName.ToFileName(), rtl.W_OK) ≠ 0;
+      {$ENDIF}
+    end;
+
     {$IFDEF POSIX}
     class method Get__struct_stat(aFullName: String): ^rtl.__struct_stat;inline;
     begin
