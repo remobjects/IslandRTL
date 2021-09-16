@@ -331,7 +331,12 @@ begin
     fInvariant := new Locale(rtl.LOCALE_INVARIANT, true);
     {$ELSEIF LINUX AND NOT ANDROID}
     var lInvariant := 'en_US.utf8'.ToAnsiChars(true);
-    fInvariant := new Locale(rtl.newLocale(rtl.LC_ALL_MASK, @lInvariant[0], nil), true);
+    var lHandle := rtl.newLocale(rtl.LC_ALL_MASK, @lInvariant[0], nil);
+    if Integer(lHandle) = 0 then begin
+      lInvariant := 'POSIX'.ToAnsiChars(true);
+      lHandle := rtl.newLocale(rtl.LC_ALL_MASK, @lInvariant[0], nil);
+    end;
+    fInvariant := new Locale(lHandle, true);
     {$ELSEIF DARWIN}
     fInvariant := new Locale(CFLocaleGetSystem());
     {$ELSEIF ICU_LOCALE OR WEBASSEMBLY}
@@ -448,7 +453,7 @@ begin
   var lArray: NSArray := bridge<Foundation.NSArray>(CFArrayRef(lData));
   var lArray2: NSArray := bridge<Foundation.NSArray>(CFArrayRef(lData2));
   for i: Integer := 0 to 6 do begin
-    fShortDayNames[i] := lArray2[i] as NSString; 
+    fShortDayNames[i] := lArray2[i] as NSString;
     fLongDayNames[i] := lArray[i] as NSString;
   end;
 
@@ -459,7 +464,7 @@ begin
   for i: Integer := 0 to 11 do begin
     fShortMonthNames[i] := lArray2[i] as NSString;
     fLongMonthNames[i] := lArray[i] as NSString;
-  end;  
+  end;
 
   //fDateSeparator := GetDateSeparator(fShortDatePattern);
   //fTimeSeparator := GetTimeSeparator(fShortTimePattern);
