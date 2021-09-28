@@ -98,6 +98,12 @@ type
 
   WebAssemblyCalls = public static class
   public
+    [DllImport('', EntryPoint := '__island_copy_to_array')]
+    class method CopyToArray(inputOff: ^Byte; targetArray: IntPtr; targetOffset, size: Integer); external;
+
+    [DllImport('', EntryPoint := '__island_copy_from_array')]
+    class method CopyFromArray(TargetOff: ^Byte; InputArray: IntPtr; InputOffset, size: Integer); external;
+
     [DllImport('', EntryPoint := '__island_consolelogint')]
     class method ConsoleLog(val: Integer); external;
 
@@ -378,6 +384,19 @@ type
     end;
 
   public
+    // Copy this typed array to a native array
+    method CopyToNativeArray<T>(aNativeOffset: Integer; aNativeArray: array of T; aTypedArrayOffset, aSize: Integer);
+    begin
+      aSize := Math.Min(aSize, (aSize - aNativeOffset));
+      WebAssemblyCalls.CopyFromArray(^Byte(@aNativeArray[aNativeOffset]), Handle, aTypedArrayOffset, aSize * sizeOf(T));
+    end;
+
+    // Copy this typed array from a native array
+    method CopyFromNativeArray<T>(aNativeOffset: Integer; aNativeArray: array of T; aTypedArrayOffset, aSize: Integer);
+    begin
+      aSize := Math.Min(aSize, (aSize - aNativeOffset) / sizeOf(T));
+      WebAssemblyCalls.CopyToArray(^Byte(@aNativeArray[aNativeOffset]), Handle, aTypedArrayOffset, aSize * sizeOf(T));
+    end;
 
     constructor(aValue: IntPtr);
     begin

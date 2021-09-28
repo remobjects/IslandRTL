@@ -475,6 +475,12 @@ else { factory(function(name){return this;}, this); }
                 var obj = [];
                 return createHandle(require(readStringFromMemory(name)));
             };
+            imp.env.__island_copy_from_array = function (targetOff, inputArray, inputOffset, size) {
+                new Uint8Array(mem.buffer, targetOff, size).set(getHandleValue(inputArray).slice(inputOffset, size - inputOffset));
+            };
+            imp.env.__island_copy_to_array = function (inputOff, targetArray, targetOffset, size) {
+                getHandleValue(inputArray).slice(targetOffset, size - targetOffset).set(new Uint8Array(mem.buffer, inputOff, size));
+            };
             imp.env.__island_setTimeout = function (fn, timeout) {
                 return glob.setTimeout(createDelegate(fn), timeout);
             };

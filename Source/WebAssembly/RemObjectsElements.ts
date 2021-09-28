@@ -417,6 +417,14 @@ export module ElementsWebAssembly {
             var obj = [];
             return createHandle(require(readStringFromMemory(name)));
         };
+        imp.env.__island_copy_from_array = function (targetOff: number, inputArray: number, inputOffset: number, size: number) 
+        {
+            new Uint8Array(mem.buffer, targetOff, size).set(getHandleValue(inputArray).slice(inputOffset, size - inputOffset));
+        };
+        imp.env.__island_copy_to_array = function (inputOff: number, targetArray: number, targetOffset: number, size: number) 
+        {
+            getHandleValue(inputArray).slice(targetOffset, size - targetOffset).set(new Uint8Array(mem.buffer, inputOff, size));
+        };
         imp.env.__island_setTimeout = function(fn, timeout: number): number {
             return glob.setTimeout(createDelegate(fn), timeout);
         };
