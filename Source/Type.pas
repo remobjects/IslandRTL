@@ -1187,7 +1187,7 @@ type
         exit nil;
       if IslandTypeFlags.Generic in fValue^.Ext^.Flags then begin
         var lSub := new &Type(fValue^.Ext^.SubType);
-        if lSub = typeof(Array<1>) then
+        if lSub = typeOf(Array<1>) then
           exit GenericArguments.First.Name+'[]';
         result := StripGenerics(lSub.Name);
         result := result + '<'+ String.Join(',', GenericArguments.Select(e -> e.Name)) + '>';
