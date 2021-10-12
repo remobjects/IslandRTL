@@ -35,7 +35,8 @@ type
     Decrement = 7,
     DecrementPost = 13,
     ExtendedPrefix = 14,
-    ExtendedPostfix = 15
+    ExtendedPostfix = 15,
+    &Await = 16
   );
   DynamicInvokeException = public class(Exception) end;
   DynamicHelpers = public static class

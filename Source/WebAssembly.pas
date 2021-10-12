@@ -373,8 +373,37 @@ type
       exit Call(aName, aArgs);
     end;
 
+    class method FutureToAsync(aValue: dynamic): Task<dynamic>;
+    begin
+      var lCP := new TaskCompletionSource<dynamic>;
+      result := lCP.Task;
+      var lCall, lExCall: WebAssemblyDelegate;
+      lCall := b -> begin
+        lCP.SetResult(b);
+        SimpleGC.ForceRelease(IntPtr(InternalCalls.Cast(lCP)));
+        SimpleGC.ForceRelease(IntPtr(InternalCalls.Cast(lCall)));
+        SimpleGC.ForceRelease(IntPtr(InternalCalls.Cast(lExCall)));
+      end;
+      lExCall := b -> begin
+        lCP.SetException(new Exception(String(b:ToString())));
+        SimpleGC.ForceRelease(IntPtr(InternalCalls.Cast(lCP)));
+        SimpleGC.ForceRelease(IntPtr(InternalCalls.Cast(lCall)));
+        SimpleGC.ForceRelease(IntPtr(InternalCalls.Cast(lExCall)));
+      end;
+
+      SimpleGC.ForceAddRef(IntPtr(InternalCalls.Cast(lCP)));
+      SimpleGC.ForceAddRef(IntPtr(InternalCalls.Cast(lCall)));
+      SimpleGC.ForceAddRef(IntPtr(InternalCalls.Cast(lExCall)));
+      aValue.then(lCall, lExCall);
+    end;
+
     method Unary(aOp: DynamicUnaryOperator; out aResult: Object): Boolean;
     begin
+      if aOp = DynamicUnaryOperator.Await then begin
+        aResult := FutureToAsync(self);
+        exit true;
+      end;
+
       exit false;
     end;
 
@@ -524,6 +553,7 @@ type
       if aVal = nil then exit nil;
       if aType = nil then exit nil;
       if aType.IsValueType then exit aVal;
+      if aVal.GetType = aType then exit aVal;
       var lVal := InternalCalls.Cast<Object>(^Void(Convert.ToUInt32(aVal)));
       if lVal = 0 then exit nil;
       if lVal is String then exit lVal;
