@@ -305,7 +305,11 @@ type
       case DynamicBinaryOperator(aOp) of
         DynamicBinaryOperator.Add:
           begin
-            if (aLeft = nil) or (aRight = nil) then exit nil;
+            if (aLeft = nil) or (aRight = nil) then begin
+              if aLeft is String then exit aLeft;
+              if aRight is String then exit aRight;
+              exit nil;
+            end;
             var lL := aLeft.GetType;
             var lR := aRight.GetType;
             if lL.IsInteger and lR.IsInteger then

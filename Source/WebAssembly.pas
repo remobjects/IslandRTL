@@ -379,7 +379,7 @@ type
       result := lCP.Task;
       var lCall, lExCall: WebAssemblyDelegate;
       lCall := b -> begin
-        lCP.SetResult(b);
+        lCP.SetResult(b[0]);
         SimpleGC.ForceRelease(IntPtr(InternalCalls.Cast(lCP)));
         SimpleGC.ForceRelease(IntPtr(InternalCalls.Cast(lCall)));
         SimpleGC.ForceRelease(IntPtr(InternalCalls.Cast(lExCall)));
