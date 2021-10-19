@@ -553,7 +553,8 @@ type
       if aVal = nil then exit nil;
       if aType = nil then exit nil;
       if aType.IsValueType then exit aVal;
-      if aVal.GetType = aType then exit aVal;
+      var lType := aVal.GetType;
+      if (lType = aType) or lType.IsSubclassOf(aType) then exit aVal;
       var lVal := InternalCalls.Cast<Object>(^Void(Convert.ToUInt32(aVal)));
       if lVal = 0 then exit nil;
       if lVal is String then exit lVal;
@@ -565,6 +566,8 @@ type
       if aVal = nil then exit nil;
       if aType = nil then exit nil;
       if aType.IsValueType then exit aVal;
+      var lType := aVal.GetType;
+      if (lType = aType) or lType.IsSubclassOf(aType) then exit aVal;
       exit Int32(InternalCalls.Cast(aVal));
     end;
 
