@@ -6,7 +6,7 @@
     else if (typeof define === "function" && define.amd) {
         define(["require", "exports"], factory);
     }
-else { factory(function(name){return this;}, this); }
+    else { factory(function(name){return this;}, this); }
 })(function (require, exports) {
     "use strict";
     exports.__esModule = true;
@@ -476,10 +476,10 @@ else { factory(function(name){return this;}, this); }
                 return createHandle(require(readStringFromMemory(name)));
             };
             imp.env.__island_copy_from_array = function (targetOff, inputArray, inputOffset, size) {
-                new Uint8Array(mem.buffer, targetOff, size).set(getHandleValue(inputArray).slice(inputOffset, size - inputOffset));
+                new Uint8Array(mem.buffer, targetOff, size).set(getHandleValue(inputArray).slice(inputOffset, size + inputOffset));
             };
             imp.env.__island_copy_to_array = function (inputOff, targetArray, targetOffset, size) {
-                getHandleValue(targetArray).slice(targetOffset, size - targetOffset).set(new Uint8Array(mem.buffer, inputOff, size));
+                getHandleValue(targetArray).slice(targetOffset, size + targetOffset).set(new Uint8Array(mem.buffer, inputOff, size));
             };
             imp.env.__island_setTimeout = function (fn, timeout) {
                 return glob.setTimeout(createDelegate(fn), timeout);
