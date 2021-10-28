@@ -171,6 +171,8 @@ type
         else
           exit new Folder(FolderName);
       end;
+      var lparent := Path.GetParentDirectory(FolderName);
+      if not String.IsNullOrEmpty(lparent) then CreateFolder(lparent, false);
       {$IFDEF WINDOWS}
       CheckForIOError(rtl.CreateDirectoryW(FolderName.ToFileName(), nil));
       {$ELSEIF POSIX}
