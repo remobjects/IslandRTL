@@ -430,7 +430,7 @@ type
           temp[i + &Index] := Items[i];
         // copy old rest
         for i:Integer := &Index to fCount-1 do
-          temp[i+&Index+it_len] := self[i];
+          temp[i+it_len] := self[i];
         fItems := temp;
         fCount := newCapacity;
       end
