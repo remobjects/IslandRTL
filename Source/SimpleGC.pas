@@ -194,9 +194,9 @@ type
     end;
     {$ELSEIF WEBASSEMBLY}
     //[SymbolName('__stack_start')]
-    class var StackTop: IntPtr; 
+    class var StackTop: IntPtr;
 
-    
+
     class method CheckThread;
     begin
       // in wasm; we can take the address of any var here and get the stack top.
@@ -587,7 +587,7 @@ type
     class method InitGC;
     begin
       if FGCLoaded then exit;
-      var i: Integer; 
+      var i: Integer;
       StackTop := IntPtr(@i);
       FGCLoaded := true;
       {$IFNDEF WEBASSEMBLY}
@@ -679,9 +679,9 @@ type
     {$ENDIF}
 
   public
+
     class method GC(&aWait: Boolean);
     begin
-
       {$IFDEF WEBASSEMBLY}
       DoGC;
       {$ELSE}
@@ -690,6 +690,16 @@ type
       if &aWait then
         fGCWait.Wait;
       {$ENDIF}
+    end;
+
+    class method Collect(c: Integer);
+    begin
+      GC(c <> 0);
+    end;
+
+    class method Collect;
+    begin
+      GC(false);
     end;
 
     {$IFDEF DOUBLEFREECHECK}
@@ -1182,14 +1192,6 @@ type
           exit(true);
 
       result := false;
-    end;
-  end;
-
-  SimpleGCExt = public extension class(Utilities)
-  public
-    class method Collect(c: Integer);
-    begin
-      SimpleGC.GC(c <> 0);
     end;
   end;
 
