@@ -40,9 +40,9 @@ begin
 
   // hack for macOS 11.0 reporting 10.16. Hopefully we can revert before RTM
   if defined("TARGET_OS_MAC") or defined("TARGET_OS_UIKITFORMAC") then begin
-    if (__ElementsLoadedCocoaVersion[1] = 10) and (__ElementsLoadedCocoaVersion[2] = 16) then begin
-      __ElementsLoadedCocoaVersion[1] := 11;
-      __ElementsLoadedCocoaVersion[2] := 0;
+    if (__ElementsPlatformVersion[1] = 10) and (__ElementsPlatformVersion[2] = 16) then begin
+      __ElementsPlatformVersion[1] := 11;
+      __ElementsPlatformVersion[2] := 0;
     end;
   end;
 
