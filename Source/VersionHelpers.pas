@@ -32,19 +32,39 @@ begin
 
   __ElementsPlatformVersion[0] := 1;
   {$IF DARWIN}
+  // operatingSystemVersion is new in macOS 10.10 and iOS 8, but we don't support older versions in Island.
   var version := Foundation.NSProcessInfo.processInfo.operatingSystemVersion;
   __ElementsPlatformVersion[1] := version.majorVersion;
   __ElementsPlatformVersion[2] := version.minorVersion;
   __ElementsPlatformVersion[3] := version.patchVersion;
 
-  if defined("TARGET_OS_UIKITFORMAC") and (__ElementsPlatformVersion[2] ≥ 15) then begin
-    __ElementsUIKitForMacVersion[0] := 1;
-    __ElementsUIKitForMacVersion[1] := __ElementsPlatformVersion[2]-2;
-    __ElementsUIKitForMacVersion[2] := __ElementsPlatformVersion[3];
-    __ElementsUIKitForMacVersion[3] := 0;
+  // hack for macOS 11.0 reporting 10.16. Hopefully we can revert before RTM
+  if defined("TARGET_OS_MAC") or defined("TARGET_OS_UIKITFORMAC") then begin
+    if (__ElementsLoadedCocoaVersion[1] = 10) and (__ElementsLoadedCocoaVersion[2] = 16) then begin
+      __ElementsLoadedCocoaVersion[1] := 11;
+      __ElementsLoadedCocoaVersion[2] := 0;
+    end;
   end;
 
-  // operatingSystemVersion is new in macOS 10.10 and iOS 8, but we don't support older versions in Island.
+  if defined("TARGET_OS_UIKITFORMAC") and CocoaVersionAtLeast(10, 15) then begin
+    if __ElementsLoadedCocoaVersion[1] = 10 then begin
+      if (__ElementsLoadedCocoaVersion[2] in [15, 16]) then begin // Special handling for 10.15 and (temp) 10.16
+        __ElementsLoadedUIKitForMacVersion[1] := __ElementsLoadedCocoaVersion[2]-2; // 15 -> 13, 16 -> 14
+        __ElementsLoadedUIKitForMacVersion[2] := __ElementsLoadedCocoaVersion[3];
+        __ElementsLoadedUIKitForMacVersion[3] := 0;
+      end;
+    end
+    else begin // macOS 11.0 and above
+      __ElementsLoadedUIKitForMacVersion[1] := __ElementsLoadedCocoaVersion[1]+3; // 11 -> 14
+      __ElementsLoadedUIKitForMacVersion[2] := case __ElementsLoadedCocoaVersion[1] of
+        11: __ElementsLoadedCocoaVersion[2]+2; // 11.0 -> 14.2, 11.1 -> 14.3
+        12: if __ElementsLoadedCocoaVersion[2] < 2 then 0 else __ElementsLoadedCocoaVersion[2]-1; // 12.0/12.1 -> 15.0, 12.2 -> 15.1
+        else __ElementsLoadedCocoaVersion[2]; // (guesswork, until we know where macOS 13 goes
+      end;
+      __ElementsLoadedUIKitForMacVersion[3] := 0;
+    end;
+  end;
+
   {$ENDIF}
   {$IF ANDROID}
   if Process.Run("getprop", new List<String>("ro.build.version.sdk"), out var lStdOut, out var lStdErr) = 0 then begin
@@ -55,7 +75,6 @@ begin
     end;
   end;
   {$ENDIF}
-
 end;
 
 method __ElementsPlatformVersionAtLeast(aMaj, aMin: Integer; aRev: Integer := 0): Boolean;
