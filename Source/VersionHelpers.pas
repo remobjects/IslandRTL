@@ -49,19 +49,19 @@ begin
   if defined("TARGET_OS_UIKITFORMAC") and __ElementsPlatformVersionAtLeast(10, 15) then begin
     if __ElementsPlatformVersion[1] = 10 then begin
       if (__ElementsPlatformVersion[2] in [15, 16]) then begin // Special handling for 10.15 and (temp) 10.16
-        __ElementsLoadedUIKitForMacVersion[1] := __ElementsPlatformVersion[2]-2; // 15 -> 13, 16 -> 14
-        __ElementsLoadedUIKitForMacVersion[2] := __ElementsPlatformVersion[3];
-        __ElementsLoadedUIKitForMacVersion[3] := 0;
+        __ElementsUIKitForMacVersion[1] := __ElementsPlatformVersion[2]-2; // 15 -> 13, 16 -> 14
+        __ElementsUIKitForMacVersion[2] := __ElementsPlatformVersion[3];
+        __ElementsUIKitForMacVersion[3] := 0;
       end;
     end
     else begin // macOS 11.0 and above
-      __ElementsLoadedUIKitForMacVersion[1] := __ElementsPlatformVersion[1]+3; // 11 -> 14
-      __ElementsLoadedUIKitForMacVersion[2] := case __ElementsPlatformVersion[1] of
+      __ElementsUIKitForMacVersion[1] := __ElementsPlatformVersion[1]+3; // 11 -> 14
+      __ElementsUIKitForMacVersion[2] := case __ElementsPlatformVersion[1] of
         11: __ElementsPlatformVersion[2]+2; // 11.0 -> 14.2, 11.1 -> 14.3
         12: if __ElementsPlatformVersion[2] < 2 then 0 else __ElementsPlatformVersion[2]-1; // 12.0/12.1 -> 15.0, 12.2 -> 15.1
         else __ElementsPlatformVersion[2]; // (guesswork, until we know where macOS 13 goes
       end;
-      __ElementsLoadedUIKitForMacVersion[3] := 0;
+      __ElementsUIKitForMacVersion[3] := 0;
     end;
   end;
 
