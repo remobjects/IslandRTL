@@ -423,7 +423,7 @@ export module ElementsWebAssembly {
         };
         imp.env.__island_copy_to_array = function (inputOff: number, targetArray: number, targetOffset: number, size: number) 
         {
-            getHandleValue(targetArray).slice(targetOffset, size + targetOffset).set(new Uint8Array(mem.buffer, inputOff, size));
+            getHandleValue(targetArray).set(new Uint8Array(mem.buffer, inputOff, size), targetOffset);
         };
         imp.env.__island_setTimeout = function(fn, timeout: number): number {
             return glob.setTimeout(createDelegate(fn), timeout);
