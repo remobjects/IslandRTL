@@ -1438,7 +1438,8 @@ type
     SwiftClass = 12,
     MemberInfoPresent = 16,
     Generic = 32,
-    OpenGeneric = 64) of UInt64;
+    OpenGeneric = 64,
+	Com = 129) of UInt64;
 
   ProtoReadType = assembly (varint = 0, b64 = 1, length = 2, message = 3, b32 = 5, startgroup = 4, endgroup = 6);
 
