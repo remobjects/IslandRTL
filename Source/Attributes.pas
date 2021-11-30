@@ -407,4 +407,11 @@ type
     property CheckType: String; readonly;
   end;
 
+  [AttributeUsage(AttributeTargets.Method)]
+  WrapperAttribute = public class(Attribute)
+  public
+    constructor; empty;
+  end;
+
+
 end.
