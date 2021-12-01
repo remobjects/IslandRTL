@@ -24,7 +24,7 @@ Public Interface [XMLHttpRequest]
   '''<summary>Returns a Document containing the response to the request, or null if the request was unsuccessful, has not yet been sent, or cannot be parsed as XML or HTML. Not available in workers.</summary>
   ReadOnly Property [responseXML] As Document
   '''<summary>Returns an unsigned short with the status of the response of the request.</summary>
-  ReadOnly Property [status] As Byte
+  ReadOnly Property [status] As Integer
   '''<summary>Returns a DOMString containing the response string returned by the HTTP server. Unlike XMLHttpRequest.status, this includes the entire text of the response message ("200 OK", for example).</summary>
   ReadOnly Property [statusText] As String
   '''<summary>Is an unsigned long representing the number of milliseconds a request can take before automatically being terminated.</summary>
