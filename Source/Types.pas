@@ -24,7 +24,7 @@ type
   DummyEnum = class(&Enum) public fValue: Integer; end;
   Dummy64Enum = class(&Enum) public fValue: Int64; end;
 
-  &Enum = public abstract class
+  &Enum = public abstract class(IComparable)
   public
     property EnumSize: Integer
       read self.GetType.SizeOfType;
@@ -48,6 +48,18 @@ type
         4: exit ^Int32(@lSelf.fValue)^;
         8: exit InternalCalls.Cast<Dummy64Enum>(InternalCalls.Cast(self)).fValue;
       end;
+    end;
+
+    method CompareTo(a: Object): Integer;
+    begin
+      if a is &Enum then
+        exit CompareTo(&Enum(a));
+      exit CompareTo(a);
+    end;
+
+    method CompareTo(a: &Enum): Integer;
+    begin
+      exit self.ToInt64.CompareTo(a.ToInt64);
     end;
 
     method &Equals(aOther: Object): Boolean; override;
