@@ -518,15 +518,14 @@ begin
   var lRecord := ^ElementsException(malloc(sizeOf(ElementsException))); // we use gc memory for this
   rtl.memset(lRecord, 0, sizeOf(ElementsException));
   var lExp := Exception(aRaiseObject);
-  if lExp <> nil then begin
+  if lExp <> nil then
     lExp.ExceptionAddress := aRaiseAddress;
-  end;
 
   ^UInt64(@lRecord^.Unwind.exception_class)^ := ElementsExceptionCode;
   lRecord^.Object := aRaiseObject;
   // No need to set anything, we use a GC so no cleanup needed
   rtl._Unwind_RaiseException(@lRecord^.Unwind);
-  writeLn('Uncaught exception: '+aRaiseObject.ToString());
+  writeLn('Uncaught exception: '+coalesce(aRaiseObject:ToString(), "(null)"));
   rtl.exit(-1);
 end;
 
