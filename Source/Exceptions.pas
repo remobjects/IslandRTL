@@ -134,6 +134,15 @@ type
   end;
 
   ArgumentException = public class(Exception)
+  public
+    constructor(aMessage: String); empty;
+
+    constructor(aMessage: String; aParamName: String);
+    begin
+      ParamName := aParamName;
+    end;
+
+    property ParamName: nullable String; readonly;
   end;
 
   IndexOutOfRangeException = public class(Exception)
