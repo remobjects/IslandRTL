@@ -142,7 +142,13 @@ type
       ParamName := aParamName;
     end;
 
+    constructor(aMessage: String; aException: Exception);
+    begin
+      InnerException := aException;
+    end;
+
     property ParamName: nullable String; readonly;
+    property InnerException: nullable Exception; readonly;
   end;
 
   IndexOutOfRangeException = public class(Exception)
