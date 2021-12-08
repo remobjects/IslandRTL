@@ -82,6 +82,7 @@ type
       Release(lValue);
     end;
 
+    [DllExport('__island_force_addref')]
     class method AddRef(aVal: Object);
     begin
       if aVal = nil then exit;
@@ -92,6 +93,7 @@ type
       end;
     end;
 
+    [DllExport('__island_force_release')]
     class method Release(aVal: Object);
     begin
       if aVal = nil then exit;
@@ -128,10 +130,16 @@ type
       GC_set_pages_executable(0);
       {$ENDIF}
       GC_init;
+      {$IFNDEF WEBASSEMBLY}
       GC_allow_register_threads();
+      {$ENDIF}
       fSharedMemory.collect := @GC_gcollect;
       fSharedMemory.register := @GC_my_register_my_thread;
+      {$IFDEF WEBASSEMBLY}
+      fSharedMemory.unregister := () -> begin end;
+      {$ELSE}
       fSharedMemory.unregister := @GC_unregister_my_thread;
+      {$ENDIF}
       fSharedMemory.malloc := @GC_malloc;
       fSharedMemory.setfinalizer := @SetFinalizer;
       fSharedMemory.unsetfinalizer := @UnsetFinalizer;
@@ -237,6 +245,7 @@ type
 
     class method GC_my_register_my_thread: Integer;
     begin
+      {$IFNDEF WEBASSEMBLY}
       {$IFDEF WINDOWS}
       var sb: GC_stack_base;
       GC_get_stack_base(@sb);
@@ -245,6 +254,7 @@ type
       var sb: __struct_GC_stack_base;
       GC_get_stack_base(@sb);
       exit GC_register_my_thread(@sb);
+      {$ENDIF}
       {$ENDIF}
     end;
 
