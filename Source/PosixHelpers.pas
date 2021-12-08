@@ -207,7 +207,7 @@ type
     method fini;
 
     method Parselsda(aAction: rtl._Unwind_Action; aNative, aObjc: Boolean; aEx: ^rtl.__struct__Unwind_Exception; aCtx: ^Void;
-      out aTypeIndex: rtl.int64_t; out aLandingPadPointer: rtl.uintptr_t): Boolean;
+                     out aTypeIndex: rtl.int64_t; out aLandingPadPointer: rtl.uintptr_t): Boolean;
     method DwarfEHReadPointer(var aData: ^Byte; aEncoding: DwarfEHEncodingType): rtl.uintptr_t;
     method DwarfEHReadPointer(var aData: ^Byte): rtl.uintptr_t;
     method DwarfEHReadULEB128(var aData: ^Byte): rtl.uintptr_t;
@@ -464,10 +464,10 @@ begin
   exit rtl.realloc(ptr, size);
 end;
 
-method free(v: ^Void);inline;
-begin
-   rtl.Free(v);
-end;
+  method free(v: ^Void);inline;
+  begin
+    rtl.Free(v);
+  end;
 
 {$IFDEF DARWIN}
 [SymbolName('__stack_chk_guard')]
@@ -525,7 +525,10 @@ begin
   lRecord^.Object := aRaiseObject;
   // No need to set anything, we use a GC so no cleanup needed
   rtl._Unwind_RaiseException(@lRecord^.Unwind);
-  writeLn('Uncaught exception: '+coalesce(aRaiseObject:ToString(), "(null)"));
+  if defined("DARWIN") and aRaiseObject is IslandWrappedCocoaException then
+    writeLn($'Uncaught Cocoa exception: {(aRaiseObject as IslandWrappedCocoaException):InnerException.name}: {(aRaiseObject as IslandWrappedCocoaException):InnerException.reason}')
+  else
+    writeLn('Uncaught exception: '+coalesce(aRaiseObject:ToString(), "(null)"));
   rtl.exit(-1);
 end;
 
@@ -945,70 +948,79 @@ begin
     lObjc := true;
   end;
   var lTypeInfo: rtl.int64_t;
-    var lLandingPad: rtl.uintptr_t;
-    if 0 <> (aState and {$IFDEF EMSCRIPTEN OR x86_64}rtl._Unwind_Action._UA_SEARCH_PHASE{$ELSE}rtl._UA_SEARCH_PHASE{$ENDIF})  then begin
-      if Parselsda(aState, lMine, lObjc, aEx, aCtx, out lTypeInfo, out lLandingPad) then begin
-        if lMine then begin
-          var lRecord := ^ElementsException(aEx);
-          lRecord := ^ElementsException(@^Byte(lRecord)[-Int32((^Byte(@lRecord^.Unwind) - ^Byte(lRecord)))]);
-          ExternalCalls.HandlerSwitch := lTypeInfo;
-          ExternalCalls.Target := lLandingPad;
-        end;
-        exit rtl._Unwind_Reason_Code._URC_HANDLER_FOUND;
+  var lLandingPad: rtl.uintptr_t;
+
+  if 0 <> (aState and {$IFDEF EMSCRIPTEN OR x86_64}rtl._Unwind_Action._UA_SEARCH_PHASE{$ELSE}rtl._UA_SEARCH_PHASE{$ENDIF})  then begin
+    if Parselsda(aState, lMine, lObjc, aEx, aCtx, out lTypeInfo, out lLandingPad) then begin
+      if lMine then begin
+        var lRecord := ^ElementsException(aEx);
+        lRecord := ^ElementsException(@^Byte(lRecord)[-Int32((^Byte(@lRecord^.Unwind) - ^Byte(lRecord)))]);
+        ExternalCalls.HandlerSwitch := lTypeInfo;
+        ExternalCalls.Target := lLandingPad;
       end;
+      exit rtl._Unwind_Reason_Code._URC_HANDLER_FOUND;
+    end;
+    exit rtl._Unwind_Reason_Code._URC_CONTINUE_UNWIND;
+  end;
+
+  if 0 <> (aState and {$IFDEF EMSCRIPTEN  OR x86_64}rtl._Unwind_Action._UA_CLEANUP_PHASE{$ELSE}rtl._UA_CLEANUP_PHASE{$ENDIF}) then begin
+    // This is either unwinding OR catching
+    if (0 = (aState and {$IFDEF EMSCRIPTEN OR x86_64}rtl._Unwind_Action._UA_HANDLER_FRAME{$ELSE}rtl._UA_HANDLER_FRAME{$ENDIF}))  then begin
+      // finally, always parse
+      if Parselsda(aState, lMine, lObjc, aEx, aCtx, out lTypeInfo, out lLandingPad) then begin
+        rtl._Unwind_SetGR(aCtx, 0, rtl.uintptr_t(aEx));
+        rtl._Unwind_SetGR(aCtx, 1, rtl.uintptr_t(lTypeInfo));
+        {$IFDEF ARM and not arm64}
+        rtl._Unwind_SetGR(aCtx, 15, lLandingPad or (rtl._Unwind_GetGR(aCtx, 15)and 1));
+        {$ELSE}
+        rtl._Unwind_SetIP(aCtx, lLandingPad);
+        {$ENDIF}
+        exit rtl._Unwind_Reason_Code._URC_INSTALL_CONTEXT;
+      end;
+
       exit rtl._Unwind_Reason_Code._URC_CONTINUE_UNWIND;
     end;
-
-    if 0 <> (aState and {$IFDEF EMSCRIPTEN  OR x86_64}rtl._Unwind_Action._UA_CLEANUP_PHASE{$ELSE}rtl._UA_CLEANUP_PHASE{$ENDIF}) then begin
-      // This is either unwinding OR catching
-      if (0 = (aState and {$IFDEF EMSCRIPTEN OR x86_64}rtl._Unwind_Action._UA_HANDLER_FRAME{$ELSE}rtl._UA_HANDLER_FRAME{$ENDIF}))  then begin
-        // finally, always parse
-        if Parselsda(aState, lMine, lObjc, aEx, aCtx, out lTypeInfo, out lLandingPad) then begin
-          rtl._Unwind_SetGR(aCtx, 0, rtl.uintptr_t(aEx));
-          rtl._Unwind_SetGR(aCtx, 1, rtl.uintptr_t(lTypeInfo));
-          {$IFDEF ARM and not arm64}
-          rtl._Unwind_SetGR(aCtx, 15, lLandingPad or (rtl._Unwind_GetGR(aCtx, 15)and 1));
-          {$ELSE}
-          rtl._Unwind_SetIP(aCtx, lLandingPad);
-          {$ENDIF}
-          exit rtl._Unwind_Reason_Code._URC_INSTALL_CONTEXT;
-        end;
-
-        exit rtl._Unwind_Reason_Code._URC_CONTINUE_UNWIND;
+    // exception
+    if not lMine then begin
+      if Parselsda(aState, lMine, lObjc, aEx, aCtx, out lTypeInfo, out lLandingPad) then begin
+        rtl._Unwind_SetGR(aCtx, 0, rtl.uintptr_t(aEx));
+        rtl._Unwind_SetGR(aCtx, 1, rtl.uintptr_t(lTypeInfo));
+        {$IFDEF ARM and not arm64}
+        rtl._Unwind_SetGR(aCtx, 15, lLandingPad or (rtl._Unwind_GetGR(aCtx, 15)and 1));
+        {$ELSE}
+        rtl._Unwind_SetIP(aCtx, lLandingPad);
+        {$ENDIF}
+        exit rtl._Unwind_Reason_Code._URC_INSTALL_CONTEXT;
       end;
-      // exception
-      if not lMine then begin
-        if Parselsda(aState, lMine, lObjc, aEx, aCtx, out lTypeInfo, out lLandingPad) then begin
-          rtl._Unwind_SetGR(aCtx, 0, rtl.uintptr_t(aEx));
-          rtl._Unwind_SetGR(aCtx, 1, rtl.uintptr_t(lTypeInfo));
-          {$IFDEF ARM and not arm64}
-          rtl._Unwind_SetGR(aCtx, 15, lLandingPad or (rtl._Unwind_GetGR(aCtx, 15)and 1));
-          {$ELSE}
-          rtl._Unwind_SetIP(aCtx, lLandingPad);
-          {$ENDIF}
-          exit rtl._Unwind_Reason_Code._URC_INSTALL_CONTEXT;
-        end;
-        // we can't parse the LSDA table and the exception isn't ours, touble.
-        exit  {$IFNDEF ARM and not arm64 and not DARWIN}rtl._Unwind_Reason_Code._URC_FATAL_PHASE1_ERROR{$ELSE}rtl._Unwind_Reason_Code._URC_FAILURE{$ENDIF};
-      end;
-      var lRecord := ^ElementsException(aEx);
-      lRecord := ^ElementsException(@^Byte(lRecord)[-Int32((^Byte(@lRecord^.Unwind) - ^Byte(lRecord)))]);
-      rtl._Unwind_SetGR(aCtx, 0, rtl.uintptr_t(aEx));
-      rtl._Unwind_SetGR(aCtx, 1, rtl.uintptr_t(ExternalCalls.HandlerSwitch));
-      {$IFDEF ARM and not arm64}
-      rtl._Unwind_SetGR(aCtx, 15, lLandingPad or (rtl._Unwind_GetGR(aCtx, 15)and 1));
-      {$ELSE}
-      rtl._Unwind_SetIP(aCtx, ExternalCalls.Target);
-      {$ENDIF}
-      if lObjc then begin
-        var lRec := ^CXXException(aEx);
-        lRec := ^CXXException(@^Byte(lRec)[-Int32((^Byte(@lRec^.Unwind) - ^Byte(lRec))) - (sizeOf(IntPtr) * 2)]);
-        free(lRec)
-      end else
-        free(lRecord);
-      exit rtl._Unwind_Reason_Code._URC_INSTALL_CONTEXT;
+      // we can't parse the LSDA table and the exception isn't ours, touble.
+      exit  {$IFNDEF ARM and not arm64 and not DARWIN}rtl._Unwind_Reason_Code._URC_FATAL_PHASE1_ERROR{$ELSE}rtl._Unwind_Reason_Code._URC_FAILURE{$ENDIF};
     end;
-  exit  {$IFNDEF ARM and not arm64 and not DARWIN}rtl._Unwind_Reason_Code._URC_FATAL_PHASE1_ERROR{$ELSE}rtl._Unwind_Reason_Code._URC_FAILURE{$ENDIF};
+    var lRecord := ^ElementsException(aEx);
+    lRecord := ^ElementsException(@^Byte(lRecord)[-Int32((^Byte(@lRecord^.Unwind) - ^Byte(lRecord)))]);
+    rtl._Unwind_SetGR(aCtx, 0, rtl.uintptr_t(aEx));
+    rtl._Unwind_SetGR(aCtx, 1, rtl.uintptr_t(ExternalCalls.HandlerSwitch));
+    {$IFDEF ARM and not arm64}
+    rtl._Unwind_SetGR(aCtx, 15, lLandingPad or (rtl._Unwind_GetGR(aCtx, 15)and 1));
+    {$ELSE}
+    rtl._Unwind_SetIP(aCtx, ExternalCalls.Target);
+    {$ENDIF}
+    if lObjc then begin
+      writeLn("wrapping!");
+      var lRec := ^CXXException(aEx);
+      lRec := ^CXXException(@^Byte(lRec)[-Int32((^Byte(@lRec^.Unwind) - ^Byte(lRec))) - (sizeOf(IntPtr) * 2)]);
+      free(lRec)
+    end
+    else begin
+      free(lRecord);
+    end;
+    exit rtl._Unwind_Reason_Code._URC_INSTALL_CONTEXT;
+  end;
+
+  {$IFNDEF ARM and not arm64 and not DARWIN}
+  exit rtl._Unwind_Reason_Code._URC_FATAL_PHASE1_ERROR
+  {$ELSE}
+  exit rtl._Unwind_Reason_Code._URC_FAILURE
+  {$ENDIF};
 end;
 {$ENDIF}
 
