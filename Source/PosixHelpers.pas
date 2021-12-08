@@ -1005,7 +1005,6 @@ begin
     rtl._Unwind_SetIP(aCtx, ExternalCalls.Target);
     {$ENDIF}
     if lObjc then begin
-      writeLn("wrapping!");
       var lRec := ^CXXException(aEx);
       lRec := ^CXXException(@^Byte(lRec)[-Int32((^Byte(@lRec^.Unwind) - ^Byte(lRec))) - (sizeOf(IntPtr) * 2)]);
       free(lRec)
