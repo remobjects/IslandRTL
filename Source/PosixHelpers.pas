@@ -591,7 +591,10 @@ begin
       writeLn(E.Message);
       Environment.Exit(E.Code);
     end;
-    on E: Exception do raise;
+    on E: Exception do begin
+      writeLn('Uncaught exception: '+coalesce(E.ToString(), "(null)"));
+      Environment.Exit(-1);
+    end;
   end;
 end;
 
