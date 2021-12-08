@@ -525,10 +525,7 @@ begin
   lRecord^.Object := aRaiseObject;
   // No need to set anything, we use a GC so no cleanup needed
   rtl._Unwind_RaiseException(@lRecord^.Unwind);
-  if defined("DARWIN") and aRaiseObject is IslandWrappedCocoaException then
-    writeLn($'Uncaught Cocoa exception: {(aRaiseObject as IslandWrappedCocoaException):InnerException.name}: {(aRaiseObject as IslandWrappedCocoaException):InnerException.reason}')
-  else
-    writeLn('Uncaught exception: '+coalesce(aRaiseObject:ToString(), "(null)"));
+  writeLn('Uncaught exception: '+coalesce(aRaiseObject:ToString(), "(null)"));
   rtl.exit(-1);
 end;
 

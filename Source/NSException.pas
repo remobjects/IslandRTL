@@ -29,6 +29,13 @@ type
       InnerException := aException;
     end;
 
+    property Message: String read begin
+      result := if length(InnerException.name) > 0 then
+        InnerException.name+": "+InnerException.reason
+      else
+        InnerException.reason;
+    end; override;
+
     property InnerException: NSException read private write;
 
   end;
