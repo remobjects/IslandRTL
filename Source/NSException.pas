@@ -54,6 +54,12 @@ type
       InnerException := aException;
     end;
 
+    [ToString]
+    method ToString: String; override;
+    begin
+      result := "(Wrapped) "+InnerException.GetType.Name+': '+Message;
+    end;
+
     property InnerException: IslandException read private write;
 
   end;
