@@ -36,6 +36,11 @@ type
         InnerException.reason;
     end; override;
 
+    method ToString: String; override;
+    begin
+      result := "(Wrapped) "+InnerException.class.description+': '+Message;
+    end;
+
     property InnerException: NSException read private write;
 
   end;
