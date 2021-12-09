@@ -43,13 +43,17 @@
   </PropertyGroup>
   <ItemGroup>
     <Compile Include="rpmalloc.pas" />
-    <Compile Include="SimpleGC.pas" />
+    <None Include="SimpleGC.pas" />
     <Compile Include="WebAssembly.pas" />
     <Compile Include="Brower.pas" />
     <Compile Include="NodeJS.pas" />
     <None Include="WebAssembly\RemObjectsElements.js" />
     <Compile Include="WasmEvents.DOM.vb" />
     <Compile Include="WasmEvents.vb" />
+    <Compile Include="BoehmGC.pas" />
+  </ItemGroup>
+  <ItemGroup>
+    <Reference Include="gc" />
   </ItemGroup>
   <Import Project="$(MSBuildExtensionsPath)\RemObjects Software\Elements\RemObjects.Elements.Island.WebAssembly.targets" />
   <Import Project="Island.Shared.projitems" Label="Shared" />

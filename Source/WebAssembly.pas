@@ -378,22 +378,23 @@ type
       var lCP := new TaskCompletionSource<dynamic>;
       result := lCP.Task;
       var lCall, lExCall: WebAssemblyDelegate;
+      var lHandle1, lHandle2, lHandle3: GCHandle;
       lCall := b -> begin
         lCP.SetResult(b[0]);
-        SimpleGC.ForceRelease(IntPtr(InternalCalls.Cast(lCP)));
-        SimpleGC.ForceRelease(IntPtr(InternalCalls.Cast(lCall)));
-        SimpleGC.ForceRelease(IntPtr(InternalCalls.Cast(lExCall)));
+        lHandle1.Dispose;
+        lHandle2.Dispose;
+        lHandle3.Dispose;
       end;
       lExCall := b -> begin
         lCP.SetException(new Exception(String(b:ToString())));
-        SimpleGC.ForceRelease(IntPtr(InternalCalls.Cast(lCP)));
-        SimpleGC.ForceRelease(IntPtr(InternalCalls.Cast(lCall)));
-        SimpleGC.ForceRelease(IntPtr(InternalCalls.Cast(lExCall)));
+        lHandle1.Dispose;
+        lHandle2.Dispose;
+        lHandle3.Dispose;
       end;
 
-      SimpleGC.ForceAddRef(IntPtr(InternalCalls.Cast(lCP)));
-      SimpleGC.ForceAddRef(IntPtr(InternalCalls.Cast(lCall)));
-      SimpleGC.ForceAddRef(IntPtr(InternalCalls.Cast(lExCall)));
+      lHandle1 := GCHandle.Allocate(IntPtr(InternalCalls.Cast(lCP)));
+      lHandle2 := GCHandle.Allocate(IntPtr(InternalCalls.Cast(lCall)));
+      lHandle3 := GCHandle.Allocate(IntPtr(InternalCalls.Cast(lExCall)));
       aValue.then(lCall, lExCall);
     end;
 
@@ -627,8 +628,9 @@ type
       var ov: EcmaScriptObject := GetProxyFor(o.GetType);
       var ptr := IntPtr(InternalCalls.Cast(o));
 
-      SimpleGC.ForceAddRef(ptr);
-      result := EcmaScriptObject(EcmaScriptObject(Object).Call('create', new EcmaScriptObject(WebAssemblyCalls.CloneHandle(ov.Handle))));
+      ForeignBoehmGC.AddRef(o);
+      var lObj: Object := Object;
+      result := EcmaScriptObject(EcmaScriptObject(lObj).Call('create', new EcmaScriptObject(WebAssemblyCalls.CloneHandle(ov.Handle))));
       result['__elements_handle'] := ptr;
     end;
 
@@ -675,7 +677,7 @@ type
       if o['__elements_handle'] = nil then exit;
       var lPtr := Convert.ToInt32(o['__elements_handle']);
       if lPtr = 0 then exit;
-      SimpleGC.ForceRelease(lPtr);
+      ForeignBoehmGC.Release(o);
     end;
 
     class method GetObjectForHandle(aHandle: IntPtr): Object; // Note; takes ownership (and frees if needed)
@@ -861,6 +863,7 @@ type
       end;
     end;
 
+    [SymbolName('strlen')]
     method strlen(c: ^AnsiChar): Integer;
     begin
       if c = nil then exit 0;
@@ -928,6 +931,7 @@ type
     [DLLExport]
     method memset(ptr: ^Void; value: Integer; aNum: NativeInt): ^Void;
     begin
+      result := ptr;
       value := value and $FF;
       var vval: UInt64 := value or (value shl 8) or (value shl 16) or (value shl 24);
       vval := vval or (vval shl 32);
@@ -989,6 +993,40 @@ type
   rtl.size_t = IntPtr;
   var MAllocInitialized: Boolean; assembly;
 
+  [SymbolName('exit')]
+  method __exit(status: Integer); public;
+  begin
+    writeLn('Exit called: '+status);
+    ExternalCalls.trap;
+  end;
+
+  var Stackbase: Integer;
+  [SymbolName('__island_stack_base')]
+  method GetStackBase: Integer;
+  begin
+    exit Stackbase;
+  end;
+
+  [SymbolNameAttribute('_setjmp')]
+  method setjmp(val: ^Void): Integer; empty;
+
+  [SymbolNameAttribute('vsnprintf')]
+  method __vsnprintf; empty;
+  [SymbolName('atoi')]
+  method atoi(a: ^AnsiChar): Integer; empty; // used by GC but since getenv never returns a value, this will never hit
+  [SymbolName('atol')]
+  method atol(a: ^AnsiChar): Integer; empty; // used by GC but since getenv never returns a value, this will never hit
+  [SymbolName('strtoul')]
+  method strtoul(a: ^AnsiChar; endptr: ^^AnsiChar; abase: Integer): Cardinal; empty; // used by GC but since getenv never returns a value, this will never hit
+  [SymbolName('_strtoui64')]
+  method _strtoui64(a: ^AnsiChar; endptr: ^^AnsiChar; abase: Integer): UInt64; empty; // used by GC but since getenv never returns a value, this will never hit
+
+  [SymbolName('abort')]
+  method __abort(); public;
+  begin
+    ExternalCalls.trap;
+  end;
+/*
   [SymbolName('malloc')]
   method malloc(size: rtl.size_t): ^Void; public;
   begin
@@ -1002,8 +1040,73 @@ type
       rpmalloc.rpmalloc_initialize();
     end;
     exit rpmalloc.rpmalloc(size);
+  end;*/
+  var errno: Integer;
+  [SymbolNameAttribute('__errno_location')]
+   method __errno_location(): ^Integer;
+  begin
+    exit @errno;
   end;
 
+  [SymbolName('__initialize_GC'), DllExport]
+  method InitGC;
+  begin
+    var i: Integer;
+    Stackbase := Integer(@i);
+    WebAssemblyCalls.ConsoleLog(Stackbase);
+    BoehmGC.LoadGC();
+  end;
+
+  [SymbolName('clock')]
+  method Clock: Integer; empty;
+  [SymbolName('write')]
+  method Write; begin ExternalCalls.trap; end;
+  [SymbolName('atexit')]
+    //{$ENDIF}
+  method atexit(func: ^Void); empty; // not triggered for WASM
+  [SymbolName('getenv')]
+  method __GetEnv(increment: Integer): ^Byte; empty;
+
+
+
+  var LastPtr: ^Byte;
+  var SpaceLeft: Integer;
+  [SymbolName('sbrk')]
+  method srbk(size: Integer): ^Void; public;
+  begin
+    if size = 0 then begin
+      if LastPtr = nil then exit ^Void(WebAssemblyCalls.MemorySize(0) * 65536);
+      exit LastPtr;
+    end;
+    if LastPtr = nil then begin
+      var lNew := ((size + 65535) / 65536);
+      LastPtr := ^Byte(WebAssemblyCalls.GrowMemory(0, lNew)  * 65536);
+      SpaceLeft := ((size + 65535) / 65536) * 65536;
+    end else if size > SpaceLeft then begin
+      var lNew := (size - SpaceLeft + 65535) / 65536;
+      WebAssemblyCalls.GrowMemory(0, lNew);
+      SpaceLeft := SpaceLeft + (lNew * 65536);
+    end;
+    assert(size <= SpaceLeft);
+    result := LastPtr;
+    LastPtr := LastPtr + size;
+    SpaceLeft := SpaceLeft - size;
+  end;
+    /**
+    size := (size + 65535) / 65536 * 65536;
+    WebAssemblyCalls.ConsoleLog('srbk', 4);
+    WebAssemblyCalls.ConsoleLog(size);
+    if size = 0 then begin
+      result := ^Void(WebAssemblyCalls.MemorySize(0) * 65536);
+      WebAssemblyCalls.ConsoleLog(Integer(result));
+      exit;
+    end;
+    size := size / 65536;
+    result := ^Void(WebAssemblyCalls.GrowMemory(0, size) * 65536);
+    WebAssemblyCalls.ConsoleLog(Integer(result));
+  end;
+    */
+/*
   [SymbolName('free')]
   method free(v: ^Void); public;
   begin
@@ -1014,7 +1117,18 @@ type
     end;
     rpmalloc.rpfree(v);
   end;
+*/
+  [SymbolName('free')]
+  method free(v: ^Void); public;
+  begin
+    gc.gc_free(v);
+  end;
 
+  [SymbolName('alloc')]
+  method malloc(x: Integer): ^Void; public;
+  begin
+    exit gc.gc_malloc(x);
+  end;
 
   [SymbolName('__elements_get_stack_pointer'), Used, DllExport]
   method GetStackPointer: IntPtr;
