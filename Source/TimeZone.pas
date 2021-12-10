@@ -31,6 +31,7 @@ type
 
 implementation
 
+{$IFDEF DARWIN}[Warning("Not Implemented for Darwin")]{$ENDIF}
 {$IFDEF WEBASSEMBLY}[Warning("Not Implemented for WebAssembly")]{$ENDIF}
 class method TimeZone.get_LocalTimeZone: not nullable TimeZone;
 begin
@@ -66,6 +67,7 @@ begin
   result := EnumTimeZones;
 end;
 
+{$IFDEF DARWIN}[Warning("Not Implemented for Darwin")]{$ENDIF}
 {$IFDEF WEBASSEMBLY}[Warning("Not Implemented for WebAssembly")]{$ENDIF}
 class method TimeZone.EnumTimeZones: not nullable sequence of String;
 begin
@@ -128,6 +130,7 @@ begin
 end;
 {$ENDIF}
 
+{$IFDEF DARWIN}[Warning("Not Implemented for Darwin")]{$ENDIF}
 {$IFDEF WEBASSEMBLY}[Warning("Not Implemented for WebAssembly")]{$ENDIF}
 class method TimeZone.get_TimeZoneWithName(aName: String): nullable TimeZone;
 begin
