@@ -32,6 +32,7 @@ type
     fErrPipe: array[0..1] of Int32;
     method StartAsync(aStdOutCallback: block(aLine: String); aErrorCallback: block(aLine: String); aFinishedCallback: block(aExitCode: Integer));
     method WaitForAsync;
+    method CheckHandle(aHandle: Integer; aMessage: String);
     {$ENDIF}
     {$IF WINDOWS OR (POSIX AND NOT IOS)}
     fLastIncompleteOutputLog: String := '';
@@ -234,7 +235,7 @@ begin
     var lBuffer := new AnsiChar[1024];
     while(true) do begin
       var lCount := rtl.read(fOutPipe[0], @lBuffer[0], sizeOf(lBuffer));
-      if lCount = 0 then
+      if lCount <= 0 then
         break;
       if lCount > 0 then
         fOutput := fOutput + String.FromPAnsiChars(@lBuffer[0], lCount);
@@ -280,7 +281,7 @@ begin
     var lBuffer := new AnsiChar[1024];
     while(true) do begin
       var lCount := rtl.read(fErrPipe[0], @lBuffer[0], sizeOf(lBuffer));
-      if lCount = 0 then
+      if lCount <= 0 then
         break;
       if lCount > 0 then
         fErr := fErr + String.FromPAnsiChars(@lBuffer[0], lCount);
@@ -404,18 +405,18 @@ begin
     lEnvp[i] := @(lItem.Key + '=' + lItem.Value).ToAnsiChars(true)[0];
     inc(i);
   end;
-  lEnvp[Arguments.Count] := nil;
+  lEnvp[Environment.Count] := nil;
 
   fProcessId := rtl.fork();
   if fProcessId = 0 then begin
     if RedirectInput then begin
-      rtl.dup2(fOutPipe[0], rtl.STDIN_FILENO);
+      CheckHandle(rtl.dup2(fOutPipe[0], rtl.STDIN_FILENO), 'input');
       rtl.close(fOutPipe[1]);
     end;
     if RedirectOutput then begin
-      rtl.dup2(fOutPipe[1], rtl.STDOUT_FILENO);
+      CheckHandle(rtl.dup2(fOutPipe[1], rtl.STDOUT_FILENO), 'output');
       rtl.close(fOutPipe[0]);
-      rtl.dup2(fErrPipe[1], rtl.STDERR_FILENO);
+      CheckHandle(rtl.dup2(fErrPipe[1], rtl.STDERR_FILENO), 'output');
       rtl.close(fErrPipe[0]);
     end;
 
@@ -552,6 +553,12 @@ begin
 
   var lStatus: Int32;
   rtl.waitpid(fProcessId, @lStatus, 0);
+end;
+
+method Process.CheckHandle(aHandle: Integer; aMessage: String);
+begin
+  if aHandle = -1 then
+    raise new Exception('Can not create handles to redirect ' + aMessage);
 end;
 {$ENDIF}
 
