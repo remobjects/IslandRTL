@@ -241,7 +241,7 @@ type
     class method GCLoop(dummy: Object);
     begin
       RegisterThread;
-      while true do begin
+      loop begin
         fGCWait.Reset;
         fGCWake.Wait(30000);
 

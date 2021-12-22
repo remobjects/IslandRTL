@@ -336,7 +336,7 @@ begin
     num2 := 0;
     if num2 <= num then begin
       inc(num);
-      while true do begin
+      loop begin
         var expr_3F: Integer := Integer(b.fValue[num2]);
         var expr_41: Integer := 0;
         if (expr_41 < 0) or (expr_3F <> expr_41) then begin
@@ -356,7 +356,7 @@ begin
     num2 := 0;
     if num2 <= num then begin
       inc(num);
-      while true do begin
+      loop begin
         var expr_85: Integer := Integer(a.fValue[num2]);
         var expr_87: Integer := 0;
         if (expr_87 < 0) or (expr_85 <> expr_87) then begin

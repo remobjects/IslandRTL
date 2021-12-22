@@ -94,7 +94,7 @@ begin
   var bufsize := 255;
   var offset := 0;
   var buf: array[0..255] of AnsiChar;
-  while true do begin
+  loop begin
     var ch := ReadChar();
     if ch = #0 then break; // problem with Read
     {$IFDEF WINDOWS}

@@ -896,7 +896,7 @@ begin
         var sb1 := new StringBuilder;
         if aFormat[cur_pos] = ':' then begin
           inc(cur_pos);
-          while true do begin
+          loop begin
             case aFormat[cur_pos] of
               '{': begin
                     if (cur_pos < aFormat.Length-1) and (aFormat[cur_pos+1] = '{') then begin
