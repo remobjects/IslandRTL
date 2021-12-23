@@ -94,7 +94,7 @@ type
         using lReader := lResult.ExecuteReader do begin
           var lMap := new Integer[lReader.FieldCount];
           for i: Integer := 0 to lReader.FieldCount -1 do begin
-            lMap[i] := lMapper.FindIndex(a -> a.Name = lReader.FieldName[i]);
+            lMap[i] := lMapper.FindIndex(a -> a.Name.ToLower = lReader.FieldName[i].ToLower);
           end;
           while lReader.Read do begin
             var lRes := new T;
