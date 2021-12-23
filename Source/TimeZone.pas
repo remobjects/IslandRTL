@@ -36,7 +36,6 @@ type
 
 implementation
 
-{$IFDEF WEBASSEMBLY}[Warning("Not Implemented for WebAssembly")]{$ENDIF}
 class method TimeZone.get_LocalTimeZone: not nullable TimeZone;
 begin
   {$IFDEF WINDOWS}
@@ -57,6 +56,12 @@ begin
   var lInterval := CFTimeZoneGetSecondsFromGMT(lTimeZone, CFAbsoluteTimeGetCurrent);
   result := new TimeZone(lString, Integer(Math.Round(lInterval div 60)));
   CFRelease(lTimeZone);
+  {$ELSEIF WEBASSEMBLY}
+  var lDate := WebAssembly.ReflectConstruct('Date', []);
+  var lOffset: Integer := lDate.getTimezoneOffset();
+  var lDateFormat := WebAssembly.ReflectConstruct("Intl.DateTimeFormat", ['default']);
+  var usedOptions: String := lDateFormat.resolvedOptions().timeZone;
+  result := new TimeZone(usedOptions, lOffset);
   {$ELSE}
   result := new TimeZone('', 0);
   {$ENDIF}
