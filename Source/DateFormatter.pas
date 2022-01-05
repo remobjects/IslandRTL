@@ -154,11 +154,11 @@ type
         end;
 
         'MMM': begin // month name, abbreviated
-          aOutput.Append(aLocale.DateTimeFormat.ShortMonthNames[Month]);
+          aOutput.Append(aLocale.DateTimeFormat.ShortMonthNames[Month - 1]);
         end;
 
         'MMMM': begin // month name
-          aOutput.Append(aLocale.DateTimeFormat.LongMonthNames[Month]);
+          aOutput.Append(aLocale.DateTimeFormat.LongMonthNames[Month - 1]);
         end;
 
         's', 'ss': begin // seconds, 0-59
