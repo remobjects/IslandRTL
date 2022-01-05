@@ -11,14 +11,15 @@ type
     _X5,               // 40
     _X6,               // 48
     _X7: NativeUInt;   // 56
-    _V1,               // 64
-    _V2,               // 72
-    _V3,              // 80
-    _V4,              // 88
-    _V5,              // 96
-    _V6,              // 104
-    _V7: Double;      // 112
-    SingleBits: Integer; //120
+    _V0,               // 64
+    _V1,               // 72
+    _V2,              // 80
+    _V3,              // 88
+    _V4,              // 96
+    _V5,              // 104
+    _V6,              // 112
+    _V7: Double;      // 120
+    SingleBits: Integer; //128
   end;
 
 
@@ -60,16 +61,24 @@ type
       ldp x4, x5, [x16, #32]
       ldp x6, x7, [x16, #48]
 
+      ldp d0, d1, [x16, #64] // load d0-d7 registers (64 bits)
+      ldp d2, d3, [x16, #80]
+      ldp d4, d5, [x16, #96]
+      ldp d6, d7, [x16, #104]
+
       blr x17
 
-      ldr x1, [fp, #-8]
-      mov [x1], x0
+      ldr x1, [fp, #-16] // _R0
+      str x0, [x1]
+
+      ldr x5, [fp, #-24] // _V0
+      str d0, [x5]
 
       add sp, sp, #32
 
       ldp  fp, lr, [sp], #16
       ret
-    ", "", false, false), DisableInlining, DisableOptimizations]
+    ", "", true, false), DisableInlining, DisableOptimizations]
     class method DoCall(Address: ^Void;out _RAX: NativeUInt;[InReg]var data: ARM64CallData; Stack: ^Void; Items: NativeInt;var _XMM0: Double); external;
 
     method PushBefore(aData: ^Void; aSize: Integer);
@@ -101,7 +110,7 @@ type
     procedure StoreRegDouble(data: Double);
     begin
       case fRegUsageFloat of
-        0: begin inc(fRegUsageFloat); f_V0:=data; end;
+        0: begin inc(fRegUsageFloat); fCallData._V0:=data; end;
         1: begin inc(fRegUsageFloat); fCallData._V1:=data; end;
         2: begin inc(fRegUsageFloat); fCallData._V2:=data; end;
         3: begin inc(fRegUsageFloat); fCallData._V3:=data; end;
@@ -117,7 +126,7 @@ type
     procedure StoreRegSingle(data: Single);
     begin
       case fRegUsageFloat of
-        0: begin inc(fRegUsageFloat); fCallData.SingleBits := fCallData.SingleBits or 1;   f_V0:=data; end;
+        0: begin inc(fRegUsageFloat); fCallData.SingleBits := fCallData.SingleBits or 1;   fCallData._V0:=data; end;
         1: begin inc(fRegUsageFloat); fCallData.SingleBits := fCallData.SingleBits or 2;   fCallData._V1:=data; end;
         2: begin inc(fRegUsageFloat); fCallData.SingleBits := fCallData.SingleBits or 4;   fCallData._V2:=data; end;
         3: begin inc(fRegUsageFloat); fCallData.SingleBits := fCallData.SingleBits or 8;   fCallData._V3:=data; end;
