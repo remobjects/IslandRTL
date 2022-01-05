@@ -109,7 +109,7 @@ type
       exit new NullReferenceException(s);
     end;
 
-    const FinalizerIndex = 4 + {$IFDEF I386}4{$ELSE}2{$ENDIF};
+    const FinalizerIndex = 4 + {$IFDEF I386 OR WEBASSEMBLY}4{$ELSE}2{$ENDIF};
 
     [SymbolName('__newdelegate')]
     //[SkipDebug]

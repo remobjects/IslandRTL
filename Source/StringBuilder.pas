@@ -49,6 +49,7 @@ type
       exit if r > MaxCapacity then MaxCapacity else r;
     end;
 
+    [DisableInlining]
     method Grow(Value: Integer);
     begin
       var newbuf:= new array of Char(Value);
@@ -58,6 +59,7 @@ type
       fBuf := newbuf;
     end;
 
+    [DisableInlining]
     method SetLength(value: Integer);
     begin
       if (value < 0) or (value > MaxCapacity) then raise Utilities.CreateIndexOutOfRangeException(value, MaxCapacity);
@@ -132,7 +134,7 @@ type
       else
         exit self;
     end;
-
+    [DisableInlining]
     method Append(Value: String; StartIndex, Count: Integer): StringBuilder;
     begin
       if String.IsNullOrEmpty(Value) and (StartIndex = 0) and (Count = 0) then exit self;
