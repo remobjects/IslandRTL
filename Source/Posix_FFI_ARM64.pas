@@ -44,10 +44,10 @@ type
       //    X4: aItems
       //    X5:  V0
       //
-      //    fp-8    _r0
-      //    fp-16   aStack
-      //    fp-24   aItems
-      //    fp-32   V0
+      //    fp-16    _r0
+      //    fp-8   aStack
+      //    fp-32   aItems
+      //    fp-24   V0
       stp  fp, lr, [sp, #-16]!
       mov  fp, sp
 
@@ -55,6 +55,17 @@ type
       mov x16, x2 // save registers
       stp x1, x3, [sp, #-16]!
       stp x4, x5, [sp, #-16]!
+
+      //cbz x4, .done
+      //umul x9, x4, #8
+      //str x9, [sp, #-16]!
+    //.loop:
+      //ldp x0, x1, [x3]
+      //stp x0, x1, [sp, #-16]!
+      //sub x3, x3, #8
+      //sub x4, x4, #1
+      //cbnz x4, .loop:
+    //.done:
 
       ldp x0, x1, [x16] // load x0-x7 registers
       ldp x2, x3, [x16, #16]
@@ -73,6 +84,13 @@ type
 
       ldr x5, [fp, #-24] // _V0
       str d0, [x5]
+
+      //ldr x9, [fp, #-32]
+      //cbz x9, .nostack
+      //ldr x9, [fp, #-48]
+      //add sp, sp, x9
+      //add sp, sp, #16
+    //.nostack:
 
       add sp, sp, #32
 
