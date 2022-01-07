@@ -50,6 +50,7 @@
     <Compile Include="PosixHelpers.pas" />
     <Compile Include="DarwinNumbers.pas" />
     <Compile Include="Swift.pas" />
+    <Compile Include="Posix_FFI_ARM64.pas" />
   </ItemGroup>
   <ItemGroup>
     <Reference Include="gc" />

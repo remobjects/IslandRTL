@@ -15,7 +15,7 @@
     <Platform Condition="'$(Platform)' == ''">AnyCPU</Platform>
     <GenerateDebugInfo>True</GenerateDebugInfo>
     <DefineConstants>LINUX</DefineConstants>
-    <Architecture>x86_64;armv6</Architecture>
+    <Architecture>aarch64;armv6;x86_64</Architecture>
     <DefaultGlobalsToPublic>True</DefaultGlobalsToPublic>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)' == 'Debug'">
@@ -28,6 +28,7 @@
     <XmlDocWarningLevel>WarningOnPublicMembers</XmlDocWarningLevel>
     <EnableUnmanagedDebugging>False</EnableUnmanagedDebugging>
     <GenerateDebugInfo>True</GenerateDebugInfo>
+    <Architecture>aarch64</Architecture>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)' == 'Release'">
     <OutputPath>Bin\Release</OutputPath>
@@ -41,12 +42,14 @@
     <EnableUnmanagedDebugging>False</EnableUnmanagedDebugging>
     <GenerateDebugInfo>False</GenerateDebugInfo>
     <Optimize>True</Optimize>
+    <Architecture>aarch64</Architecture>
   </PropertyGroup>
   <ItemGroup>
     <Compile Include="BoehmGC.pas" />
     <Compile Include="Posix_FFI_x64.pas" />
     <Compile Include="ManagedThreadPool.pas" />
     <Compile Include="PosixHelpers.pas" />
+    <Compile Include="Posix_FFI_ARM64.pas" />
   </ItemGroup>
   <ItemGroup>
     <Reference Include="gc" />
