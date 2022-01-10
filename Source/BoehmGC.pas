@@ -277,7 +277,7 @@ type
     begin
       fSharedMemory.unregister;
     end;
-
+    
     class method &New(aTTY: ^Void; aSize: NativeInt): ^Void;
     begin
       if fFinalizer = nil then begin
@@ -285,12 +285,23 @@ type
       end;
       result := ^Void(-1);
       if fLoaded = 0 then LoadGC;
-      result := fSharedMemory.malloc(aSize);
-      ^^Void(result)^ := aTTY;
-      memset(^Byte(result) + sizeOf(^Void), 0, aSize - sizeOf(^Void));
+      var lResult: IntPtr;
+      var lTmp := fSharedMemory.malloc(aSize);
+      {$IFDEF WEBASSEMBLY}
+      InternalCalls.VolatileWrite(var lResult, IntPtr(lTmp));
+      {$ELSE}
+      lResult := IntPtr(lTmp);
+      {$ENDIF}
+      ^^Void(lTmp)^ := aTTY;
+      memset(^Byte(lTmp) + sizeOf(^Void), 0, aSize - sizeOf(^Void));
       if ^^Void(aTTY)[Utilities.FinalizerIndex] <> fFinalizer then begin
-        fSharedMemory.setfinalizer(result);
+        fSharedMemory.setfinalizer(lTmp);
       end;
+      {$IFDEF WEBASSEMBLY}
+      result := ^Void(InternalCalls.VolatileRead(var lResult));
+      {$ELSE}
+      result := ^Void(lResult);
+      {$ENDIF}
     end;
 
     class method Assign(var aDest, aSource: BoehmGC);
