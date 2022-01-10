@@ -189,7 +189,7 @@ type
         callq  __libc_start_main@PLT
         hlt
       "
-    {$ENDIF}, '', false, false
+    {$ENDIF}, '', true, false
     )]
     method _start; external;
     [SymbolName('__libc_start_main', 'libc.so.6'), &weak]

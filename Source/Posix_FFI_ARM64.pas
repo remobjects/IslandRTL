@@ -44,10 +44,10 @@ type
       //    X4: aItems
       //    X5:  V0
       //
-      //    fp-8    _r0
-      //    fp-16   aStack
-      //    fp-24   aItems
-      //    fp-32   V0
+      //    fp-16    _r0
+      //    fp-8   aStack
+      //    fp-32   aItems
+      //    fp-24   V0
       stp  fp, lr, [sp, #-16]!
       mov  fp, sp
 
@@ -55,6 +55,19 @@ type
       mov x16, x2 // save registers
       stp x1, x3, [sp, #-16]!
       stp x4, x5, [sp, #-16]!
+
+      cbz x4, .done
+      mov x10, #8
+      mul x9, x4, x10
+      str x9, [sp, #-16]!
+    .loop:
+
+      ldp x0, x1, [x3]
+      stp x0, x1, [sp, #-16]!
+      sub x3, x3, #16
+      sub x4, x4, #2
+      cbnz x4, .loop:
+    .done:
 
       ldp x0, x1, [x16] // load x0-x7 registers
       ldp x2, x3, [x16, #16]
@@ -74,6 +87,13 @@ type
       ldr x5, [fp, #-24] // _V0
       str d0, [x5]
 
+      ldr x9, [fp, #-32]
+      cbz x9, .nostack
+      ldr x9, [fp, #-48]
+      add sp, sp, #16 // stored #bytes
+      add sp, sp, x9
+
+    .nostack:
       add sp, sp, #32
 
       ldp  fp, lr, [sp], #16
@@ -215,7 +235,9 @@ type
           lInst.GetPtr64(I, aParams[I], aParameterFlags[I],  aParameterTypes[I]);
         end;
         var pp: ^Byte;
-        if length(lInst.fStack) = 0 then pp := nil else pp := @lInst.fStack[length(lInst.fStack)-8];
+        if (length(lInst.fStack) > 0) and ((length(lInst.fStack) mod 16 ≠ 0)) then
+          lInst.PushBefore(nil, 8); // stack should be aligned to 16
+        if length(lInst.fStack) = 0 then pp := nil else pp := @lInst.fStack[length(lInst.fStack)-16]; // -16: move two 64bits data back, since in asm code we move in pairs
         DoCall(aAddress,out lInst.f_X0,var lInst.fCallData, pp, length(lInst.fStack) div 8, var lInst.f_V0);
         if lInst.fVarData <> nil then begin
           for I: Integer := 0 to length(aParams) - 1 do begin
