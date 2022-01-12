@@ -15,15 +15,18 @@ type
     // Casts
     //
 
+    [DisableInlining]
     class operator Implicit(aValue: nullable String): nullable Foundation.NSString;
     begin
       if assigned(aValue) then begin
-        if not assigned(aValue.fCachedNSString) then
+        if not assigned(aValue.fCachedNSString) then begin
           aValue.fCachedNSString := new Foundation.NSString withCharacters(@aValue.fFirstChar) length(aValue.Length);
+        end;
         result := aValue.fCachedNSString;
       end;
     end;
 
+    [DisableInlining]
     class operator Implicit(aValue: nullable Foundation.NSString): nullable String;
     begin
       if assigned(aValue) then begin
@@ -33,9 +36,10 @@ type
         var lLength := aValue.length;
         lRemainingRange.length := lLength;
         //NSLog('got string %@', aValue);
-        result := AllocString(lLength);
-        aValue.getCharacters(@result.fFirstChar) range(lRemainingRange);
-        result.fCachedNSString := aValue;
+        var lTmp := AllocString(lLength);
+        aValue.getCharacters(@lTmp.fFirstChar) range(lRemainingRange);
+        lTmp.fCachedNSString := aValue;
+        result := lTmp;
       end;
     end;
 
