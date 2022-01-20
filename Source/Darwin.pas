@@ -117,88 +117,86 @@ type
     exit INSFastEnumeration<id>(self).GetSequence;
   end;
 
-// workaorund for E25641: Island/Darwin: cannot use Uint in Cocoa generics
+type
+  NSFastExtByte = public extension class(INSFastEnumeration<not nullable NSNumber<Byte>>)
+  public
 
-//type
-  //NSFastExtByte = public extension class(INSFastEnumeration<nullable not nullable Byte>)
-  //public
+    method GetSequence: sequence of Byte; iterator;
+    begin
+      for each el in self.GetSequence do
+        yield Byte(el);
+    end;
+  end;
 
-    //method GetSequence: sequence of Byte; iterator;
-    //begin
-      //for each el in self.GetSequence do
-        //yield Byte(el);
-    //end;
-  //end;
+  NSFastExtSByte = public extension class(INSFastEnumeration<not nullable NSNumber<SByte>>)
+  public
 
-  //NSFastExtSByte = public extension class(INSFastEnumeration<nullable not nullable SByte>)
-  //public
+    method GetSequence: sequence of Byte; iterator;
+    begin
+      for each el in self.GetSequence do
+        yield SByte(el);
+    end;
+  end;
 
-    //method GetSequence: sequence of Byte; iterator;
-    //begin
-      //for each el in self.GetSequence do
-        //yield SByte(el);
-    //end;
-  //end;
+  NSFastExtInt16 = public extension class(INSFastEnumeration<not nullable NSNumber<Int16>>)
+  public
 
-  //NSFastExtInt16 = public extension class(INSFastEnumeration<nullable not nullable Int16>)
-  //public
+    method GetSequence: sequence of Byte; iterator;
+    begin
+      for each el in self.GetSequence do
+        yield Int16(el);
+    end;
+  end;
 
-    //method GetSequence: sequence of Byte; iterator;
-    //begin
-      //for each el in self.GetSequence do
-        //yield Int16(el);
-    //end;
-  //end;
+  NSFastExtUInt16 = public extension class(INSFastEnumeration<not nullable NSNumber<UInt16>>)
+  public
 
-  //NSFastExtUInt16 = public extension class(INSFastEnumeration<nullable not nullable UInt16>)
-  //public
+    method GetSequence: sequence of Byte; iterator;
+    begin
+      for each el in self.GetSequence do
+        yield UInt16(el);
+    end;
+  end;
 
-    //method GetSequence: sequence of Byte; iterator;
-    //begin
-      //for each el in self.GetSequence do
-        //yield UInt16(el);
-    //end;
-  //end;
+  NSFastExtInt32 = public extension class(INSFastEnumeration<not nullable NSNumber<Int32>>)
+  public
 
-  //NSFastExtInt32 = public extension class(INSFastEnumeration<nullable not nullable Int32>)
-  //public
+    method GetSequence: sequence of Byte; iterator;
+    begin
+      for each el in self.GetSequence do
+        yield Int16(el);
+    end;
+  end;
 
-    //method GetSequence: sequence of Byte; iterator;
-    //begin
-      //for each el in self.GetSequence do
-        //yield Int16(el);
-    //end;
-  //end;
+  NSFastExtUInt32 = public extension class(INSFastEnumeration<not nullable NSNumber<UInt32>>)
+  public
 
-  //NSFastExtUInt32 = public extension class(INSFastEnumeration<nullable not nullable UInt32>)
-  //public
+    method GetSequence: sequence of Byte; iterator;
+    begin
+      for each el in self.GetSequence do
+        yield UInt32(el);
+    end;
+  end;
 
-    //method GetSequence: sequence of Byte; iterator;
-    //begin
-      //for each el in self.GetSequence do
-        //yield UInt32(el);
-    //end;
-  //end;
+  NSFastExtInt64 = public extension class(INSFastEnumeration<not nullable NSNumber<Int64>>)
+  public
 
-  //NSFastExtInt64 = public extension class(INSFastEnumeration<nullable not nullable Int64>)
-  //public
+    method GetSequence: sequence of Byte; iterator;
+    begin
+      for each el in self.GetSequence do
+        yield Int64(el);
+    end;
+  end;
 
-    //method GetSequence: sequence of Byte; iterator;
-    //begin
-      //for each el in self.GetSequence do
-        //yield Int64(el);
-    //end;
-  //end;
+  NSFastExtUInt64 = public extension class(INSFastEnumeration<not nullable NSNumber<UInt64>>)
+  public
 
-  //NSFastExtUInt64 = public extension class(INSFastEnumeration<nullable not nullable UInt64>)
-  //public
-
-    //method GetSequence: sequence of Byte; iterator;
-    //begin
-      //for each el in self.GetSequence do
-        //yield UInt64(el);
-    //end;
-  //end;
+    method GetSequence: sequence of Byte; iterator;
+    begin
+      for each el in self.GetSequence do
+        yield UInt64(el);
+    end;
+  end;
 
 [Obsolete("Use ToNSArray() instead")]
 extension method Foundation.INSFastEnumeration.array: not nullable NSArray; public; inline;
