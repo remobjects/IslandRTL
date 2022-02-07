@@ -242,9 +242,23 @@ type
       if o = nil then exit;
       fSharedMemory.unsetfinalizer(InternalCalls.Cast(o));
     end;
+    {$IFDEF DARWIN}
+    [ThreadLocal]
+    class var Registered: Boolean;
+
+    class method ThreadDied(arg: ^Void);
+    begin
+      UnregisterThread;
+    end;
+    {$ENDIF}
 
     class method GC_my_register_my_thread: Integer;
     begin
+      {$IFDEF DARWIN}
+      if Registered then exit;
+      Registered := true;
+      _tlv_atexit(@ThreadDied, nil);
+      {$ENDIF}
       {$IFNDEF WEBASSEMBLY}
       {$IFDEF WINDOWS}
       var sb: GC_stack_base;
@@ -285,6 +299,10 @@ type
       end;
       result := ^Void(-1);
       if fLoaded = 0 then LoadGC;
+
+      {$IFDEF DARWIN}
+      if not Registered then GC_my_register_my_thread;
+      {$ENDIF}
       var lResult: IntPtr;
       var lTmp := fSharedMemory.malloc(aSize);
       {$IFDEF WEBASSEMBLY}
