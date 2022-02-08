@@ -160,6 +160,8 @@ begin
     else
       exit String.FromPChar(@buf1[0],len) as not nullable String;
   end;
+  {$ELSEIF DARWIN}
+  exit (RelativePath as Foundation.NSString).stringByStandardizingPath as not nullable;
   {$ELSEIF POSIX}
   {$HINT POSIX: implement Path.GetFullPath}
   exit RelativePath;
