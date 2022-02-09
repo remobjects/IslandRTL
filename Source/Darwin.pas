@@ -89,17 +89,9 @@ type
     method countByEnumeratingWithState(aState: ^NSFastEnumerationState) objects(stackbuf: ^T) count(len: NSUInteger): NSUInteger; mapped to countByEnumeratingWithState(aState) objects(^id(stackbuf)) count(len);
   end;
 
-  operator Implicit<T>(aIn: NSArray<T>): sequence of T; public;
-  begin
-    exit INSFastEnumeration<T>(aIn).GetSequence;
-  end;
-
-  operator Implicit<T>(aIn: NSMutableArray<T>): sequence of T; public;
-  begin
-    exit INSFastEnumeration<T>(aIn).GetSequence;
-  end;
 
   extension method INSFastEnumeration<T>.GetSequence<T>: sequence of T; iterator; public;
+  where T is NSObject;
   begin
     var lState: NSFastEnumerationState;
     var lDest: array[0..3] of T;
@@ -114,8 +106,15 @@ type
 
   extension method INSFastEnumeration.GetSequence: sequence of id; public; iterator;
   begin
-    for each el in self do
-      yield el;
+    var lState: NSFastEnumerationState;
+    var lDest: array[0..3] of id;
+    loop begin
+      var n := self.countByEnumeratingWithState(@lState) objects(@lDest) count(4);
+      if n = 0 then break;
+      for i: Integer := 0 to n -1 do begin
+        yield(id(lState.itemsPtr[i]));
+      end;
+    end;
   end;
 
 type
@@ -239,33 +238,39 @@ begin
 end;
 
 extension method INSFastEnumeration<T>.Count(): Integer; public;
+where T is NSObject;
 begin
-  exit self.GetSequence.Count;
+  exit self.GetSequence<T>().Count;
 end;
 
 extension method INSFastEnumeration<T>.Count(aCond: not nullable block(aItem: not nullable T): Boolean): Integer; public;
+where T is NSObject;
 begin
-  exit self.GetSequence.Count(aCond);
+  exit self.GetSequence<T>().Count(aCond);
 end;
 
 extension method INSFastEnumeration<T>.Where(aBlock: not nullable block(aItem: not nullable T): Boolean): sequence of T; public;
+where T is NSObject;
 begin
-  exit self.GetSequence.Where(aBlock);
+  exit self.GetSequence<T>().Where(aBlock);
 end;
 
 extension method INSFastEnumeration<T>.Select<T, K>(aBlock: not nullable block(aItem: not nullable T): K): sequence of K; public;
+where T is NSObject;
 begin
-  exit self.GetSequence.Select(aBlock);
+  exit self.GetSequence<T>().Select(aBlock);
 end;
 
 extension method INSFastEnumeration<T>.FirstOrDefault<T>(aBlock: not nullable block(aItem: not nullable T): Boolean): T; public;
+where T is NSObject;
 begin
-  exit self.GetSequence.FirstOrDefault(aBlock);
+  exit self.GetSequence<T>().FirstOrDefault(aBlock);
 end;
 
 extension method INSFastEnumeration<T>.FirstOrDefault<T>(): T; public;
+where T is NSObject;
 begin
-  exit self.GetSequence.FirstOrDefault();
+  exit self.GetSequence<T>().FirstOrDefault();
 end;
 
 [SymbolName('__elements_ObjcClassInfoToString'), Used]

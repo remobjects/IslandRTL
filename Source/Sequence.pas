@@ -13,10 +13,12 @@ type
   end;
 
   IEnumerable<T> = public interface(IEnumerable)
+  where T is unconstrained;
     method GetEnumerator: IEnumerator<T>;
   end;
 
   IEnumerator<T> = public interface(IEnumerator)
+  where T is unconstrained;
     property Current: T read;
   end;
 
