@@ -5,10 +5,10 @@ type
   private
   end;
 
+  {$IF DARWIN}
   ImmutableList_Cocoa<T> = public extension class(ImmutableList<T>) where T is CocoaObject;
   public
 
-    {$IF DARWIN}
     constructor(aArray: Foundation.NSArray<T>);
     begin
       constructor(aArray.count);
@@ -20,8 +20,8 @@ type
     begin
       result := new ImmutableList<T>(aArray);
     end;
-    {$ENDIF}
 
   end;
+{$ENDIF}
 
 end.
