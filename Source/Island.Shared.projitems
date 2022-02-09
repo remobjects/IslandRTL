@@ -95,6 +95,8 @@
     <Compile Include="$(MSBuildThisFileDirectory)Memory.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)DateParser.pas" />
     <Compile Include="$(MSBuildThisFileDirectory)DateFormatter.pas" />
+    <Compile Include="$(MSBuildThisFileDirectory)Bridges.Delphi.pas" />
+    <Compile Include="$(MSBuildThisFileDirectory)List.Extensions.pas" />
   </ItemGroup>
   <ItemGroup>
     <Folder Include="Streams">

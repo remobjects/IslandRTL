@@ -6,16 +6,13 @@ uses
   Foundation;
 
 type
-  IslandObject = public System.Object;
-  IslandString = public System.String;
-  IslandException = public System.Exception;
   CocoaObject = public Foundation.NSObject;
   CocoaString = public Foundation.NSString;
   CocoaException = public Foundation.NSException;
   SwiftException = public Foundation.NSException; // hack for now
 
   //[Swift]
-{$IF not WATCHOS and not TVOS}
+  {$IF not WATCHOS and not TVOS}
   SwiftObject = public abstract class
   public
     constructor; empty;
@@ -35,10 +32,11 @@ type
   RemObjects.Elements.System.Swift.Hashable = public interface(Swift.Equatable) // hack for now
     property hashValue: Integer read;
   end;
+
   RemObjects.Elements.System.Swift.Object = public SwiftObject;
   RemObjects.Elements.System.Swift.String = public SwiftString;
   RemObjects.Elements.System.Swift.Exception = public SwiftException;
-{$ENDIF}
+  {$ENDIF}
 
   RemObjects.Elements.System.Island.Object = public IslandObject;
   RemObjects.Elements.System.Island.String = public IslandString;

@@ -5,6 +5,7 @@ type
   Comparison<T> = public delegate (x: T; y: T): Integer;
 
   ImmutableList<T> = public class(IEnumerable<T>, ICollection)
+    where T is unconstrained;
   unit
     var fItems: array of T;
     var fCount: Integer := 0;
@@ -47,9 +48,14 @@ type
 
     method IsEqual(Item1, Item2: T): Boolean;
     begin
-      if (Item1 = nil) and (Item2 = nil) then exit true;
-      if (Item1 = nil) or (Item2 = nil) then exit false;
-      exit Item1.Equals(Item2);
+      if not assigned(Item1) and not assigned(Item2) then exit true;
+      if not assigned(Item1) or not assigned(Item2) then exit false;
+      case modelOf(T) of
+        "Island": exit (Item1 as IslandObject).Equals(Item2 as IslandObject);
+        "Cocoa": exit (Item1 as CocoaObject).isEqualTo(Item2 as CocoaObject);
+        "Swift": exit (Item1 as SwiftObject).Equals(Item2 as SwiftObject);
+        else raise new Exception($"Unexpected objetc model {modelOf(T)}");
+      end;
     end;
 
     method CalcCapacity(aNewCapacity: Integer): Integer;
@@ -99,7 +105,7 @@ type
       exit GetEnumerator;
     end;
 
-    method PrivateAdd(anItem: Object);
+    method PrivateAdd(anItem: T); assembly;
     begin
       if fCount = Capacity then Grow(Capacity+1);
       fItems[fCount] := T(anItem);
@@ -151,7 +157,7 @@ type
     begin
       if aSequence.Any then begin
         for each s in aSequence do
-          &PrivateAdd(s);
+          PrivateAdd(s);
       end
       else begin
         Clear();
@@ -165,12 +171,12 @@ type
     end;
 
     {$IF DARWIN}
-    constructor(aArray: Foundation.NSArray<T>);
-    begin
-      constructor(aArray.count);
-      for i: Integer := 0 to aArray.count-1 do
-        PrivateAdd(aArray[i]);
-    end;
+    //constructor(aArray: Foundation.NSArray<T>);
+    //begin
+      //constructor(aArray.count);
+      //for i: Integer := 0 to aArray.count-1 do
+        //PrivateAdd(aArray[i]);
+    //end;
 
     method ToNSArray: Foundation.NSArray<T>; inline;
     begin
@@ -185,10 +191,10 @@ type
       result := lResult;
     end;
 
-    operator Explicit(aArray: Foundation.NSArray<T>): ImmutableList<T>;
-    begin
-      result := new ImmutableList<T>(aArray);
-    end;
+    //operator Explicit(aArray: Foundation.NSArray<T>): ImmutableList<T>;
+    //begin
+      //result := new ImmutableList<T>(aArray);
+    //end;
 
     operator Explicit(aArray: ImmutableList<T>): Foundation.NSArray<T>;
     begin
@@ -210,17 +216,12 @@ type
     begin
       for i : Integer := 0 to fCount-1 do
         if IsEqual(Item[i], anItem) then exit true;
-
-      exit false;
     end;
-
 
     method Exists(Match: Predicate<T>): Boolean;
     begin
       for i : Integer := 0 to fCount-1 do
         if Match(Item[i]) then exit true;
-
-      exit false;
     end;
 
     method FindIndex(Match: Predicate<T>): Integer;
