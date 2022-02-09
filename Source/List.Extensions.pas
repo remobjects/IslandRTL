@@ -1,4 +1,4 @@
-﻿namespace Island.Shared;
+﻿namespace RemObjects.Elements.System;
 
 type
   ImmutableList_Island<T> = public extension class(ImmutableList<T>) where T is IslandObject;
