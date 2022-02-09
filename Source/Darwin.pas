@@ -112,9 +112,10 @@ type
     end;
   end;
 
-  extension method INSFastEnumeration.GetSequence: sequence of id; public;
+  extension method INSFastEnumeration.GetSequence: sequence of id; public; iterator;
   begin
-    exit INSFastEnumeration<id>(self).GetSequence;
+    for each el in self do
+      yield el;
   end;
 
 type
