@@ -219,8 +219,6 @@ begin
     yield el as T;
 end;
 
-type
-  IDBlock = public block(aItem: not nullable id): id;
 
 extension method Foundation.INSFastEnumeration.dictionary(aKeyBlock: IDBlock; aValueBlock: IDBlock): not nullable NSDictionary; public;
 begin

@@ -428,11 +428,15 @@ end;
 
 method String.EqualsIgnoreCase(aOther: String): Boolean;
 begin
+  if aOther = nil then exit false;
+  if aOther.Length <> Length then exit false;
   exit ToLower().Equals(aOther:ToLower());
 end;
 
 method String.EqualsIgnoreCaseInvariant(aOther: String): Boolean;
 begin
+  if aOther = nil then exit false;
+  if aOther.Length <> Length then exit false;
   exit ToLowerInvariant().Equals(aOther:ToLowerInvariant());
 end;
 
