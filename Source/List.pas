@@ -52,7 +52,7 @@ type
       if not assigned(Item1) or not assigned(Item2) then exit false;
       case modelOf(T) of
         "Island": exit (Item1 as IslandObject).Equals(Item2 as IslandObject);
-        "Cocoa": {$IF DARWIN}exit (Item1 as CocoaObject).isEqualTo(Item2 as CocoaObject);{$ENDIF}
+        "Cocoa": {$IF DARWIN}exit (Item1 as CocoaObject).isEqual(Item2 as CocoaObject);{$ENDIF}
         "Swift": {$IF DARWIN}exit (Item1 as SwiftObject).Equals(Item2 as SwiftObject);{$ENDIF}
         else raise new Exception($"Unexpected objetc model {modelOf(T)}");
       end;

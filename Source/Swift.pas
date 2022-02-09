@@ -1,6 +1,5 @@
 ﻿namespace RemObjects.Elements.System;
 
-{$IF not WATCHOS and not TVOS}
 type
   SwiftStrong<T> = public lifetimestrategy (SwiftStrong) T;
   OnceCallback = public procedure(ctx: ^Void);
@@ -585,6 +584,5 @@ type
   simd.simd_double4x4 = public rtl.simd_double4x4;
   simd.simd_quatf = public rtl.simd_quatf;
   simd.simd_quatd = public rtl.simd_quatd;
-{$ENDIF}
 
 end.

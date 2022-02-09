@@ -1,4 +1,5 @@
 ﻿namespace RemObjects.Elements.System;
+
 type
   SwiftObject<T> = public record
   private
@@ -20,7 +21,6 @@ type
     constructor;
     begin
     end;
-
 
     method AllocateEmpty;
     begin

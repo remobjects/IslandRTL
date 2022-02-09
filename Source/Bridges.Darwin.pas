@@ -12,7 +12,6 @@ type
   SwiftException = public Foundation.NSException; // hack for now
 
   //[Swift]
-  {$IF not WATCHOS and not TVOS}
   SwiftObject = public abstract class
   public
     constructor; empty;
@@ -36,11 +35,7 @@ type
   RemObjects.Elements.System.Swift.Object = public SwiftObject;
   RemObjects.Elements.System.Swift.String = public SwiftString;
   RemObjects.Elements.System.Swift.Exception = public SwiftException;
-  {$ENDIF}
 
-  RemObjects.Elements.System.Island.Object = public IslandObject;
-  RemObjects.Elements.System.Island.String = public IslandString;
-  RemObjects.Elements.System.Island.Exception = public IslandException;
   RemObjects.Elements.System.Cocoa.Object = public CocoaObject;
   RemObjects.Elements.System.Cocoa.String = public CocoaString;
   RemObjects.Elements.System.Cocoa.Exception = public CocoaException;

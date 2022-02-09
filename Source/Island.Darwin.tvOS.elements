@@ -51,6 +51,10 @@
     <Compile Include="DarwinNumbers.pas" />
     <Compile Include="Swift.pas" />
     <Compile Include="Posix_FFI_ARM64.pas" />
+    <Compile Include="SwiftString.pas" />
+    <Compile Include="SwiftObject.pas" />
+    <Compile Include="SwiftAny.pas" />
+    <Compile Include="SwiftArray.pas" />
   </ItemGroup>
   <ItemGroup>
     <Reference Include="gc" />
