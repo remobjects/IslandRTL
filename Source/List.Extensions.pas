@@ -22,6 +22,21 @@ type
     end;
 
   end;
+
+  List_Cocoa<T> = public extension class(List<T>) where T is CocoaObject;
+  public
+
+    constructor(aArray: Foundation.NSArray<T>);
+    begin
+      inherited constructor(aArray);
+    end;
+
+    operator Explicit(aArray: Foundation.NSMutableArray<T>): List<T>;
+    begin
+      result := new List<T>(aArray);
+    end;
+
+  end;
 {$ENDIF}
 
 end.
