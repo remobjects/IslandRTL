@@ -54,7 +54,10 @@ type
         "Island": exit (Item1 as IslandObject).Equals(Item2 as IslandObject);
         "Cocoa": {$IF DARWIN}exit (Item1 as CocoaObject).isEqual(Item2 as CocoaObject);{$ENDIF}
         "Swift": {$IF DARWIN}exit (Item1 as SwiftObject).Equals(Item2 as SwiftObject);{$ENDIF}
-        else raise new Exception($"Unexpected objetc model {modelOf(T)}");
+        "Delphi": raise new Exception($"This feature is not supported for Delphi Objects (yet)");
+        "COM": raise new Exception($"This feature is not supported for COM Objects");
+        "JNI": raise new Exception($"This feature is not supported for JNI Objects");
+        else raise new Exception($"Unexpected object model {modelOf(T)}");
       end;
     end;
 
