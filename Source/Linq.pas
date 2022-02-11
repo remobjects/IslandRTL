@@ -956,7 +956,13 @@ end;
 
 extension method RemObjects.Elements.System.INSFastEnumeration<T>.Cast<R>(): not nullable RemObjects.Elements.System.INSFastEnumeration<R>; public;
 begin
+  {$IF DARWIN}
+  raise new NotImplementedException("Not implemented for Darwin right now");
+  //exit Foundation.INSFastEnumeration(self).Cast<R>(); // W46 Potential null value is implicitly cast to "not nullable INSFastEnumeration<R>"
+                                                      // E62 Type mismatch, cannot assign "not nullable sequence of R" to "not nullable INSFastEnumeration<R>"
+  {$ELSE}
   exit Foundation.INSFastEnumeration(self).Cast<R>();
+  {$ENDIF}
 end;
 
 extension method RemObjects.Elements.System.INSFastEnumeration<T>.Concat(aSecond: not nullable RemObjects.Elements.System.INSFastEnumeration<T>): not nullable RemObjects.Elements.System.INSFastEnumeration<T>; public;
