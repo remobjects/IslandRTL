@@ -6,6 +6,7 @@
     <SharedGUID>8BE19C06-DD7E-41F7-954B-6D269C087E4C</SharedGUID>
     <Import_RootNamespace>Island.Shared.elements</Import_RootNamespace>
     <ProjectGuid>{8BE19C06-DD7E-41F7-954B-6D269C087E4C}</ProjectGuid>
+    <RootNamespace>RemObjects.Elements.System</RootNamespace>
   </PropertyGroup>
   <ItemGroup>
     <Compile Include="$(MSBuildThisFileDirectory)Attributes.pas" />
