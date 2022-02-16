@@ -91,7 +91,7 @@ type
 
 
   extension method INSFastEnumeration<T>.GetSequence<T>: sequence of T; iterator; public;
-  where T is NSObject;
+  where T is unconstrained;
   begin
     var lState: NSFastEnumerationState;
     var lDest: array[0..3] of T;
