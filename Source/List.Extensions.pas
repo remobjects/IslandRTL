@@ -1,10 +1,6 @@
 ﻿namespace RemObjects.Elements.System;
 
 type
-  ImmutableList_Island<T> = public extension class(ImmutableList<T>) where T is IslandObject;
-  private
-  end;
-
   {$IF DARWIN}
   ImmutableList_Cocoa<T> = public extension class(ImmutableList<T>) where T is CocoaObject;
   public
@@ -37,6 +33,6 @@ type
     end;
 
   end;
-{$ENDIF}
+  {$ENDIF}
 
 end.
