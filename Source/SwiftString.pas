@@ -143,7 +143,7 @@ type
       var lView := __UTF16View(_countAndFlagsBits, _object);
       var lCount := UTF16View.UTF16Count(lView._countAndFlagsBits, lView._object);
       var lVal := new Char[lCount];
-      if lVal.Length = 0 then exit 0;
+      if lVal.Length = 0 then exit nil;
       var lFirst := UTF16View.UTF16FirstIndex(lView._countAndFlagsBits, lView._object);
       lVal[0] := UTF16View.UTF16GetChar(lFirst, lView._countAndFlagsBits, lView._object);
       for i: Integer := 1 to lCount -1 do begin
