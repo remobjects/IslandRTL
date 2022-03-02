@@ -1011,7 +1011,7 @@ type
   method setjmp(val: ^Void): Integer; empty;
 
   [SymbolNameAttribute('vsnprintf')]
-  method __vsnprintf; empty;
+  method __vsnprintf(a,b,c,d: Integer): Integer; empty;
   [SymbolName('atoi')]
   method atoi(a: ^AnsiChar): Integer; empty; // used by GC but since getenv never returns a value, this will never hit
   [SymbolName('atol')]
@@ -1060,10 +1060,10 @@ type
   [SymbolName('clock')]
   method Clock: Integer; empty;
   [SymbolName('write')]
-  method Write; begin ExternalCalls.trap; end;
+  method Write(a,b,c,d: Integer): Integer; begin ExternalCalls.trap; end;
   [SymbolName('atexit')]
     //{$ENDIF}
-  method atexit(func: ^Void); empty; // not triggered for WASM
+  method atexit(func: ^Void): ^Void; empty; // not triggered for WASM
   [SymbolName('getenv')]
   method __GetEnv(increment: Integer): ^Byte; empty;
 
