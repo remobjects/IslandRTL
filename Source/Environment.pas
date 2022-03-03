@@ -12,6 +12,8 @@ type
     begin
       {$IFDEF WINDOWS}
       exit 'Windows';
+      {$ELSEIF FUCHSIA}
+      exit 'Fuchsia';
       {$ELSEIF POSIX}
       var str : rtl.__struct_utsname;
       if rtl.uname(@str) = 0 then exit String.FromPAnsiChars(str.sysname);
