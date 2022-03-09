@@ -204,7 +204,9 @@ begin
   exit Encoding.UTF8.GetString(b);
   {$ELSE}
   var lNewData: ^AnsiChar := nil;
+  {$HIDE W37}
   var lNewLen: rtl.size_t := iconv_helper(TextConvert.fCurrentToUtf16, c, aCharCount, aCharCount * 2 + 5, out lNewData);
+  {$SHOW W37}
   // method iconv_helper(cd: rtl.iconv_t; inputdata: ^AnsiChar; inputdatalength: rtl.size_t;outputdata: ^^AnsiChar; outputdatalength: ^rtl.size_t; suggested_output_length: Integer): Integer;
   if lNewLen <> -1  then begin
     result := String.FromPChar(^Char(lNewData), lNewLen / 2);
@@ -227,8 +229,9 @@ begin
     memcpy(@result[0], @b[0], b.Length);
   {$ELSE}
   var lNewData: ^AnsiChar := nil;
+  {$HIDE W37}
   var lNewLen: rtl.size_t := iconv_helper(TextConvert.fUTF16ToCurrent, ^AnsiChar(@fFirstChar), Length * 2, Length + 5, out lNewData);
-
+  {$SHOW W37}
   if lNewLen <> rtl.size_t(-1)  then begin
     result := new AnsiChar[lNewLen+ if aNullTerminate then 1 else 0];
     if lNewLen <> 0 then
