@@ -1,6 +1,7 @@
 ﻿namespace RemObjects.Elements.System;
 
 interface
+
 {$IFNDEF NOFILES}
 type
   IOException = public class(Exception)
@@ -13,6 +14,8 @@ type
   PlatformHandle = rtl.HANDLE;
   {$ELSEIF ANDROID OR DARWIN or ARM64}
   PlatformHandle = ^rtl.FILE;
+  {$ELSEIF FUCHSIA}
+  PlatformHandle = ^rtl.zx_handle_t;
   {$ELSEIF POSIX}
   PlatformHandle = ^rtl._IO_FILE;
   {$ENDIF}
