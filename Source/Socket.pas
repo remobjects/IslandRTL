@@ -327,6 +327,8 @@ begin
     lBytes[i] := lSockAddr^.sin6_addr.in6_u.u6_addr8[i];
     {$ELSEIF DARWIN}
     lBytes[i] := lSockAddr^.sin6_addr.__u6_addr.__u6_addr8[i];
+    {$ELSEIF FUCHSIA}
+    {$WARNING Not Implememnted for Fuchsia yet}
     {$ELSEIF POSIX}
     lBytes[i] := lSockAddr^.sin6_addr.__in6_u.__u6_addr8[i];
     {$ELSE}
@@ -392,6 +394,8 @@ begin
   IPEndPointToNative(lEndPoint, out lSockAddr4, out lSockAddr6, out lPointer, out lSize);
   if rtl.getnameinfo(^rtl.SOCKADDR(lPointer), lSize, @lName[0], 255, @lService[0], 255, 0) = 0 then
     lHostName := String.FromPChar(@lName[0])
+  {$ELSEIF FUCHSIA}
+  {$WARNING Not Implememnted for Fuchsia yet}
   {$ELSEIF POSIX}
   var lSockAddr4: rtl.__struct_sockaddr_in;
   var lSockAddr6: rtl.__struct_sockaddr_in6;
@@ -443,6 +447,8 @@ begin
     end;
     lPtr := rtl.PADDRINFOW(lPtr^.ai_next);
   end;
+  {$ELSEIF FUCHSIA}
+  {$WARNING Not Implememnted for Fuchsia yet}
   {$ELSEIF POSIX}
   var lAddrInfo: ^rtl.__struct_addrinfo;
   var lSockAddr4: ^rtl.__struct_sockaddr_in;
@@ -557,6 +563,8 @@ begin
         lIPv6.sin6_addr.__u6_addr.__u6_addr8[i] := lBytes[i];
         {$ELSEIF ANDROID}
         lIPv6.sin6_addr.in6_u.u6_addr8[i] := lBytes[i];
+        {$ELSEIF FUCHSIA}
+        {$WARNING Not Implememnted for Fuchsia yet}
         {$ELSEIF POSIX}
         lIPv6.sin6_addr.__in6_u.__u6_addr8[i] := lBytes[i];
         {$ENDIF}
@@ -823,6 +831,8 @@ begin
       {$ENDIF}
     aIPEndPoint.Address := new IPAddress(lBytes, lSockAddrIn6^.sin6_scope_id);
   end;
+  {$ELSEIF FUCHSIA}
+  {$WARNING Not Implememnted for Fuchsia yet}
   {$ELSEIF POSIX AND NOT DARWIN}
   var lSockAddrIn: ^rtl.__struct_sockaddr_in := ^rtl.__SOCKADDR_ARG(aBuffer)^.__sockaddr_in__;
   if lSockAddrIn^.sin_family = rtl.USHORT(AddressFamily.InterNetwork) then begin

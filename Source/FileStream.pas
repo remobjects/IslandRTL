@@ -87,6 +87,8 @@ begin
                               end);
   {$IFDEF ANDROID or DARWIN}
   fHandle := rtl.fopen(FileName.ToFileName(),@s);
+  {$ELSEIF FUCHSIA}
+  {$WARNING Not Implememnted for Fuchsia yet}
   {$ELSE}
   fHandle := rtl.fopen64(FileName.ToFileName(),@s);
   {$ENDIF}
@@ -147,10 +149,15 @@ begin
   result := rtl.fseek(fHandle, Offset, lOrigin);
   CheckForIOError(result);
   result := rtl.ftell(fHandle);
+  {$ELSEIF FUCHSIA}
+  CheckForIOError(rtl.fseeko(fHandle, Offset, lOrigin));
+  var pos: rtl.fpos_t;
+  CheckForIOError(rtl.fgetpos(fHandle, @pos));
+  exit pos.__pos;
   {$ELSE}
   CheckForIOError(rtl.fseeko64(fHandle, Offset, lOrigin));
   var pos: rtl._G_fpos64_t;
-  CheckForIOError(rtl.fgetpos64(fHandle,@pos));
+  CheckForIOError(rtl.fgetpos64(fHandle, @pos));
   exit pos.__pos;
   {$ENDIF}
   {$ELSE}
@@ -162,15 +169,15 @@ method FileStream.Close;
 begin
   if IsValid then begin
     if CanWrite then Flush;
-  {$IFDEF WINDOWS}
+    {$IFDEF WINDOWS}
     rtl.CloseHandle(fHandle);
     fHandle := rtl.INVALID_HANDLE_VALUE;
-  {$ELSEIF POSIX}
+    {$ELSEIF POSIX}
     CheckForIOError(rtl.fclose(fHandle));
     fHandle := nil;
-  {$ELSE}
+    {$ELSE}
     {$ERROR}
-  {$ENDIF}
+    {$ENDIF}
   end;
 end;
 
@@ -180,7 +187,7 @@ begin
   Seek(value, SeekOrigin.Begin);
   {$IFDEF WINDOWS}
   CheckForIOError(rtl.SetEndOfFile(fHandle));
-  {$ELSEIF DARWIN}
+  {$ELSEIF DARWIN OR FUCHSIA}
   {$HINT POSIX FileStream.SetLength. it may not work correctly, because _IO_FILE could be no updated }
   var fd := rtl.fileno(fHandle);
   CheckForIOError(rtl.ftruncate(fd, value));

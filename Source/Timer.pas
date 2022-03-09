@@ -112,6 +112,8 @@ begin
   if not fRepeat then lRepeat := 0;
     if not rtl.CreateTimerQueueTimer(@fTimer, fTimerQueue, @TimerCallback, InternalCalls.Cast(self), fInterval, lRepeat, 0) then
     raise new Exception('Can not create new timer');
+  {$ELSEIF FUCHSIA}
+  {$WARNING Not Implememnted for Fuchsia yet}
   {$ELSEIF LINUX OR ANDROID}
   var lSigEv: rtl.sigevent_t;
   lSigEv.sigev_notify := rtl.SIGEV_THREAD;

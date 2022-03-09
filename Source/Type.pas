@@ -654,6 +654,8 @@ type
       result := FFI.Call(Pointer, cc, var lParams, lModes, lTypes, &Type);
       {$ELSEIF ANDROID}
       raise new NotImplementedException();
+      {$ELSEIF FUCHSIA}
+      {$WARNING Not Implememnted for Fuchsia yet}
       {$ELSEIF POSIX}
         //{$IFDEF cpu64 and not ARM}
         {$IFDEF cpu64 OR (ARM AND CPU64)}

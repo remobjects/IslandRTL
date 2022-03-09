@@ -221,7 +221,7 @@ begin
   if lTemp.Length > 0 then
   lThousandsSep := lTemp[0];
   {$ELSEIF LINUX AND NOT ANDROID}
-  var lTemp := rtl.nl_langinfo_l(rtl.THOUSANDS_SEP, fLocaleID);
+  var lTemp := rtl.nl_langinfo_l({$IF FUCHSIA}rtl.THOUSEP{$ELSE}rtl.THOUSANDS_SEP{$ENDIF}, fLocaleID);
   if lTemp <> nil then begin
     var lTempString := String.FromPAnsiChars(lTemp);
     if lTempString.Length > 0 then
@@ -306,6 +306,8 @@ begin
   if lLength = 0 then
     raise new Exception("Error getting locale name");
   result := String.FromPChar(@lName[0], lLength) as not nullable;
+  {$ELSEIF FUCHSIA}
+  {$WARNING Not Implememnted for Fuchsia yet}
   {$ELSEIF LINUX AND NOT ANDROID}
   var lName := rtl.nl_langinfo_l(rtl._NL_IDENTIFICATION_LANGUAGE, fLocaleID);
   if lName = nil then
