@@ -1095,17 +1095,6 @@ begin
   var lTotal := CoreFoundation.CFStringGetLength(lTmp); // need to get converted string length, it can change
   result := String.AllocString(lTotal);
   CoreFoundation.CFStringGetCharacters(lTmp, CoreFoundation.CFRangeMake(0, lTotal), ^rtl.UniChar(@result.fFirstChar));
-  {$ELSEIF POSIX AND NOT ANDROID}
-  var b := Encoding.UTF32LE.GetBytes(self);
-  for i: Int32 := 0 to RemObjects.Elements.System.length(b)-1 step 4 do begin
-    var ch := b[i] + (Int32(b[i+1]) shl 8) + (Int32(b[i+2]) shl 16) + (Int32(b[i+3]) shl 24);
-    var u := rtl.towlower_l(ch, aLocale.PlatformLocale);
-    b[i] := u and $ff;
-    b[i+1] := (u shr 8) and $ff;
-    b[i+2] := (u shr 16) and $ff;
-    b[i+3] := (u shr 24) and $ff;
-  end;
-  result := Encoding.UTF32LE.GetString(b);
   {$ELSEIF ANDROID}
   result := AllocString(self.Length);
   var lErr: UErrorCode;
@@ -1116,6 +1105,29 @@ begin
     if lErr <> UErrorCode.U_ZERO_ERROR then
       raise new Exception('Error calling u_strToLower');
   end;
+  {$ELSEIF FUCHSIA}
+  var b := Encoding.UTF32LE.GetBytes(self);
+  for i: Int32 := 0 to RemObjects.Elements.System.length(b)-1 step 4 do begin
+    var ch := b[i] + (Int32(b[i+1]) shl 8) + (Int32(b[i+2]) shl 16) + (Int32(b[i+3]) shl 24);
+    {$WARNING Does not honor Locale yet}
+    var u := rtl.towlower(ch/*, aLocale.PlatformLocale*/);
+    b[i] := u and $ff;
+    b[i+1] := (u shr 8) and $ff;
+    b[i+2] := (u shr 16) and $ff;
+    b[i+3] := (u shr 24) and $ff;
+  end;
+  result := Encoding.UTF32LE.GetString(b);
+  {$ELSEIF POSIX}
+  var b := Encoding.UTF32LE.GetBytes(self);
+  for i: Int32 := 0 to RemObjects.Elements.System.length(b)-1 step 4 do begin
+    var ch := b[i] + (Int32(b[i+1]) shl 8) + (Int32(b[i+2]) shl 16) + (Int32(b[i+3]) shl 24);
+    var u := rtl.towlower_l(ch, aLocale.PlatformLocale);
+    b[i] := u and $ff;
+    b[i+1] := (u shr 8) and $ff;
+    b[i+2] := (u shr 16) and $ff;
+    b[i+3] := (u shr 24) and $ff;
+  end;
+  result := Encoding.UTF32LE.GetString(b);
   {$ENDIF}
 end;
 
@@ -1133,17 +1145,6 @@ begin
   var lTotal := CoreFoundation.CFStringGetLength(lTmp);
   result := String.AllocString(lTotal);
   CoreFoundation.CFStringGetCharacters(lTmp, CoreFoundation.CFRangeMake(0, lTotal), ^rtl.UniChar(@result.fFirstChar));
-  {$ELSEIF POSIX AND NOT ANDROID}
-  var b := Encoding.UTF32LE.GetBytes(self);
-  for i: Int32 := 0 to RemObjects.Elements.System.length(b)-1 step 4 do begin
-    var ch := b[i] + (Int32(b[i+1]) shl 8) + (Int32(b[i+2]) shl 16) + (Int32(b[i+3]) shl 24);
-    var u := rtl.towupper_l(ch, aLocale.PlatformLocale);
-    b[i] := u and $ff;
-    b[i+1] := (u shr 8) and $ff;
-    b[i+2] := (u shr 16) and $ff;
-    b[i+3] := (u shr 24) and $ff;
-  end;
-  result := Encoding.UTF32LE.GetString(b);
   {$ELSEIF ANDROID}
   result := AllocString(self.Length);
   var lErr: UErrorCode;
@@ -1154,6 +1155,29 @@ begin
     if lErr <> UErrorCode.U_ZERO_ERROR then
       raise new Exception('Error calling u_strToLower');
   end;
+  {$ELSEIF FUCHSIA}
+  var b := Encoding.UTF32LE.GetBytes(self);
+  for i: Int32 := 0 to RemObjects.Elements.System.length(b)-1 step 4 do begin
+    var ch := b[i] + (Int32(b[i+1]) shl 8) + (Int32(b[i+2]) shl 16) + (Int32(b[i+3]) shl 24);
+    {$WARNING Does not honor Locale yet}
+    var u := rtl.towupper(ch/*, aLocale.PlatformLocale*/);
+    b[i] := u and $ff;
+    b[i+1] := (u shr 8) and $ff;
+    b[i+2] := (u shr 16) and $ff;
+    b[i+3] := (u shr 24) and $ff;
+  end;
+  result := Encoding.UTF32LE.GetString(b);
+  {$ELSEIF POSIX}
+  var b := Encoding.UTF32LE.GetBytes(self);
+  for i: Int32 := 0 to RemObjects.Elements.System.length(b)-1 step 4 do begin
+    var ch := b[i] + (Int32(b[i+1]) shl 8) + (Int32(b[i+2]) shl 16) + (Int32(b[i+3]) shl 24);
+    var u := rtl.towupper_l(ch, aLocale.PlatformLocale);
+    b[i] := u and $ff;
+    b[i+1] := (u shr 8) and $ff;
+    b[i+2] := (u shr 16) and $ff;
+    b[i+3] := (u shr 24) and $ff;
+  end;
+  result := Encoding.UTF32LE.GetString(b);
   {$ENDIF}
 end;
 
