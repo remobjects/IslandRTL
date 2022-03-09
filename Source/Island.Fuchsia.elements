@@ -44,6 +44,7 @@
   <ItemGroup>
     <Compile Include="BoehmGC.pas" />
     <Compile Include="ManagedThreadPool.pas" />
+    <Compile Include="FuchsiaHelpers.pas" />
   </ItemGroup>
   <ItemGroup>
     <Reference Include="gc" />
