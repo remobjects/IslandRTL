@@ -622,7 +622,7 @@ type
       var l_Arguments_Count := Arguments.Count;
       if length(aArgs) <> l_Arguments_Count then raise new ArgumentException('incorrect size of aArgs parameter');
       var cc: CallingConvention := CallingConvention.Default;
-      {$IFNDEF cpu64}
+      {$IFNDEF CPU64}
       var lst := Attributes.Where(b->b.Type = typeOf(CallingConventionAttribute)).ToList;
       if lst.Count >0 then cc := CallingConvention(Int64(lst[0].Arguments[0].Value));
       {$ENDIF}
@@ -634,7 +634,8 @@ type
       if dx = 1 then begin
         lParams[0] := aInstance;
         var lDeclaringType := DeclaringType;
-        if Utilities.IsInstance(aInstance, lDeclaringType.fValue) = nil then raise new ArgumentException('Instance must be compatible with method declaring type');
+        if Utilities.IsInstance(aInstance, lDeclaringType.fValue) = nil then
+          raise new ArgumentException('Instance must be compatible with method declaring type');
         {$IFDEF WEBASSEMBLY}
         if DeclaringType.IsValueType then
           lParams[0] := ^IntPtr(@aInstance)^ + DeclaringType.BoxedDataOffset;
@@ -653,9 +654,10 @@ type
       {$IFDEF WINDOWS}
       result := FFI.Call(Pointer, cc, var lParams, lModes, lTypes, &Type);
       {$ELSEIF ANDROID}
-      raise new NotImplementedException();
+      raise new NotImplementedException($"MethodInfo.Invoke is not implemented for Island/Android yet.");
       {$ELSEIF FUCHSIA}
       {$WARNING Not Implememnted for Fuchsia yet}
+      raise new NotImplementedException($"MethodInfo.Invoke is not implemented for Island/Fuchsia yet.");
       {$ELSEIF POSIX}
         //{$IFDEF cpu64 and not ARM}
         {$IFDEF cpu64 OR (ARM AND CPU64)}
@@ -663,11 +665,13 @@ type
         result := FFI.Call(Pointer, cc, var lParams, lModes, lTypes, &Type);
         {$ELSE}
         // ARMv6 wasn't supported yet
-        raise new NotImplementedException();
+        raise new NotImplementedException($"MethodInfo.Invoke is not implemented for Island/{Environment.SubMode} on {Environment.BinaryArchitecture} yet.");
         {$ENDIF}
       {$ELSEIF WEBASSEMBLY}
       result := WebAssembly.UnwrapCall(&Type, WebAssembly.InvokeMethod(Pointer, lParams));
-      {$ELSE}{$ERROR}{$ENDIF}
+      {$ELSE}
+      {$ERROR Unsupported SubMode}
+      {$ENDIF}
       for nil in Arguments index i do
         if lModes[i+dx] in [ArgumentMode.Var,ArgumentMode.Out] then
           aArgs[i]:=lParams[i+dx];

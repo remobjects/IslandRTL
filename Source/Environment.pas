@@ -14,13 +14,79 @@ type
       exit 'Windows';
       {$ELSEIF FUCHSIA}
       exit 'Fuchsia';
+      {$ELSEIF DARWIN}
+        {$IF OSX OR UIKITFORMAC}
+        exit "macOS";
+        {$ELSEIF IOS}
+        exit "iOS";
+        {$ELSEIF WATCHOS}
+        exit "watchOS";
+        {$ELSEIF TVOS}
+        exit "tvOS";
+        {$ELSE}
+          {$ERROR Unsupported Apple platform}
+        {$ENDIF}
+      {$ELSEIF ANDROID}
+      exit 'Android';
       {$ELSEIF POSIX}
       var str : rtl.__struct_utsname;
       if rtl.uname(@str) = 0 then exit String.FromPAnsiChars(str.sysname);
       CheckForLastError;
       {$ELSEIF WEBASSEMBLY}
       exit 'WebAssembly';
-      {$ELSE}{$ERROR}{$ENDIF}
+      {$ELSE}
+      {$ERROR Unsupported SubMode}
+      {$ENDIF}
+    end;
+
+    class method GetSubMode: String;
+    begin
+      {$IFDEF WINDOWS}
+      exit 'Windows';
+      {$ELSEIF FUCHSIA}
+      exit 'Fuchsia';
+      {$ELSEIF DARWIN}
+      exit 'Darwin';
+      {$ELSEIF LINUX}
+      exit 'Linux';
+      {$ELSEIF DARWIN}
+      exit 'Android';
+      {$ELSEIF WEBASSEMBLY}
+      exit 'WebAssembly';
+      {$ELSE}
+      {$ERROR Unsupported SubMode}
+      {$ENDIF}
+    end;
+
+    class method GetBinaryArchitecture: String;
+    begin
+      {$IFDEF WINDOWS}
+      result := {$IF i386}"i386"{$ELSEIF x86_64}"x86_64"{$ELSEIF ARM64}"arm64"{$ELSE}{$ERROR Unsupported achitecture}{$ENDIF};
+      {$ELSEIF FUCHSIA}
+      result := {$IF __x86_64__}"x64"{$ELSEIF __aarch64__}"arm64"{$ELSE}{$ERROR Unsupported achitecture}{$ENDIF};
+      {$ELSEIF ANDROID}
+      raise new NotImplementedException($"Environment.GetBinaryArchitecture is not implemented for Island/Android yet.");
+      //result := {$IF arm64_v8a}"arm64-v8a"{$ELSEIF armeabi}"armeabi"{$ELSEIF armeabi_v7a}"armeabi-v7a"{$ELSEIF i386}"x86"{$ELSEIF __x86_64__}"x86_64"{$ELSE}{$ERROR Unsupported achitecture}{$ENDIF}
+      //result := {$IF armeabi}"armeabi"{$ELSEIF armeabi_v7a}"armeabi-v7a"{$ELSEIF x86}"x86"{$ELSEIF x86_64}"x86_64"{$ELSE}nil{$ENDIF}
+      {$ELSEIF LINUX}
+      result := {$IF x86_64}"x86_64"{$ELSEIF aarch64}"arm64"{$ELSEIF armv7}"armv7"{$ELSE}{$ERROR Unsupported achitecture}{$ENDIF};
+      {$ELSEIF WEBASSEMBLY}
+      result := "wasm32";
+      {$ELSEIF DARWIN}
+        {$IF OSX OR UIKITFORMAC OR SIMULATOR}
+        result := {$IF __arm64__}"arm64"{$ELSE}"x86_64"{$ENDIF};
+        {$ELSEIF IOS}
+        result := "arm64";
+        {$ELSEIF WATCHOS}
+        result := {$IF __arm64_32__}"arm64_32"{$ELSE}"armv7k"{$ENDIF};
+        {$ELSEIF TVOS}
+        result := "arm64";
+        {$ELSE}
+          {$ERROR Unsupported Apple platform}
+        {$ENDIF}
+      {$ELSE}
+      {$ERROR Unsupported SubMode}
+      {$ENDIF}
     end;
 
     class method GetOSVersion: String;
@@ -39,13 +105,19 @@ type
       {$ELSEIF WEBASSEMBLY}
       var lHandle := WebAssemblyCalls.GetOSName;
       exit WebAssembly.GetStringFromHandle(lHandle, true);
-      {$ELSE}{$ERROR}{$ENDIF}
+      {$ELSE}
+      {$ERROR Unsupported SubMode}
+      {$ENDIF}
     end;
+
   public
     property NewLine: String read {$IFDEF WINDOWS OR WEBASSEMBLY}#13#10{$ELSEIF POSIX}#10{$ELSE}{$ERROR}{$ENDIF};
     property UserName: String read GetUserName;
     property OSName: String read GetOSName;
     property OSVersion: String read GetOSVersion;
+
+    property SubMode: String read GetSubMode;
+    property BinaryArchitecture: String read GetBinaryArchitecture;
     property ApplicationContext: Object read write;
 
     method GetEnvironmentVariable(Name: String): String;
@@ -128,6 +200,7 @@ type
       result := lResult;
     end;
 
+    {$IFNDEF NOFILES}
     method CurrentDirectory: String;
     begin
       {$IFDEF WINDOWS}
@@ -166,7 +239,7 @@ type
       rtl.free(lCwd);
       {$ELSE}{$ERROR}{$ENDIF}
     end;
-    {$IFNDEF NOFILES}
+
     method UserHomeFolder: Folder;
     begin
       var fn: String;
