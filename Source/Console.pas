@@ -47,7 +47,7 @@ begin
   {$ELSE}
   var c := s.ToAnsiChars(true);
   rtl.printf("%s", @c[0]);
- {$ENDIF}
+  {$ENDIF}
 end;
 
 class method Console.WriteLine(s: String);
@@ -134,7 +134,7 @@ begin
   var c := rtl.getchar();
   if c < 0 then exit #0;
   exit AnsiChar(c);
- {$ENDIF}
+  {$ENDIF}
   {$ENDIF}
 end;
 
