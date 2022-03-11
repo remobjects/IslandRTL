@@ -140,7 +140,7 @@ type
     method ToString: String;
   end;
 
-{$IFDEF POSIX AND NOT ANDROID}
+{$IFDEF POSIX_LIGHT AND NOT ANDROID}
 method iconv_helper(cd: rtl.iconv_t; inputdata: ^AnsiChar; inputdatalength: rtl.size_t; suggestedlength: Integer; out aresult: ^AnsiChar): Integer; public;
 {$ENDIF}
 
@@ -164,7 +164,7 @@ begin
   memcpy(@result.fFirstChar, c, aCharCount * 2);
 end;
 
-{$IFDEF POSIX AND NOT ANDROID}
+{$IFDEF POSIX_LIGHT AND NOT ANDROID}
 method iconv_helper(cd: rtl.iconv_t; inputdata: ^AnsiChar; inputdatalength: rtl.size_t; suggestedlength: Integer; out aresult: ^AnsiChar): Integer;
 begin
   var outputdata := ^AnsiChar(rtl.malloc(suggestedlength));

@@ -1,6 +1,6 @@
 ﻿namespace RemObjects.Elements.System;
 
-{$IF NOT WEBASSEMBLY}
+{$IF NOT WEBASSEMBLY AND NOT FUCHSIA}
 
 interface
 

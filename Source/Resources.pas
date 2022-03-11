@@ -36,7 +36,7 @@ type
       aEnd := @fEndRes;
     end;
     {$ENDIF}
-    {$IFDEF LINUX}
+    {$IFDEF LINUX OR FUCHSIA}
     {$HIDE H8}
     var
       [SymbolName('__start_island_res')]

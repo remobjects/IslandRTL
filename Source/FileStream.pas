@@ -120,6 +120,7 @@ begin
   {$ENDIF}
 end;
 
+{$IFDEF FUCHSIA}[Warning("FileStream.Seek is not implemented for Fuchsia, yet.")]{$ENDIF}
 method FileStream.Seek(Offset: Int64; Origin: SeekOrigin): Int64;
 begin
   if not CanSeek then raise new NotSupportedException();
@@ -153,7 +154,9 @@ begin
   CheckForIOError(rtl.fseeko(fHandle, Offset, lOrigin));
   var pos: rtl.fpos_t;
   CheckForIOError(rtl.fgetpos(fHandle, @pos));
-  exit pos.__pos;
+  raise new NotImplementedException("FileStream.Seek is not implemented for Fuchsia, yet.");
+  {$WARNING FileStream.Seek is not implemented for Fuchsia, yet.}
+  //exit pos.__pos;
   {$ELSE}
   CheckForIOError(rtl.fseeko64(fHandle, Offset, lOrigin));
   var pos: rtl._G_fpos64_t;
