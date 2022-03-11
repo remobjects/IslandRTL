@@ -6,7 +6,7 @@ Public Interface [HTMLInputElement]
   '''The autocomplete attribute is valid on hidden, text, search, url, tel, email, date, month, week, time, datetime-local, number, range, color, and password. This attribute has no effect on input types that do not return numeric or text data, being valid for all input types except checkbox, radio, file, or any of the button types.</summary>
   Property autocomplete As Dynamic
   '''<summary>
-  '''A Boolean attribute which, if present, indicates that the input should automatically have focus when the page has finished loading (or when the <dialog> containing the element has been displayed).
+  '''A Boolean attribute which, if present, indicates that the input should automatically have focus when the page has finished loading (or when the &lt;dialog> containing the element has been displayed).
   '''Note: An element with the autofocus attribute may gain focus before the DOMContentLoaded event is fired.
   '''No more than one element in the document may have the autofocus attribute. If put on more than one element, the first one with the attribute receives focus.
   '''The autofocus attribute cannot be used on inputs of type hidden, since hidden inputs cannot be focused.
@@ -16,7 +16,7 @@ Public Interface [HTMLInputElement]
   '''summary>A Boolean attribute which, if present, indicates that the user should not be able to interact with the input. Disabled inputs are typically rendered with a dimmer color or using some other form of indication that the field is not available for use.
   '''Specifically, disabled inputs do not receive the click event, and disabled inputs are not submitted with the form.</summary>
   Property disabled as Boolean
-  '''summary>A string specifying the <form> element with which the input is associated (that is, its form owner). This string's value, if present, must match the id of a <form> element in the same document. If this attribute isn't specified, the <input> element is associated with the nearest containing form, if any.
+  '''summary>A string specifying the &lt;form> element with which the input is associated (that is, its form owner). This string's value, if present, must match the id of a <form> element in the same document. If this attribute isn't specified, the <input> element is associated with the nearest containing form, if any.
   '''The form attribute lets you place an input anywhere in the document but have it included with a form elsewhere in the document.</summary>
   Property form As String
   '''<summary>Global value valid for all elements, it provides a hint to browsers as to the type of virtual keyboard configuration to use when editing this element or its contents. Values include none, text, tel, url, email, numeric, decimal, and search</summary>
@@ -34,7 +34,7 @@ Public Interface [HTMLInputElement]
   Sub checkValidity()
   '''<summary>Returns true if the element's value passes validity checks; otherwise, returns false.</summary>
   Function reportValidity() As Boolean
-  '''<summary>Selects the entire content of the <input> element, if the element's content is selectable. For elements with no selectable text content (such as a visual color picker or calendar date input), this method does nothing.</summary>
+  '''<summary>Selects the entire content of the &lt;input> element, if the element's content is selectable. For elements with no selectable text content (such as a visual color picker or calendar date input), this method does nothing.</summary>
   Sub [select]()
   '''<summary>Sets a custom message to display if the input element's value isn't valid.</summary>
   Sub setCustomValidity(aParam As String)
@@ -75,7 +75,7 @@ End Interface
 Public Interface [HTMLInputColorElement]
   Inherits HTMLInputElement
 
-  '''<summary>The value given to the list attribute should be the id of a <datalist> element located in the same document. The <datalist> provides a list of predefined values to suggest to the user for this input. Any values in the list that are not compatible with the type are not included in the suggested options. The values provided are suggestions, not requirements: users can select from this predefined list or provide a different value.</summary>
+  '''<summary>The value given to the list attribute should be the id of a &lt;datalist> element located in the same document. The &lt;datalist> provides a list of predefined values to suggest to the user for this input. Any values in the list that are not compatible with the type are not included in the suggested options. The values provided are suggestions, not requirements: users can select from this predefined list or provide a different value.</summary>
   Property list as String
 End Interface
 
@@ -84,7 +84,7 @@ End Interface
 Public Interface [HTMLInputDateElement]
   Inherits HTMLInputElement
 
-  '''<summary>The value given to the list attribute should be the id of a <datalist> element located in the same document. The <datalist> provides a list of predefined values to suggest to the user for this input. Any values in the list that are not compatible with the type are not included in the suggested options. The values provided are suggestions, not requirements: users can select from this predefined list or provide a different value.</summary>
+  '''<summary>The value given to the list attribute should be the id of a &lt;datalist> element located in the same document. The &lt;datalist> provides a list of predefined values to suggest to the user for this input. Any values in the list that are not compatible with the type are not included in the suggested options. The values provided are suggestions, not requirements: users can select from this predefined list or provide a different value.</summary>
   Property list as String
   '''<summary>
   '''Valid for date, month, week, time, datetime-local, number, and range, it defines the greatest value in the range of permitted values. If the value entered into the element exceeds this, the element fails constraint validation. If the value of the max attribute isn't a number, then the element has no maximum value.
@@ -103,7 +103,7 @@ Public Interface [HTMLInputDateElement]
   '''step defaults to 1 for number and range.
   '''For the date/time input types, step is expressed in seconds, with the default step being 60 seconds. The step scale factor is 1000 (which converts the seconds to milliseconds, as used in other algorithms).
   '''The value must be a positive number—integer or float—or the special value any, which means no stepping is implied, and any value is allowed (barring other constraints, such as min and max).
-  '''If any is not explicity set, valid values for the number, date/time input types, and range input types are equal to the basis for stepping — the min value and increments of the step value, up to the max value, if specified.
+  '''If any is not explicity set, valid values for the number, date/time input types, and range input types are equal to the basis for stepping — the min value and increments of the step value, up to the max value, if specified.</summary>
    Property [step] as Boolean
 End Interface
 
@@ -112,7 +112,7 @@ End Interface
 Public Interface [HTMLInputDatTimeLocalElement]
   Inherits HTMLInputElement
 
-  '''<summary>The value given to the list attribute should be the id of a <datalist> element located in the same document. The <datalist> provides a list of predefined values to suggest to the user for this input. Any values in the list that are not compatible with the type are not included in the suggested options. The values provided are suggestions, not requirements: users can select from this predefined list or provide a different value.</summary>
+  '''<summary>The value given to the list attribute should be the id of a &lt;datalist> element located in the same document. The &lt;datalist> provides a list of predefined values to suggest to the user for this input. Any values in the list that are not compatible with the type are not included in the suggested options. The values provided are suggestions, not requirements: users can select from this predefined list or provide a different value.</summary>
   Property list as String
   '''Valid for date, month, week, time, datetime-local, number, and range, it defines the greatest value in the range of permitted values. If the value entered into the element exceeds this, the element fails constraint validation. If the value of the max attribute isn't a number, then the element has no maximum value.
   '''There is a special case: if the data type is periodic (such as for dates or times), the value of max may be lower than the value of min, which indicates that the range may wrap around; for example, this allows you to specify a time range from 10 PM to 4 AM.</summary>
@@ -130,7 +130,7 @@ Public Interface [HTMLInputDatTimeLocalElement]
   '''step defaults to 1 for number and range.
   '''For the date/time input types, step is expressed in seconds, with the default step being 60 seconds. The step scale factor is 1000 (which converts the seconds to milliseconds, as used in other algorithms).
   '''The value must be a positive number—integer or float—or the special value any, which means no stepping is implied, and any value is allowed (barring other constraints, such as min and max).
-  '''If any is not explicity set, valid values for the number, date/time input types, and range input types are equal to the basis for stepping — the min value and increments of the step value, up to the max value, if specified.
+  '''If any is not explicity set, valid values for the number, date/time input types, and range input types are equal to the basis for stepping — the min value and increments of the step value, up to the max value, if specified.</summary>
    Property [step] as Boolean
 End Interface
 
@@ -139,7 +139,7 @@ End Interface
 Public Interface [HTMLInputEmailElement]
   Inherits HTMLInputElement
 
-  '''<summary>The value given to the list attribute should be the id of a <datalist> element located in the same document. The <datalist> provides a list of predefined values to suggest to the user for this input. Any values in the list that are not compatible with the type are not included in the suggested options. The values provided are suggestions, not requirements: users can select from this predefined list or provide a different value.</summary>
+  '''<summary>The value given to the list attribute should be the id of a &lt;datalist> element located in the same document. The &lt;datalist> provides a list of predefined values to suggest to the user for this input. Any values in the list that are not compatible with the type are not included in the suggested options. The values provided are suggestions, not requirements: users can select from this predefined list or provide a different value.</summary>
   Property list as String
   '''<summary>Valid for text, search, url, tel, email, and password, it defines the maximum number of characters (as UTF-16 code units) the user can enter into the field. This must be an integer value 0 or higher. If no maxlength is specified, or an invalid value is specified, the field has no maximum length. This value must also be greater than or equal to the value of minlength.
   '''The input will fail constraint validation if the length of the text entered into the field is greater than maxlength UTF-16 code units long. By default, browsers prevent users from entering more characters than allowed by the maxlength attribute. See Client-side validation for more information.</summary>
@@ -207,7 +207,7 @@ End Interface
 Public Interface [HTMLInputMonthElement]
   Inherits HTMLInputElement
 
-  '''<summary>The value given to the list attribute should be the id of a <datalist> element located in the same document. The <datalist> provides a list of predefined values to suggest to the user for this input. Any values in the list that are not compatible with the type are not included in the suggested options. The values provided are suggestions, not requirements: users can select from this predefined list or provide a different value.</summary>
+  '''<summary>The value given to the list attribute should be the id of a &lt;datalist> element located in the same document. The &lt;datalist> provides a list of predefined values to suggest to the user for this input. Any values in the list that are not compatible with the type are not included in the suggested options. The values provided are suggestions, not requirements: users can select from this predefined list or provide a different value.</summary>
   Property list as String
   '''Valid for date, month, week, time, datetime-local, number, and range, it defines the greatest value in the range of permitted values. If the value entered into the element exceeds this, the element fails constraint validation. If the value of the max attribute isn't a number, then the element has no maximum value.
   '''There is a special case: if the data type is periodic (such as for dates or times), the value of max may be lower than the value of min, which indicates that the range may wrap around; for example, this allows you to specify a time range from 10 PM to 4 AM.</summary>
@@ -225,7 +225,7 @@ Public Interface [HTMLInputMonthElement]
   '''step defaults to 1 for number and range.
   '''For the date/time input types, step is expressed in seconds, with the default step being 60 seconds. The step scale factor is 1000 (which converts the seconds to milliseconds, as used in other algorithms).
   '''The value must be a positive number—integer or float—or the special value any, which means no stepping is implied, and any value is allowed (barring other constraints, such as min and max).
-  '''If any is not explicity set, valid values for the number, date/time input types, and range input types are equal to the basis for stepping — the min value and increments of the step value, up to the max value, if specified.
+  '''If any is not explicity set, valid values for the number, date/time input types, and range input types are equal to the basis for stepping — the min value and increments of the step value, up to the max value, if specified.</summary>
    Property [step] as Boolean
 End Interface
 
@@ -234,7 +234,7 @@ End Interface
 Public Interface [HTMLInputNumberElement]
   Inherits HTMLInputElement
 
-  '''<summary>The value given to the list attribute should be the id of a <datalist> element located in the same document. The <datalist> provides a list of predefined values to suggest to the user for this input. Any values in the list that are not compatible with the type are not included in the suggested options. The values provided are suggestions, not requirements: users can select from this predefined list or provide a different value.</summary>
+  '''<summary>The value given to the list attribute should be the id of a &lt;datalist> element located in the same document. The &lt;datalist> provides a list of predefined values to suggest to the user for this input. Any values in the list that are not compatible with the type are not included in the suggested options. The values provided are suggestions, not requirements: users can select from this predefined list or provide a different value.</summary>
   Property list as String
   '''Valid for date, month, week, time, datetime-local, number, and range, it defines the greatest value in the range of permitted values. If the value entered into the element exceeds this, the element fails constraint validation. If the value of the max attribute isn't a number, then the element has no maximum value.
   '''There is a special case: if the data type is periodic (such as for dates or times), the value of max may be lower than the value of min, which indicates that the range may wrap around; for example, this allows you to specify a time range from 10 PM to 4 AM.</summary>
@@ -252,7 +252,7 @@ Public Interface [HTMLInputNumberElement]
   '''step defaults to 1 for number and range.
   '''For the date/time input types, step is expressed in seconds, with the default step being 60 seconds. The step scale factor is 1000 (which converts the seconds to milliseconds, as used in other algorithms).
   '''The value must be a positive number—integer or float—or the special value any, which means no stepping is implied, and any value is allowed (barring other constraints, such as min and max).
-  '''If any is not explicity set, valid values for the number, date/time input types, and range input types are equal to the basis for stepping — the min value and increments of the step value, up to the max value, if specified.
+  '''If any is not explicity set, valid values for the number, date/time input types, and range input types are equal to the basis for stepping — the min value and increments of the step value, up to the max value, if specified.</summary>
    Property [step] as Boolean
 End Interface
 
@@ -294,7 +294,7 @@ End Interface
 Public Interface [HTMLInputRangeElement]
   Inherits HTMLInputElement
 
-  '''<summary>The value given to the list attribute should be the id of a <datalist> element located in the same document. The <datalist> provides a list of predefined values to suggest to the user for this input. Any values in the list that are not compatible with the type are not included in the suggested options. The values provided are suggestions, not requirements: users can select from this predefined list or provide a different value.</summary>
+  '''<summary>The value given to the list attribute should be the id of a &lt;datalist> element located in the same document. The &lt;datalist> provides a list of predefined values to suggest to the user for this input. Any values in the list that are not compatible with the type are not included in the suggested options. The values provided are suggestions, not requirements: users can select from this predefined list or provide a different value.</summary>
   Property list as String
   '''Valid for date, month, week, time, datetime-local, number, and range, it defines the greatest value in the range of permitted values. If the value entered into the element exceeds this, the element fails constraint validation. If the value of the max attribute isn't a number, then the element has no maximum value.
   '''There is a special case: if the data type is periodic (such as for dates or times), the value of max may be lower than the value of min, which indicates that the range may wrap around; for example, this allows you to specify a time range from 10 PM to 4 AM.</summary>
@@ -308,7 +308,7 @@ Public Interface [HTMLInputRangeElement]
   '''step defaults to 1 for number and range.
   '''For the date/time input types, step is expressed in seconds, with the default step being 60 seconds. The step scale factor is 1000 (which converts the seconds to milliseconds, as used in other algorithms).
   '''The value must be a positive number—integer or float—or the special value any, which means no stepping is implied, and any value is allowed (barring other constraints, such as min and max).
-  '''If any is not explicity set, valid values for the number, date/time input types, and range input types are equal to the basis for stepping — the min value and increments of the step value, up to the max value, if specified.
+  '''If any is not explicity set, valid values for the number, date/time input types, and range input types are equal to the basis for stepping — the min value and increments of the step value, up to the max value, if specified.</summary>
    Property [step] as Boolean
 End Interface
 
@@ -325,7 +325,7 @@ Public Interface [HTMLInputSearchElement]
 
   '''<summary>Valid for text and search input types only, the dirname attribute enables the submission of the directionality of the element. When included, the form control will submit with two name/value pairs: the first being the name and value, the second being the value of the dirname as the name with the value of ltr or rtl being set by the browser.</summary>
   Property dirname as String
-  '''<summary>The value given to the list attribute should be the id of a <datalist> element located in the same document. The <datalist> provides a list of predefined values to suggest to the user for this input. Any values in the list that are not compatible with the type are not included in the suggested options. The values provided are suggestions, not requirements: users can select from this predefined list or provide a different value.</summary>
+  '''<summary>The value given to the list attribute should be the id of a &lt;datalist> element located in the same document. The &lt;datalist> provides a list of predefined values to suggest to the user for this input. Any values in the list that are not compatible with the type are not included in the suggested options. The values provided are suggestions, not requirements: users can select from this predefined list or provide a different value.</summary>
   Property list as String
   '''<summary>Valid for text, search, url, tel, email, and password, it defines the maximum number of characters (as UTF-16 code units) the user can enter into the field. This must be an integer value 0 or higher. If no maxlength is specified, or an invalid value is specified, the field has no maximum length. This value must also be greater than or equal to the value of minlength.
   '''The input will fail constraint validation if the length of the text entered into the field is greater than maxlength UTF-16 code units long. By default, browsers prevent users from entering more characters than allowed by the maxlength attribute. See Client-side validation for more information.</summary>
@@ -362,7 +362,7 @@ End Interface
 Public Interface [HTMLInputTelElement]
   Inherits HTMLInputElement
 
-  '''<summary>The value given to the list attribute should be the id of a <datalist/> element located in the same document. The <datalist/> provides a list of predefined values to suggest to the user for this input. Any values in the list that are not compatible with the type are not included in the suggested options. The values provided are suggestions, not requirements: users can select from this predefined list or provide a different value.</summary>
+  '''<summary>The value given to the list attribute should be the id of a &lt;datalist/> element located in the same document. The &lt;datalist/> provides a list of predefined values to suggest to the user for this input. Any values in the list that are not compatible with the type are not included in the suggested options. The values provided are suggestions, not requirements: users can select from this predefined list or provide a different value.</summary>
   Property list as String
   '''<summary>alid for text, search, url, tel, email, and password, it defines the maximum number of characters (as UTF-16 code units) the user can enter into the field. This must be an integer value 0 or higher. If no maxlength is specified, or an invalid value is specified, the field has no maximum length. This value must also be greater than or equal to the value of minlength.
   '''The input will fail constraint validation if the length of the text entered into the field is greater than maxlength UTF-16 code units long. By default, browsers prevent users from entering more characters than allowed by the maxlength attribute. See Client-side validation for more information.</summary>
@@ -385,7 +385,7 @@ Public Interface [HTMLInputTextElement]
 
   '''<summary>Valid for text and search input types only, the dirname attribute enables the submission of the directionality of the element. When included, the form control will submit with two name/value pairs: the first being the name and value, the second being the value of the dirname as the name with the value of ltr or rtl being set by the browser.</summary>
   Property dirname as String
-  '''<summary>The value given to the list attribute should be the id of a <datalist> element located in the same document. The <datalist> provides a list of predefined values to suggest to the user for this input. Any values in the list that are not compatible with the type are not included in the suggested options. The values provided are suggestions, not requirements: users can select from this predefined list or provide a different value.</summary>
+  '''<summary>The value given to the list attribute should be the id of a &lt;datalist> element located in the same document. The &lt;datalist> provides a list of predefined values to suggest to the user for this input. Any values in the list that are not compatible with the type are not included in the suggested options. The values provided are suggestions, not requirements: users can select from this predefined list or provide a different value.</summary>
   Property list as String
   '''<summary>alid for text, search, url, tel, email, and password, it defines the maximum number of characters (as UTF-16 code units) the user can enter into the field. This must be an integer value 0 or higher. If no maxlength is specified, or an invalid value is specified, the field has no maximum length. This value must also be greater than or equal to the value of minlength.
   '''The input will fail constraint validation if the length of the text entered into the field is greater than maxlength UTF-16 code units long. By default, browsers prevent users from entering more characters than allowed by the maxlength attribute. See Client-side validation for more information.</summary>
@@ -406,7 +406,7 @@ End Interface
 Public Interface [HTMLInputTimeElement]
   Inherits HTMLInputElement
 
-  '''<summary>The value given to the list attribute should be the id of a <datalist> element located in the same document. The <datalist> provides a list of predefined values to suggest to the user for this input. Any values in the list that are not compatible with the type are not included in the suggested options. The values provided are suggestions, not requirements: users can select from this predefined list or provide a different value.</summary>
+  '''<summary>The value given to the list attribute should be the id of a &lt;datalist> element located in the same document. The &lt;datalist> provides a list of predefined values to suggest to the user for this input. Any values in the list that are not compatible with the type are not included in the suggested options. The values provided are suggestions, not requirements: users can select from this predefined list or provide a different value.</summary>
   Property list as String
    '''Valid for date, month, week, time, datetime-local, number, and range, it defines the greatest value in the range of permitted values. If the value entered into the element exceeds this, the element fails constraint validation. If the value of the max attribute isn't a number, then the element has no maximum value.
   '''There is a special case: if the data type is periodic (such as for dates or times), the value of max may be lower than the value of min, which indicates that the range may wrap around; for example, this allows you to specify a time range from 10 PM to 4 AM.</summary>
@@ -424,7 +424,7 @@ Public Interface [HTMLInputTimeElement]
   '''step defaults to 1 for number and range.
   '''For the date/time input types, step is expressed in seconds, with the default step being 60 seconds. The step scale factor is 1000 (which converts the seconds to milliseconds, as used in other algorithms).
   '''The value must be a positive number—integer or float—or the special value any, which means no stepping is implied, and any value is allowed (barring other constraints, such as min and max).
-  '''If any is not explicity set, valid values for the number, date/time input types, and range input types are equal to the basis for stepping — the min value and increments of the step value, up to the max value, if specified.
+  '''If any is not explicity set, valid values for the number, date/time input types, and range input types are equal to the basis for stepping — the min value and increments of the step value, up to the max value, if specified.</summary>
    Property [step] as Boolean
 End Interface
 
@@ -433,7 +433,7 @@ End Interface
 Public Interface [HTMLInputUrlElement]
   Inherits HTMLInputElement
 
-  '''<summary>The value given to the list attribute should be the id of a <datalist> element located in the same document. The <datalist> provides a list of predefined values to suggest to the user for this input. Any values in the list that are not compatible with the type are not included in the suggested options. The values provided are suggestions, not requirements: users can select from this predefined list or provide a different value.</summary>
+  '''<summary>The value given to the list attribute should be the id of a &lt;datalist> element located in the same document. The &lt;datalist> provides a list of predefined values to suggest to the user for this input. Any values in the list that are not compatible with the type are not included in the suggested options. The values provided are suggestions, not requirements: users can select from this predefined list or provide a different value.</summary>
   Property list as String
   '''<summary>alid for text, search, url, tel, email, and password, it defines the maximum number of characters (as UTF-16 code units) the user can enter into the field. This must be an integer value 0 or higher. If no maxlength is specified, or an invalid value is specified, the field has no maximum length. This value must also be greater than or equal to the value of minlength.
   '''The input will fail constraint validation if the length of the text entered into the field is greater than maxlength UTF-16 code units long. By default, browsers prevent users from entering more characters than allowed by the maxlength attribute. See Client-side validation for more information.</summary>
@@ -452,7 +452,7 @@ End Interface
 Public Interface [HTMLInputWeekElement]
   Inherits HTMLInputElement
 
-  '''<summary>The value given to the list attribute should be the id of a <datalist> element located in the same document. The <datalist> provides a list of predefined values to suggest to the user for this input. Any values in the list that are not compatible with the type are not included in the suggested options. The values provided are suggestions, not requirements: users can select from this predefined list or provide a different value.</summary>
+  '''<summary>The value given to the list attribute should be the id of a &lt;datalist> element located in the same document. The &lt;datalist> provides a list of predefined values to suggest to the user for this input. Any values in the list that are not compatible with the type are not included in the suggested options. The values provided are suggestions, not requirements: users can select from this predefined list or provide a different value.</summary>
   Property list as String
   '''Valid for date, month, week, time, datetime-local, number, and range, it defines the greatest value in the range of permitted values. If the value entered into the element exceeds this, the element fails constraint validation. If the value of the max attribute isn't a number, then the element has no maximum value.
   '''There is a special case: if the data type is periodic (such as for dates or times), the value of max may be lower than the value of min, which indicates that the range may wrap around; for example, this allows you to specify a time range from 10 PM to 4 AM.</summary>
@@ -470,6 +470,6 @@ Public Interface [HTMLInputWeekElement]
   '''step defaults to 1 for number and range.
   '''For the date/time input types, step is expressed in seconds, with the default step being 60 seconds. The step scale factor is 1000 (which converts the seconds to milliseconds, as used in other algorithms).
   '''The value must be a positive number—integer or float—or the special value any, which means no stepping is implied, and any value is allowed (barring other constraints, such as min and max).
-  '''If any is not explicity set, valid values for the number, date/time input types, and range input types are equal to the basis for stepping — the min value and increments of the step value, up to the max value, if specified.
+  '''If any is not explicity set, valid values for the number, date/time input types, and range input types are equal to the basis for stepping — the min value and increments of the step value, up to the max value, if specified.</summary>
    Property [step] as Boolean
 End Interface
