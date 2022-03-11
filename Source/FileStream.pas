@@ -94,7 +94,7 @@ begin
   {$ENDIF}
   if fHandle = nil then CheckForIOError(1);
   {$ELSE}
-    {$ERROR}
+  {$ERROR Unsupported platform}
   {$ENDIF}
 end;
 
@@ -116,7 +116,7 @@ begin
   {$ELSEIF POSIX}
   exit fHandle <> nil;
   {$ELSE}
-    {$ERROR}
+  {$ERROR Unsupported platform}
   {$ENDIF}
 end;
 
@@ -161,7 +161,7 @@ begin
   exit pos.__pos;
   {$ENDIF}
   {$ELSE}
-    {$ERROR}
+  {$ERROR Unsupported platform}
   {$ENDIF}
 end;
 
@@ -176,7 +176,7 @@ begin
     CheckForIOError(rtl.fclose(fHandle));
     fHandle := nil;
     {$ELSE}
-    {$ERROR}
+    {$ERROR Unsupported platform}
     {$ENDIF}
   end;
 end;
@@ -196,7 +196,7 @@ begin
   var fd := rtl.fileno(fHandle);
   CheckForIOError(rtl.ftruncate64(fd, value));
   {$ELSE}
-    {$ERROR}
+  {$ERROR Unsupported platform}
   {$ENDIF}
 end;
 
@@ -211,7 +211,7 @@ begin
   {$ELSEIF POSIX}
   exit rtl.fread(aSpan.Pointer, 1, aSpan.Length, fHandle);
   {$ELSE}
-    {$ERROR}
+  {$ERROR Unsupported platform}
   {$ENDIF}
 end;
 
@@ -226,7 +226,7 @@ begin
   {$ELSEIF POSIX}
   exit rtl.fwrite(aSpan.Pointer, 1, aSpan.Length, fHandle);
   {$ELSE}
-    {$ERROR}
+  {$ERROR Unsupported platform}
   {$ENDIF}
 end;
 
@@ -239,7 +239,7 @@ begin
   var fd := rtl.fileno(fHandle);
   CheckForIOError(rtl.fsync(fd));
   {$ELSE}
-    {$ERROR}
+  {$ERROR Unsupported platform}
   {$ENDIF}
 end;
 {$ENDIF}

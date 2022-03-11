@@ -17,7 +17,7 @@ type
 
     {$IFNDEF NOFILES}
     method GetFullPath(RelativePath: not nullable String): not nullable String;
-    property ListSeparator: Char read {$IFDEF WINDOWS}';'{$ELSEIF POSIX}':'{$ELSE}{$ERROR}{$ENDIF};
+    property ListSeparator: Char read {$IFDEF WINDOWS}';'{$ELSEIF POSIX_LIGHT}':'{$ELSE}{$ERROR Unsupported platform}{$ENDIF};
     {$ENDIF}
 
   end;
@@ -165,7 +165,8 @@ begin
   {$ELSEIF POSIX}
   {$HINT POSIX: implement Path.GetFullPath}
   exit RelativePath;
-  {$ELSE}{$ERROR}
+  {$ELSE}
+  {$ERROR Unsupported platform}
   {$ENDIF}
 end;
 {$ENDIF}

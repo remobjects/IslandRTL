@@ -109,16 +109,17 @@ type
       var ts: rtl.__struct_timespec;
       rtl.clock_gettime({$IFDEF DARWIN}rtl.clockid_t._CLOCK_REALTIME{$ELSE}rtl.CLOCK_REALTIME{$ENDIF}, @ts);
       exit new DateTime(UnixDateOffset + (ts.tv_sec * TicksPerSecond) + (ts.tv_nsec / 100000));
-      {$ELSEIF POSIX}
+      {$ELSEIF POSIX_LIGHT}
       var ts: rtl.__struct_timespec;
       rtl.timespec_get(@ts, rtl.TIME_UTC);
       exit new DateTime(UnixDateOffset + Int64(ts.tv_sec * TicksPerSecond) + (ts.tv_nsec / 100000));
       {$ELSEIF WEBASSEMBLY}
       exit new DateTime(Int64(UnixDateOffset + (WebAssemblyCalls.GetUTCTime * TicksPerMillisecond)));
-      {$ELSE}{$ERROR}
+      {$ELSE}
+      {$ERROR Unsupported platform}
       {$ENDIF}
     end;
-    {$IFDEF POSIX}
+    {$IFDEF POSIX_LIGHT}
     class var fLocalInitialized: Integer;
     {$ENDIF}
     class method GetNow: DateTime;
@@ -132,13 +133,14 @@ type
       rtl.clock_gettime({$IFDEF DARWIN}rtl.clockid_t._CLOCK_REALTIME{$ELSE}rtl.CLOCK_REALTIME{$ENDIF}, @ts);
       //exit new DateTime(UnixDateOffset + (ts.tv_sec * TicksPerSecond) + (ts.tv_nsec / 100000));
       exit FromUnixTimeUTC(ts);
-      {$ELSEIF POSIX}
+      {$ELSEIF POSIX_LIGHT}
       var ts: rtl.__struct_timespec;
       rtl.timespec_get(@ts, rtl.TIME_UTC);
       exit FromUnixTimeUTC(ts);
       {$ELSEIF WEBASSEMBLY}
       exit new DateTime(Int64(UnixDateOffset + (WebAssemblyCalls.GetLocalTime * TicksPerMillisecond)));
-      {$ELSE}{$ERROR}
+      {$ELSE}
+      {$ERROR Unsupported platform}
       {$ENDIF}
     end;
 
@@ -175,7 +177,7 @@ type
     const MaxMillis           : Int64 = DaysTo10000/10000 * TicksPerDay; // = 315537897600000; ticks per 1 year
     const MaxYear             : Int32 = 10000;
 
-{$IFDEF WINDOWS}
+    {$IFDEF WINDOWS}
     class method FromFileTime(aFileTime: rtl.FILETIME): DateTime;
     begin
       var lFileTime: Int64 := Int64(aFileTime.dwHighDateTime) shl 32 + aFileTime.dwLowDateTime;
@@ -206,7 +208,7 @@ type
     begin
       exit ToSystemTime(self);
     end;
-{$ELSEIF POSIX}
+    {$ELSEIF POSIX_LIGHT}
     class method FromUnixTimeUTC(aStruct: rtl.__struct_timespec): DateTime;
     begin
       if InternalCalls.Exchange(var fLocalInitialized, 1) = 0 then
@@ -220,7 +222,7 @@ type
     begin
       exit new DateTime(DateTime.UnixDateOffset + aStruct.tv_sec * DateTime.TicksPerSecond + aStruct.tv_nsec / 100);
     end;
-{$ENDIF}
+    {$ENDIF}
 
     class method FromOleDate(aDate: Double): DateTime;
     begin
@@ -362,7 +364,8 @@ type
       exit ToString(Locale.Current.DateTimeFormat.ShortDatePattern, aTimeZone);
       {$ELSEIF WEBASSEMBLY}
       exit String.Format('{0}-{1}-{2}',[Year.ToString,TwoCharStr(Month),TwoCharStr(Day)]);
-      {$ELSE}{$ERROR}
+      {$ELSE}
+      {$ERROR Unsupported platform}
       {$ENDIF}
     end;
 
@@ -372,7 +375,8 @@ type
       exit ToString(Locale.Current.DateTimeFormat.ShortTimePattern, aTimeZone);
       {$ELSEIF WEBASSEMBLY}
       exit String.Format('{0}:{1}:{2}',[TwoCharStr(Hour),TwoCharStr(Minute), TwoCharStr(Second)]);
-      {$ELSE}{$ERROR}
+      {$ELSE}
+      {$ERROR Unsupported platform}
       {$ENDIF}
     end;
 
@@ -382,7 +386,8 @@ type
       exit ToString(Locale.Current.DateTimeFormat.ShortDatePattern);
       {$ELSEIF WEBASSEMBLY}
       exit String.Format('{0}-{1}-{2}',[Year.ToString,TwoCharStr(Month),TwoCharStr(Day)]);
-      {$ELSE}{$ERROR}
+      {$ELSE}
+      {$ERROR Unsupported platform}
       {$ENDIF}
     end;
 
@@ -391,8 +396,9 @@ type
       {$IFDEF WINDOWS OR POSIX}
       result := ToString(Locale.Current.DateTimeFormat.LongDatePattern, aTimeZone);
       {$ELSEIF WEBASSEMBLY}
-      exit String.Format('{0}-{1}-{2}',[Year.ToString,TwoCharStr(Month),TwoCharStr(Day)]);
-      {$ELSE}{$ERROR}
+      exit String.Format('{0}-{1}-{2}',[Year.ToString, TwoCharStr(Month) ,TwoCharStr(Day)]);
+      {$ELSE}
+      {$ERROR Unsupported platform}
       {$ENDIF}
     end;
 
@@ -401,8 +407,9 @@ type
       {$IFDEF WINDOWS OR POSIX}
       exit ToString(Locale.Current.DateTimeFormat.ShortDatePattern + ' ' + Locale.Current.DateTimeFormat.LongTimePattern);
       {$ELSEIF WEBASSEMBLY}
-      exit String.Format('{0}-{1}-{2} {3}:{4}:{5}',[Year.ToString,TwoCharStr(Month),TwoCharStr(Day),TwoCharStr(Hour),TwoCharStr(Minute), TwoCharStr(Second)]);
-      {$ELSE}{$ERROR}
+      exit String.Format('{0}-{1}-{2} {3}:{4}:{5}',[Year.ToString, TwoCharStr(Month), TwoCharStr(Day), TwoCharStr(Hour), TwoCharStr(Minute), TwoCharStr(Second)]);
+      {$ELSE}
+      {$ERROR Unsupported platform}
       {$ENDIF}
     end;
 

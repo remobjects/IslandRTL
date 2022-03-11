@@ -9,7 +9,7 @@ type
       if not Exists then raise new Exception('Folder not exists:'+fFullName);
     end;
   public
-    class property Separator: Char read {$IFDEF WINDOWS}'\'{$ELSEIF POSIX}'/'{$ELSE}{$ERROR}{$ENDIF} ;
+    class property Separator: Char read {$IFDEF WINDOWS}'\'{$ELSEIF POSIX_LIGHT}'/'{$ELSE}{$ERROR Unsupported platform}{$ENDIF} ;
 
     method CreateFile(FileName: String; FailIfExists: Boolean := false): File;
     begin
@@ -28,9 +28,11 @@ type
     begin
       {$IFDEF WINDOWS}
       CheckForIOError(rtl.RemoveDirectoryW(FullName.ToFileName()));
-      {$ELSEIF POSIX}
+      {$ELSEIF POSIX_LIGHT}
       CheckForIOError(rtl.rmdir(FullName.ToFileName()));
-      {$ELSE}{$ERROR}{$ENDIF}
+      {$ELSE}
+      {$ERROR Unsupported platform}
+      {$ENDIF}
     end;
 
     class method Delete(aFolder: String);
@@ -52,9 +54,11 @@ type
     begin
       {$IFDEF WINDOWS}
       CheckForIOError(rtl.MoveFileW(FullName.ToFileName(), NewName.ToFileName()));
-      {$ELSEIF POSIX}
+      {$ELSEIF POSIX_LIGHT}
       CheckForIOError(rtl.rename(FullName.ToFileName(), NewName.ToFileName()));
-      {$ELSE}{$ERROR}{$ENDIF}
+      {$ELSE}
+      {$ERROR Unsupported platform}
+      {$ENDIF}
     end;
 
     method GetFile(FileName: String): File;
@@ -78,7 +82,7 @@ type
         if FileUtils.IsFile(find.dwFileAttributes) then
           lResult.Add(new File(Path.Combine(FullName,String.FromPChar(@find.cFileName[0]))));
       until (not rtl.FindNextFileW(hFind, @find));
-      {$ELSEIF POSIX}
+      {$ELSEIF POSIX_LIGHT}
       // code from http://pubs.opengroup.org/onlinepubs/9699919799/ was used as an example
       var dfd: Int32 := rtl.open(FullName.ToFileName(), rtl.O_RDONLY);
       var d: ^rtl.DIR := rtl.fdopendir(dfd);
@@ -107,7 +111,7 @@ type
         rtl.closedir(d);
       end;
       {$ELSE}
-      {$ERROR}
+      {$ERROR Unsupported platform}
       {$ENDIF}
       result := lResult;
     end;
@@ -128,7 +132,7 @@ type
           lResult.Add(new Folder(Path.Combine(FullName,fn)));
         end;
       until (not rtl.FindNextFileW(hFind, @find));
-      {$ELSEIF POSIX}
+      {$ELSEIF POSIX_LIGHT}
       // code from http://pubs.opengroup.org/onlinepubs/9699919799/ was used as an example
       var dfd: Int32 := rtl.open(FullName.ToFileName(), rtl.O_RDONLY);
       var d: ^rtl.DIR := rtl.fdopendir(dfd);
@@ -158,7 +162,7 @@ type
         rtl.closedir(d);
       end;
       {$ELSE}
-      {$ERROR}
+      {$ERROR Unsupported platform}
       {$ENDIF}
       result := lResult;
     end;
@@ -175,14 +179,16 @@ type
       if not String.IsNullOrEmpty(lparent) then CreateFolder(lparent, false);
       {$IFDEF WINDOWS}
       CheckForIOError(rtl.CreateDirectoryW(FolderName.ToFileName(), nil));
-      {$ELSEIF POSIX}
+      {$ELSEIF POSIX_LIGHT}
       var old_mask := rtl.umask(0);
       try
         CheckForIOError(rtl.mkdir(FolderName.ToFileName(),493 {755 octal}));
       finally
         rtl.umask(old_mask);
       end;
-      {$ELSE}{$ERROR}{$ENDIF}
+      {$ELSE}
+      {$ERROR Unsupported platform}
+      {$ENDIF}
     end;
 
   end;

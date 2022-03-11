@@ -39,7 +39,7 @@ type
                                      TimeModifier.Created: str^.st_ctimespec;
                                      else str^.st_mtimespec
                                    end);
-      {$ELSEIF POSIX}
+      {$ELSEIF POSIX_LIGHT}
       var str := FileUtils.Get__struct_stat(FullName);
       exit DateTime.FromUnixTimeUTC(
                                    case aMode of
@@ -47,7 +47,8 @@ type
                                      TimeModifier.Created: str^.st_ctim;
                                      else str^.st_mtim;
                                    end);
-      {$ELSE}{$ERROR}
+      {$ELSE}
+      {$ERROR Unsupported platform}
       {$ENDIF}
     end;
   protected

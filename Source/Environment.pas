@@ -98,7 +98,7 @@ type
       // the operating system version. The value returned by the GetVersionEx function now depends on how the application
       // is manifested.
       exit Registry.GetValue('HKEY_LOCAL_MACHINE\SOFTWARE\Microsoft\Windows NT\CurrentVersion','CurrentVersion','') as String;
-      {$ELSEIF POSIX}
+      {$ELSEIF POSIX_LIGHT}
       var str : rtl.__struct_utsname;
       if rtl.uname(@str) = 0 then exit String.FromPAnsiChars(str.version);
       CheckForLastError;
@@ -111,7 +111,7 @@ type
     end;
 
   public
-    property NewLine: String read {$IFDEF WINDOWS OR WEBASSEMBLY}#13#10{$ELSEIF POSIX}#10{$ELSE}{$ERROR}{$ENDIF};
+    property NewLine: String read {$IFDEF WINDOWS OR WEBASSEMBLY}#13#10{$ELSEIF POSIX_LIGHT}#10{$ELSE}{$ERROR Unsupported platform}{$ENDIF};
     property UserName: String read GetUserName;
     property OSName: String read GetOSName;
     property OSVersion: String read GetOSVersion;
@@ -237,7 +237,9 @@ type
       var lCwd := rtl.get_current_dir_name();
       result := String.FromPAnsiChars(lCwd);
       rtl.free(lCwd);
-      {$ELSE}{$ERROR}{$ENDIF}
+      {$ELSE}
+      {$ERROR Unsupported platform}
+      {$ENDIF}
     end;
 
     method UserHomeFolder: Folder;
@@ -248,7 +250,9 @@ type
       {$ELSEIF POSIX}
       //var pw: ^rtl.__struct_passwd := rtl.getpwuid(rtl.getuid());
       fn := String.FromPAnsiChars(rtl.getpwuid(rtl.getuid())^.pw_dir);
-      {$ELSE}{$ERROR}{$ENDIF}
+      {$ELSE}
+      {$ERROR Unsupported platform}
+      {$ENDIF}
       exit new Folder(fn);
     end;
     method TempFolder: Folder;

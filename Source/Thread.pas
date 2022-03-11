@@ -157,7 +157,7 @@ type
   private
   {$IFDEF WINDOWS}
     fCond: rtl.CONDITION_VARIABLE;
-  {$ELSEIF POSIX}
+  {$ELSEIF POSIX_LIGHT}
     fCond: rtl.pthread_cond_t;
   {$ELSE}
   {$ERROR NOT IMPLEMENTED}

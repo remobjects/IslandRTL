@@ -96,7 +96,7 @@ type
       {$ELSEIF WEBASSEMBLY}
       WebAssemblyCalls.CryptoSafeRandom(@aDest[aStart], aLength);
       {$ELSE}
-      {$ERROR Not implemented}
+      {$ERROR Unsupported platform}
       {$ENDIF}
     end;
   end;

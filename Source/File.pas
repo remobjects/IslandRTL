@@ -1,6 +1,7 @@
 ﻿namespace RemObjects.Elements.System;
 
 interface
+
 {$IFNDEF NOFILES}
 type
   File = public class(BaseFile)
@@ -84,7 +85,8 @@ begin
     f1.Close;
     f2.Close;
   end;
-  {$ELSE}{$ERROR}
+  {$ELSE}
+  {$ERROR Unsupported platform}
   {$ENDIF}
   exit new File(FullPathName);
 end;
@@ -103,7 +105,8 @@ begin
   CheckForIOError(rtl.DeleteFileW(FullName.ToFileName()));
   {$ELSEIF POSIX}
   CheckForIOError(rtl.remove(FullName.ToFileName()));
-  {$ELSE}{$ERROR}
+  {$ELSE}
+  {$ERROR Unsupported platform}
   {$ENDIF}
 end;
 
@@ -122,7 +125,8 @@ begin
   CheckForIOError(rtl.MoveFileExW(Self.FullName.ToFileName(),FullPathName.ToFileName(), rtl.MOVEFILE_REPLACE_EXISTING OR rtl.MOVEFILE_COPY_ALLOWED));
   {$ELSEIF POSIX}
   CheckForIOError(rtl.rename(Self.FullName.ToFileName(),FullPathName.ToFileName()));
-  {$ELSE}{$ERROR}
+  {$ELSE}
+  {$ERROR Unsupported platform}
   {$ENDIF}
   fFullName := FullPathName;
   exit self;
@@ -164,7 +168,9 @@ begin
   end;
   {$ELSEIF POSIX}
   exit FileUtils.Get__struct_stat(FullName)^.st_size;
-  {$ELSE}{$ERROR}{$ENDIF}
+  {$ELSE}
+  {$ERROR Unsupported platform}
+  {$ENDIF}
 end;
 
 method File.Exists: Boolean;

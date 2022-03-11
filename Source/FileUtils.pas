@@ -1,5 +1,7 @@
 ﻿namespace RemObjects.Elements.System;
+
 {$IFNDEF NOFILES}
+
 type
   TimeModifier = (Created, Updated, Accessed);
 
@@ -8,7 +10,7 @@ type
   private
   protected
   public
-  {$IFDEF WINDOWS}
+    {$IFDEF WINDOWS}
     class method IsFolder(Attr: rtl.DWORD): Boolean; inline;
     begin
       if Attr = rtl.INVALID_FILE_ATTRIBUTES then exit false;
@@ -19,7 +21,7 @@ type
       if Attr = rtl.INVALID_FILE_ATTRIBUTES then exit false;
       exit (Attr and rtl.FILE_ATTRIBUTE_DIRECTORY) <> rtl.FILE_ATTRIBUTE_DIRECTORY;
     end;
-{$ELSEIF DARWIN}
+    {$ELSEIF DARWIN OR FUCHSIA}
     class method IsFolder(Attr: rtl.mode_t): Boolean; inline;
     begin
       exit (Attr and rtl.S_IFMT) = rtl.S_IFDIR;
@@ -28,7 +30,7 @@ type
     begin
       exit (Attr and rtl.S_IFMT) = rtl.S_IFREG;
     end;
-  {$ELSEIF POSIX}
+    {$ELSEIF POSIX}
     class method IsFolder(Attr: rtl.__mode_t): Boolean; inline;
     begin
       exit (Attr and rtl.S_IFMT) = rtl.S_IFDIR;
@@ -46,18 +48,21 @@ type
     begin
       {$IFDEF WINDOWS}
       exit IsFolder(rtl.GetFileAttributesW(aFullName.ToFileName()));
-      {$ELSEIF POSIX}
+      {$ELSEIF POSIX_LIGHT}
       exit IsFolder(Get__struct_stat(aFullName)^.st_mode);
-      {$ELSE}{$ERROR}{$ENDIF}
+      {$ELSE}
+      {$ERROR Unsupported platform}
+      {$ENDIF}
     end;
 
     class method FileExists(aFullName: not nullable String): Boolean;
     begin
       {$IFDEF WINDOWS}
       exit IsFile(rtl.GetFileAttributesW(aFullName.ToFileName()));
-      {$ELSEIF POSIX}
+      {$ELSEIF POSIX_LIGHT}
       exit IsFile(FileUtils.Get__struct_stat(aFullName)^.st_mode);
-      {$ELSE}{$ERROR}
+      {$ELSE}
+      {$ERROR Unsupported platform}
       {$ENDIF}
     end;
 
@@ -65,12 +70,14 @@ type
     begin
       {$IFDEF WINDOWS}
       exit (rtl.GetFileAttributesW(aFullName.ToFileName()) and rtl.FILE_ATTRIBUTE_READONLY) = rtl.FILE_ATTRIBUTE_READONLY;
-      {$ELSE POSIX}
+      {$ELSEIF POSIX_LIGHT}
       exit rtl.access(aFullName.ToFileName(), rtl.W_OK) ≠ 0;
+      {$ELSE}
+      {$ERROR Unsupported platform}
       {$ENDIF}
     end;
 
-    {$IFDEF POSIX}
+    {$IFDEF POSIX_LIGHT}
     class method Get__struct_stat(aFullName: String): ^rtl.__struct_stat;inline;
     begin
       var sb: rtl.__struct_stat;
@@ -116,7 +123,7 @@ begin
 end;
 {$ENDIF}
 
-{$IFDEF POSIX}
+{$IFDEF POSIX_LIGHT}
 extension method String.ToFileName: ^AnsiChar;assembly;
 begin
   exit @self.ToAnsiChars(True)[0];

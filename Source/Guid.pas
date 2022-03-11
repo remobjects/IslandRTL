@@ -209,7 +209,9 @@ type
       data[6] := (data[6] and $0F) or 64; // version 4
       data[8] := data[8] or $80; // variant
       memcpy(@result, @data[0], 16);
-      {$ELSE}{$ERROR}{$ENDIF}
+      {$ELSE}
+      {$ERROR Unsupported platform}
+      {$ENDIF}
     end;
 
     class method Parse(Value: String): Guid;

@@ -60,7 +60,7 @@ type
       {$ENDIF}
     end;
   assembly
-    {$IFDEF POSIX AND NOT ANDROID}
+    {$IFDEF POSIX_LIGHT AND NOT ANDROID}
     class var fUTF16ToCurrent, fCurrentToUtf16: rtl.iconv_t;
     {$ENDIF}
   public
