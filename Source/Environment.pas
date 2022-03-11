@@ -111,7 +111,7 @@ type
     end;
 
   public
-    property NewLine: String read {$IFDEF WINDOWS OR WEBASSEMBLY}#13#10{$ELSEIF POSIX_LIGHT}#10{$ELSE}{$ERROR Unsupported platform}{$ENDIF};
+    property NewLine: String read {$IFDEF WINDOWS}#13#10{$ELSEIF POSIX_LIGHT OR WEBASSEMBLY}#10{$ELSE}{$ERROR Unsupported platform}{$ENDIF};
     property UserName: String read GetUserName;
     property OSName: String read GetOSName;
     property OSVersion: String read GetOSVersion;
@@ -130,7 +130,7 @@ type
           result := String.FromPChar(@buf[0], len);
         {$ELSEIF WEBASSEMBLY}
         exit nil;
-        {$ELSEIF POSIX}
+        {$ELSEIF POSIX_LIGHT}
         var lName := Name.ToAnsiChars;
         result := String.FromPAnsiChars(rtl.getenv(@lName[0]));
         {$ELSE}
@@ -145,7 +145,7 @@ type
         exit rtl.SetEnvironmentVariable(Name.ToLPCWSTR, Value.ToLPCWSTR);
       {$ELSEIF WEBASSEMBLY}
       exit false;
-      {$ELSEIF POSIX}
+      {$ELSEIF POSIX_LIGHT}
       var lName := Name.ToAnsiChars(true);
       if Value ≠ nil then begin
         var lValue := Value.ToAnsiChars(true);
@@ -153,6 +153,8 @@ type
       end
       else
         exit rtl.unsetenv(@lName[0]) = 0;
+      {$ELSE}
+      {$ERROR Unsupported platform}
       {$ENDIF}
     end;
 
@@ -183,7 +185,7 @@ type
         inc(lStrings);
       end;
       rtl.FreeEnvironmentStrings(lEnvp);
-      {$ELSEIF POSIX}
+      {$ELSEIF POSIX_LIGHT}
       var lStrings := ExternalCalls.envp;
       var i: Integer := 0;
       while lStrings[i] ≠ nil do begin
@@ -196,6 +198,10 @@ type
         end;
         inc(i);
       end;
+      {$ELSEIF WEBASSEMBLY}
+      // return empty, for compatibility
+      {$ELSE}
+      {$ERROR Unsupported platform}
       {$ENDIF}
       result := lResult;
     end;
@@ -233,7 +239,7 @@ type
           exit new String(@buf[0]);
 
       end;
-      {$ELSEIF POSIX}
+      {$ELSEIF POSIX_LIGHT}
       var lCwd := rtl.get_current_dir_name();
       result := String.FromPAnsiChars(lCwd);
       rtl.free(lCwd);
@@ -247,7 +253,7 @@ type
       var fn: String;
       {$IFDEF WINDOWS}
       fn := Environment.GetEnvironmentVariable('USERPROFILE');
-      {$ELSEIF POSIX}
+      {$ELSEIF POSIX_LIGHT}
       //var pw: ^rtl.__struct_passwd := rtl.getpwuid(rtl.getuid());
       fn := String.FromPAnsiChars(rtl.getpwuid(rtl.getuid())^.pw_dir);
       {$ELSE}
@@ -255,6 +261,7 @@ type
       {$ENDIF}
       exit new Folder(fn);
     end;
+
     method TempFolder: Folder;
     begin
       var lString: String;
@@ -262,20 +269,22 @@ type
       var lBuf := new Char[rtl.MAX_PATH + 1];
       var lLen := rtl.GetTempPath(rtl.MAX_PATH, @lBuf[0]);
       lString := if lLen <> 0 then new String(@lBuf[0], lLen) else '';
-      {$ELSEIF POSIX AND NOT DARWIN}
+      {$ELSEIF DARWIN}
+      var lTemp := Foundation.NSTemporaryDirectory();
+      lString := if lTemp = nil then '/tmp' else String(lTemp);
+      {$ELSEIF POSIX_LIGHT}
       lString := 'TMPDIR';
       var lTmp := rtl.getenv(lString.ToAnsiChars);
       var lDir: String := '';
       if lTmp <> nil then
         lDir := RemObjects.Elements.System.String.FromPAnsiChars(lTmp);
       lString := if lDir <> '' then lDir else rtl.P_tmpdir;
-      {$ELSEIF DARWIN}
-      var lTemp := Foundation.NSTemporaryDirectory();
-      lString := if lTemp = nil then '/tmp' else String(lTemp);
+      {$ELSE}
+      {$ERROR Unsupported platform}
       {$ENDIF}
       result := new Folder(lString);
     end;
-    {$endif}
+    {$ENDIF}
 
     method ProcessorCount:Integer;
     begin
@@ -283,20 +292,30 @@ type
       var si: rtl.SYSTEM_INFO;
       rtl.GetSystemInfo(@si);
       exit si.dwNumberOfProcessors;
-      {$ELSEIF POSIX}
+      {$ELSEIF POSIX_LIGHT}
       exit rtl.sysconf(rtl._SC_NPROCESSORS_ONLN);
+      {$ELSEIF WEBASSEMBLY}
+      exit 0;
+      {$ELSE}
+      {$ERROR Unsupported platform}
       {$ENDIF}
     end;
 
+    {$IF WEBASSEMBLY}[Warning("Environment.Exit is not supported on WebAssembly")]{$ENDIF}
     method &Exit(aCode: Integer);
     begin
       {$IFDEF WINDOWS}
       ExternalCalls.exit(aCode);
-      {$ELSEIF POSIX}
+      {$ELSEIF POSIX_LIGHT}
       rtl.exit(aCode);
+      {$ELSEIF WEBASSEMBLY}
+      // no-op
+      {$ELSE}
+      {$ERROR Unsupported platform}
       {$ENDIF}
     end;
 
+    {$IF WEBASSEMBLY}[Warning("Environment.GetCommandLine is not supported on WebAssembly")]{$ENDIF}
     method GetCommandLine: String;
     begin
       {$IFDEF WINDOWS}
@@ -305,16 +324,21 @@ type
         result := String.FromPChar(@buf[0])
       else
         result := '';
-      {$ELSEIF POSIX}
+      {$ELSEIF POSIX_LIGHT}
       result := '';
       for i: Integer := 0 to ExternalCalls.nargs - 1 do
         if i = 0 then
           result := String.FromPAnsiChars(ExternalCalls.args[i])
         else
           result := result + ' ' + String.FromPAnsiChars(ExternalCalls.args[i])
+      {$ELSEIF WEBASSEMBLY}
+      exit "";
+      {$ELSE}
+      {$ERROR Unsupported platform}
       {$ENDIF}
     end;
 
+    {$IF WEBASSEMBLY}[Warning("Environment.GetCommandLineArgs is not supported on WebAssembly")]{$ENDIF}
     method GetCommandLineArgs: array of String;
     begin
       {$IFDEF WINDOWS}
@@ -323,10 +347,14 @@ type
       result := new String[lCount - 1];
       for i: Integer := 1 to lCount - 1 do
         result[i - 1] := String.FromPChar(lArgs[i]);
-      {$ELSEIF POSIX}
+      {$ELSEIF POSIX_LIGHT}
       result := new String[ExternalCalls.nargs - 1];
       for i: Integer := 1 to ExternalCalls.nargs - 1 do
         result[i - 1] := String.FromPAnsiChars(ExternalCalls.args[i]);
+      {$ELSEIF WEBASSEMBLY}
+      // return empty, for compatibility
+      {$ELSE}
+      {$ERROR Unsupported platform}
       {$ENDIF}
     end;
   end;
