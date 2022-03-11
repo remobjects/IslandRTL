@@ -26,7 +26,7 @@ type
     {$ELSEIF POSIX AND NOT IOS}
     fOutput: String := '';
     fErr: String := '';
-    fProcessId: {$IF MACOS}rtl.pid_t{$ELSE}rtl.__pid_t{$ENDIF};
+    fProcessId: {$IF DARWIN}rtl.pid_t{$ELSE}rtl.__pid_t{$ENDIF};
     fInputPipe: array[0..1] of Int32;
     fOutPipe: array[0..1] of Int32;
     fErrPipe: array[0..1] of Int32;
