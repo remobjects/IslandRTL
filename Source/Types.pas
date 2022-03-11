@@ -273,7 +273,7 @@ begin
   var temp: NativeInt := ord(ch);
   temp := NativeInt(rtl.CharLower(rtl.LPWSTR(temp)));
   result := chr(temp);
-  {$ELSEIF POSIX OR WINDOWS}
+  {$ELSEIF POSIX_LIGHT}
   var b := Encoding.UTF32LE.GetBytes(self);
   var ch := b[0] + (Int32(b[1]) shl 8) + (Int32(b[2]) shl 16) + (Int32(b[3]) shl 24);
   var u := rtl.towlower(ch);
@@ -297,7 +297,7 @@ begin
   var temp: NativeInt := ord(ch);
   temp := NativeInt(rtl.CharUpper(rtl.LPWSTR(temp)));
   result := chr(temp);
-  {$ELSEIF POSIX OR WINDOWS}
+  {$ELSEIF POSIX_LIGHT}
   var b := Encoding.UTF32LE.GetBytes(self);
   var ch := b[0] + (Int32(b[1]) shl 8) + (Int32(b[2]) shl 16) + (Int32(b[3]) shl 24);
   var u := rtl.towupper(ch);

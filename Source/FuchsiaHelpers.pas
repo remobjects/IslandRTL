@@ -60,12 +60,10 @@ begin
     lArgs[i - 1] := String.FromPAnsiChars(argv[i]);
   try
     exit UserEntryPoint(lArgs);
-    {$IF NOT EMSCRIPTEN AND NOT ANDROID and not DARWIN}
     {$HIDE H14}
     {$WARNING Not Implememnted for Fuchsia yet}
     //ExternalCalls.libc_main(nil, 0, nil, nil, nil); // do not remove, this is there to ensure it's linked in.
     {$SHOW H14}
-    {$ENDIF}
   except
     on E: RuntimeException do begin
       writeLn(E.Message);

@@ -360,7 +360,7 @@ type
 
     method ToShortDateString(aTimeZone: TimeZone := nil): String;
     begin
-      {$IFDEF WINDOWS OR POSIX}
+      {$IFDEF WINDOWS OR POSIX_LIGHT}
       exit ToString(Locale.Current.DateTimeFormat.ShortDatePattern, aTimeZone);
       {$ELSEIF WEBASSEMBLY}
       exit String.Format('{0}-{1}-{2}',[Year.ToString,TwoCharStr(Month),TwoCharStr(Day)]);
@@ -371,7 +371,7 @@ type
 
     method ToShortTimeString(aTimeZone: TimeZone := nil): String;
     begin
-      {$IFDEF WINDOWS OR POSIX}
+      {$IFDEF WINDOWS OR POSIX_LIGHT}
       exit ToString(Locale.Current.DateTimeFormat.ShortTimePattern, aTimeZone);
       {$ELSEIF WEBASSEMBLY}
       exit String.Format('{0}:{1}:{2}',[TwoCharStr(Hour),TwoCharStr(Minute), TwoCharStr(Second)]);
@@ -382,7 +382,7 @@ type
 
     method ToShortPrettyDateString(aTimeZone: TimeZone := nil): String;
     begin
-      {$IFDEF WINDOWS OR POSIX}
+      {$IFDEF WINDOWS OR POSIX_LIGHT}
       exit ToString(Locale.Current.DateTimeFormat.ShortDatePattern);
       {$ELSEIF WEBASSEMBLY}
       exit String.Format('{0}-{1}-{2}',[Year.ToString,TwoCharStr(Month),TwoCharStr(Day)]);
@@ -393,7 +393,7 @@ type
 
     method ToLongPrettyDateString(aTimeZone: TimeZone := nil): String;
     begin
-      {$IFDEF WINDOWS OR POSIX}
+      {$IFDEF WINDOWS OR POSIX_LIGHT}
       result := ToString(Locale.Current.DateTimeFormat.LongDatePattern, aTimeZone);
       {$ELSEIF WEBASSEMBLY}
       exit String.Format('{0}-{1}-{2}',[Year.ToString, TwoCharStr(Month) ,TwoCharStr(Day)]);
@@ -404,7 +404,7 @@ type
 
     method ToString: String; override;
     begin
-      {$IFDEF WINDOWS OR POSIX}
+      {$IFDEF WINDOWS OR POSIX_LIGHT}
       exit ToString(Locale.Current.DateTimeFormat.ShortDatePattern + ' ' + Locale.Current.DateTimeFormat.LongTimePattern);
       {$ELSEIF WEBASSEMBLY}
       exit String.Format('{0}-{1}-{2} {3}:{4}:{5}',[Year.ToString, TwoCharStr(Month), TwoCharStr(Day), TwoCharStr(Hour), TwoCharStr(Minute), TwoCharStr(Second)]);

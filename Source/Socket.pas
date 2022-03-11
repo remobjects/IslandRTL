@@ -634,9 +634,9 @@ begin
   AddressFamily := anAddressFamily;
   SocketType := aSocketType;
   ProtocolType := aProtocol;
-  {$IF POSIX}
+  {$IF POSIX_LIGHT}
   fHandle := rtl.socket(rtl.int32_t(anAddressFamily), rtl.int32_t(aSocketType), rtl.int32_t(aProtocol));
-  {$ELSEIF ISLAND AND WINDOWS}
+  {$ELSEIF WINDOWS}
   fHandle := rtl.__Global.socket(rtl.INT(anAddressFamily), rtl.INT(aSocketType), rtl.INT(aProtocol));
   {$ELSE}
   {$ERROR Unsupported platform}

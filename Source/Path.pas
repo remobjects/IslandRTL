@@ -162,7 +162,7 @@ begin
   end;
   {$ELSEIF DARWIN}
   exit (RelativePath as Foundation.NSString).stringByStandardizingPath as not nullable;
-  {$ELSEIF POSIX}
+  {$ELSEIF POSIX_LIGHT}
   {$HINT POSIX: implement Path.GetFullPath}
   exit RelativePath;
   {$ELSE}

@@ -76,7 +76,7 @@ begin
   if not Exists then raise new Exception('File is not exist:'+FullName);
   {$IFDEF WINDOWS}
   CheckForIOError(rtl.CopyFileW(FullName.ToFileName(),FullPathName.ToFileName(),True));
-  {$ELSEIF POSIX}
+  {$ELSEIF POSIX_LIGHT}
   var f2 := new FileStream(FullPathName,FileMode.CreateNew,FileAccess.Write,FileShare.None);
   var f1 := new FileStream(Self.FullName,FileMode.Open,FileAccess.Read,FileShare.Read);
   try
@@ -103,7 +103,7 @@ begin
   if not Exists then raise new Exception('File is not found:'+FullName);
   {$IFDEF WINDOWS}
   CheckForIOError(rtl.DeleteFileW(FullName.ToFileName()));
-  {$ELSEIF POSIX}
+  {$ELSEIF POSIX_LIGHT}
   CheckForIOError(rtl.remove(FullName.ToFileName()));
   {$ELSE}
   {$ERROR Unsupported platform}
@@ -123,7 +123,7 @@ begin
   if not Exists then raise new Exception('File is not exist:'+FullName);
   {$IFDEF WINDOWS}
   CheckForIOError(rtl.MoveFileExW(Self.FullName.ToFileName(),FullPathName.ToFileName(), rtl.MOVEFILE_REPLACE_EXISTING OR rtl.MOVEFILE_COPY_ALLOWED));
-  {$ELSEIF POSIX}
+  {$ELSEIF POSIX_LIGHT}
   CheckForIOError(rtl.rename(Self.FullName.ToFileName(),FullPathName.ToFileName()));
   {$ELSE}
   {$ERROR Unsupported platform}
@@ -166,7 +166,7 @@ begin
   finally
     rtl.CloseHandle(handle);
   end;
-  {$ELSEIF POSIX}
+  {$ELSEIF POSIX_LIGHT}
   exit FileUtils.Get__struct_stat(FullName)^.st_size;
   {$ELSE}
   {$ERROR Unsupported platform}

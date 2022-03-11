@@ -77,7 +77,7 @@ begin
                         end;
   fHandle := rtl.CreateFileW(lName, lAccess, lShare, nil, lmode, rtl.FILE_ATTRIBUTE_NORMAL, nil);
   CheckForIOError(fHandle <> rtl.INVALID_HANDLE_VALUE);
-  {$ELSEIF POSIX}
+  {$ELSEIF POSIX_LIGHT}
   var s: AnsiChar := AnsiChar(case Mode of
                                 FileMode.CreateNew: 'w';
                                 FileMode.Create: 'w';
@@ -86,11 +86,11 @@ begin
                                 FileMode.Truncate: 'w';
                               end);
   {$IFDEF ANDROID or DARWIN}
-  fHandle := rtl.fopen(FileName.ToFileName(),@s);
+  fHandle := rtl.fopen(FileName.ToFileName(), @s);
   {$ELSEIF FUCHSIA}
-  {$WARNING Not Implememnted for Fuchsia yet}
+  fHandle := rtl.fopen(FileName.ToFileName(), @s);
   {$ELSE}
-  fHandle := rtl.fopen64(FileName.ToFileName(),@s);
+  fHandle := rtl.fopen64(FileName.ToFileName(), @s);
   {$ENDIF}
   if fHandle = nil then CheckForIOError(1);
   {$ELSE}
@@ -113,7 +113,7 @@ method FileStream.IsValid: Boolean;
 begin
   {$IFDEF WINDOWS}
   exit fHandle <> rtl.INVALID_HANDLE_VALUE;
-  {$ELSEIF POSIX}
+  {$ELSEIF POSIX_LIGHT}
   exit fHandle <> nil;
   {$ELSE}
   {$ERROR Unsupported platform}
@@ -139,7 +139,7 @@ begin
       CheckForIOError(True);
   end;
   exit lResult + Offset shl 32;
-  {$ELSEIF POSIX}
+  {$ELSEIF POSIX_LIGHT}
   var lOrigin: Int32 :=  case Origin of
                           SeekOrigin.Begin: rtl.SEEK_SET;
                           SeekOrigin.Current: rtl.SEEK_CUR;
@@ -172,7 +172,7 @@ begin
     {$IFDEF WINDOWS}
     rtl.CloseHandle(fHandle);
     fHandle := rtl.INVALID_HANDLE_VALUE;
-    {$ELSEIF POSIX}
+    {$ELSEIF POSIX_LIGHT}
     CheckForIOError(rtl.fclose(fHandle));
     fHandle := nil;
     {$ELSE}
@@ -208,7 +208,7 @@ begin
   var res: rtl.DWORD;
   CheckForIOError(rtl.ReadFile(fHandle, aSpan.Pointer, aSpan.Length, @res, nil));
   exit res;
-  {$ELSEIF POSIX}
+  {$ELSEIF POSIX_LIGHT}
   exit rtl.fread(aSpan.Pointer, 1, aSpan.Length, fHandle);
   {$ELSE}
   {$ERROR Unsupported platform}
@@ -223,7 +223,7 @@ begin
   var res: rtl.DWORD;
   CheckForIOError(rtl.WriteFile(fHandle, aSpan.Pointer, aSpan.Length, @res, nil));
   exit res;
-  {$ELSEIF POSIX}
+  {$ELSEIF POSIX_LIGHT}
   exit rtl.fwrite(aSpan.Pointer, 1, aSpan.Length, fHandle);
   {$ELSE}
   {$ERROR Unsupported platform}
@@ -235,7 +235,7 @@ begin
   if not CanWrite then raise new NotSupportedException;
   {$IFDEF WINDOWS}
   rtl.FlushFileBuffers(fHandle);
-  {$ELSEIF POSIX}
+  {$ELSEIF POSIX_LIGHT}
   var fd := rtl.fileno(fHandle);
   CheckForIOError(rtl.fsync(fd));
   {$ELSE}
