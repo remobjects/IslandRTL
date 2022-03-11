@@ -95,7 +95,7 @@ type
     property IsReadOnly: Boolean read fIsReadOnly;
   end;
 
-  PlatformLocale = {$IF WINDOWS}rtl.LCID{$ELSEIF LINUX AND NOT ANDROID}rtl.locale_t{$ELSEIF DARWIN}CoreFoundation.CFLocaleRef{$ELSEIF ICU_LOCALE OR WEBASSEMBLY}String{$ENDIF};
+  PlatformLocale = {$IF WINDOWS}rtl.LCID{$ELSEIF (LINUX OR FUCHSIA) AND NOT ANDROID}rtl.locale_t{$ELSEIF DARWIN}CoreFoundation.CFLocaleRef{$ELSEIF ICU_LOCALE OR WEBASSEMBLY}String{$ENDIF};
 
   Locale = public class
   private
