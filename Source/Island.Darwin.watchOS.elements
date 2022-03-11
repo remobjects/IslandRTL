@@ -14,7 +14,7 @@
     <WarnOnCaseMismatch>True</WarnOnCaseMismatch>
     <Platform Condition="'$(Platform)' == ''">AnyCPU</Platform>
     <GenerateDebugInfo>True</GenerateDebugInfo>
-    <DefineConstants>POSIX;POSIX_LIGHT;x86_64</DefineConstants>
+    <DefineConstants>POSIX;POSIX_LIGHT</DefineConstants>
     <SDK>watchOS</SDK>
     <DefaultGlobalsToPublic>True</DefaultGlobalsToPublic>
     <DeploymentTargetVersion>3.0</DeploymentTargetVersion>
