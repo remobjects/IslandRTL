@@ -308,6 +308,7 @@ begin
   result := String.FromPChar(@lName[0], lLength) as not nullable;
   {$ELSEIF FUCHSIA}
   {$WARNING Not Implememnted for Fuchsia yet}
+  raise new NotImplementedException;
   {$ELSEIF LINUX AND NOT ANDROID}
   var lName := rtl.nl_langinfo_l(rtl._NL_IDENTIFICATION_LANGUAGE, fLocaleID);
   if lName = nil then

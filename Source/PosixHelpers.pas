@@ -19,6 +19,7 @@ type
   dliteratecb = public function (info :^__struct_dl_phdr_info; size: size_t; data: ^Void): Integer;
   {$ENDIF}
 
+
   {$IFDEF ARM and not ARM64 and not DARWIN}
   rtl.__struct__Unwind_Exception = rtl.__struct__Unwind_Control_Block;
   {$ELSEIF not exists('rtl.__struct__Unwind_Exception')}
@@ -221,7 +222,7 @@ type
     [SymbolName('__init_array_end')] class var __init_array_end: Integer; external;
     {$ENDIF}
 
-{$IF NOT ANDROID AND NOT DARWIN}
+{$IF NOT ANDROID AND NOT DARWIN AND not FUCHSIA}
 
     [SymbolName('stat64')]
     class method stat64(file: ^AnsiChar; var buf: rtl.__struct_stat64): Integer;
@@ -666,7 +667,7 @@ begin
 
       if lCallsiteEntryActionTable = 0 then begin
         // entry = 0; Cleanup
-        if ((aAction and {$IFDEF (DARWIN OR x86_64) AND NOT ANDROID}_Unwind_Action._UA_CLEANUP_PHASE{$ELSE}_UA_CLEANUP_PHASE{$ENDIF}) <> 0) and not ((aAction and {$IFDEF (DARWIN OR x86_64) AND NOT ANDROID}_Unwind_Action._UA_HANDLER_FRAME{$ELSE}_UA_HANDLER_FRAME{$ENDIF}) <> 0) then begin
+        if ((aAction and {$IFDEF (FUCHSIA OR DARWIN OR x86_64) AND NOT ANDROID}_Unwind_Action._UA_CLEANUP_PHASE{$ELSE}_UA_CLEANUP_PHASE{$ENDIF}) <> 0) and not ((aAction and {$IFDEF (FUCHSIA OR DARWIN OR x86_64) AND NOT ANDROID}_Unwind_Action._UA_HANDLER_FRAME{$ELSE}_UA_HANDLER_FRAME{$ENDIF}) <> 0) then begin
           aTypeIndex := 0;
           exit true;
         end;
@@ -678,7 +679,7 @@ begin
         var lIndexInTypeInfoTable: Int64 := DwarfEHReadSLEB128(var lCurrentActionTable);
         if lIndexInTypeInfoTable = 0 then begin
           // cleanup pad
-          if ((aAction and {$IFDEF (DARWIN OR x86_64) AND NOT ANDROID}_Unwind_Action._UA_CLEANUP_PHASE{$ELSE}_UA_CLEANUP_PHASE{$ENDIF}) <> 0) and not ((aAction and {$IFDEF (DARWIN OR x86_64) AND NOT ANDROID}_Unwind_Action._UA_HANDLER_FRAME{$ELSE}_UA_HANDLER_FRAME{$ENDIF}) <> 0) then begin
+          if ((aAction and {$IFDEF (FUCHSIA OR DARWIN OR x86_64) AND NOT ANDROID}_Unwind_Action._UA_CLEANUP_PHASE{$ELSE}_UA_CLEANUP_PHASE{$ENDIF}) <> 0) and not ((aAction and {$IFDEF (FUCHSIA OR DARWIN OR x86_64) AND NOT ANDROID}_Unwind_Action._UA_HANDLER_FRAME{$ELSE}_UA_HANDLER_FRAME{$ENDIF}) <> 0) then begin
             aTypeIndex := lIndexInTypeInfoTable;
             exit true;
           end;
@@ -700,7 +701,7 @@ begin
           {$ENDIF}
           if catchType = nil then begin
             // catch all
-            if ((aAction and {$IFDEF (DARWIN OR x86_64) AND NOT ANDROID}_Unwind_Action._UA_SEARCH_PHASE{$ELSE}_UA_SEARCH_PHASE{$ENDIF}) <> 0) or ((aAction and {$IFDEF (DARWIN OR x86_64) AND NOT ANDROID}_Unwind_Action._UA_HANDLER_FRAME{$ELSE}_UA_HANDLER_FRAME{$ENDIF}) <>0) then begin
+            if ((aAction and {$IFDEF (FUCHSIA OR DARWIN OR x86_64) AND NOT ANDROID}_Unwind_Action._UA_SEARCH_PHASE{$ELSE}_UA_SEARCH_PHASE{$ENDIF}) <> 0) or ((aAction and {$IFDEF (FUCHSIA OR DARWIN OR x86_64) AND NOT ANDROID}_Unwind_Action._UA_HANDLER_FRAME{$ELSE}_UA_HANDLER_FRAME{$ENDIF}) <>0) then begin
               aTypeIndex := lIndexInTypeInfoTable;
               exit true;
             end
@@ -729,12 +730,12 @@ begin
             {$ENDIF}
             end else begin
               if Utilities.IsInstance(exception_header^.Object, catchType) <> nil then begin
-                if 0 <> (aAction and {$IFDEF (DARWIN OR x86_64) AND NOT ANDROID}_Unwind_Action._UA_SEARCH_PHASE{$ELSE}_UA_SEARCH_PHASE{$ENDIF}) then begin
+                if 0 <> (aAction and {$IFDEF (FUCHSIA OR DARWIN OR x86_64) AND NOT ANDROID}_Unwind_Action._UA_SEARCH_PHASE{$ELSE}_UA_SEARCH_PHASE{$ENDIF}) then begin
                   aTypeIndex := lIndexInTypeInfoTable;
                   exit true;
                 end
                 else begin
-                  if 0 = (aAction and {$IFDEF (DARWIN OR x86_64) AND NOT ANDROID}_Unwind_Action._UA_FORCE_UNWIND{$ELSE}_UA_FORCE_UNWIND{$ENDIF}) then begin
+                  if 0 = (aAction and {$IFDEF (FUCHSIA OR DARWIN OR x86_64) AND NOT ANDROID}_Unwind_Action._UA_FORCE_UNWIND{$ELSE}_UA_FORCE_UNWIND{$ENDIF}) then begin
                     //call_terminate(native_exception, unwind_exception);
                     exit false;
                   end;
@@ -950,7 +951,7 @@ begin
   var lTypeInfo: rtl.int64_t;
   var lLandingPad: rtl.uintptr_t;
 
-  if 0 <> (aState and {$IFDEF (DARWIN OR x86_64) AND NOT ANDROID}rtl._Unwind_Action._UA_SEARCH_PHASE{$ELSE}rtl._UA_SEARCH_PHASE{$ENDIF})  then begin
+  if 0 <> (aState and {$IFDEF (FUCHSIA OR DARWIN OR x86_64) AND NOT ANDROID}rtl._Unwind_Action._UA_SEARCH_PHASE{$ELSE}rtl._UA_SEARCH_PHASE{$ENDIF})  then begin
     if Parselsda(aState, lMine, lObjc, aEx, aCtx, out lTypeInfo, out lLandingPad) then begin
       if lMine then begin
         var lRecord := ^ElementsException(aEx);
@@ -963,9 +964,9 @@ begin
     exit rtl._Unwind_Reason_Code._URC_CONTINUE_UNWIND;
   end;
 
-  if 0 <> (aState and {$IFDEF (DARWIN OR x86_64) AND NOT ANDROID}rtl._Unwind_Action._UA_CLEANUP_PHASE{$ELSE}rtl._UA_CLEANUP_PHASE{$ENDIF}) then begin
+  if 0 <> (aState and {$IFDEF (FUCHSIA OR DARWIN OR x86_64) AND NOT ANDROID}rtl._Unwind_Action._UA_CLEANUP_PHASE{$ELSE}rtl._UA_CLEANUP_PHASE{$ENDIF}) then begin
     // This is either unwinding OR catching
-    if (0 = (aState and {$IFDEF (DARWIN OR x86_64) AND NOT ANDROID}rtl._Unwind_Action._UA_HANDLER_FRAME{$ELSE}rtl._UA_HANDLER_FRAME{$ENDIF}))  then begin
+    if (0 = (aState and {$IFDEF (FUCHSIA OR DARWIN OR x86_64) AND NOT ANDROID}rtl._Unwind_Action._UA_HANDLER_FRAME{$ELSE}rtl._UA_HANDLER_FRAME{$ENDIF}))  then begin
       // finally, always parse
       if Parselsda(aState, lMine, lObjc, aEx, aCtx, out lTypeInfo, out lLandingPad) then begin
         rtl._Unwind_SetGR(aCtx, 0, rtl.uintptr_t(aEx));
