@@ -637,7 +637,7 @@ begin
   {$IF POSIX_LIGHT}
   fHandle := rtl.socket(rtl.int32_t(anAddressFamily), rtl.int32_t(aSocketType), rtl.int32_t(aProtocol));
   {$ELSEIF WINDOWS}
-  fHandle := rtl.__Global.socket(rtl.INT(anAddressFamily), rtl.INT(aSocketType), rtl.INT(aProtocol));
+  fHandle := rtl.socket(rtl.INT(anAddressFamily), rtl.INT(aSocketType), rtl.INT(aProtocol));
   {$ELSE}
   {$ERROR Unsupported platform}
   {$ENDIF}
@@ -686,7 +686,7 @@ begin
   {$IF POSIX AND (NOT (ANDROID OR DARWIN))}
   lSockAddr.__sockaddr__ := ^rtl.__struct_sockaddr(lPointer);
   lSockAddr.__sockaddr_in__ := ^rtl.__struct_sockaddr_in(lPointer);
-  if rtl.__Global.bind(fHandle, lSockAddr, lSize) <> 0 then
+  if rtl.bind(fHandle, lSockAddr, lSize) <> 0 then
     raise new Exception("Error calling bind function");
   {$ELSEIF DARWIN OR ANDROID}
   if rtl.bind(fHandle, ^rtl.__struct_sockaddr(lPointer), lSize) <> 0 then

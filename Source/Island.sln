@@ -11,6 +11,8 @@ Project("{656346D9-4656-40DA-A068-22D5425D4639}") = "Island (Darwin tvOS)", "Isl
 EndProject
 Project("{656346D9-4656-40DA-A068-22D5425D4639}") = "Island (Darwin watchOS)", "Island.Darwin.watchOS.elements", "{EC1F85C8-F514-4566-9F51-E1BB64EC1514}"
 EndProject
+Project("{656346D9-4656-40DA-A068-22D5425D4639}") = "Island (Fuchsia)", "Island.Fuchsia.elements", "{2430EA6F-C750-426D-A87D-A0160F243DC2}"
+EndProject
 Project("{656346D9-4656-40DA-A068-22D5425D4639}") = "Island (Linux)", "Island.Linux.elements", "{A2C670B6-DB38-401A-AE00-71515C87CCC5}"
 EndProject
 Project("{656346D9-4656-40DA-A068-22D5425D4639}") = "Island (WebAssembly)", "Island.WebAssembly.elements", "{8C88F0A8-D5E6-4957-B16F-4FB38738FD75}"
@@ -47,6 +49,10 @@ Global
 		{EC1F85C8-F514-4566-9F51-E1BB64EC1514}.Debug|AnyCPU.Build.0 = Debug|AnyCPU
 		{EC1F85C8-F514-4566-9F51-E1BB64EC1514}.Release|AnyCPU.ActiveCfg = Release|AnyCPU
 		{EC1F85C8-F514-4566-9F51-E1BB64EC1514}.Release|AnyCPU.Build.0 = Release|AnyCPU
+		{2430EA6F-C750-426D-A87D-A0160F243DC2}.Debug|AnyCPU.ActiveCfg = Debug|AnyCPU
+		{2430EA6F-C750-426D-A87D-A0160F243DC2}.Debug|AnyCPU.Build.0 = Debug|AnyCPU
+		{2430EA6F-C750-426D-A87D-A0160F243DC2}.Release|AnyCPU.ActiveCfg = Release|AnyCPU
+		{2430EA6F-C750-426D-A87D-A0160F243DC2}.Release|AnyCPU.Build.0 = Release|AnyCPU
 		{A2C670B6-DB38-401A-AE00-71515C87CCC5}.Debug|AnyCPU.ActiveCfg = Debug|AnyCPU
 		{A2C670B6-DB38-401A-AE00-71515C87CCC5}.Debug|AnyCPU.Build.0 = Debug|AnyCPU
 		{A2C670B6-DB38-401A-AE00-71515C87CCC5}.Release|AnyCPU.ActiveCfg = Release|AnyCPU

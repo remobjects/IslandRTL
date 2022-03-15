@@ -19,7 +19,6 @@ type
   dliteratecb = public function (info :^__struct_dl_phdr_info; size: size_t; data: ^Void): Integer;
   {$ENDIF}
 
-
   {$IFDEF ARM and not ARM64 and not DARWIN}
   rtl.__struct__Unwind_Exception = rtl.__struct__Unwind_Control_Block;
   {$ELSEIF not exists('rtl.__struct__Unwind_Exception')}
@@ -222,7 +221,7 @@ type
     [SymbolName('__init_array_end')] class var __init_array_end: Integer; external;
     {$ENDIF}
 
-{$IF NOT ANDROID AND NOT DARWIN AND not FUCHSIA}
+{$IF NOT ANDROID AND NOT DARWIN AND NOT FUCHSIA}
 
     [SymbolName('stat64')]
     class method stat64(file: ^AnsiChar; var buf: rtl.__struct_stat64): Integer;
