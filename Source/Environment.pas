@@ -67,7 +67,7 @@ type
       {$ELSEIF ANDROID}
       result := {$IF arm64_v8a}"arm64-v8a"{$ELSEIF armeabi}"armeabi"{$ELSEIF armeabi_v7a}"armeabi-v7a"{$ELSEIF i386}"x86"{$ELSEIF __x86_64__}"x86_64"{$ELSE}{$ERROR Unsupported achitecture}{$ENDIF}
       {$ELSEIF LINUX}
-      result := {$IF x86_64}"x86_64"{$ELSEIF aarch64}"arm64"{$ELSEIF armv7}"armv7"{$ELSE}{$ERROR Unsupported achitecture}{$ENDIF};
+      result := {$IF x86_64}"x86_64"{$ELSEIF aarch64}"arm64"{$ELSEIF armv7}"armv7"{$ELSEIF armv6}"armv6"{$ELSE}{$ERROR Unsupported achitecture}{$ENDIF};
       {$ELSEIF WEBASSEMBLY}
       result := "wasm32";
       {$ELSEIF DARWIN}
