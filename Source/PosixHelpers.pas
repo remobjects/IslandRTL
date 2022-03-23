@@ -396,6 +396,14 @@ type
     end;
     {$ENDIF}
 
+    {$IFDEF DARWIN OR (LINUX AND NOT ANDROID)}
+    [SymbolName('calloc')]
+    class method calloc(anum, asize: IntPtr): ^Void;
+    begin
+      result := malloc(anum * asize);
+      memset(result, 0, anum * asize);
+    end;
+    {$ENDIF}
   end;
 
   Int64Pair = public packed record public a,b: Int64; end;
