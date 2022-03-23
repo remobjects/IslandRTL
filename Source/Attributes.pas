@@ -263,7 +263,7 @@ type
     constructor(); empty;
   end;
 
-  [AttributeUsage(AttributeTargets.Interface, AllowMultiple := false)]
+  [AttributeUsage(AttributeTargets.Interface or AttributeTargets.Class or AttributeTargets.Delegate or AttributeTargets.Enum or AttributeTargets.Struct, AllowMultiple := false)]
   GuidAttribute = public class(Attribute)
   private
     fGuid: Guid;

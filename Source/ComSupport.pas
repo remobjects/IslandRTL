@@ -4,6 +4,11 @@ type
   ClassInstancing = public enum (Internal, SingleInstance, MultiInstance);
   ThreadingModel = public enum (Single, Apartment, Free, Both, Neutral);
 
+
+  [Com]
+  [Guid("9DE1C534-6AE1-11E0-84E1-18A905BCC53F")]
+  Windows.Foundation.TypedEventHandler<TSender, TResult> = public method(sender: TSender; &result: TResult);
+  
   OleError = class(Exception)
   private
   public
