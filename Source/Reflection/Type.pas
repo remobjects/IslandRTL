@@ -751,7 +751,7 @@ type
       SortTypes(lTypes);
     end;
 
-   {$ELSEIF DARWIN}
+    {$ELSEIF DARWIN}
     [&Weak, SymbolName('_mh_execute_header')]
     class var __mh_execute_header: {$IFDEF CPU64}rtl.__struct_mach_header_64{$ELSE}rtl.__struct_mach_header{$ENDIF} ; external;
     [&Weak, SymbolName('_mh_dylib_header')]
@@ -788,7 +788,7 @@ type
       SortTypes(lTypes);
     end;
 
-   {$ELSE}
+    {$ELSE}
 
     [SymbolName('__start_ELRTTLRR')]
     class var fStart: ^IslandTypeInfo; external;

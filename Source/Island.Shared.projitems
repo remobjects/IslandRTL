@@ -57,7 +57,7 @@
     <Compile Include="Math.pas" />
     <Compile Include="Object.pas" />
     <Compile Include="String.pas" />
-    <Compile Include="Type.pas" />
+    <Compile Include="$(MSBuildThisFileDirectory)Reflection\Type.pas" />
     <Compile Include="Types.pas" />
     <Compile Include="Array.pas" />
     <Compile Include="Thread.pas" />
@@ -98,6 +98,7 @@
     <Compile Include="$(MSBuildThisFileDirectory)DateFormatter.pas" />
     <Compile Include="$(MSBuildThisFileDirectory)Bridges.Delphi.pas" />
     <Compile Include="$(MSBuildThisFileDirectory)List.Extensions.pas" />
+    <Folder Include="$(MSBuildThisFileDirectory)Reflection" />
   </ItemGroup>
   <ItemGroup>
     <Folder Include="Streams">
