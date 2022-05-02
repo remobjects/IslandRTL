@@ -57,7 +57,7 @@
     <Compile Include="Math.pas" />
     <Compile Include="Object.pas" />
     <Compile Include="String.pas" />
-    <Compile Include="$(MSBuildThisFileDirectory)Reflection\Type.pas" />
+    <Compile Include="$(MSBuildThisFileDirectory)Reflection\Reflection.pas" />
     <Compile Include="Types.pas" />
     <Compile Include="Array.pas" />
     <Compile Include="Thread.pas" />
