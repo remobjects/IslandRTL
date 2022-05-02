@@ -7,6 +7,7 @@
     <Import_RootNamespace>Island.Shared.elements</Import_RootNamespace>
     <ProjectGuid>{8BE19C06-DD7E-41F7-954B-6D269C087E4C}</ProjectGuid>
     <RootNamespace>RemObjects.Elements.System</RootNamespace>
+    <DefaultLanguage>Oxygene</DefaultLanguage>
   </PropertyGroup>
   <ItemGroup>
     <Compile Include="$(MSBuildThisFileDirectory)Attributes.pas" />
@@ -99,6 +100,7 @@
     <Compile Include="$(MSBuildThisFileDirectory)Bridges.Delphi.pas" />
     <Compile Include="$(MSBuildThisFileDirectory)List.Extensions.pas" />
     <Folder Include="$(MSBuildThisFileDirectory)Reflection" />
+    <Compile Include="$(MSBuildThisFileDirectory)Reflection\Type.pas" />
   </ItemGroup>
   <ItemGroup>
     <Folder Include="Streams">
