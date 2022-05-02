@@ -546,7 +546,7 @@ type
 
     property RTTI: ^IslandTypeInfo read fValue;
 
-    property &Name: String read -> begin
+    property &Name: String read begin
       if fValue = nil then
         exit nil;
       if IslandTypeFlags.Generic in fValue^.Ext^.Flags then begin
@@ -557,7 +557,7 @@ type
         result := result + '<'+ String.Join(',', GenericArguments.Select(e -> e.Name)) + '>';
         exit;
       end;
-      exit String.FromPAnsiChars(fValue^.Ext^.Name);
+      result := String.FromPAnsiChars(fValue^.Ext^.Name);
     end;
 
     class method StripGenerics(s: String): String; private;
