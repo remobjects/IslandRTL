@@ -3,14 +3,14 @@
 {$IFDEF WINDOWS}
 var
   [SymbolName('__elements_RTTIStart'), SectionName('ELRTTLRR$a'), StaticallyInitializedField]
-  fStart: ^IslandTypeInfo := nil;  readonly;
+  fStart: ^IslandTypeInfo := nil;  readonly; assembly;
   [SymbolName('__elements_RTTIEnd'), SectionName('ELRTTLRR$z'), StaticallyInitializedField]
-  fEnd: ^IslandTypeInfo := nil; readonly;
+  fEnd: ^IslandTypeInfo := nil; readonly; assembly;
 
   [SymbolName('__elements_RTTIMStart'), SectionName('ELRTMLRR$a'), StaticallyInitializedField]
-  fMStart: IslandMethodUIDInfo := default(IslandMethodUIDInfo);  readonly;
+  fMStart: IslandMethodUIDInfo := default(IslandMethodUIDInfo);  readonly; assembly;
   [SymbolName('__elements_RTTIMEnd'), SectionName('ELRTMLRR$z'), StaticallyInitializedField]
-  fMEnd: IslandMethodUIDInfo := default(IslandMethodUIDInfo); readonly;
+  fMEnd: IslandMethodUIDInfo := default(IslandMethodUIDInfo); readonly; assembly;
 {$ENDIF}
 
 type
