@@ -112,16 +112,22 @@ type
       fPtr := aPtr;
     end;
 
-    method get_Type: &Type;
+    method get_Type: nullable &Type;
     begin
       var lPtr := fPtr;
       var lKey: Integer;
       var lTy: ProtoReadType;
       while (lPtr < fEnd) and ProtoReadHeader(var lPtr, out lKey, out lTy) do begin
         if (lKey = 5) and (lTy = ProtoReadType.varint) then begin
-          exit new &Type(^IslandTypeInfo(&Type.ResolveType(fValue^.Ext^.MemberInfoList[ProtoReadVarInt(var lPtr)])));
-        end else
+          var lResolvedType := ^IslandTypeInfo(&Type.ResolveType(fValue^.Ext^.MemberInfoList[ProtoReadVarInt(var lPtr)]));
+          if assigned(lResolvedType) then
+            exit new &Type(lResolvedType)
+          else
+            exit nil;
+        end
+        else begin
           ProtoSkipValue(var lPtr, lTy);
+        end;
       end;
     end;
 
@@ -130,7 +136,7 @@ type
     property Attributes: sequence of CustomAttribute read get_Attributes;
     property Access: MemberAccess read get_Access;
     property Name: String read get_Name;
-    property &Type: &Type read get_Type;
+    property &Type: nullable &Type read get_Type;
     property IsStatic: Boolean read; abstract;
   end;
 
