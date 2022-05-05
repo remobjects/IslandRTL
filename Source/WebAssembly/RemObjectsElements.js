@@ -356,21 +356,29 @@
             imp.env.__island_eval = function (str) {
                 return createHandle(eval(readStringFromMemory(str)));
             };
-            imp.env.__island_get_typeof = function (handle) {
+            imp.env.__island_get_typeof = function(handle) {
                 var ht = handletable[handle];
-                if (ht == null)
-                    return 0;
+                if (ht == null) return 0;
                 switch (typeof ht) {
                     case 'undefined': return 1;
                     case 'string': return 2;
                     case 'number': return 3;
                     case 'function': return 4;
                     case 'symbol': return 5;
-                    case 'object': return 6;
+                    case 'object': {
+                        if (Object.prototype.toString.call(ht) === "[object Date]")
+                        {
+                            return 10;
+                        }
+                        return 6;
+                    }
                     case 'boolean': return 7;
                     default:
                         return -1;
                 }
+            };
+            imp.env.__island_create_date = function(val) {
+                return createHandle(new Date(Number(val)))
             };
             imp.env.__island_get_intvalue = function (handle) {
                 return handletable[handle];

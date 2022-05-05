@@ -312,11 +312,20 @@ export module ElementsWebAssembly {
                 case 'number': return 3;
                 case 'function': return 4;
                 case 'symbol': return 5;
-                case 'object': return 6;
+                case 'object': {
+                    if (Object.prototype.toString.call(ht) === "[object Date]")
+                    {
+                        return 10;
+                    }
+                    return 6;
+                }
                 case 'boolean': return 7;
                 default:
                     return -1;
             }
+        };
+        imp.env.__island_create_date = function(val: number): number {
+            return createHandle(new Date(Number(val)))
         };
         imp.env.__island_get_intvalue = function(handle: number): number {
             return handletable[handle];

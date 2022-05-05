@@ -674,7 +674,7 @@ type
         raise new NotImplementedException($"MethodInfo.Invoke is not implemented for Island/{Environment.SubMode} on {Environment.BinaryArchitecture} yet.");
         {$ENDIF}
       {$ELSEIF WEBASSEMBLY}
-      result := WebAssembly.UnwrapCall(&Type, WebAssembly.InvokeMethod(Pointer, lParams));
+      result := WebAssembly.UnwrapCall(&Type, WebAssembly.InvokeMethod(Pointer, lParams, &Type));
       {$ELSE}
       {$ERROR Unsupported SubMode}
       {$ENDIF}
@@ -698,6 +698,8 @@ type
 
 
   CtorHelper = assembly procedure(aInst: Object);
+
+  VTCtorHelper = assembly procedure(aInst: IntPtr);
 
   TypeDefFlags = public flags (
     &Global = 1 shl 0,

@@ -152,6 +152,9 @@ type
     [DllImport('', EntryPoint := '__island_get_typeof')]
     class method GetTypeOf(aHandle: IntPtr): WebAssemblyType; external;
 
+    [DllImport('', EntryPoint := '__island_create_date')]
+    class method CreateDate(aValue: Int64): Integer; external;
+
     [DllImport('', EntryPoint := '__island_get_intvalue')]
     class method GetIntValue(aHandle: IntPtr): Int32; external;
 
@@ -553,7 +556,9 @@ type
     begin
       if aVal = nil then exit nil;
       if aType = nil then exit nil;
-      if aType.IsValueType then exit aVal;
+      if aType.IsValueType then begin
+        exit aVal;
+      end;
       var lType := aVal.GetType;
       if (lType = aType) or lType.IsSubclassOf(aType) then exit aVal;
       var lVal := InternalCalls.Cast<Object>(^Void(Convert.ToUInt32(aVal)));
@@ -589,7 +594,8 @@ type
         var lWM := el.WriteMethod;
 
         if lRM <> nil then begin
-          lGet := o -> UnwrapIfNeeded(el.Type, WebAssembly.InvokeMethod(lRM, [GetPtrFromObject(o)]));
+          lGet := o -> UnwrapIfNeeded(el.Type,
+                                      WebAssembly.InvokeMethod(lRM, [GetPtrFromObject(o)], el.Type));
         end;
         if lWM <> nil then begin
           lSet := (o, v) -> WebAssembly.InvokeMethod(lWM, [GetPtrFromObject(o), WrapIfNeeded(el.Type, v)]);
@@ -687,6 +693,12 @@ type
         WebAssemblyType.String: result := GetStringFromHandle(aHandle);
         WebAssemblyType.Number: result := WebAssemblyCalls.GetDoubleValue(aHandle);
         WebAssemblyType.Boolean: result := Convert.ToBoolean(WebAssemblyCalls.GetIntValue(aHandle));
+        WebAssemblyType.Date: begin
+            result := new EcmaScriptObject(aHandle);
+            var val := Convert.ToInt64(EcmaScriptObject(result).Call('getTime'));
+            EcmaScriptObject(result).Dispose;
+            exit new DateTime(1970, 1, 1, 0, 0, 0, 0).AddMilliseconds(val);
+          end;
         else begin
           result := new EcmaScriptObject(aHandle);
           var val := EcmaScriptObject(result)['__elements_handle'];
@@ -695,7 +707,6 @@ type
             var lHandle := Convert.ToInt32(val);
             result := InternalCalls.Cast<Object>(^Void(lHandle));
           end;
-
           exit;
         end;
       end;
@@ -712,8 +723,19 @@ type
       exit lVal;
     end;
 
-    class method InvokeMethod(aPtr: ^Void; params args: array of Object): Object;
+    class method InvokeMethod(aPtr: ^Void; args: array of Object; aResultType: &Type := nil): Object;
     begin
+      if assigned(aResultType) and (aResultType.IsValueType) and (aResultType.SizeOfType > 4) then begin
+        // "struct ret" is passed as the first argument, this is where the value will go.
+        var lTmp := aResultType.Instantiate();
+        var lData := new IntPtr[length(args) + 1];
+        lData[0] := WebAssembly.CreateHandle(IntPtr(InternalCalls.Cast(lTmp)) + aResultType.BoxedDataOffset, true);
+        for i: Integer := 0 to length(args) -1 do
+          lData[i + 1] := WebAssembly.CreateHandle(args[i], true);
+        WebAssemblyCalls.Invoke(IntPtr(aPtr), @lData[0], lData.Length);
+        exit lTmp;
+        // result is a byref!
+      end;
       var lData := new IntPtr[length(args)];
       for i: Integer := 0 to length(args) -1 do
         lData[i] := WebAssembly.CreateHandle(args[i], true);
@@ -728,6 +750,9 @@ type
         if StringAsObject then
           exit WebAssemblyCalls.CreateInteger(Integer(InternalCalls.Cast(aVal)));
         {var lPtr := InternalCalls.Cast(aVal);} var lObject := EcmaScriptObject(aVal); {lObject['__elements_handle'] := NativeInt(lPtr);} exit WebAssemblyCalls.CloneHandle(lObject.Handle);
+      end;
+      if aVal is DateTime then begin
+        exit WebAssemblyCalls.CreateDate((DateTime(aVal).Ticks - new DateTime(1970, 1, 1, 0, 0, 0, 0).Ticks) / 10000);
       end;
       if aVal is Integer then exit WebAssemblyCalls.CreateInteger(aVal as Integer);
       if aVal is NativeInt then exit WebAssemblyCalls.CreateInteger(aVal as NativeInt);
@@ -793,7 +818,7 @@ type
     end;
   end;
 
-  WebAssemblyType = public enum (Null, Undefined, String, Number, &Function, Symbol, Object, Boolean);
+  WebAssemblyType = public enum (Null, Undefined, String, Number, &Function, Symbol, Object, Boolean, Date = 10);
 
   ExternalCalls = public static class
   private
