@@ -118,7 +118,7 @@ type
     class var fLoaded: Integer; assembly;
     class var fLocal: Boolean;
     class var fLock: Integer;
-    {$IFDEF POSIX}[LinkOnce]{$ENDIF}
+    {$IFDEF POSIX}[LinkOnce, DllExport]{$ENDIF}
     class var fSharedMemory: SharedMemory; assembly;
 
     {$IFDEF POSIX}[LinkOnce, DllExport]{$ENDIF}
@@ -146,6 +146,7 @@ type
     end;
 
     {$IFDEF WINDOWS}class var fMapping: rtl.HANDLE;{$ENDIF}
+    {$IFDEF LINUX}class var fMapping: Integer;{$ENDIF}
 
     [SkipDebug]
     class method LoadGC; assembly;
@@ -218,8 +219,76 @@ type
           rtl.CloseHandle(fMapping);
           fMapping := rtl.INVALID_HANDLE_VALUE;
         end;
+        fLoaded := 1;
+        {$ELSEIF LINUX}
+        var FN: array[0..29] of AnsiChar;
+        FN[0] := '/';
+        FN[1] := '_';
+        FN[2] := 'R';
+        FN[3] := 'e';
+        FN[4] := 'm';
+        FN[5] := 'O';
+        FN[6] := 'b';
+        FN[7] := 'j';
+        FN[8] := 'e';
+        FN[9] := 'c';
+        FN[10] := 't';
+        FN[11] := 's';
+        FN[12] := 'I';
+        FN[13] := 's';
+        FN[14] := 'l';
+        FN[15] := 'a';
+        FN[16] := 'n';
+        FN[17] := 'd';
+        FN[18] := '2'; // Version, increase when adding stuff or making the class layout incompatible
+        var lID := rtl.getpid();
+        FN[19] := AnsiChar(Integer('a')+Integer((lID shr 0) and $f));
+        FN[20] := AnsiChar(Integer('a')+Integer((lID shr 4) and $f));
+        FN[21] := AnsiChar(Integer('a')+Integer((lID shr 8) and $f));
+        FN[22] := AnsiChar(Integer('a')+Integer((lID shr 12) and $f));
+        FN[23] := AnsiChar(Integer('a')+Integer((lID shr 16) and $f));
+        FN[24] := AnsiChar(Integer('a')+Integer((lID shr 20) and $f));
+        FN[25] := AnsiChar(Integer('a')+Integer((lID shr 24) and $f));
+        FN[26] := AnsiChar(Integer('a')+Integer((lID shr 28) and $f));
+        FN[27] := 'A'; // boehm
+        FN[28] := #0;
+
+        fMapping := rtl.shm_open(@FN[0], rtl.O_CREAT or rtl.O_RDWR, rtl.S_IRUSR or rtl.S_IWUSR or rtl.S_IXUSR);
+
+        if fMapping = 0 then begin
+          LocalGC;
+          raise new Exception('Cannot create file mapping for memory sharing, this should not happen!');
+        end;
+        rtl.ftruncate(fMapping, 8);
+        var p: ^NativeInt := rtl.mmap(nil, 8, rtl.PROT_WRITE, rtl.MAP_SHARED, fmapping, 0);
+        if p = nil then begin
+          LocalGC;
+          raise new Exception('Cannot create file mapping for memory sharing, this should not happen!');
+        end;
+        var lNew := InternalCalls.VolatileRead(var p^) = 0;
+        if lNew then begin
+          LocalGC;
+          InternalCalls.VolatileWrite(var p^, NativeInt(@fSharedMemory));
+        end else begin
+          loop begin
+            var lData: ^SharedMemory := ^SharedMemory(InternalCalls.VolatileRead(var p^));
+            if lData = nil then Thread.Sleep(1) else begin
+              fSharedMemory := lData^;
+              break;
+            end;
+          end;
+        end;
+        rtl.munmap(p, 8);
+        if not lNew then begin
+          rtl.shm_unlink(FN);
+          fMapping := 0;
+        end;
+        fLoaded := 1;
         {$ELSE}
-        LocalGC;
+        if fSharedMemory.malloc = nil then
+          LocalGC
+        else
+          fLoaded := 1;
         {$ENDIF}
         Utilities.RegisterThreadHandlers(@RegisterThread, @UnregisterThread);
       finally
@@ -291,7 +360,7 @@ type
     begin
       fSharedMemory.unregister;
     end;
-    
+
     class method &New(aTTY: ^Void; aSize: NativeInt): ^Void;
     begin
       if fFinalizer = nil then begin
