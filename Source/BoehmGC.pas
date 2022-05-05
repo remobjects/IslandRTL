@@ -146,7 +146,7 @@ type
     end;
 
     {$IFDEF WINDOWS}class var fMapping: rtl.HANDLE;{$ENDIF}
-    {$IFDEF LINUX}class var fMapping: Integer;{$ENDIF}
+    {$IFDEF LINUX AND NOT ANDROID}class var fMapping: Integer;{$ENDIF}
 
     [SkipDebug]
     class method LoadGC; assembly;
@@ -220,7 +220,7 @@ type
           fMapping := rtl.INVALID_HANDLE_VALUE;
         end;
         fLoaded := 1;
-        {$ELSEIF LINUX}
+        {$ELSEIF LINUX AND NOT ANDROID}
         var FN: array[0..29] of AnsiChar;
         FN[0] := '/';
         FN[1] := '_';
