@@ -662,6 +662,25 @@ type
       exit IntPtr(InternalCalls.Cast(lEC));
     end;
 
+    [SymbolName('__island_task_wrap'), Used, DllExport]
+    class method TaskWrap(aTarget: IntPtr; aInput: Task);
+    begin
+      var lOrg := new EcmaScriptObject(aTarget);
+      var lProxy := CreateProxy(aInput);
+      lOrg['value'] := lProxy.Handle;
+      _ := aInput.ContinueWith(() -> begin
+        ReleaseProxy(lProxy);
+        if aInput.IsFaulted then begin
+          lOrg.Call('failed', aInput.Exception.ToString());
+        end else begin
+          if aInput is IReturningTask then
+            lOrg.Call('finished', IReturningTask(aInput).GetValue())
+          else
+            lOrg.Call('finished');
+        end;
+      end);
+    end;
+
     [SymbolName('__island_unwrap'), Used, DllExport]
     class method Unwrap(o: IntPtr): IntPtr;
     // o is a pointer, returns either a handle ot a proxy or the handle to an ecmascriptobject.

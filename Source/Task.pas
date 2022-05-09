@@ -8,6 +8,10 @@ type
   public
     method Run(aTask: Task); abstract;
   end;
+  IReturningTask = public interface
+    method GetValue: Object;
+  end;
+
 
   TaskAction_Action = class(TaskAction)
   public
@@ -536,7 +540,7 @@ type
     end;
   end;
 
-  Task<T> = public class(Task)
+  Task<T> = public class(Task, IReturningTask)
   assembly
     fResult: T;
 
@@ -549,6 +553,11 @@ type
 
     constructor;
     begin
+    end;
+
+    method GetValue: Object;
+    begin
+      exit &Result;
     end;
 
   public

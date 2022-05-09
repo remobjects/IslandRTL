@@ -10,6 +10,7 @@
 })(function (require, exports) {
     "use strict";
     exports.__esModule = true;
+    exports.ElementsWebAssembly = exports.__elements_debug_wasm_fromHexString = exports.__elements_debug_wasm_toHexString = exports.__elements_debug_getglobal = exports.__elements_debug_setglobal = void 0;
     ///<reference path="webassembly.es6.d.ts" />
     // __elements_debug_wasm_loaded; Keep this on line 3 for debugging purposes
     function __elements_debug_wasm_loaded(url, bytes, data, importObject, memory) {
@@ -209,6 +210,29 @@
                 ReleaseReference(old['__elements_handle']);
         }
         ElementsWebAssembly.releaseHandle = releaseHandle;
+        function WrapTask(ptr) {
+            var handle;
+            var obj = {
+                reject: undefined,
+                resolve: undefined,
+                failed: function (e) {
+                    releaseHandle(handle);
+                    obj.reject(e);
+                },
+                finished: function (v) {
+                    releaseHandle(handle);
+                    obj.resolve(v);
+                }
+            };
+            handle = createHandle(obj);
+            var prom = new Promise(function (res, rej) {
+                obj.resolve = res;
+                obj.reject = rej;
+            });
+            result.instance.exports["__island_task_wrap"](handle, ptr);
+            return prom;
+        }
+        ElementsWebAssembly.WrapTask = WrapTask;
         function getHandleValue(handle) {
             if (!handle || handle == 0)
                 return null;
@@ -356,9 +380,10 @@
             imp.env.__island_eval = function (str) {
                 return createHandle(eval(readStringFromMemory(str)));
             };
-            imp.env.__island_get_typeof = function(handle) {
+            imp.env.__island_get_typeof = function (handle) {
                 var ht = handletable[handle];
-                if (ht == null) return 0;
+                if (ht == null)
+                    return 0;
                 switch (typeof ht) {
                     case 'undefined': return 1;
                     case 'string': return 2;
@@ -366,8 +391,7 @@
                     case 'function': return 4;
                     case 'symbol': return 5;
                     case 'object': {
-                        if (Object.prototype.toString.call(ht) === "[object Date]")
-                        {
+                        if (Object.prototype.toString.call(ht) === "[object Date]") {
                             return 10;
                         }
                         return 6;
@@ -377,8 +401,8 @@
                         return -1;
                 }
             };
-            imp.env.__island_create_date = function(val) {
-                return createHandle(new Date(Number(val)))
+            imp.env.__island_create_date = function (val) {
+                return createHandle(new Date(Number(val)));
             };
             imp.env.__island_get_intvalue = function (handle) {
                 return handletable[handle];

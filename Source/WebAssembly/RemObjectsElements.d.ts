@@ -6,6 +6,7 @@ export declare function __elements_debug_wasm_fromHexString(orgByteArray: ArrayB
 export declare module ElementsWebAssembly {
     function createHandle(o: any): number;
     function releaseHandle(handle: number): void;
+    function WrapTask(ptr: number): Promise<any>;
     function getHandleValue(handle: number): any;
     function getAndReleaseHandleValue(handle: number): any;
     function readCharsFromMemory(offs: any, len: number): string;

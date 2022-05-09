@@ -137,6 +137,30 @@ export module ElementsWebAssembly {
             ReleaseReference(old['__elements_handle']);
     }
 
+    export function WrapTask(ptr: number): Promise<any> {
+        let handle: any
+        let obj = {
+            reject: undefined,
+            resolve: undefined,
+
+            failed: (e) => {
+                releaseHandle(handle)
+                obj.reject(e)
+            },
+            finished: (v) => {
+                releaseHandle(handle)
+                obj.resolve(v)
+            }
+        }
+        handle = createHandle(obj)
+        let prom = new Promise((res, rej) => {
+            obj.resolve = res;
+            obj.reject = rej;
+        })
+        result.instance.exports["__island_task_wrap"](handle, ptr)
+        return prom;
+    }
+
     export function getHandleValue(handle: number): any 
     {
         if (!handle || handle == 0) return null;
