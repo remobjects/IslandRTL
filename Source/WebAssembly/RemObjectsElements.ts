@@ -305,6 +305,10 @@ export module ElementsWebAssembly {
             
             return str.length;
         };
+
+        imp.env.__island_wraptask = function(obj: number): number {
+            return createHandle(WrapTask(obj));
+        }
         
         imp.env.__island_consolelog = function(str, len: number) 
         {

@@ -342,6 +342,11 @@
             imp.env.__island_consolelogint = function (val) {
                 console.log("Value: " + val);
             };
+            
+            imp.env.__island_wraptask = function(obj) {
+                return createHandle(WrapTask(obj));
+            }
+            
             imp.env.__island_to_lower = function (val, len, invar) {
                 if (invar)
                     return createHandle(readCharsFromMemory(val, len).toLowerCase());

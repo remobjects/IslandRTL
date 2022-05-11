@@ -179,6 +179,9 @@ type
     [DllImport('', EntryPoint := '__island_clone_handle')]
     class method CloneHandle(aHandle: IntPtr): IntPtr; external;
 
+    [DllImport('', Entrypoint := '__island_wraptask')]
+    class method WrapTask(aHandle: Object): IntPtr; external;
+
     [DllImport('', EntryPoint := '__island_add_event')]
     class method AddEvent(aSelf: IntPtr; aName: String; inst: WebAssemblyDelegate); external;
 
@@ -560,10 +563,13 @@ type
         exit aVal;
       end;
       var lType := aVal.GetType;
+      if aVal is Task then
+        exit new EcmaScriptObject(WebAssemblyCalls.WrapTask(aVal));
       if (lType = aType) or lType.IsSubclassOf(aType) then exit aVal;
       var lVal := InternalCalls.Cast<Object>(^Void(Convert.ToUInt32(aVal)));
       if lVal = 0 then exit nil;
       if lVal is String then exit lVal;
+
       exit CreateProxy(lVal);
     end;
 
