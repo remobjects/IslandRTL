@@ -335,7 +335,7 @@ type
         TypeCodes.Int16: exit Variant(Int16(o));
         TypeCodes.UInt16: exit Variant(Integer(UInt16(o)));
         TypeCodes.Int32: exit Variant(Integer(o));
-        TypeCodes.UInt32: exit Variant(Int64(Int32(o)));
+        TypeCodes.UInt32: exit Variant(Int64(UInt32(o)));
         TypeCodes.Int64: exit Variant(Int64(o));
         TypeCodes.UInt64: exit Variant(Int64(UInt64(o)));
         TypeCodes.Single: exit Variant(Double(Single(o)));

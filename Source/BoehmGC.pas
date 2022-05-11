@@ -260,7 +260,7 @@ type
           raise new Exception('Cannot create file mapping for memory sharing, this should not happen!');
         end;
         rtl.ftruncate(fMapping, 8);
-        var p: ^NativeInt := rtl.mmap(nil, 8, rtl.PROT_WRITE, rtl.MAP_SHARED, fmapping, 0);
+        var p: ^NativeInt := rtl.mmap(nil, 8, rtl.PROT_WRITE, rtl.MAP_SHARED, fMapping, 0);
         if p = nil then begin
           LocalGC;
           raise new Exception('Cannot create file mapping for memory sharing, this should not happen!');
