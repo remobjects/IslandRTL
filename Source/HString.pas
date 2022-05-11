@@ -52,7 +52,7 @@ type
       if aSource.fStr = nil then begin
         aDest.fStr := nil;
       end else
-        fDuplicatestring(aDest.fStr, @aSource.fStr);
+        fDuplicatestring(aSource.fStr, @aDest.fStr);
     end;
 
     finalizer;
@@ -72,7 +72,11 @@ end;
 
 operator Implicit(s: String): rtl.winrt.HSTRING; public;
 begin
-  HString_Helper.fCreatestring(@s.fFirstChar, s.Length, @result);
+  var lFirst := @s.fFirstChar;
+  var lLength := s.Length;
+  var lResult: rtl.winrt.HSTRING;
+  HString_Helper.fCreatestring(lFirst, lLength, @lResult);
+  exit lResult;
 end;
 
 operator Implicit(s: ^rtl.WCHAR): rtl.winrt.HSTRING; public;
