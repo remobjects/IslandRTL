@@ -173,10 +173,7 @@ type
       result[15] := Data4_7;
     end;
 
-    class method &Empty: Guid;
-    begin
-      exit new Guid;
-    end;
+    class property &Empty: Guid := new Guid; lazy; readonly;
 
     class method NewGuid: Guid;
     begin
