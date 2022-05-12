@@ -76,26 +76,29 @@ type
     property OnOutputData: block(aLine: String) read fOutputDataBlock;
     property OnErrorData: block(aLine: String) read fErrorDataBlock;
 
-    class method LoadLibrary(aLibrary: String): IntPtr;
+    class method LoadLibrary(aLibrary: String; aRaiseError: Boolean := True): IntPtr;
     begin
       {$IFDEF WINDOWS}
-      exit IntPtr(rtl.LoadLibrary(aLibrary));
+      result := IntPtr(rtl.LoadLibrary(aLibrary));
       {$ELSEIF POSIX}
-      exit IntPtr(rtl.dlopen(aLibrary, 0));
+      result := IntPtr(rtl.dlopen(aLibrary, rtl.RTLD_NOW));
       {$ELSE}
       raise new NotSupportedException;
       {$ENDIF}
+      if aRaiseError and (result = 0) then raise new LibraryNotFoundException(aLibrary+' could not be found');
     end;
 
     class method GetProcAddress(aLibrary: IntPtr; aProc: String): IntPtr;
     begin
+      if aLibrary = 0 then raise new EntrypointNotFoundException('Library handle must be assigned');
       {$IFDEF WINDOWS}
-      exit IntPtr(^Void(rtl.GetProcAddress(rtl.HModule(aLibrary), aProc)));
+      result := IntPtr(^Void(rtl.GetProcAddress(rtl.HModule(aLibrary), aProc)));
       {$ELSEIF POSIX}
-      exit IntPtr(rtl.dlsym(^Void(aLibrary), aProc));
+      result := IntPtr(rtl.dlsym(^Void(aLibrary), aProc));
       {$ELSE}
       raise new NotSupportedException;
       {$ENDIF}
+      if result = 0 then raise new EntrypointNotFoundException('Library entrypoint '+aProc+' not found');
     end;
 
     class method FreeLibrary(aLibrary: IntPtr);
