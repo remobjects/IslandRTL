@@ -88,13 +88,13 @@ type
       if aRaiseError and (result = 0) then raise new LibraryNotFoundException(aLibrary+' could not be found');
     end;
 
-    class method GetProcAddress(aLibrary: IntPtr; aProc: String): IntPtr;
+    class method GetProcAddress(aLibrary: IntPtr; aProc: String): ^Void;
     begin
       if aLibrary = 0 then raise new EntrypointNotFoundException('Library handle must be assigned');
       {$IFDEF WINDOWS}
-      result := IntPtr(^Void(rtl.GetProcAddress(rtl.HModule(aLibrary), aProc)));
+      result := ^Void(rtl.GetProcAddress(rtl.HModule(aLibrary), aProc));
       {$ELSEIF POSIX}
-      result := IntPtr(rtl.dlsym(^Void(aLibrary), aProc));
+      result := ^Void(rtl.dlsym(^Void(aLibrary), aProc));
       {$ELSE}
       raise new NotSupportedException;
       {$ENDIF}
