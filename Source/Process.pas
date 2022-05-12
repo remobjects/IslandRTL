@@ -98,7 +98,7 @@ type
       {$ELSE}
       raise new NotSupportedException;
       {$ENDIF}
-      if result = 0 then raise new EntrypointNotFoundException('Library entrypoint '+aProc+' not found');
+      if result = nil then raise new EntrypointNotFoundException('Library entrypoint '+aProc+' not found');
     end;
 
     class method FreeLibrary(aLibrary: IntPtr);
