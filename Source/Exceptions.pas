@@ -5,18 +5,19 @@ type
   private
     fMessage: not nullable String;
     fInnerException: nullable Exception;
+    property DefaultExceptionMessage: not nullable String read $"An Exception of type '{typeOf(self).Name}' was thrown.";
   public
     constructor;
     begin
-      fMessage := $"Exception of type '{typeOf(self).Name}' was thrown.";
+      fMessage := DefaultExceptionMessage;
     end;
 
-    constructor(aMessage: not nullable String);
+    constructor(aMessage: nullable String);
     begin
-      fMessage := aMessage;
+      fMessage := coalesce(aMessage, DefaultExceptionMessage);
     end;
 
-    constructor(aMessage: not nullable String; aException: nullable Exception);
+    constructor(aMessage: not nullable String; aException: not nullable Exception);
     begin
       fMessage := aMessage;
       fInnerException := aException;
