@@ -12,9 +12,9 @@ type
       fMessage := DefaultExceptionMessage;
     end;
 
-    constructor(aMessage: nullable String);
+    constructor(aMessage: not nullable String);
     begin
-      fMessage := coalesce(aMessage, DefaultExceptionMessage);
+      fMessage := aMessage;
     end;
 
     constructor(aMessage: not nullable String; aException: not nullable Exception);
@@ -147,10 +147,18 @@ type
 
   ArgumentException = public class(Exception)
   public
-    constructor(aMessage: String); empty;
+    constructor(aMessage: not nullable String); empty;
 
-    constructor(aMessage: String; aParamName: String);
+    constructor(aMessage: not nullable String; aException: not nullable Exception); empty;
+
+    constructor(aMessage: not nullable String; aParamName: String);
     begin
+      ParamName := aParamName;
+    end;
+
+    constructor(aMessage: not nullable String; aParamName: String; aException: not nullable Exception);
+    begin
+      constructor(aMessage, aException);
       ParamName := aParamName;
     end;
 
