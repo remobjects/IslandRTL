@@ -101,10 +101,9 @@
     <Compile Include="$(MSBuildThisFileDirectory)List.Extensions.pas" />
     <Folder Include="$(MSBuildThisFileDirectory)Reflection" />
     <Compile Include="$(MSBuildThisFileDirectory)Reflection\Type.pas" />
-  </ItemGroup>
-  <ItemGroup>
     <Folder Include="Streams">
       <Virtual>True</Virtual>
     </Folder>
+    <Compile Include="$(MSBuildThisFileDirectory)TimeSpan.pas" />
   </ItemGroup>
 </Project>
