@@ -422,8 +422,8 @@ type
 
 
       class method Create<TSource>(const source: ISequence<TSource>;
-        KeySelector: method (item: TSource): TKey;
-        ElementSelector: method (item: TSource): TElement;
+        KeySelector: block (item: TSource): TKey;
+        ElementSelector: block (item: TSource): TElement;
         aComp: IEqualityComparer<TKey> := nil): Lookup<TKey, TElement>;
       begin
         var lResult := new Lookup<TKey, TElement>(aComp);
@@ -501,9 +501,9 @@ begin
 end;
 
 extension method ISequence<TOuter>.Join<TOuter, TInner, TKey, TResult>(aInner: ISequence<TInner>;
-  aOuterKeySelector: method (item: TOuter): TKey;
-  aInnerKeySelector: method (item: TInner): TKey;
-  aResultSelector: method (item: TOuter; item2: TInner): TResult;
+  aOuterKeySelector: block (item: TOuter): TKey;
+  aInnerKeySelector: block (item: TInner): TKey;
+  aResultSelector: block (item: TOuter; item2: TInner): TResult;
   aComparer: IEqualityComparer<TKey> := nil): ISequence<TResult>; public; iterator;
 begin
   if aComparer = nil then aComparer := DefaultEqualityComparer<TKey>.Instance;
