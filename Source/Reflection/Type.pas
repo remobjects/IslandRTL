@@ -11,11 +11,26 @@ type
       if lPtr = nil then exit;
       var lKey: Integer;
       var lTy: ProtoReadType;
+      var list := new List<Guid>;
       while ProtoReadHeader(var lPtr, out lKey, out lTy) do begin
         if (lKey = 15) and (lTy = ProtoReadType.length) then begin
-          yield new Guid(ProtoReadBytes(var lPtr));
-        end else
+          var g := new Guid(ProtoReadBytes(var lPtr));
+          if not list.Contains(g) then begin
+            list.Add(g);
+            yield g;
+          end;
+        end
+        else begin
           ProtoSkipValue(var lPtr, lTy);
+        end;
+      end;
+      if not IsInterface and (BaseType <> nil) then begin
+        for g in BaseType.COMGuids do begin
+          if not list.Contains(g) then begin
+            list.Add(g);
+            yield g;
+          end;
+        end;
       end;
     end;
 
@@ -549,7 +564,7 @@ type
     property &Name: String read begin
       if fValue = nil then
         exit nil;
-      if IslandTypeFlags.Generic in fValue^.Ext^.Flags then begin
+      if IslandTypeFlags.Generic in &Flags then begin
         var lSub := new &Type(fValue^.Ext^.SubType);
         if lSub = typeOf(Array<1>) then
           exit GenericArguments.First.Name+'[]';
@@ -598,13 +613,17 @@ type
     property IsIntegerOrFloat: Boolean read Code in [TypeCodes.SByte, TypeCodes.Int16, TypeCodes.Int32, TypeCodes.Int64, TypeCodes.Byte, TypeCodes.UInt16, TypeCodes.UInt32, TypeCodes.UInt64, TypeCodes.IntPtr, TypeCodes.UInt64, TypeCodes.Single, TypeCodes.Double];
     property IsFloat: Boolean read Code in [TypeCodes.Single, TypeCodes.Double];
     property IsEnum: Boolean read (&Flags and IslandTypeFlags.TypeKindMask) = IslandTypeFlags.EnumFlags;
+    property IsArray: Boolean read (&Flags and IslandTypeFlags.TypeKindMask) = IslandTypeFlags.Array;
+    property IsStruct: Boolean read (&Flags and IslandTypeFlags.TypeKindMask) = IslandTypeFlags.Struct;
+    property IsClass: Boolean read (&Flags and IslandTypeFlags.TypeKindMask) = IslandTypeFlags.Class;
     property IsDelegate: Boolean read (&Flags and IslandTypeFlags.TypeKindMask) = IslandTypeFlags.Delegate;
-    property IsComInterface: Boolean read (IslandTypeFlags.TypeKindMask and fValue^.Ext^.Flags) = IslandTypeFlags.ComInterface;
-    property IsCocoaClass: Boolean read (IslandTypeFlags.TypeKindMask and fValue^.Ext^.Flags) = IslandTypeFlags.CocoaClass;
-    property IsSwiftClass: Boolean read (IslandTypeFlags.TypeKindMask and fValue^.Ext^.Flags) = IslandTypeFlags.SwiftClass;
+    property IsInterface: Boolean read (&Flags and IslandTypeFlags.TypeKindMask) = IslandTypeFlags.Interface;
+    property IsComInterface: Boolean read (&Flags and IslandTypeFlags.TypeKindMask) = IslandTypeFlags.ComInterface;
+    property IsCocoaClass: Boolean read (&Flags and IslandTypeFlags.TypeKindMask) = IslandTypeFlags.CocoaClass;
+    property IsSwiftClass: Boolean read (&Flags and IslandTypeFlags.TypeKindMask) = IslandTypeFlags.SwiftClass;
 
     property ObjectModel: ObjectModel read -> begin
-      var lFlags := fValue^.Ext^.Flags and IslandTypeFlags.TypeKindMask;
+      var lFlags := &Flags and IslandTypeFlags.TypeKindMask;
       case lFlags of
         IslandTypeFlags.CocoaClass: exit ObjectModel.Cocoa;
         IslandTypeFlags.SwiftClass: exit ObjectModel.Swift;
@@ -669,7 +688,7 @@ type
     method InstantiateArray(aSize: IntPtr): &Array;
     begin
       var lSub := new &Type(fValue^.Ext^.SubType);
-      if (IslandTypeFlags.Generic not in fValue^.Ext^.Flags) or (lSub <> typeOf(Array<1>)) then
+      if (IslandTypeFlags.Generic not in &Flags) or (lSub <> typeOf(Array<1>)) then
         raise new Exception('Can only call InstantiateArray on arrays');
 
       exit InternalCalls.Cast<&Array>(Utilities.NewArray(RTTI, if lSub.IsValueType then lSub.SizeOfType else sizeOf(^Void), aSize));
