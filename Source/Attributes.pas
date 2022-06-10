@@ -36,7 +36,7 @@ type
     property &Inherited: Boolean;
   end;
 
-  CallingConvention = public enum (Default, FastCall, Stdcall, Cdecl, Swift);
+  CallingConvention = public enum (Default, FastCall, Stdcall, Cdecl, Swift, Safecall, Register);
 
   [AttributeUsage(AttributeTargets.Method or AttributeTargets.Delegate)]
   CallingConventionAttribute = public class(Attribute)
