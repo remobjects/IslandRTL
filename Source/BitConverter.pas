@@ -11,6 +11,40 @@ type
   public
     class var IsLittleEndian: Boolean;
 
+    class method GetBits<T>(value: T): array of Byte;
+    begin
+      //(120, 86, 52, 18) -> 0x12345678 -> 10010001101000101011001111000b
+      CheckTypeCode(typeOf(T).Code);
+      var y := sizeOf(T);
+      var x:= new array of Byte(y*8);
+      if (IsLittleEndian) then begin
+        for i:Integer := 0 to y-1 do begin
+          x[8*i+7]:= ^Byte(@value)[y-1-i] and 1;
+          x[8*i+6]:= (^Byte(@value)[y-1-i] and (1 shl 1)) shr 1;
+          x[8*i+5]:= (^Byte(@value)[y-1-i] and (1 shl 2)) shr 2;
+          x[8*i+4]:= (^Byte(@value)[y-1-i] and (1 shl 3)) shr 3;
+          x[8*i+3]:= (^Byte(@value)[y-1-i] and (1 shl 4)) shr 4;
+          x[8*i+2]:= (^Byte(@value)[y-1-i] and (1 shl 5)) shr 5;
+          x[8*i+1]:= (^Byte(@value)[y-1-i] and (1 shl 6)) shr 6;
+          x[8*i]:= (^Byte(@value)[y-1-i] and (1 shl 7)) shr 7; 
+        end;
+      end
+      else begin
+        for i:Integer := 0 to y-1 do begin
+          x[8*i+7]:= ^Byte(@value)[i] and 1;
+          x[8*i+6]:= (^Byte(@value)[i] and (1 shl 1)) shr 1;
+          x[8*i+5]:= (^Byte(@value)[i] and (1 shl 2)) shr 2;
+          x[8*i+4]:= (^Byte(@value)[i] and (1 shl 3)) shr 3;
+          x[8*i+3]:= (^Byte(@value)[i] and (1 shl 4)) shr 4;
+          x[8*i+2]:= (^Byte(@value)[i] and (1 shl 5)) shr 5;
+          x[8*i+1]:= (^Byte(@value)[i] and (1 shl 6)) shr 6;
+          x[8*i]:= (^Byte(@value)[i] and (1 shl 7)) shr 7;
+        end;
+      end;
+      exit x;
+    end;
+
+
     class method GetBytes<T>(value: T): array of Byte;
     begin
       CheckTypeCode(typeOf(T).Code);
