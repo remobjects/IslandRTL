@@ -665,9 +665,9 @@ type
     method Instantiate<T>: Object; where T is ILifetimeStrategy<T>;
     begin
       var lCtor: MethodInfo := Methods.FirstOrDefault(a -> (MethodFlags.Constructor in a.Flags) and (not a.Arguments.Any) and (not a.IsStatic));
-      if lCtor = nil then raise new Exception('No default constructor could be found on type '+Name);
+      if (lCtor = nil) and not IsValueType then raise new Exception('No default constructor could be found on type '+Name);
       if IsValueType then begin
-        var lRealCtor := VTCtorHelper(lCtor.Pointer);
+        var lRealCtor := if lCtor = nil then nil else VTCtorHelper(lCtor.Pointer);
         result := InternalCalls.Cast<Object>(T.New(fValue, SizeOfType + BoxedDataOffset - sizeOf(^Void)));
         if lRealCtor <> nil then begin
           lRealCtor(IntPtr(InternalCalls.Cast(result)) + BoxedDataOffset);

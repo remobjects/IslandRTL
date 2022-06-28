@@ -588,7 +588,7 @@ type
       if fProxies.TryGetValue(IntPtr(aType.RTTI), out result) then begin
         exit;
       end;
-      if aType.IsValueType then raise new ArgumentException('Value types not supported!');
+      if aType.IsValueType then raise new ArgumentException('Value types not supported: ' + aType.Name);
       var lBase: EcmaScriptObject := if (aType.BaseType = nil) or (aType.BaseType = typeOf(Object)) then nil else GetProxyFor(aType.BaseType);
       if lBase = nil then lBase := CreateObject else lBase := EcmaScriptObject(EcmaScriptObject(Object).Call('create', lBase));
       for each el in aType.Properties do begin
@@ -750,7 +750,7 @@ type
 
     class method InvokeMethod(aPtr: ^Void; args: array of Object; aResultType: &Type := nil): Object;
     begin
-      if assigned(aResultType) and (aResultType.IsValueType) and (aResultType.SizeOfType > 4) then begin
+      if assigned(aResultType) and (aResultType.IsValueType) and (aResultType.SizeOfType > 4) and (aResultType.Code = -1) then begin
         // "struct ret" is passed as the first argument, this is where the value will go.
         var lTmp := aResultType.Instantiate();
         var lData := new IntPtr[length(args) + 1];
@@ -781,9 +781,12 @@ type
       end;
       if aVal is Integer then exit WebAssemblyCalls.CreateInteger(aVal as Integer);
       if aVal is NativeInt then exit WebAssemblyCalls.CreateInteger(aVal as NativeInt);
+      if aVal is NativeUInt then exit WebAssemblyCalls.CreateInteger(aVal as NativeUInt);
       if aVal is Boolean then exit WebAssemblyCalls.CreateBoolean(aVal as Boolean);
       if aVal is Double then exit WebAssemblyCalls.CreateDouble(aVal as Double);
       if aVal is Int64 then exit WebAssemblyCalls.CreateDouble(aVal as Int64);
+      if aVal is UInt64 then exit WebAssemblyCalls.CreateDouble(aVal as UInt64);
+      if aVal is Currency then exit WebAssemblyCalls.CreateDouble(Double(aVal as Currency));
       if (aVal is String) and (not StringAsObject) then exit WebAssemblyCalls.CreateString(aVal as String);
       if aVal is WebAssemblyDelegate then begin
         exit WebAssemblyCalls.CreateFunc(aVal as WebAssemblyDelegate);
