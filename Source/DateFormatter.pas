@@ -89,7 +89,7 @@ type
       end;
     end;
 
-    method ProcessToStringToken(aLocale: Locale; aTimeZone: TimeZone; aOutput: StringBuilder; aToken: String);
+    method ProcessToStringToken(aLocale: not nullable Locale; aTimeZone: not nullable TimeZone; aOutput: not nullable StringBuilder; aToken: not nullable String);
     begin
       case aToken of
         'd', 'dd': begin // month day, 1-31
