@@ -941,7 +941,7 @@ begin
       end;
       '}': begin
         if (cur_pos < aFormat.Length-1) and (aFormat[cur_pos+1] = '}') then begin
-          sb.Append(aFormat, old_pos, cur_pos - old_pos+1);
+          sb.Append(aFormat, old_pos, cur_pos - old_pos);
           old_pos := cur_pos+1;
           inc(cur_pos,2);
           continue;
