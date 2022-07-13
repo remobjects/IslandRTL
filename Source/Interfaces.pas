@@ -7,7 +7,7 @@ type
   [COM, Guid("{00000000-0000-0000-C000-000000000046}")]
   rtl.IUnknown = public interface
     [CallingConvention(CallingConvention.Stdcall)]
-    method QueryInterface(riid: rtl.GUID; ppvObject: ^^Void): Cardinal;
+    method QueryInterface(riid: ^rtl.GUID; ppvObject: ^^Void): Cardinal;
     [CallingConvention(CallingConvention.Stdcall)]
     method AddRef(): Cardinal;
     [CallingConvention(CallingConvention.Stdcall)]
@@ -21,7 +21,7 @@ type
     Release: ReleaseFunction;
   end;
   [CallingConvention(CallingConvention.Stdcall)]
-  QueryInterfaceFunction nested in rtl.__struct_IUnknownVtbl = public function (slf: rtl.IUnknown; riid: rtl.GUID; ppvObject: ^^Void): rtl.HRESULT;
+  QueryInterfaceFunction nested in rtl.__struct_IUnknownVtbl = public function (slf: rtl.IUnknown; riid: ^rtl.GUID; ppvObject: ^^Void): rtl.HRESULT;
   [CallingConvention(CallingConvention.Stdcall)]
   AddRefFunction nested in rtl.__struct_IUnknownVtbl = public function(slf: rtl.IUnknown): Cardinal;
   [CallingConvention(CallingConvention.Stdcall)]
@@ -32,11 +32,7 @@ type
 
   ULONG = public {$IFDEF WINDOWS}rtl.ULONG{$ELSE}Cardinal{$ENDIF};
   ICOMInterface = public interface
-    {$IFDEF WINDOWS}
     method QueryInterface(var riid: Guid; out ppvObject: ^Void): Boolean;
-    {$ELSE}
-    method QueryInterface(riid: Guid; out ppvObject: ^Void): Boolean;
-    {$ENDIF}
     method AddRef(): ULONG;
     method Release(): ULONG;
   end;
@@ -78,11 +74,7 @@ type
     begin
       if aVal = nil then exit nil;
       var lPtr: ^Void;
-      {$IFDEF WINDOWS}
       if 0 <> ^^^rtl.__struct_IUnknownVtbl(@aVal)^^.QueryInterface(aVal, ^rtl.GUID(@IElementsObject_UID), @lPtr) then exit nil;
-      {$ELSE}
-      if 0 <> ^^^rtl.__struct_IUnknownVtbl(@aVal)^^.QueryInterface(aVal, ^rtl.GUID(@IElementsObject_UID)^, @lPtr) then exit nil;
-      {$ENDIF}
       result := ICOMInterface(^ElementsCOMInterface(lPtr)^.Object);
       ^^rtl.__struct_IUnknownVtbl(lPtr)^^.Release(^rtl.IUnknown(@lPtr)^);
     end;
@@ -91,13 +83,8 @@ type
     begin
       var lPVal := ICOMInterface(aVal);
       if lPVal = nil then exit;
-      {$IFDEF WINDOWS}
       if not lPVal.QueryInterface(var aGuid, out ^^Void(@result)^) then
         ^^Void(@result)^ := nil;
-      {$ELSE}
-      if not lPVal.QueryInterface(aGuid, out ^^Void(@result)^) then
-        ^^Void(@result)^ := nil;
-      {$ENDIF}
     end;
   end;
 
@@ -122,17 +109,11 @@ type
 
   // Bridge methods; These call
   [CallingConvention(CallingConvention.Stdcall)]
-  method IUnknown_VMTImpl_QueryInterface(aSelf: ^ElementsCOMInterface; riid: {$IFDEF WINDOWS}^rtl.GUID{$ELSE}rtl.GUID{$ENDIF}; ppvObject: ^^Void): rtl.HRESULT; public;static;
+  method IUnknown_VMTImpl_QueryInterface(aSelf: ^ElementsCOMInterface; riid: ^rtl.GUID; ppvObject: ^^Void): rtl.HRESULT; public;static;
   begin
-    {$IFDEF WINDOWS}
     var g := ^Guid(riid)^;
     if ICOMInterface(^ElementsCOMInterface(aSelf)^.Object).QueryInterface(var g, out ppvObject^) then
       exit 0;
-    {$ELSE}
-    var g: Guid := riid;
-    if ICOMInterface(^ElementsCOMInterface(aSelf)^.Object).QueryInterface(g, out ppvObject^) then
-      exit 0;
-    {$ENDIF}
     exit $80004002;
   end;
 
