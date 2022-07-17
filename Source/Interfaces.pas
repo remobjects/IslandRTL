@@ -106,16 +106,30 @@ type
       IComDispose(aObj):ComDispose;
     end;
   end;
+{$IFDEF LINUX}
+[CallingConvention(CallingConvention.Stdcall)]
+method IUnknown_VMTImpl_QueryInterface(aSelf: ^ElementsCOMInterface; r1, r2: Int64; ppvObject: ^^Void): rtl.HRESULT; public;static;
+begin
+  var g: Guid;
+  ^Int64(@g)[0] := r1;
+  ^Int64(@g)[1] := r2;
 
+  if ICOMInterface(^ElementsCOMInterface(aSelf)^.Object).QueryInterface(var g, out ppvObject^) then
+    exit 0;
+  exit $80004002;
+end;
+{$ELSE}
   // Bridge methods; These call
   [CallingConvention(CallingConvention.Stdcall)]
   method IUnknown_VMTImpl_QueryInterface(aSelf: ^ElementsCOMInterface; riid: ^rtl.GUID; ppvObject: ^^Void): rtl.HRESULT; public;static;
   begin
     var g := ^Guid(riid)^;
+
     if ICOMInterface(^ElementsCOMInterface(aSelf)^.Object).QueryInterface(var g, out ppvObject^) then
       exit 0;
     exit $80004002;
   end;
+  {$ENDIF}
 
   [CallingConvention(CallingConvention.Stdcall)]
   method IUnknown_VMTImpl_AddRef(aSelf: ^ElementsCOMInterface): ULONG; public;static;
