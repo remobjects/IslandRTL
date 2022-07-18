@@ -7,28 +7,28 @@ type
   [COM, Guid("{00000000-0000-0000-C000-000000000046}")]
   rtl.IUnknown = public interface
     [CallingConvention(CallingConvention.Stdcall)]
-    method QueryInterface(riid: ^rtl.GUID; ppvObject: ^^Void): Cardinal;
+    method QueryInterface(riid: rtl.GUID; ppvObject: ^^Void): Cardinal;
     [CallingConvention(CallingConvention.Stdcall)]
     method AddRef(): Cardinal;
     [CallingConvention(CallingConvention.Stdcall)]
     method Release(): Cardinal;
   end;
   IUnknown = public rtl.IUnknown;
-  rtl.__struct_IUnknownVtbl = public record
+  rtl.GUID = public Guid;
+  rtl.HRESULT = public Cardinal;
+  {$ENDIF}
+  rtl.IUnknownVtbl = public record
   public
     QueryInterface: QueryInterfaceFunction;
     AddRef: AddRefFunction;
     Release: ReleaseFunction;
   end;
   [CallingConvention(CallingConvention.Stdcall)]
-  QueryInterfaceFunction nested in rtl.__struct_IUnknownVtbl = public function (slf: rtl.IUnknown; riid: ^rtl.GUID; ppvObject: ^^Void): rtl.HRESULT;
+  QueryInterfaceFunction nested in rtl.IUnknownVtbl = public function (slf: rtl.IUnknown; riid: rtl.GUID; ppvObject: ^^Void): rtl.HRESULT;
   [CallingConvention(CallingConvention.Stdcall)]
-  AddRefFunction nested in rtl.__struct_IUnknownVtbl = public function(slf: rtl.IUnknown): Cardinal;
+  AddRefFunction nested in rtl.IUnknownVtbl = public function(slf: rtl.IUnknown): Cardinal;
   [CallingConvention(CallingConvention.Stdcall)]
-  ReleaseFunction nested in rtl.__struct_IUnknownVtbl = public function(slf: rtl.IUnknown): Cardinal;
-  rtl.GUID = public Guid;
-  rtl.HRESULT = public Cardinal;
-  {$ENDIF}
+  ReleaseFunction nested in rtl.IUnknownVtbl = public function(slf: rtl.IUnknown): Cardinal;
 
   ULONG = public {$IFDEF WINDOWS}rtl.ULONG{$ELSE}Cardinal{$ENDIF};
   ICOMInterface = public interface
@@ -74,9 +74,9 @@ type
     begin
       if aVal = nil then exit nil;
       var lPtr: ^Void;
-      if 0 <> ^^^rtl.__struct_IUnknownVtbl(@aVal)^^.QueryInterface(aVal, ^rtl.GUID(@IElementsObject_UID), @lPtr) then exit nil;
+      if 0 <> ^^^rtl.IUnknownVtbl(@aVal)^^.QueryInterface(aVal, ^rtl.GUID(@IElementsObject_UID)^, @lPtr) then exit nil;
       result := ICOMInterface(^ElementsCOMInterface(lPtr)^.Object);
-      ^^rtl.__struct_IUnknownVtbl(lPtr)^^.Release(^rtl.IUnknown(@lPtr)^);
+      ^^rtl.IUnknownVtbl(lPtr)^^.Release(^rtl.IUnknown(@lPtr)^);
     end;
 
     method ObjectToCom(aVal: Object; aGuid: Guid): IUnknown;
@@ -106,30 +106,17 @@ type
       IComDispose(aObj):ComDispose;
     end;
   end;
-{$IFDEF LINUX}
-[CallingConvention(CallingConvention.Stdcall)]
-method IUnknown_VMTImpl_QueryInterface(aSelf: ^ElementsCOMInterface; r1, r2: Int64; ppvObject: ^^Void): rtl.HRESULT; public;static;
-begin
-  var g: Guid;
-  ^Int64(@g)[0] := r1;
-  ^Int64(@g)[1] := r2;
 
-  if ICOMInterface(^ElementsCOMInterface(aSelf)^.Object).QueryInterface(var g, out ppvObject^) then
-    exit 0;
-  exit $80004002;
-end;
-{$ELSE}
   // Bridge methods; These call
   [CallingConvention(CallingConvention.Stdcall)]
-  method IUnknown_VMTImpl_QueryInterface(aSelf: ^ElementsCOMInterface; riid: ^rtl.GUID; ppvObject: ^^Void): rtl.HRESULT; public;static;
+  method IUnknown_VMTImpl_QueryInterface(aSelf: ^ElementsCOMInterface; riid: rtl.GUID; ppvObject: ^^Void): rtl.HRESULT; public;static;
   begin
-    var g := ^Guid(riid)^;
+    var g := ^Guid(@riid)^;
 
     if ICOMInterface(^ElementsCOMInterface(aSelf)^.Object).QueryInterface(var g, out ppvObject^) then
       exit 0;
     exit $80004002;
   end;
-  {$ENDIF}
 
   [CallingConvention(CallingConvention.Stdcall)]
   method IUnknown_VMTImpl_AddRef(aSelf: ^ElementsCOMInterface): ULONG; public;static;
@@ -166,15 +153,15 @@ type
     constructor Copy(var aValue: COMRC);
     begin
       fInst := aValue.fInst;
-      if ^^rtl.__struct_IUnknownVtbl(fInst) <> nil then
-        ^^rtl.__struct_IUnknownVtbl(fInst)^^.AddRef(^rtl.IUnknown(@fInst)^);
+      if ^^rtl.IUnknownVtbl(fInst) <> nil then
+        ^^rtl.IUnknownVtbl(fInst)^^.AddRef(^rtl.IUnknown(@fInst)^);
     end;
 
     class method Copy(var aDest, aSource: COMRC);
     begin
       var lInst := aSource.fInst;
-      if ^^rtl.__struct_IUnknownVtbl(lInst) <> nil then
-        ^^rtl.__struct_IUnknownVtbl(lInst)^^.AddRef(^rtl.IUnknown(@lInst)^);
+      if ^^rtl.IUnknownVtbl(lInst) <> nil then
+        ^^rtl.IUnknownVtbl(lInst)^^.AddRef(^rtl.IUnknown(@lInst)^);
       aDest.fInst := lInst;
     end;
 
@@ -187,17 +174,17 @@ type
     begin
       var lNew := aSource.fInst;
       var lOld := InternalCalls.Exchange(var aDest.fInst, lNew);
-      if ^^rtl.__struct_IUnknownVtbl(lNew) <> nil then
-        ^^rtl.__struct_IUnknownVtbl(lNew)^^.AddRef(^rtl.IUnknown(@lNew)^);
-      if ^^rtl.__struct_IUnknownVtbl(lOld) <> nil then
-        ^^rtl.__struct_IUnknownVtbl(lOld)^^.Release(^rtl.IUnknown(@lOld)^);
+      if ^^rtl.IUnknownVtbl(lNew) <> nil then
+        ^^rtl.IUnknownVtbl(lNew)^^.AddRef(^rtl.IUnknown(@lNew)^);
+      if ^^rtl.IUnknownVtbl(lOld) <> nil then
+        ^^rtl.IUnknownVtbl(lOld)^^.Release(^rtl.IUnknown(@lOld)^);
     end;
 
     class method Release(var aDest: COMRC);
     begin
       var lOld := InternalCalls.Exchange(var aDest.fInst, nil);
-      if ^^rtl.__struct_IUnknownVtbl(lOld) <> nil then
-        ^^rtl.__struct_IUnknownVtbl(lOld)^^.Release(^rtl.IUnknown(@lOld)^);
+      if ^^rtl.IUnknownVtbl(lOld) <> nil then
+        ^^rtl.IUnknownVtbl(lOld)^^.Release(^rtl.IUnknown(@lOld)^);
     end;
 
     finalizer;
