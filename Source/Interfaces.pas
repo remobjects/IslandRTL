@@ -32,7 +32,7 @@ type
 
   ULONG = public {$IFDEF WINDOWS}rtl.ULONG{$ELSE}Cardinal{$ENDIF};
   ICOMInterface = public interface
-    method QueryInterface(var riid: Guid; out ppvObject: ^Void): Boolean;
+    method QueryInterface(riid: Guid; out ppvObject: ^Void): Boolean;
     method AddRef(): ULONG;
     method Release(): ULONG;
   end;
@@ -83,7 +83,7 @@ type
     begin
       var lPVal := ICOMInterface(aVal);
       if lPVal = nil then exit;
-      if not lPVal.QueryInterface(var aGuid, out ^^Void(@result)^) then
+      if not lPVal.QueryInterface(aGuid, out ^^Void(@result)^) then
         ^^Void(@result)^ := nil;
     end;
   end;
@@ -113,7 +113,7 @@ type
   begin
     var g := ^Guid(@riid)^;
 
-    if ICOMInterface(^ElementsCOMInterface(aSelf)^.Object).QueryInterface(var g, out ppvObject^) then
+    if ICOMInterface(^ElementsCOMInterface(aSelf)^.Object).QueryInterface(g, out ppvObject^) then
       exit 0;
     exit $80004002;
   end;
