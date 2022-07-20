@@ -253,7 +253,7 @@ type
       var lrootkey := ParseKeyName(KeyName, out subKeyName);
       if String.IsNullOrEmpty(subKeyName) then raise new Exception(String.Format('subkey is empty: {0}',[KeyName]));
       var tmpkey: rtl.HKEY;
-      if rtl.RegOpenKeyEx(lrootkey, subKeyName.ToLPCWSTR, 0, rtl.STANDARD_RIGHTS_READ, @tmpkey) = rtl.ERROR_SUCCESS then begin
+      if rtl.RegOpenKeyEx(lrootkey, subKeyName.ToLPCWSTR, 0, rtl.KEY_QUERY_VALUE or rtl.KEY_ENUMERATE_SUB_KEYS, @tmpkey) = rtl.ERROR_SUCCESS then begin
         rtl.RegCloseKey(tmpkey);
         exit True;
       end;
