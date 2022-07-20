@@ -4,11 +4,6 @@ type
   ClassInstancing = public enum (Internal, SingleInstance, MultiInstance);
   ThreadingModel = public enum (Single, Apartment, Free, Both, Neutral);
 
-
-  //[Com]
-  //[Guid("9DE1C534-6AE1-11E0-84E1-18A905BCC53F")]
-  //Windows.Foundation.TypedEventHandler<TSender, TResult> = public method(sender: TSender; &result: TResult);
-
   OleError = class(Exception)
   private
   public
@@ -24,38 +19,16 @@ type
     property ErrorCode: rtl.HRESULT;
   end;
 
-  InterfacedObject = public abstract class(IUnknown)
-  protected
-    GCHandle: GCHandle;
-    ReferenceCount: Integer;
-    method DefaultQueryInterface(var riid: Guid; out ppvObject: ^Void): Boolean; virtual; empty;
-  public
-    method QueryInterface(var riid: Guid; out ppvObject: ^Void): Boolean; virtual;
-    begin
-      exit DefaultQueryInterface(var riid, out ppvObject);
-    end;
-
-    method AddRef: rtl.ULONG; virtual;
-    begin
-      exit __elements_Default_AddRef(self, var ReferenceCount, var GCHandle);
-    end;
-
-    method Release: rtl.ULONG; virtual;
-    begin
-      exit __elements_Default_Release(self, var ReferenceCount, var GCHandle);
-    end;
-  end;
-
   ComObject = public abstract class(InterfacedObject, rtl.ISupportErrorInfo, IComDispose)
   private
     fCounted: Boolean;
   protected
     {$REGION rtl.ISupportErrorInfo}
     [CallingConvention(CallingConvention.Stdcall)]
-    method InterfaceSupportsErrorInfo(riid: ^rtl.GUID): rtl.HRESULT;
+    method InterfaceSupportsErrorInfo(riid: rtl.REFIID): rtl.HRESULT;
     begin
       var Obj: IUnknown;
-      var g: Guid := ^Guid(riid)^;
+      var g: Guid := riid;
       if QueryInterface(var g, out ^^Void(@Obj)^) then begin
         Obj := nil;
         exit rtl.S_OK;
@@ -120,10 +93,10 @@ type
   protected
     {$REGION rtl.IClassFactory2}
     [CallingConvention(CallingConvention.Stdcall)]
-    method CreateInstance(pUnkOuter: rtl.IUnknown; riid: ^rtl.GUID; ppvObject: ^^Void): rtl.HRESULT;
+    method CreateInstance(pUnkOuter: rtl.IUnknown; riid: rtl.REFIID; ppvObject: ^^Void): rtl.HRESULT;
     begin
       var lcom: ComObject := CreateComObject;
-      var temp: Guid := ^Guid(riid)^;
+      var temp: Guid := riid;
       exit if lcom:QueryInterface(var temp, out ppvObject^) then rtl.S_OK else rtl.E_FAIL;
     end;
 
@@ -148,7 +121,7 @@ type
     end;
 
     [CallingConvention(CallingConvention.Stdcall)]
-    method CreateInstanceLic(pUnkOuter: rtl.IUnknown; pUnkReserved: rtl.IUnknown; riid: ^rtl.GUID; bstrKey: ^rtl.WCHAR; ppvObj: ^rtl.PVOID): rtl.HRESULT;
+    method CreateInstanceLic(pUnkOuter: rtl.IUnknown; pUnkReserved: rtl.IUnknown; riid: rtl.REFIID; bstrKey: ^rtl.WCHAR; ppvObj: ^rtl.PVOID): rtl.HRESULT;
     begin
       raise new NotImplementedException;
     end;
@@ -441,7 +414,7 @@ var
 method CreateComObject(const clsid: Guid): IUnknown;
 begin
   var res : IUnknown;
-  var IID_IUnknown: rtl.GUID := new Guid('{00000000-0000-0000-C000-000000000046}');
+  var IID_IUnknown: rtl.GUID := guidOf(rtl.IUnknown);
   OleCheck(rtl.CoCreateInstance(^rtl.GUID(@clsid), nil,
                                 rtl.DWORD(rtl.CLSCTX.CLSCTX_INPROC_SERVER or rtl.CLSCTX.CLSCTX_LOCAL_SERVER),
                                 @IID_IUnknown,
@@ -464,7 +437,7 @@ begin
         Result := OleError(ExceptObject).ErrorCode;
     end;
     var ErrorInfo: rtl.IErrorInfo;
-    var temp: rtl.GUID := new Guid('{1CF2B120-547D-101B-8E65-08002B2BD119}');
+    var temp: rtl.GUID := guidOf(rtl.IErrorInfo);
     if _CreateErrorInfo.QueryInterface(@temp, ^^Void(@ErrorInfo)) = rtl.S_OK then
       rtl.SetErrorInfo(0, ErrorInfo);
   end;
@@ -475,7 +448,7 @@ begin
   if Code <> rtl.S_OK then raise new OleError(Code);
 end;
 
-method DllGetClassObject(var clsid: Guid; var iid: Guid;out ppv: ^Void): rtl.HRESULT;
+method DllGetClassObject(var clsid: Guid; var iid: Guid; out ppv: ^Void): rtl.HRESULT;
 begin
   var l_factory := ComClassManager.GetFactoryFromClassID(clsid);
   if (l_factory <> nil) and l_factory.QueryInterface(var iid, out ppv) then

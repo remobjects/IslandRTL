@@ -3,6 +3,7 @@
 type
   {$IFDEF WINDOWS}
   IUnknown = public rtl.IUnknown;
+  rtl.REFIID = public ^rtl.GUID;
   {$ELSE}
   [COM, Guid("{00000000-0000-0000-C000-000000000046}")]
   rtl.IUnknown = public interface
@@ -15,6 +16,7 @@ type
   end;
   IUnknown = public rtl.IUnknown;
   rtl.GUID = public Guid;
+  rtl.REFIID = public rtl.GUID;
   rtl.HRESULT = public Cardinal;
   {$ENDIF}
   rtl.IUnknownVtbl = public record
@@ -109,13 +111,13 @@ type
 
   // Bridge methods; These call
   [CallingConvention(CallingConvention.Stdcall)]
-  method IUnknown_VMTImpl_QueryInterface(aSelf: ^ElementsCOMInterface; riid: rtl.GUID; ppvObject: ^^Void): rtl.HRESULT; public;static;
+  method IUnknown_VMTImpl_QueryInterface(aSelf: ^ElementsCOMInterface; riid: rtl.REFIID; ppvObject: ^^Void): rtl.HRESULT; public;static;
   begin
-    var g := ^Guid(@riid)^;
+    var g: Guid := riid;
 
     if ICOMInterface(^ElementsCOMInterface(aSelf)^.Object).QueryInterface(g, out ppvObject^) then
       exit 0;
-    exit $80004002;
+    exit $80004002; // E_NOINTERFACE
   end;
 
   [CallingConvention(CallingConvention.Stdcall)]
@@ -193,5 +195,26 @@ type
     end;
   end;
 
+  InterfacedObject = public abstract class(IUnknown)
+  protected
+    GCHandle: GCHandle;
+    ReferenceCount: Integer;
+    method DefaultQueryInterface(var riid: Guid; out ppvObject: ^Void): Boolean; virtual;empty;
+  public
+    method QueryInterface(var riid: Guid; out ppvObject: ^Void): Boolean; virtual;
+    begin
+      result := DefaultQueryInterface(var riid, out ppvObject);
+    end;
+
+    method AddRef: ULONG; virtual;
+    begin
+      exit __elements_Default_AddRef(self, var ReferenceCount, var GCHandle);
+    end;
+
+    method Release: ULONG; virtual;
+    begin
+      exit __elements_Default_Release(self, var ReferenceCount, var GCHandle);
+    end;
+  end;
 
 end.

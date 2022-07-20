@@ -287,6 +287,15 @@ type
       memcpy(@result, @val, 16);
     end;
 
+    class operator Implicit(val: rtl.REFIID): Guid;
+    begin
+      {$IFDEF WINDOWS}
+      memcpy(@result, ^Guid(val), 16);
+      {$ELSE}
+      memcpy(@result, ^Guid(@val), 16);
+      {$ENDIF}
+    end;
+
     class operator Implicit(val: Guid): rtl.GUID;
     begin
       memcpy(@result, @val, 16);
