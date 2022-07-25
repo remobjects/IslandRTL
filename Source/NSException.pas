@@ -41,7 +41,7 @@ type
       result := "(Wrapped) "+InnerException.class.description+': '+Message;
     end;
 
-    property InnerException: NSException read private write;
+    property InnerException: CocoaException read private write; reintroduce;
 
   end;
 

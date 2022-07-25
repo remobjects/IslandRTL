@@ -67,7 +67,7 @@ type
       if aValue is IslandWrappedSwiftObject then exit CocoaWrappedSwiftObject.FromValue(IslandWrappedSwiftObject(aValue).Value);
       {$ENDIF}
       if aValue is IslandWrappedCocoaException then exit IslandWrappedCocoaException(aValue).InnerException;
-      if aValue is String then exit NSString(String(aValue));
+      if aValue is String then exit CocoaString(String(aValue));
       exit new CocoaWrappedIslandObject(aValue);
     end;
 
@@ -108,19 +108,18 @@ type
       Value := aValue;
     end;
 
-
     property Value: CocoaObject; readonly;
 
     class method FromValue(aValue: CocoaObject): IslandObject;
     begin
       if aValue = nil then exit nil;
       if aValue is ICocoaGetIslandWrapper then exit ICocoaGetIslandWrapper(aValue).«$__CreateIslandWrapper»();
-      if aValue is NSString then exit String(NSString(aValue));
+      if aValue is CocoaString then exit String(CocoaString(aValue));
       if aValue is CocoaWrappedIslandObject then exit CocoaWrappedIslandObject(aValue).Value;
       {$IF not WATCHOS and not TVOS}
       if aValue is CocoaWrappedSwiftObject then exit IslandWrappedSwiftObject.FromValue(CocoaWrappedSwiftObject(aValue).Value);
       {$ENDIF}
-      if aValue is NSException then exit new IslandWrappedCocoaException(NSException(aValue));
+      if aValue is CocoaException then exit new IslandWrappedCocoaException(CocoaException(aValue));
       result := new IslandWrappedCocoaObject(aValue);
     end;
 

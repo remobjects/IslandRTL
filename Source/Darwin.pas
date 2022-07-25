@@ -77,7 +77,7 @@ type
 
   [Island]
   IIslandGetCocoaWrapper = public interface
-  method «$__CreateCocoaWrapper»: Foundation.NSObject;
+  method «$__CreateCocoaWrapper»: CocoaObject;
   end;
 
   [Cocoa]
