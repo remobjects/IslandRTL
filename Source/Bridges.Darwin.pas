@@ -49,6 +49,16 @@ type
   // Island <-> Cocoa
   //
 
+  [Island]
+  IIslandGetCocoaWrapper = public interface
+    method «$__CreateCocoaWrapper»: CocoaObject;
+  end;
+
+  [Cocoa]
+  ICocoaGetIslandWrapper = public interface
+    method «$__CreateIslandWrapper»: RemObjects.Elements.System.Object;
+  end;
+
   CocoaWrappedIslandObject = public class(CocoaObject)
   public
     constructor(aValue: IslandObject);
@@ -319,6 +329,7 @@ type
       //end;
     end;
   end;
+
   CocoaWrappedSwiftObject = public class(CocoaObject)
   private
 
@@ -378,6 +389,50 @@ type
 
   end;
   {$ENDIF}
+
+  IslandWrappedCocoaException = public class(IslandException)
+  public
+
+    constructor (aException: CocoaException);
+    begin
+      inherited constructor(aException.reason);
+      InnerException := aException;
+    end;
+
+    property Message: String read begin
+      result := if length(InnerException.name) > 0 then
+        InnerException.name+": "+InnerException.reason
+      else
+        InnerException.reason;
+    end; override;
+
+    method ToString: String; override;
+    begin
+      result := "(Wrapped) "+InnerException.class.description+': '+Message;
+    end;
+
+    property InnerException: CocoaException read private write; reintroduce;
+
+  end;
+
+  CocoaWrappedIslandException = public class(CocoaException)
+  public
+
+    constructor (aException: IslandException);
+    begin
+      inherited constructor withName(aException.GetType.Name) reason(aException.Message) userInfo(nil);
+      InnerException := aException;
+    end;
+
+    [ToString]
+    method ToString: String; override;
+    begin
+      result := "(Wrapped) "+InnerException.GetType.Name+': '+Message;
+    end;
+
+    property InnerException: IslandException read private write;
+
+  end;
 {$ENDIF}
 
 end.

@@ -20,49 +20,7 @@ type
     property CallStack: ImmutableList<String> read new ImmutableList<String>(callstackSymbols.GetSequence().Cast<String>); // E48 There are no overloads that have 1 generic parameters // E48 There are no overloads that have 1 generic parameters
   end;
 
-  IslandWrappedCocoaException = public class(IslandException)
-  public
 
-    constructor (aException: CocoaException);
-    begin
-      inherited constructor(aException.reason);
-      InnerException := aException;
-    end;
-
-    property Message: String read begin
-      result := if length(InnerException.name) > 0 then
-        InnerException.name+": "+InnerException.reason
-      else
-        InnerException.reason;
-    end; override;
-
-    method ToString: String; override;
-    begin
-      result := "(Wrapped) "+InnerException.class.description+': '+Message;
-    end;
-
-    property InnerException: CocoaException read private write; reintroduce;
-
-  end;
-
-  CocoaWrappedIslandException = public class(CocoaException)
-  public
-
-    constructor (aException: IslandException);
-    begin
-      inherited constructor withName(aException.GetType.Name) reason(aException.Message) userInfo(nil);
-      InnerException := aException;
-    end;
-
-    [ToString]
-    method ToString: String; override;
-    begin
-      result := "(Wrapped) "+InnerException.GetType.Name+': '+Message;
-    end;
-
-    property InnerException: IslandException read private write;
-
-  end;
 
   //SwiftException = public class(IslandException)
   //private
