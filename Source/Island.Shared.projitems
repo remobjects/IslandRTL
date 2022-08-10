@@ -97,7 +97,6 @@
     <Compile Include="$(MSBuildThisFileDirectory)Memory.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)DateParser.pas" />
     <Compile Include="$(MSBuildThisFileDirectory)DateFormatter.pas" />
-    <Compile Include="$(MSBuildThisFileDirectory)Bridges.Delphi.pas" />
     <Compile Include="$(MSBuildThisFileDirectory)List.Extensions.pas" />
     <Folder Include="$(MSBuildThisFileDirectory)Reflection" />
     <Compile Include="$(MSBuildThisFileDirectory)Reflection\Type.pas" />
