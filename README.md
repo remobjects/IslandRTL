@@ -1,4 +1,4 @@
-<img src="http://docs.elementscompiler.com/Platforms/Island/Island-256.png" width="128" style="float: right;" />
+<img src="https://www.remobjects.com/images/product-logos/Island-1024.png" width="128" style="float: right;" />
 
 # Island RTL
 
