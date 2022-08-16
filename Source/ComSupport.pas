@@ -29,7 +29,7 @@ type
     begin
       var Obj: IUnknown;
       var g: Guid := riid;
-      if QueryInterface(var g, out ^^Void(@Obj)^) then begin
+      if QueryInterface(g, out ^^Void(@Obj)^) then begin
         Obj := nil;
         exit rtl.S_OK;
       end
@@ -97,7 +97,7 @@ type
     begin
       var lcom: ComObject := CreateComObject;
       var temp: Guid := riid;
-      exit if lcom:QueryInterface(var temp, out ppvObject^) then rtl.S_OK else rtl.E_FAIL;
+      exit if lcom:QueryInterface(temp, out ppvObject^) then rtl.S_OK else rtl.E_FAIL;
     end;
 
     [CallingConvention(CallingConvention.Stdcall)]
@@ -451,7 +451,7 @@ end;
 method DllGetClassObject(var clsid: Guid; var iid: Guid; out ppv: ^Void): rtl.HRESULT;
 begin
   var l_factory := ComClassManager.GetFactoryFromClassID(clsid);
-  if (l_factory <> nil) and l_factory.QueryInterface(var iid, out ppv) then
+  if (l_factory <> nil) and l_factory.QueryInterface(iid, out ppv) then
     exit rtl.S_OK
   else
     exit rtl.CLASS_E_CLASSNOTAVAILABLE;

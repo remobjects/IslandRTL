@@ -8,7 +8,7 @@ type
   [COM, Guid("{00000000-0000-0000-C000-000000000046}")]
   rtl.IUnknown = public interface
     [CallingConvention(CallingConvention.Stdcall)]
-    method QueryInterface(riid: rtl.GUID; ppvObject: ^^Void): Cardinal;
+    method QueryInterface(riid: rtl.REFIID; ppvObject: ^^Void): Cardinal;
     [CallingConvention(CallingConvention.Stdcall)]
     method AddRef(): Cardinal;
     [CallingConvention(CallingConvention.Stdcall)]
@@ -201,7 +201,7 @@ type
     ReferenceCount: Integer;
     method DefaultQueryInterface(var riid: Guid; out ppvObject: ^Void): Boolean; virtual;empty;
   public
-    method QueryInterface(var riid: Guid; out ppvObject: ^Void): Boolean; virtual;
+    method QueryInterface(riid: Guid; out ppvObject: ^Void): Boolean; virtual;
     begin
       result := DefaultQueryInterface(var riid, out ppvObject);
     end;
