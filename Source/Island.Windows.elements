@@ -11,6 +11,7 @@
     <Name>Island (Windows)</Name>
     <ProjectGuid>{00BBBADD-8D31-439B-9495-1F35080E299E}</ProjectGuid>
     <Mode>Island</Mode>
+    <NoIsland>True</NoIsland>
     <Platform Condition="'$(Platform)' == ''">AnyCPU</Platform>
     <GenerateDebugInfo>True</GenerateDebugInfo>
     <DefineConstants>WINDOWS</DefineConstants>

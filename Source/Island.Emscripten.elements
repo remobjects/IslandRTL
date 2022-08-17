@@ -13,6 +13,7 @@
     <Name>Island (Linux)</Name>
     <ProjectGuid>{a2c670b6-db38-401a-ae00-71515c87ccc5}</ProjectGuid>
     <Mode>Island</Mode>
+    <NoIsland>True</NoIsland>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)' == 'Debug' ">
     <OutputPath>Bin\Debug</OutputPath>

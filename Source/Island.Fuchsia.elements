@@ -11,6 +11,7 @@
     <Name>Island (Fuchsia)</Name>
     <ProjectGuid>{2430EA6F-C750-426D-A87D-A0160F243DC2}</ProjectGuid>
     <Mode>Island</Mode>
+    <NoIsland>True</NoIsland>
     <WarnOnCaseMismatch>True</WarnOnCaseMismatch>
     <Platform Condition="'$(Platform)' == ''">AnyCPU</Platform>
     <GenerateDebugInfo>True</GenerateDebugInfo>

@@ -11,6 +11,7 @@
     <Name>Island (WebAssembly)</Name>
     <ProjectGuid>{8C88F0A8-D5E6-4957-B16F-4FB38738FD75}</ProjectGuid>
     <Mode>Island</Mode>
+    <NoIsland>True</NoIsland>
     <Platform Condition="'$(Platform)' == ''">AnyCPU</Platform>
     <GenerateDebugInfo>True</GenerateDebugInfo>
     <DefineConstants>WEBASSEMBLY;WASM;CPU32;NOTHREADS;NOFILES;ENABLE_UNLIMITED_CACHE</DefineConstants>
