@@ -22,7 +22,7 @@ type
     constructor(aValue: Integer; aFromEnd: Boolean := false);
     begin
       if aValue < 0 then begin
-        raise new IllegalArgumentException("Index needs a non-negative number.");
+        raise new ArgumentException("Index needs a non-negative number.");
       end;
       if aFromEnd then begin
         fValue := not aValue;
@@ -35,7 +35,7 @@ type
     class method FromStart(value: Integer): &Index;
     begin
       if value < 0 then begin
-        raise new IllegalArgumentException("Index needs a non-negative number.");
+        raise new ArgumentException("Index needs a non-negative number.");
       end;
       exit new &Index(value);
     end;
@@ -43,7 +43,7 @@ type
     class method FromEnd(value: Integer): &Index;
     begin
       if value < 0 then begin
-        raise new IllegalArgumentException("Index needs a non-negative number.");
+        raise new ArgumentException("Index needs a non-negative number.");
       end;
       exit new &Index(not value);
     end;
@@ -60,7 +60,7 @@ type
       exit offset;
     end;
 
-    method &Equals(aValue: nullable &Index): Boolean;
+    method &Equals(aValue: &Index): Boolean;
     begin
       exit (aValue is &Index) and (fValue = &Index(aValue).fValue);
     end;
