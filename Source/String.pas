@@ -410,8 +410,9 @@ end;
 
 method String.Substring(aRange: Range): String;
 begin
-  var t := aRange.GetOffsets(Length);
-  result := Substring(t.Item1, t.Item2);
+  var lStart := aRange.fStart.GetOffset(fLength);
+  var lEnd := aRange.fEnd.GetOffset(fLength);
+  result := Substring(lStart, lEnd-lStart);
 end;
 
 //
