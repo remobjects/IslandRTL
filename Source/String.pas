@@ -51,8 +51,11 @@ type
     method ToAnsiChars(aNullTerminate: Boolean := false): array of AnsiChar;
     method ToCharArray(aNullTerminate: Boolean := false): array of Char; inline;
     method ToCharArray(StartIndex: Integer; aLength: Integer; aNullTerminate: Boolean := false): array of Char;
+
     property Length: Integer read fLength;
     property Item[i: Integer]: Char read get_Item; default;
+    property Item[i: &Index]: Char read Item[i.GetOffset(Length)]; default;
+    property Item[r: Range]: String read Substring(r); default;
     property FirstChar: ^Char read @fFirstChar;
 
     method CopyTo(SourceIndex: Integer; destination: array of Char; DestinationIndex: Integer; Count: Integer);
@@ -79,6 +82,7 @@ type
     method LastIndexOfAny(anyOf: array of Char): Integer;
     method Substring(StartIndex: Integer): not nullable String;
     method Substring(StartIndex: Integer; aLength: Integer): not nullable String;
+    method Substring(aRange: Range): String;
     method Split(Separator: String; aRemoveEmptyEntries: Boolean := false; aMax: Integer := -1): array of String;
     method Replace(OldValue, NewValue: String): not nullable String;
     method PadStart(TotalWidth: Integer): String; inline;
@@ -402,6 +406,12 @@ begin
   {$HIDE W46}
   exit String.FromPChar(@(@fFirstChar)[StartIndex], aLength);
   {$SHOW W46}
+end;
+
+method String.Substring(aRange: Range): String;
+begin
+  var t := aRange.GetOffsets(Length);
+  result := Substring(t.Item1, t.Item2);
 end;
 
 //
