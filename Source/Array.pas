@@ -198,9 +198,8 @@ type
 
     method SubArray(aRange: Range): array of T;
     begin
-      var lLength := fLength;
-      var lStart := aRange.fStart.GetOffset(lLength);
-      var lEnd := aRange.fEnd.GetOffset(lLength);
+      var lStart := aRange.fStart.GetOffset(fLength);
+      var lEnd := aRange.fEnd.GetOffset(fLength);
       result := SubArray(self, lStart, lEnd-lStart);
     end;
 
