@@ -49,6 +49,14 @@ type
       Copy(aSource, aStart, result, 0, aCount);
     end;
 
+    class method SubArray<T>(aSource: array of T; aRange: Range): array of T;
+    begin
+      var lLength := length(aSource);
+      var lStart := aRange.fStart.GetOffset(lLength);
+      var lEnd := aRange.fEnd.GetOffset(lLength);
+      result := SubArray(aSource, lStart, lEnd-lStart);
+    end;
+
     class method BinarySearch<T, V>(aVal: array of T; aInput: V; aComparer: Func<T, V, Integer>): Integer;
     begin
       var min := 0;
@@ -163,7 +171,9 @@ type
 
   public
 
-    property Item[I: Integer]: T read (@fFirstItem)[I] write (@fFirstItem)[I];
+    property Item[i: Integer]: T read (@fFirstItem)[i] write (@fFirstItem)[i];
+    property Item[i: &Index]: T read (@fFirstItem)[i.GetOffset(Length)] write (@fFirstItem)[i.GetOffset(Length)];
+
     method Get(i: Integer): Object; override;
     begin
       exit Item[i];
@@ -187,10 +197,10 @@ type
 
     method SubArray(aRange: Range): array of T;
     begin
-      var aLength := fLength;
-      var aStart := aRange.fStart.GetOffset(aLength);
-      var aEnd := aRange.fEnd.GetOffset(aLength);
-      result := SubArray(self, aStart, aEnd-aStart);
+      var lLength := fLength;
+      var lStart := aRange.fStart.GetOffset(lLength);
+      var lEnd := aRange.fEnd.GetOffset(lLength);
+      result := SubArray(self, lStart, lEnd-lStart);
     end;
 
     method ToString: String; override;
