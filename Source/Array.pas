@@ -173,6 +173,7 @@ type
 
     property Item[i: Integer]: T read (@fFirstItem)[i] write (@fFirstItem)[i];
     property Item[i: &Index]: T read (@fFirstItem)[i.GetOffset(Length)] write (@fFirstItem)[i.GetOffset(Length)];
+    property Item[r: Range]: array of T read SubArray(r); default;
 
     method Get(i: Integer): Object; override;
     begin
