@@ -572,7 +572,7 @@ type
         result := result + '<'+ String.Join(',', GenericArguments.Select(e -> e.Name)) + '>';
         exit;
       end;
-      result := String.FromPAnsiChars(fValue^.Ext^.Name);
+      result := String.FromPAnsiChar(fValue^.Ext^.Name);
     end;
 
     class method StripGenerics(s: String): String; private;

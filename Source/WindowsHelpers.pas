@@ -203,7 +203,7 @@ type
     begin
       var lMode := FileMode.Open;
       var lAcc := FileAccess.ReadWrite;
-      var lModeStr := String.FromPAnsiChars(aMode);
+      var lModeStr := String.FromPAnsiChar(aMode);
       if lModeStr.Contains('w') then begin
         lMode := FileMode.OpenOrCreate;
       end else begin
@@ -212,7 +212,7 @@ type
       end;
 
       try
-        var lFN := new FileStream(String.FromPAnsiChars(afn), lMode, lAcc);
+        var lFN := new FileStream(String.FromPAnsiChar(afn), lMode, lAcc);
         if lModeStr.Contains('a') then
           lFN.Seek(0, SeekOrigin.End);
         exit GCHandle.Allocate(lFN);
@@ -403,13 +403,13 @@ type
     [SymbolName('strtod')]
     class method strtod(str: ^AnsiChar; aEndPtr: ^^AnsiChar): Double;
     begin
-      Convert.TryParseDouble(String.FromPAnsiChars(str), out result, false);
+      Convert.TryParseDouble(String.FromPAnsiChar(str), out result, false);
     end;
 
     [SymbolName('strtol')]
     class method strtol(str: ^AnsiChar; aEndPtr: ^^AnsiChar; aBase: Integer): Integer;
     begin
-      var lStr := String.FromPAnsiChars(str);
+      var lStr := String.FromPAnsiChar(str);
       if lStr.StartsWith('0x') then begin
         Convert.TryHexStringToUInt64(lStr.Substring(2), out var lVal);
         exit lVal;
@@ -560,7 +560,7 @@ type
     [SymbolName('system')]
     class method system(aVal: ^AnsiChar): Integer;
     begin
-      var lCmd := String.FromPAnsiChars(aVal).Trim;
+      var lCmd := String.FromPAnsiChar(aVal).Trim;
       var lArgs := new List<String>;
       while length(lCmd) > 0 do begin
         if lCmd[0] ='"' then begin
@@ -589,7 +589,7 @@ type
     [SymbolName('_chdir')]
     class method _chdir(aDest: ^AnsiChar): Integer;
     begin
-      exit Integer(rtl.SetCurrentDirectoryA(String.FromPAnsiChars(aDest)));
+      exit Integer(rtl.SetCurrentDirectoryA(String.FromPAnsiChar(aDest)));
     end;
 
     [SymbolName('strpbrk')]
@@ -1674,7 +1674,7 @@ type
   VoidMethod = method;
 
 method DllMainCRTStartup(aModule: rtl.HMODULE; aReason: rtl.DWORD; aReserved: ^Void): Boolean;
-begin   
+begin
   var lMain: ^DllMainType := @_dllmain;
   ExternalCalls.fModuleHandle := aModule;
   ModuleIsLib := true;

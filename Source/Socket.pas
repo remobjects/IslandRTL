@@ -405,7 +405,7 @@ begin
   var lService := new AnsiChar[255];
   IPEndPointToNative(lEndPoint, out lSockAddr4, out lSockAddr6, out lPointer, out lSize);
   if rtl.getnameinfo(^rtl.__struct_sockaddr(lPointer), lSize, @lName[0], 255, @lService[0], 255, 0) = 0 then
-    lHostName := String.FromPAnsiChars(@lName[0])
+    lHostName := String.FromPAnsiChar(@lName[0])
   {$ENDIF}
   if lHostName <> '' then
     result := InternalGetHostByName(lHostName)
@@ -459,7 +459,7 @@ begin
   if lRes <> 0 then
     exit;
 
-  result.HostName := String.FromPAnsiChars(lAddrInfo^.ai_canonname);
+  result.HostName := String.FromPAnsiChar(lAddrInfo^.ai_canonname);
   lPtr := lAddrInfo;
   while lPtr <> nil do begin
     case AddressFamily(lPtr^.ai_family) of
@@ -520,7 +520,7 @@ begin
   {$ELSEIF POSIX}
   var lBuffer := new AnsiChar[255];
   if rtl.gethostname(@lBuffer[0], 255) = 0 then
-    result := String.FromPAnsiChars(@lBuffer[0])
+    result := String.FromPAnsiChar(@lBuffer[0])
   else
     result := '';
   {$ENDIF}

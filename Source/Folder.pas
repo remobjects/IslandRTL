@@ -92,7 +92,7 @@ type
       try
       var dp: ^rtl.__struct_dirent := rtl.readdir(d);
       while (dp <> nil) do begin
-        var fn := String.FromPAnsiChars(@dp^.d_name[0]);
+        var fn := String.FromPAnsiChar(@dp^.d_name[0]);
         var ffd: Int32 := rtl.openat(dfd, dp^.d_name, rtl.O_RDONLY);
         try
           if ffd = -1 then continue;
@@ -141,7 +141,7 @@ type
       try
       var dp: ^rtl.__struct_dirent := rtl.readdir(d);
       while (dp <> nil) do begin
-        var fn := String.FromPAnsiChars(@dp^.d_name[0]);
+        var fn := String.FromPAnsiChar(@dp^.d_name[0]);
         // skip `.` and `..`
         try
           if (fn='.') or (fn='..') then continue;

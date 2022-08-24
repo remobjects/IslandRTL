@@ -269,12 +269,12 @@ begin
   var sb := new JsonSerializer();
   sb.StartObject;
   sb.SelectProperty(true, 'name');
-  sb.WriteString(String.FromPAnsiChars(class_getName(clz)));
+  sb.WriteString(String.FromPAnsiChar(class_getName(clz)));
 
   var sz := class_getSuperclass(clz);
   if sz <> nil then begin
     sb.SelectProperty(false, 'base');
-    sb.WriteString(String.FromPAnsiChars(class_getName(sz)));
+    sb.WriteString(String.FromPAnsiChar(class_getName(sz)));
   end;
 
   sb.SelectProperty(false, 'methods');
@@ -286,9 +286,9 @@ begin
     sb.StartListEntry(i = 0);
     sb.StartObject;
     sb.SelectProperty(true, 'selector');
-    sb.WriteString(String.FromPAnsiChars(sel_getName(method_getName(&method))));
+    sb.WriteString(String.FromPAnsiChar(sel_getName(method_getName(&method))));
     sb.SelectProperty(false, 'signature');
-    sb.WriteString(String.FromPAnsiChars(method_getTypeEncoding(&method)));
+    sb.WriteString(String.FromPAnsiChar(method_getTypeEncoding(&method)));
     sb.SelectProperty(false, 'implementation');
     var imp := method_getImplementation(&method);
     sb.WriteString(^IntPtr(@imp)^.ToString);
@@ -308,9 +308,9 @@ begin
       sb.StartListEntry(i = 0);
       sb.StartObject;
       sb.SelectProperty(true, 'name');
-      sb.WriteString(String.FromPAnsiChars(property_getName(&prop)));
+      sb.WriteString(String.FromPAnsiChar(property_getName(&prop)));
       sb.SelectProperty(false, 'signature');
-      sb.WriteString(String.FromPAnsiChars(property_getAttributes(&prop)));
+      sb.WriteString(String.FromPAnsiChar(property_getAttributes(&prop)));
       sb.EndObject;
     end;
     rtl.free(props);
@@ -327,9 +327,9 @@ begin
       sb.StartListEntry(i = 0);
       sb.StartObject;
       sb.SelectProperty(true, 'name');
-      sb.WriteString(String.FromPAnsiChars(ivar_getName(&prop)));
+      sb.WriteString(String.FromPAnsiChar(ivar_getName(&prop)));
       sb.SelectProperty(false, 'type');
-      sb.WriteString(String.FromPAnsiChars(ivar_getTypeEncoding(&prop)));
+      sb.WriteString(String.FromPAnsiChar(ivar_getTypeEncoding(&prop)));
       sb.SelectProperty(false, 'offset');
       sb.WriteValue(ivar_getOffset(&prop));
       sb.EndObject;
@@ -346,7 +346,7 @@ begin
     for i: Integer := 0 to methodCount - 1 do begin
       var &prop := props[i];
       sb.StartListEntry(i = 0);
-      sb.WriteString(String.FromPAnsiChars(protocol_getName(&prop)));
+      sb.WriteString(String.FromPAnsiChar(protocol_getName(&prop)));
     end;
     rtl.free(props);
     sb.EndList;
@@ -363,9 +363,9 @@ begin
     sb.StartListEntry(i = 0);
     sb.StartObject;
     sb.SelectProperty(true, 'selector');
-    sb.WriteString(String.FromPAnsiChars(sel_getName(method_getName(&method))));
+    sb.WriteString(String.FromPAnsiChar(sel_getName(method_getName(&method))));
     sb.SelectProperty(false, 'signature');
-    sb.WriteString(String.FromPAnsiChars(method_getTypeEncoding(&method)));
+    sb.WriteString(String.FromPAnsiChar(method_getTypeEncoding(&method)));
     sb.SelectProperty(false, 'implementation');
     var imp := method_getImplementation(&method);
     sb.WriteString(^IntPtr(@imp)^.ToString);
@@ -384,9 +384,9 @@ begin
       sb.StartListEntry(i = 0);
       sb.StartObject;
       sb.SelectProperty(true, 'name');
-      sb.WriteString(String.FromPAnsiChars(property_getName(&prop)));
+      sb.WriteString(String.FromPAnsiChar(property_getName(&prop)));
       sb.SelectProperty(false, 'signature');
-      sb.WriteString(String.FromPAnsiChars(property_getAttributes(&prop)));
+      sb.WriteString(String.FromPAnsiChar(property_getAttributes(&prop)));
       sb.EndObject;
     end;
     rtl.free(props);

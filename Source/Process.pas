@@ -230,7 +230,7 @@ begin
     if lBytesRead > 0 then
     begin
       lBuffer[lBytesRead] := #0;
-      result := result + String.FromPAnsiChars(@lBuffer[0]);
+      result := result + String.FromPAnsiChar(@lBuffer[0]);
     end;
   until (not lRes) or (lBytesRead = 0);
   {$ELSEIF POSIX AND NOT IOS}
@@ -241,7 +241,7 @@ begin
       if lCount <= 0 then
         break;
       if lCount > 0 then
-        fOutput := fOutput + String.FromPAnsiChars(@lBuffer[0], lCount);
+        fOutput := fOutput + String.FromPAnsiChar(@lBuffer[0], lCount);
     end;
   end;
   result := fOutput;
@@ -276,7 +276,7 @@ begin
     if lBytesRead > 0 then
     begin
       lBuffer[lBytesRead] := #0;
-      result := result + String.FromPAnsiChars(@lBuffer[0]);
+      result := result + String.FromPAnsiChar(@lBuffer[0]);
     end;
   until not lRes or (lBytesRead = 0);
   {$ELSEIF POSIX AND NOT IOS}
@@ -287,7 +287,7 @@ begin
       if lCount <= 0 then
         break;
       if lCount > 0 then
-        fErr := fErr + String.FromPAnsiChars(@lBuffer[0], lCount);
+        fErr := fErr + String.FromPAnsiChar(@lBuffer[0], lCount);
     end;
   end;
   result := fErr;
@@ -498,7 +498,7 @@ begin
     var lBuffer := new AnsiChar[lBytesTotal + 1];
     lBuffer[lBytesTotal] := #0;
     if rtl.ReadFile(fOutputReadHandle, lBuffer, lBytesTotal, @lBytesRead, nil) then
-      result := result + String.FromPAnsiChars(@lBuffer[0]);
+      result := result + String.FromPAnsiChar(@lBuffer[0]);
   end;
 end;
 
@@ -538,7 +538,7 @@ begin
       if lCount = 0 then
         break;
       if lCount > 0 then
-        lOutput := lOutput + String.FromPAnsiChars(@lBuffer[0], lCount);
+        lOutput := lOutput + String.FromPAnsiChar(@lBuffer[0], lCount);
 
       ProcessStdOutData(lOutput, true, OnOutputData);
     end;
@@ -548,7 +548,7 @@ begin
       if lCount = 0 then
         break;
       if lCount > 0 then
-        lOutput := lOutput + String.FromPAnsiChars(@lBuffer[0], lCount);
+        lOutput := lOutput + String.FromPAnsiChar(@lBuffer[0], lCount);
 
       ProcessStdOutData(lOutput, false, OnErrorData);
     end;

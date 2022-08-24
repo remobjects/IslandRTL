@@ -43,8 +43,8 @@ type
     class method FromCharArray(aArray: array of Char): String;
     class method FromPChar(c: ^Char; aCharCount: Integer): String;
     class method FromPChar(c: ^Char): String;
-    class method FromPAnsiChars(c: ^AnsiChar; aCharCount: Integer): nullable String;
-    class method FromPAnsiChars(c: ^AnsiChar): nullable String;
+    class method FromPAnsiChar(c: ^AnsiChar; aCharCount: Integer): nullable String;
+    class method FromPAnsiChar(c: ^AnsiChar): nullable String;
     class method FromRepeatedChar(c: Char; aCharCount: Integer): String;
     class method FromChar(c: Char): String;
     class method IsNullOrEmpty(value: String):Boolean;
@@ -195,7 +195,7 @@ begin
 end;
 {$ENDIF}
 
-class method String.FromPAnsiChars(c: ^AnsiChar; aCharCount: Integer): nullable String;
+class method String.FromPAnsiChar(c: ^AnsiChar; aCharCount: Integer): nullable String;
 begin
   if not assigned(c) then exit nil;
   {$IFDEF WINDOWS}
@@ -835,10 +835,10 @@ begin
     (@result.fFirstChar)[i] := c;
 end;
 
-class method String.FromPAnsiChars(c: ^AnsiChar): nullable String;
+class method String.FromPAnsiChar(c: ^AnsiChar): nullable String;
 begin
   if not assigned(c) then exit nil;
-  exit FromPAnsiChars(c, {$IFDEF WINDOWS OR WEBASSEMBLY}ExternalCalls.strlen(c){$ELSEIF POSIX_LIGHT}rtl.strlen(c){$ELSE}{$ERROR Unsupported platform}{$ENDIF});
+  exit FromPAnsiChar(c, {$IFDEF WINDOWS OR WEBASSEMBLY}ExternalCalls.strlen(c){$ELSEIF POSIX_LIGHT}rtl.strlen(c){$ELSE}{$ERROR Unsupported platform}{$ENDIF});
 end;
 
 class method String.Format(aFormat: not nullable String; params aArguments: not nullable array of Object): String;
@@ -1221,12 +1221,12 @@ end;
 
 constructor String_Constructors(c: ^AnsiChar; aCharCount: Integer);
 begin
-  result := coalesce(String.FromPAnsiChars(c, aCharCount), "");
+  result := coalesce(String.FromPAnsiChar(c, aCharCount), "");
 end;
 
 constructor String_Constructors(c: ^AnsiChar);
 begin
-  result := coalesce(String.FromPAnsiChars(c), "");
+  result := coalesce(String.FromPAnsiChar(c), "");
 end;
 
 end.

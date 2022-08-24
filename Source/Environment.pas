@@ -30,7 +30,7 @@ type
       exit 'Android';
       {$ELSEIF POSIX}
       var str : rtl.__struct_utsname;
-      if rtl.uname(@str) = 0 then exit String.FromPAnsiChars(str.sysname);
+      if rtl.uname(@str) = 0 then exit String.FromPAnsiChar(str.sysname);
       CheckForLastError;
       {$ELSEIF WEBASSEMBLY}
       exit 'WebAssembly';
@@ -98,7 +98,7 @@ type
       exit Registry.GetValue('HKEY_LOCAL_MACHINE\SOFTWARE\Microsoft\Windows NT\CurrentVersion','CurrentVersion','') as String;
       {$ELSEIF POSIX_LIGHT}
       var str : rtl.__struct_utsname;
-      if rtl.uname(@str) = 0 then exit String.FromPAnsiChars(str.version);
+      if rtl.uname(@str) = 0 then exit String.FromPAnsiChar(str.version);
       CheckForLastError;
       {$ELSEIF WEBASSEMBLY}
       var lHandle := WebAssemblyCalls.GetOSName;
@@ -130,7 +130,7 @@ type
         exit nil;
         {$ELSEIF POSIX_LIGHT}
         var lName := Name.ToAnsiChars;
-        result := String.FromPAnsiChars(rtl.getenv(@lName[0]));
+        result := String.FromPAnsiChar(rtl.getenv(@lName[0]));
         {$ELSE}
         {$ERROR Unsupported platform}
         {$ENDIF}
@@ -187,7 +187,7 @@ type
       var lStrings := ExternalCalls.envp;
       var i: Integer := 0;
       while lStrings[i] ≠ nil do begin
-        var lVar := String.FromPAnsiChars(lStrings[i]);
+        var lVar := String.FromPAnsiChar(lStrings[i]);
         var lPos := lVar.LastIndexOf('=');
         if lPos >= 0 then begin
           var lKey := lVar.Substring(0, lPos);
@@ -239,7 +239,7 @@ type
       end;
       {$ELSEIF POSIX_LIGHT}
       var lCwd := rtl.get_current_dir_name();
-      result := String.FromPAnsiChars(lCwd);
+      result := String.FromPAnsiChar(lCwd);
       rtl.free(lCwd);
       {$ELSE}
       {$ERROR Unsupported platform}
@@ -253,7 +253,7 @@ type
       fn := Environment.GetEnvironmentVariable('USERPROFILE');
       {$ELSEIF POSIX_LIGHT}
       //var pw: ^rtl.__struct_passwd := rtl.getpwuid(rtl.getuid());
-      fn := String.FromPAnsiChars(rtl.getpwuid(rtl.getuid())^.pw_dir);
+      fn := String.FromPAnsiChar(rtl.getpwuid(rtl.getuid())^.pw_dir);
       {$ELSE}
       {$ERROR Unsupported platform}
       {$ENDIF}
@@ -275,7 +275,7 @@ type
       var lTmp := rtl.getenv(lString.ToAnsiChars);
       var lDir: String := '';
       if lTmp <> nil then
-        lDir := RemObjects.Elements.System.String.FromPAnsiChars(lTmp);
+        lDir := RemObjects.Elements.System.String.FromPAnsiChar(lTmp);
       lString := if lDir <> '' then lDir else rtl.P_tmpdir;
       {$ELSE}
       {$ERROR Unsupported platform}
@@ -326,9 +326,9 @@ type
       result := '';
       for i: Integer := 0 to ExternalCalls.nargs - 1 do
         if i = 0 then
-          result := String.FromPAnsiChars(ExternalCalls.args[i])
+          result := String.FromPAnsiChar(ExternalCalls.args[i])
         else
-          result := result + ' ' + String.FromPAnsiChars(ExternalCalls.args[i])
+          result := result + ' ' + String.FromPAnsiChar(ExternalCalls.args[i])
       {$ELSEIF WEBASSEMBLY}
       exit "";
       {$ELSE}
@@ -348,7 +348,7 @@ type
       {$ELSEIF POSIX_LIGHT}
       result := new String[ExternalCalls.nargs - 1];
       for i: Integer := 1 to ExternalCalls.nargs - 1 do
-        result[i - 1] := String.FromPAnsiChars(ExternalCalls.args[i]);
+        result[i - 1] := String.FromPAnsiChar(ExternalCalls.args[i]);
       {$ELSEIF WEBASSEMBLY}
       // return empty, for compatibility
       {$ELSE}

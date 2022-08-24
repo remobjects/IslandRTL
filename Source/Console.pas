@@ -104,12 +104,12 @@ begin
     buf[offset] := ch;
     inc(offset);
     if offset > bufsize then begin
-      r := r + String.FromPAnsiChars(@buf[0], bufsize);
+      r := r + String.FromPAnsiChar(@buf[0], bufsize);
       offset := 0;
     end;
   end;
   if offset > 0 then
-    r := r + String.FromPAnsiChars(@buf[0], offset);
+    r := r + String.FromPAnsiChar(@buf[0], offset);
   exit r;
   {$ENDIF}
 end;

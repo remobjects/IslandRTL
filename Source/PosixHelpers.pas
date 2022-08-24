@@ -586,7 +586,7 @@ begin
   Utilities.Initialize;
   var lArgs := new String[argc - 1];
   for i: Integer := 1 to argc - 1 do
-    lArgs[i - 1] := String.FromPAnsiChars(argv[i]);
+    lArgs[i - 1] := String.FromPAnsiChar(argv[i]);
   try
     exit UserEntryPoint(lArgs);
     {$IF NOT EMSCRIPTEN AND NOT ANDROID and not DARWIN}

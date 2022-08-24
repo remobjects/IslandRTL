@@ -48,7 +48,7 @@ begin
   var lTime: rtl.time_t := rtl.time(nil);
   var lTimeZone: ^rtl.__struct_tm;
   lTimeZone := rtl.localtime(@lTime);
-  result := new TimeZone(String.FromPAnsiChars(lTimeZone^.tm_zone), lTimeZone^.tm_gmtoff div 60);
+  result := new TimeZone(String.FromPAnsiChar(lTimeZone^.tm_zone), lTimeZone^.tm_gmtoff div 60);
   {$ELSEIF DARWIN}
   var lTimeZone := CFTimeZoneCopyDefault;
   var lName := CFTimeZoneGetName(lTimeZone);
@@ -136,12 +136,12 @@ begin
   lContent := rtl.readdir(lDir);
   while lContent <> nil do begin
     if lContent^.d_type = rtl.DT_DIR then begin
-      lName := String.FromPAnsiChars(lContent^.d_name);
+      lName := String.FromPAnsiChar(lContent^.d_name);
       if (lName <> '.') and (lName <> '..') and (lName <> 'posix') and
         (lName <> 'SystemV') and (lName <> 'right') then GetZoneNames(aZonesDir + '/' + lName, aList, lName);
     end
     else begin
-      lName := String.FromPAnsiChars(lContent^.d_name);
+      lName := String.FromPAnsiChar(lContent^.d_name);
       if lName.IndexOf('.') < 0 then begin
         if aZone <> '' then aList.Add(aZone + '/' + lName)
         else aList.Add(lName);

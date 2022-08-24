@@ -223,19 +223,19 @@ begin
   {$ELSEIF LINUX AND NOT ANDROID}
   var lTemp := rtl.nl_langinfo_l({$IF FUCHSIA}rtl.THOUSEP{$ELSE}rtl.THOUSANDS_SEP{$ENDIF}, fLocaleID);
   if lTemp <> nil then begin
-    var lTempString := String.FromPAnsiChars(lTemp);
+    var lTempString := String.FromPAnsiChar(lTemp);
     if lTempString.Length > 0 then
       lThousandsSep := lTempString[0];
   end;
   lTemp := rtl.nl_langinfo_l(rtl.RADIXCHAR, fLocaleID);
   if lTemp <> nil then begin
-    var lTempString := String.FromPAnsiChars(lTemp);
+    var lTempString := String.FromPAnsiChar(lTemp);
     if lTempString.Length > 0 then
       lDecimalSep := lTempString[0];
   end;
   lTemp := rtl.nl_langinfo_l(rtl.CRNCYSTR, fLocaleID);
   if lTemp <> nil then begin
-    var lTempString := String.FromPAnsiChars(lTemp) as not nullable;
+    var lTempString := String.FromPAnsiChar(lTemp) as not nullable;
     if lTempString.Length > 1 then
       lCurrency := lTempString.Substring(1);
   end;
@@ -313,7 +313,7 @@ begin
   var lName := rtl.nl_langinfo_l(rtl._NL_IDENTIFICATION_LANGUAGE, fLocaleID);
   if lName = nil then
     raise new Exception("Error getting locale name");
-  result := String.FromPAnsiChars(lName) as not nullable;
+  result := String.FromPAnsiChar(lName) as not nullable;
   {$ELSEIF DARWIN}
   var lString := bridge<Foundation.NSString>(CFLocaleGetIdentifier(fLocaleID));
   result := lString as not nullable;
@@ -522,7 +522,7 @@ method DateTimeFormatInfo.GetStringFromLocale(aLocaleID: PlatformLocale; aLocale
 begin
   var lTemp := rtl.nl_langinfo_l(aLocaleItem, aLocaleID);
   if lTemp <> nil then
-    result := String.FromPAnsiChars(lTemp)
+    result := String.FromPAnsiChar(lTemp)
   else
     result := '';
 end;

@@ -68,7 +68,7 @@ type
         exit;
 
       while lStart < lEnd do begin
-        var lName := String.FromPAnsiChars(@^AnsiChar(lStart)[8 + 4+ lStart.HeaderSize], lStart^.NameSize);
+        var lName := String.FromPAnsiChar(@^AnsiChar(lStart)[8 + 4+ lStart.HeaderSize], lStart^.NameSize);
         var lData := @^Byte(lStart)[8 + 4+ lStart.HeaderSize + lStart.NameSize];
         var lLength := lStart.DataSize;
         lStart := ^IslandResource(@^Byte(lStart)[8 + 4+ lStart.HeaderSize + lStart.NameSize + lStart.DataSize]);
@@ -85,7 +85,7 @@ type
         exit nil;
 
       while lStart < lEnd do begin
-        var lName := String.FromPAnsiChars(@^AnsiChar(lStart)[8 + 4 + lStart.HeaderSize], lStart^.NameSize);
+        var lName := String.FromPAnsiChar(@^AnsiChar(lStart)[8 + 4 + lStart.HeaderSize], lStart^.NameSize);
         var lData := @^Byte(lStart)[8 + 4 + lStart.HeaderSize + lStart.NameSize];
         var lLength := lStart.DataSize;
         lStart := ^IslandResource(@^Byte(lStart)[8 + 4 + lStart.HeaderSize + lStart.NameSize + lStart.DataSize]);
