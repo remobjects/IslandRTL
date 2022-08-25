@@ -84,20 +84,18 @@ type
     method removeLast: T;
     begin
       if fArrayProtocolDescriptorForBidirectionalCollection = 0 then
-        fArrayProtocolDescriptorForBidirectionalCollection := swift_getWitnessTable(GetProtocolDescriptorForBidirectionalCollection,  IntPtr(InternalCalls.GetSwiftTypeInfo<T>), nil);
+        fArrayProtocolDescriptorForBidirectionalCollection := swift_getWitnessTable(IntPtr(GetProtocolDescriptorForBidirectionalCollection),  IntPtr(InternalCalls.GetSwiftTypeInfo<T>), nil);
       if fArrayProtocolDescriptorForRangeReplaceableCollection = 0 then
-        fArrayProtocolDescriptorForRangeReplaceableCollection := swift_getWitnessTable(GetProtocolDescriptorForRangeReplaceableCollection,  IntPtr(InternalCalls.GetSwiftTypeInfo<T>), nil);
+        fArrayProtocolDescriptorForRangeReplaceableCollection := swift_getWitnessTable(IntPtr(GetProtocolDescriptorForRangeReplaceableCollection),  IntPtr(InternalCalls.GetSwiftTypeInfo<T>), nil);
       SwiftArrayRemoveLast(^IntPtr(@result), fType, fArrayProtocolDescriptorForBidirectionalCollection, fArrayProtocolDescriptorForRangeReplaceableCollection, IntPtr(@fArray));
     end;
-
 
     method removeFirst: T;
     begin
       if fArrayProtocolDescriptorForRangeReplaceableCollection = 0 then
-        fArrayProtocolDescriptorForRangeReplaceableCollection := swift_getWitnessTable(GetProtocolDescriptorForRangeReplaceableCollection,  IntPtr(InternalCalls.GetSwiftTypeInfo<T>), nil);
+        fArrayProtocolDescriptorForRangeReplaceableCollection := swift_getWitnessTable(IntPtr(GetProtocolDescriptorForRangeReplaceableCollection),  IntPtr(InternalCalls.GetSwiftTypeInfo<T>), nil);
       SwiftArrayRemoveFirst(^IntPtr(@result), fType, fArrayProtocolDescriptorForRangeReplaceableCollection, IntPtr(@fArray));
     end;
-
 
     property &Array: IntPtr read fArray;
 
@@ -114,7 +112,6 @@ type
       aDest.fArray := SwiftStrong.swift_bridgeObjectRelease(aSource.fArray);
       SwiftStrong.swift_bridgeObjectRelease(lOld);
     end;
-
 
     finalizer;
     begin

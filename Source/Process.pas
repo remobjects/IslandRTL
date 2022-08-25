@@ -115,7 +115,7 @@ type
     class var fLibraryCache: Dictionary<String, IntPtr> := new Dictionary<String, IntPtr>; private;
     class var fLibraryCacheLock: Monitor := new Monitor; private;
 
-    class method GetCachedProcAddress(aLibrary, aSymbol: String): IntPtr;
+    class method GetCachedProcAddress(aLibrary, aSymbol: String): ^Void;
     begin
       var lLib: IntPtr;
       locking fLibraryCacheLock do begin
@@ -129,7 +129,8 @@ type
         fLibraryCache[aLibrary] := lLib;
       end;
       result := GetProcAddress(lLib, aSymbol);
-      if result = 0 then raise new EntrypointNotFoundException('Library entrypoint '+aSymbol+' not found in '+aLibrary);
+      if not assigned(result) then
+        raise new EntrypointNotFoundException('Library entrypoint '+aSymbol+' not found in '+aLibrary);
     end;
   end;
 

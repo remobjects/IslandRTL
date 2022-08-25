@@ -91,7 +91,7 @@ type
     _countAndFlagsBits: UInt64;
     _object: ^Void;
 
-    class var fTypeInfo: IntPtr := Process.GetCachedProcAddress('libswiftCore.dylib', '$sSSN');
+    class var fTypeInfo := Process.GetCachedProcAddress('libswiftCore.dylib', '$sSSN');
     class property VWT: ^SwiftValueWitnessTable read ^^SwiftValueWitnessTable(fTypeInfo)[-1];
 
     [DelayLoadDllImport('/usr/lib/swift/libswiftFoundation.dylib', '$sSS10FoundationE14utf16CodeUnits5countSSSPys6UInt16VG_SitcfC'), CallingConvention(CallingConvention.Swift)]

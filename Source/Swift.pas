@@ -483,22 +483,22 @@ type
   method swift_getWitnessTable(aPD: IntPtr; aType: IntPtr; aVal: IntPtr): IntPtr; external; public;
 
 
-  var ProtocolDescriptorForBidirectionalCollection: IntPtr; assembly;
-  var ProtocolDescriptorForRangeReplaceableCollection: IntPtr; assembly;
+  var ProtocolDescriptorForBidirectionalCollection: ^Void; assembly;
+var ProtocolDescriptorForRangeReplaceableCollection: ^Void; assembly;
 
-  method GetProtocolDescriptorForBidirectionalCollection: IntPtr; assembly;
+method GetProtocolDescriptorForBidirectionalCollection: ^Void; assembly;
   begin
     result := ProtocolDescriptorForBidirectionalCollection;
-    if result = 0 then begin
+    if not assigned(result) then begin
       ProtocolDescriptorForBidirectionalCollection := Process.GetCachedProcAddress('libswiftCore.dylib', '$sSayxGSKsMc');
       result := ProtocolDescriptorForBidirectionalCollection;
     end;
   end;
 
-  method GetProtocolDescriptorForRangeReplaceableCollection: IntPtr; assembly;
+  method GetProtocolDescriptorForRangeReplaceableCollection: ^Void; assembly;
   begin
     result := ProtocolDescriptorForRangeReplaceableCollection;
-    if result = 0 then begin
+    if not assigned(result) then begin
       ProtocolDescriptorForRangeReplaceableCollection := Process.GetCachedProcAddress('libswiftCore.dylib', '$sSayxGSmsMc');
       result := ProtocolDescriptorForRangeReplaceableCollection;
     end;
