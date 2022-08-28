@@ -11,6 +11,7 @@ type
   DuplicateStringSig = function(str: rtl.winrt.HSTRING; str2: ^rtl.winrt.HSTRING): rtl.HRESULT;
   [CallingConvention(CallingConvention.Stdcall)]
   GetStringBufferStringSig = function(str: rtl.winrt.HSTRING; len: ^UInt32): ^Char;
+
   HString_Helper = public record
   assembly
     fStr: rtl.winrt.HSTRING;
@@ -18,8 +19,9 @@ type
     class var fCreateString: CreateStringSig;
     class var fDuplicatestring: DuplicateStringSig;
     class var fGetStringBuffer: GetStringBufferStringSig;
-  protected
+
   public
+
     class constructor;
     begin
       var lLibrary := rtl.LoadLibrary('api-ms-win-core-winrt-string-l1-1-0.dll');
@@ -42,7 +44,6 @@ type
       else
         fDuplicatestring(aValue.fStr, @fStr);
     end;
-
 
     class operator Assign(var aDest: HString_Helper; var aSource: HString_Helper);
     begin
