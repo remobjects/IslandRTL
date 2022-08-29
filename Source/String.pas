@@ -22,15 +22,6 @@ type
     method doLCMapString(aLocale: Locale; aMode:LCMapStringTransformMode := LCMapStringTransformMode.None): String;
     {$ENDIF}
     method TestChar(c: Char; Arr : array of Char): Boolean;
-    class method PcharLen(c: ^Char): Integer;
-    begin
-      if c = nil then exit 0;
-      result := 0;
-      while Byte(c^) <> 0 do begin
-        inc(c);
-        inc(result);
-      end;
-    end;
     class method RaiseError(aMessage: String);
     method CheckIndex(aIndex: Integer);
     method GetNonGenericEnumerator: IEnumerator; implements IEnumerable.GetEnumerator;
@@ -819,7 +810,7 @@ end;
 
 class method String.FromPChar(c: ^Char): String;
 begin
-  exit FromPChar(c, PcharLen(c));
+  exit FromPChar(c, PCharLen(c));
 end;
 
 class method String.FromChar(c: Char): String;
@@ -1190,6 +1181,30 @@ begin
   end;
   result := Encoding.UTF32LE.GetString(b);
   {$ENDIF}
+end;
+
+{ Global Helpers that are publicly useful}
+
+method PCharLen(aChars: ^Char): Integer; //public;
+begin
+  if not assigned(aChars) then
+    exit 0;
+  result := 0;
+  var c := aChars;
+  while c^ ≠ #0 do
+    inc(c);
+  result := c-aChars;
+end;
+
+method PAnsiCharLen(aChars: ^AnsiChar): Integer; //pub;ic;
+begin
+  if not assigned(aChars) then
+    exit 0;
+  result := 0;
+  var c := aChars;
+  while c^ ≠ #0 do
+    inc(c);
+  result := c-aChars;
 end;
 
 { String_Constructors }
