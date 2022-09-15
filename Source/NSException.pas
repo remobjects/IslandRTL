@@ -16,8 +16,6 @@ type
     end;
 
     property Message: String read description;
-
-    property CallStack: ImmutableList<String> read new ImmutableList<String>(callstackSymbols.GetSequence().Cast<String>); // E48 There are no overloads that have 1 generic parameters // E48 There are no overloads that have 1 generic parameters
   end;
 
 

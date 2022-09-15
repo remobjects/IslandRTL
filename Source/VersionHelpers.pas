@@ -90,6 +90,7 @@ begin
   exit true;
 end;
 
+{$IF DARWIN}
 {$IFDEF TARGET_OS_UIKITFORMAC}
 method __ElementsUIKitForMacVersionAtLeast(aMaj, aMin: Integer; aRev: Integer := 0): Boolean;
 begin
@@ -102,6 +103,71 @@ begin
     end;
   end;
   exit true;
+end;
+{$ENDIF}
+
+method __ElementsCocoaPlatformAndVersionAtLeast(aPlatformName: String; aMaj, aMin: Integer; aRev: Integer := 0): Boolean;
+begin
+  case aPlatformName:ToLowerInvariant of
+    'tvos': {$IFDEF TARGET_OS_TV}exit __ElementsCocoaVersionAtLeast(aMaj, aMin, aRev){$ENDIF};
+    'watchos': {$IFDEF TARGET_OS_WATCH}exit __ElementsCocoaVersionAtLeast(aMaj, aMin, aRev){$ENDIF};
+    'ios', 'iphoneos', 'ipados': {$IFDEF TARGET_OS_UIKITFORMAC}exit __ElementsUIKitForMacVersionAtLeast(aMaj, aMin, aRev){$ELSEIF TARGET_OS_IPHONE}exit __ElementsCocoaVersionAtLeast(aMaj, aMin, aRev){$ENDIF};
+    'macos', 'mac os x', 'os x', 'mac os': {$IFDEF TARGET_OS_MAC OR TARGET_OS_UIKITFORMAC}exit __ElementsPlatformVersionAtLeast(aMaj, aMin, aRev){$ENDIF};
+    'uikitformac', 'uikit for mac', 'mac catalyst', 'maccatalyst', 'catalyst': {$IFDEF TARGET_OS_UIKITFORMAC}exit __ElementsUIKitForMacVersionAtLeast(aMaj, aMin, aRev){$ENDIF};
+  end;
+end;
+
+method __ElementsCocoaVersionString: String;
+begin
+  __ElementsLoadPlatformVersion;
+  exit String.Format('{0}.{1}.{2}', __ElementsPlatformVersion[1], __ElementsPlatformVersion[2], __ElementsPlatformVersion[3]);
+end;
+
+{$IFDEF TARGET_OS_UIKITFORMAC}
+method __ElementsCocoaUIKitForMacVersionString: String;
+begin
+  __ElementsLoadPlatformVersion;
+  exit String.Format('{0}.{1}.{2}', __ElementsUIKitForMacVersion[1], __ElementsUIKitForMacVersion[2], __ElementsUIKitForMacVersion[3]);
+end;
+{$ENDIF}
+
+method __ElementsCocoaVersion: array[0..2] of Integer;
+begin
+  __ElementsLoadPlatformVersion;
+  result[0] := __ElementsPlatformVersion[1];
+  result[1] := __ElementsPlatformVersion[2];
+  result[2] := __ElementsPlatformVersion[3];
+end;
+
+method __ElementsCocoaPlatform: String;
+begin
+  {$IFDEF TARGET_OS_UIKITFORMAC}
+  exit 'Mac Catalyst';
+  {$ENDIF}
+  {$IFDEF TARGET_OS_WATCH}
+  exit 'watchOS';
+  {$ENDIF}
+  {$IFDEF TARGET_OS_TV}
+  exit 'tvOS';
+  {$ENDIF}
+  {$IFDEF TARGET_OS_IPHONE and not TARGET_OS_WATCH and not TARGET_OS_TV}
+  exit 'iOS';
+  {$ENDIF}
+  {$IFDEF TARGET_OS_MAC and not TARGET_OS_IPHONE}
+  exit 'macOS';
+  {$ENDIF}
+end;
+
+method __ElementsCocoaPlatformIs(aPlatformName: String): Boolean;
+begin
+  case aPlatformName:ToLowerInvariant of
+    'tvos': exit {$IFDEF TARGET_OS_TV}true{$ELSE}false{$ENDIF};
+    'watchos': exit {$IFDEF TARGET_OS_WATCH}true{$ELSE}false{$ENDIF};
+    'ios', 'iphoneos', 'ipados': exit {$IFDEF TARGET_OS_IPHONE OR TARGET_OS_UIKITFORMAC}true{$ELSE}false{$ENDIF};
+    'mac os', 'macos', 'mac os x', 'os x': exit {$IFDEF TARGET_OS_MAC OR TARGET_OS_UIKITFORMAC}true{$ELSE}false{$ENDIF};
+    'uikitformac', 'uikit for mac', 'mac catalyst', 'maccatalyst', 'catalyst': exit {$IFDEF TARGET_OS_IPHONE OR TARGET_OS_UIKITFORMAC}true{$ELSE}false{$ENDIF};
+  end;
+  exit false;
 end;
 {$ENDIF}
 
