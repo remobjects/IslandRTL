@@ -58,8 +58,9 @@ begin
       __ElementsUIKitForMacVersion[1] := __ElementsPlatformVersion[1]+3; // 11 -> 14
       __ElementsUIKitForMacVersion[2] := case __ElementsPlatformVersion[1] of
         11: __ElementsPlatformVersion[2]+2; // 11.0 -> 14.2, 11.1 -> 14.3
-        12: if __ElementsPlatformVersion[2] < 2 then 0 else __ElementsPlatformVersion[2]-1; // 12.0/12.1 -> 15.0, 12.2 -> 15.1
-        else __ElementsPlatformVersion[2]; // (guesswork, until we know where macOS 13 goes
+        12: if __ElementsPlatformVersion[2] < 2 then 0 else if __ElementsPlatformVersion[2] < 2 then __ElementsPlatformVersion[2]-1 else __ElementsPlatformVersion[2]-2;
+        13: if __ElementsPlatformVersion[2] < 2 then 0 else __ElementsPlatformVersion[2]-1; // 13.0/13.1 -> 16.0, 13.2 -> 16.1?
+        else __ElementsPlatformVersion[2]; // (guesswork, until we know where macOS 14 goes
       end;
       __ElementsUIKitForMacVersion[3] := 0;
     end;
