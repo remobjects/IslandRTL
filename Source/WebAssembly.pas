@@ -1113,7 +1113,7 @@ type
   [SymbolName('clock')]
   method Clock: Integer; empty;
   [SymbolName('write')]
-  method Write(a,b,c,d: Integer): Integer; begin ExternalCalls.trap; end;
+  method Write(a,b,c: Integer): Integer; begin ExternalCalls.trap; end;
   [SymbolName('atexit')]
     //{$ENDIF}
   method atexit(func: ^Void): ^Void; empty; // not triggered for WASM
