@@ -960,7 +960,7 @@ begin
     rtl._Unwind_SetIP(aCtx, ExternalCalls.Target);
     {$ENDIF}
     if lForeign then
-      ForeignExceptionImplementation.Free(^UInt64(@aECB.exception_class)^, lRecod)
+      ForeignExceptionImplementation.Free(^UInt64(@aECB.exception_class)^, lRecord)
     else
       free(lRecord);
     exit rtl._Unwind_Reason_Code._URC_INSTALL_CONTEXT;
