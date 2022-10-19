@@ -1,6 +1,45 @@
 ﻿namespace RemObjects.Elements.System;
 
 type
+  ForeignExceptionImplementation = public class
+  public
+    constructor(aCode: UInt64; aHandler: Func<^Void, Exception>; aFree: Action<^Void>);
+    begin
+      Code := aCode;
+      Handler := aHandler;
+      Free := aFree;
+    end;
+
+    property Code: UInt64; readonly;
+    property Handler: Func<^Void, Exception>; readonly;
+    property Free: Action<^Void>; readonly;
+
+    class method Register(aRecord: ForeignExceptionImplementation);
+    begin
+      locking fLock do begin
+        fLookup[aRecord.Code] := aRecord;
+      end;
+    end;
+
+    class var fLock: Monitor := new Monitor(); private;
+    class var fLookup: Dictionary<UInt64, ForeignExceptionImplementation> := new Dictionary<UInt64, ForeignExceptionImplementation>; private;
+
+    class method CanHandle(aCode: UInt64): Boolean;
+    begin
+      exit fLookup.ContainsKey(aCode);
+    end;
+
+    class method Handle(aCode: UInt64; aVal: ^Void): Exception;
+    begin
+      exit fLookup[aCode].Handler(aVal);
+    end;
+
+    class method Free(aCode: UInt64; aVal: ^Void);
+    begin
+      fLookup[aCode].Free:Invoke(aVal);
+    end;
+  end;
+
   Exception = public class(Object)
   private
     fMessage: not nullable String;

@@ -40,7 +40,6 @@ type
     end;
 
   public
-
     [SymbolName('_beginthread')]
     class method _beginthread( // NATIVE CODE
     start: BeginThreadFunc;
@@ -1518,6 +1517,8 @@ begin
     if msvcinfo^.NumTryBlocks <> 0 then begin
       if arec^.ExceptionCode = ElementsExceptionCode then begin
         exo := InternalCalls.Cast<Exception>(^^Void(@arec^.ExceptionInformation)[0]);
+      end else if ForeignExceptionImplementation.CanHandle(arec^.ExceptionCode) then begin
+        exo := ForeignExceptionImplementation.Handle(arec^.ExceptionCode, arec);
       end else if arec^.ExceptionCode = $C0000005 then
         exo := new AccessViolationException
       else
@@ -1577,7 +1578,10 @@ begin
     if msvcinfo^.NumTryBlocks <> 0 then begin
       if arec^.ExceptionCode = ElementsExceptionCode then begin
         exo := InternalCalls.Cast<Exception>(^^Void(@arec^.ExceptionInformation)[0]);
-      end else if arec^.ExceptionCode = $C0000005 then
+      end  else if ForeignExceptionImplementation.CanHandle(aRec^.ExceptionCode) then begin
+        exo := ForeignExceptionImplementation.Handle(aRec^.ExceptionCode, aRec);
+      end
+      else if arec^.ExceptionCode = $C0000005 then
         exo := new AccessViolationException
       else
         exo := new WindowsException(arec^.ExceptionCode);
