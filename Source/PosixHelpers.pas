@@ -739,12 +739,12 @@ begin
             {$ENDIF}
             end else if aForeign then begin
 
-              if 0 <> (aAction and {$IFDEF (DARWIN OR x86_64) AND NOT ANDROID}_Unwind_Action._UA_SEARCH_PHASE{$ELSE}_UA_SEARCH_PHASE{$ENDIF}) then begin
+              if 0 <> (aAction and {$IFDEF (FUCHSIA OR  DARWIN OR x86_64) AND NOT ANDROID}_Unwind_Action._UA_SEARCH_PHASE{$ELSE}_UA_SEARCH_PHASE{$ENDIF}) then begin
                 aTypeIndex := lIndexInTypeInfoTable;
                 exit true;
               end
               else begin
-                if 0 = (aAction and {$IFDEF (DARWIN OR x86_64) AND NOT ANDROID}_Unwind_Action._UA_FORCE_UNWIND{$ELSE}_UA_FORCE_UNWIND{$ENDIF}) then begin
+                if 0 = (aAction and {$IFDEF (FUCHSIA OR DARWIN OR x86_64) AND NOT ANDROID}_Unwind_Action._UA_FORCE_UNWIND{$ELSE}_UA_FORCE_UNWIND{$ENDIF}) then begin
                   //call_terminate(native_exception, unwind_exception);
                   exit false;
                 end;
