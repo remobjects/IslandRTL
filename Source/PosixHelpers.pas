@@ -622,10 +622,11 @@ begin
   exit 0;
 end;
 {$SHOW W27}
+
 method ExternalCalls.fini;
 begin
   //_finilist;
-   while atexitlist <> nil do begin
+  while atexitlist <> nil do begin
     atexitlist^.func();
     atexitlist := atexitlist^.next;
   end;

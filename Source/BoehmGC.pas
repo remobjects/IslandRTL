@@ -111,6 +111,11 @@ type
   BoehmGC = public record(ILifetimeStrategy<BoehmGC>)
   assembly
 
+    class method Load; public;
+    begin
+      if fLoaded = 0 then LoadGC;
+    end;
+
     {$HIDE H6} // DO NOT REMOVE!!
     var fInst: IntPtr;
     {$SHOW H6}
@@ -315,9 +320,13 @@ type
     [ThreadLocal]
     class var Registered: Boolean;
 
+    class var fRegistered: Boolean;
     class method ThreadDied(arg: ^Void);
     begin
-      UnregisterThread;
+      if fRegistered then begin
+        fRegistered := false;
+        UnregisterThread;
+      end;
     end;
     {$ENDIF}
 
@@ -403,8 +412,12 @@ type
 
     class method Init(var Dest: BoehmGC); empty;
     class method Release(var Dest: BoehmGC); empty;
+
+    class var fWasFinalized: Boolean;
     class method UnloadGC;
     begin
+      if fWasFinalized then exit;
+      fWasFinalized := true;
       if fLocal then begin
         GC_gcollect_and_unmap();
         GC_deinit();
