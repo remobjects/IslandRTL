@@ -174,7 +174,7 @@ type
             aOutput.Append(lData[0]);
         end;
 
-        'tt': begin // AM/PM
+        'tt', 'a': begin // AM/PM
           var lData := if Hour > 12 then aLocale.DateTimeFormat.PMString else aLocale.DateTimeFormat.AMString;
           if lData.Length > 0 then
             aOutput.Append(lData);
@@ -189,16 +189,18 @@ type
 
         'z', 'zz': begin // hours from UTC
           var lData := aTimeZone.OffsetToUTC div 60;
+          var lPrefix: String := if lData ≥ 0 then 'UTC+' else 'UTC';
           if aToken.Length = 1 then
-            aOutput.Append(lData.ToString)
+            aOutput.Append(lPrefix + lData.ToString)
           else
-            aOutput.Append(lData.ToString.PadStart(aToken.Length, '0'));
+            aOutput.Append(lPrefix + lData.ToString.PadStart(aToken.Length, '0'));
         end;
 
         'zzz': begin // hours and minutes from UTC
           var lHours := aTimeZone.OffsetToUTC div 60;
           var lMinutes := aTimeZone.OffsetToUTC mod 60;
-          aOutput.Append(lHours.ToString.PadStart(2, '0') + aLocale.DateTimeFormat.TimeSeparator + lMinutes.ToString.PadStart(2, '0'));
+          var lPrefix: String := if lHours ≥ 0 then 'UTC+' else 'UTC';
+          aOutput.Append(lPrefix + lHours.ToString.PadStart(2, '0') + aLocale.DateTimeFormat.TimeSeparator + lMinutes.ToString.PadStart(2, '0'));
         end;
 
         ':': begin // hour separator
