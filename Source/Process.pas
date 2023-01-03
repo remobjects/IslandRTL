@@ -346,7 +346,7 @@ class method Process.CurrentProcessId: Integer;
 begin
   {$IF WINDOWS}
   result := rtl.GetCurrentProcessId;
-  {$ELSEIF POSIX AND NOT IOS}
+  {$ELSEIF POSIX}
   result := rtl.getpid();
   {$ENDIF}
 end;
