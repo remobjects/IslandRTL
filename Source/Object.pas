@@ -11,7 +11,10 @@ type
 
     method ToString: String; virtual;
     begin
-      exit $"<{GetType().Name} {Integer(InternalCalls.Cast(self)).ToString.PadStart(if defined("CPU64") then 16 else 8, '0')}>";
+      if length(GetType().Name) > 0 then
+        exit $"<{GetType().Name} {Integer(InternalCalls.Cast(self)).ToString.PadStart(if defined("CPU64") then 16 else 8, '0')}>"
+      else
+        exit $"<(Unknown Type) {Integer(InternalCalls.Cast(self)).ToString.PadStart(if defined("CPU64") then 16 else 8, '0')}>";
     end;
 
     method GetHashCode: Integer; virtual;
