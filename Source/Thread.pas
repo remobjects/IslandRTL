@@ -502,9 +502,9 @@ begin
     lThreadNameInfo.FFlags := 0;
     try
       {$IFDEF _WIN64}
-      rtl.RaiseException( $406D1388, 0, sizeOf(lThreadNameInfo) / sizeOf(NativeUInt), ^UInt64(^Void(@lThreadNameInfo)));
+      rtl.RaiseException($406D1388, 0, sizeOf(lThreadNameInfo) / sizeOf(NativeUInt), ^UInt64(^Void(@lThreadNameInfo)));
       {$ELSE}
-      rtl.RaiseException( $406D1388, 0, sizeOf(lThreadNameInfo) / sizeOf(NativeUInt), ^UInt32(^Void(@lThreadNameInfo)));
+      rtl.RaiseException($406D1388, 0, sizeOf(lThreadNameInfo) / sizeOf(NativeUInt), ^UInt32(^Void(@lThreadNameInfo)));
       {$ENDIF}
     except
     end;

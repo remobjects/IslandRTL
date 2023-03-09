@@ -1,5 +1,5 @@
 ﻿namespace RemObjects.Elements.System;
-{$IFDEF _WIN64}
+{$IFDEF X86_64}
 {$HIDE H7}
 type
   X64CallData = record

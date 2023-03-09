@@ -54,6 +54,7 @@
     <Compile Include="OleVariant.pas" />
     <Compile Include="ComSupport.pas" />
     <Compile Include="WinRTHelpers.pas" />
+    <Compile Include="Windows_FFI_arm64.pas" />
   </ItemGroup>
   <ItemGroup>
     <Reference Include="gc" />

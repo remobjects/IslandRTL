@@ -1,6 +1,6 @@
 ﻿namespace RemObjects.Elements.System;
 {$HIDE H7}{$HIDE h8}
-{$IFNDEF _WIN64}
+{$IFDEF i386}
 type
   X86CallData = record
     Address: ^Void;
