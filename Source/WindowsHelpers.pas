@@ -776,6 +776,30 @@ var
   _dllmain: DllMainType := @DllMain; public;
   [SymbolName('_tls_index'), Used, StaticallyInitializedField]
   _tls_index: Cardinal; public;
+
+
+  [SectionName(".CRT$XIA"), SymbolName('__xi_a'), StaticallyInitializedField]
+  __xi_a: MSVCCleanup := nil; public;
+  [SectionName(".CRT$XIZ"), SymbolName('__xi_z'), StaticallyInitializedField]
+  __xi_z: MSVCCleanup := nil; public;
+
+  [SectionName(".CRT$XCA"), SymbolName('__xc_a'), StaticallyInitializedField]
+  __xc_a: MSVCCleanup := nil; public;
+  [SectionName(".CRT$XCZ"), SymbolName('__xc_z'), StaticallyInitializedField]
+  __xc_z: MSVCCleanup := nil; public;
+
+  [SectionName(".CRT$XTA"), SymbolName('__xt_a'), StaticallyInitializedField]
+  __xt_a: MSVCCleanup := nil; public;
+  [SectionName(".CRT$XTZ"), SymbolName('__xt_z'), StaticallyInitializedField]
+  __xt_z: MSVCCleanup := nil; public;
+
+  [SectionName(".CRT$XPA"), SymbolName('__xp_a'), StaticallyInitializedField]
+  __xp_a: MSVCCleanup := nil; public;
+  [SectionName(".CRT$XPZ"), SymbolName('__xp_z'), StaticallyInitializedField]
+  __xp_z: MSVCCleanup := nil; public;
+
+
+
   [SectionName('.tls'), SymbolName('_tls_start'), StaticallyInitializedField]
   _tls_start: NativeInt := 0; public;
   [SectionName('.tls$ZZZ'), SymbolName('_tls_end'), StaticallyInitializedField]
@@ -886,6 +910,36 @@ end;
 method free(v: ^Void);inline;
 begin
   ExternalCalls.free(v);
+end;
+
+method InitCtors;
+begin
+  var item := @__xi_a;
+  repeat
+    if item^ <> nil then item^();
+    inc(item);
+  until item = @__xi_z;
+
+  item := @__xc_a;
+  repeat
+    if item^ <> nil then item^();
+    inc(item);
+  until item = @__xc_z;
+end;
+
+method FiniCtors;
+begin
+  var item := @__xp_a;
+  repeat
+    if item^ <> nil then item^();
+    inc(item);
+  until item = @__xp_z;
+
+  item := @__xt_a;
+  repeat
+    if item^ <> nil then item^();
+    inc(item);
+  until item = @__xt_z;
 end;
 
 implementation
@@ -1634,6 +1688,7 @@ end;
 method main: Integer;
 begin
   Utilities.Initialize;
+  InitCtors;
   var cnt: Int32;
   var args := rtl.CommandLineToArgvW(rtl.GetCommandLineW(), @cnt);
   var args_s := new String[cnt-1];
@@ -1643,6 +1698,7 @@ begin
     try
       result := UserEntryPoint(args_s);
     finally
+      FiniCtors;
       while ExternalCalls.atexitlist <> nil do begin
         ExternalCalls.atexitlist^.func();
         ExternalCalls.atexitlist := ExternalCalls.atexitlist^.next;
@@ -1682,11 +1738,15 @@ begin
   var lMain: ^DllMainType := @_dllmain;
   ExternalCalls.fModuleHandle := aModule;
   ModuleIsLib := true;
+  if aReason = rtl.DLL_PROCESS_ATTACH then
+    InitCtors;
+
   try
     if lMain^ = nil then exit true;
     exit lMain^(aModule, aReason, aReserved);
   finally
     if (aReason = rtl.DLL_PROCESS_DETACH) then begin
+      FiniCtors;
       while ExternalCalls.atexitlist <> nil do begin
         ExternalCalls.atexitlist^.func();
         ExternalCalls.atexitlist := ExternalCalls.atexitlist^.next;

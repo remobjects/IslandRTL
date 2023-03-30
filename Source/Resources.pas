@@ -9,7 +9,7 @@ type
     HDR: array[0..7] of Byte;
     HeaderSize: Integer;
     NameSize: Integer;
-    DataSize: Integer;
+    //DataSize: Integer;
   end;
   {$SHOW H7}{$SHOW H8}
 
@@ -70,8 +70,9 @@ type
       while lStart < lEnd do begin
         var lName := String.FromPAnsiChar(@^AnsiChar(lStart)[8 + 4+ lStart.HeaderSize], lStart^.NameSize);
         var lData := @^Byte(lStart)[8 + 4+ lStart.HeaderSize + lStart.NameSize];
-        var lLength := lStart.DataSize;
-        lStart := ^IslandResource(@^Byte(lStart)[8 + 4+ lStart.HeaderSize + lStart.NameSize + lStart.DataSize]);
+        var lLength := ^Int32(lData)^;
+        lData := lData + 4;
+        lStart := ^IslandResource(@^Byte(lStart)[8 + 4+ lStart.HeaderSize + lStart.NameSize + lLength]);
         if (IntPtr(lStart) mod 4) <> 0 then
           lStart := ^IslandResource(IntPtr(lStart) + 4 - (IntPtr(lStart) mod 4));
         yield new IslandResourceData(Name := lName, Data := new Span<Byte>(lData, lLength));
@@ -87,8 +88,9 @@ type
       while lStart < lEnd do begin
         var lName := String.FromPAnsiChar(@^AnsiChar(lStart)[8 + 4 + lStart.HeaderSize], lStart^.NameSize);
         var lData := @^Byte(lStart)[8 + 4 + lStart.HeaderSize + lStart.NameSize];
-        var lLength := lStart.DataSize;
-        lStart := ^IslandResource(@^Byte(lStart)[8 + 4 + lStart.HeaderSize + lStart.NameSize + lStart.DataSize]);
+        var lLength := ^Int32(lData)^;
+        lData := lData + 4;
+        lStart := ^IslandResource(@^Byte(lStart)[8 + 4 + lStart.HeaderSize + lStart.NameSize + lLength]);
         if (IntPtr(lStart) mod 4) <> 0 then
           lStart := ^IslandResource(IntPtr(lStart) + 4 - (IntPtr(lStart) mod 4));
         if lName = aName then
