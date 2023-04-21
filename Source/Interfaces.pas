@@ -195,26 +195,26 @@ type
     end;
   end;
 
-  //InterfacedObject = public abstract class(IUnknown)
-  //protected
-    //GCHandle: GCHandle;
-    //ReferenceCount: Integer;
-    //method DefaultQueryInterface(var riid: Guid; out ppvObject: ^Void): Boolean; virtual;empty;
-  //public
-    //method QueryInterface(riid: Guid; out ppvObject: ^Void): Boolean; virtual;
-    //begin
-      //result := DefaultQueryInterface(var riid, out ppvObject);
-    //end;
+  InterfacedObject = public abstract class(IUnknown)
+  protected
+    GCHandle: GCHandle;
+    ReferenceCount: Integer;
+    method DefaultQueryInterface(var riid: Guid; out ppvObject: ^Void): Boolean; virtual;empty;
+  public
+    method QueryInterface(riid: Guid; out ppvObject: ^Void): Boolean; virtual;
+    begin
+      result := DefaultQueryInterface(var riid, out ppvObject);
+    end;
 
-    //method AddRef: ULONG; virtual;
-    //begin
-      //exit __elements_Default_AddRef(self, var ReferenceCount, var GCHandle);
-    //end;
+    method AddRef: ULONG; virtual;
+    begin
+      exit __elements_Default_AddRef(self, var ReferenceCount, var GCHandle);
+    end;
 
-    //method Release: ULONG; virtual;
-    //begin
-      //exit __elements_Default_Release(self, var ReferenceCount, var GCHandle);
-    //end;
-  //end;
+    method Release: ULONG; virtual;
+    begin
+      exit __elements_Default_Release(self, var ReferenceCount, var GCHandle);
+    end;
+  end;
 
 end.

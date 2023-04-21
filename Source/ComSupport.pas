@@ -19,27 +19,7 @@ type
     property ErrorCode: rtl.HRESULT;
   end;
 
-  ComObject = public abstract class(rtl.ISupportErrorInfo, IComDispose)
-  protected
-    GCHandle: GCHandle;
-    ReferenceCount: Integer;
-    method DefaultQueryInterface(var riid: Guid; out ppvObject: ^Void): Boolean; virtual;empty;
-  public
-    method QueryInterface(riid: Guid; out ppvObject: ^Void): Boolean; virtual;
-    begin
-      result := DefaultQueryInterface(var riid, out ppvObject);
-    end;
-
-    method AddRef: ULONG; virtual;
-    begin
-      exit __elements_Default_AddRef(self, var ReferenceCount, var GCHandle);
-    end;
-
-    method Release: ULONG; virtual;
-    begin
-      exit __elements_Default_Release(self, var ReferenceCount, var GCHandle);
-    end;
-
+  ComObject = public abstract class(InterfacedObject, rtl.ISupportErrorInfo, IComDispose)
   private
     fCounted: Boolean;
   protected
