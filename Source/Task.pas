@@ -442,6 +442,12 @@ type
 
       DoEnqueue;
     end;
+
+    class property CompletedTask: Task read new Task(fState := TaskState.Completed); lazy;
+    class method FromResult<T>(x: T): Task<T>;
+    begin
+      exit new Task<T>(fState := TaskState.Completed, fResult := x);
+    end;
   end;
 
   TaskAction_Action<T> = class(TaskAction)
