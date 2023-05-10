@@ -1294,9 +1294,6 @@ end;
 {$ELSEIF _WIN64}
 class method ExternalCalls.setjmp(var buf: rtl.jmp_buf); // Odds are this has some mistakes
 begin
-  {$IF ARM64}
-  raise new NotImplementedException("setjmp is not implemented yet for arm64");
-  {$ELSE}
   InternalCalls.VoidAsm(
     "
     //movl %rbp, (%rcx)  // What is frame?
@@ -1323,7 +1320,6 @@ begin
     movups %xmm15, +240(%rcx)
     // there's also: EPI, Registration, TryLevel, Cookie, UnwindFunc, Unwinddata, but libgc doesn't need those.
     xor %rax,%rax", "", false, false);
-    {$ENDIF}
 end;
 {$ELSEIF i386}
 class method ExternalCalls.setjmp3(var buf: rtl.jmp_buf; var ctx: ^Void); // Odds are this has some mistakes
@@ -1421,10 +1417,17 @@ begin
 end;
 
 {$IF ARM64}
-method CallCatch64(aCall: NativeInt; aEBP: NativeInt): NativeInt;
-begin
-  raise new NotImplementedException("CallCatch64 is not implemented yet for arm64");
-end;
+[InlineAsm("
+
+        stp     x29, x30, [sp, #-16]!           // 16-byte Folded Spill
+        mov     x1, x29
+        blr     x0
+
+        ldp     x29, x30, [sp], #16             // 16-byte Folded Reload
+        ret
+", "", false, false), DisableInlining, DisableOptimizations]
+
+method CallCatch64(aCall: NativeInt; aEBP: NativeInt): NativeInt; external;
 {$ELSEIF X86_64}
 [InlineAsm("
 pushq %rbp
@@ -1471,10 +1474,16 @@ end;
 {$ENDIF}
 
 {$IF ARM64}
-method JumpToContinuation64(aAddress, aESP, aEBP: NativeInt);
-begin
-  raise new NotImplementedException("JumpToContinuation64 is not implemented yet for arm64");
-end;
+[InlineAsm("
+       stp     x29, x30, [sp, #-16]!           // 16-byte Folded Spill
+        mov     x1, sp
+        mov     x2, x29
+        blr     x0
+
+        ldp     x29, x30, [sp], #16             // 16-byte Folded Reload
+        ret
+", "", false, false), DisableInlining, DisableOptimizations]
+method JumpToContinuation64(aAddress, aESP, aEBP: NativeInt); external;
 {$ELSEIF X86_64}
 [InlineAsm("
     movq %r8, %rbp
