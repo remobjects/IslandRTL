@@ -19,10 +19,12 @@ type
         exit "macOS";
         {$ELSEIF IOS}
         exit "iOS";
-        {$ELSEIF WATCHOS}
-        exit "watchOS";
         {$ELSEIF TVOS}
         exit "tvOS";
+        {$ELSEIF VISIONOS}
+        exit "visionOS";
+        {$ELSEIF WATCHOS}
+        exit "watchOS";
         {$ELSE}
           {$ERROR Unsupported Apple platform}
         {$ENDIF}
@@ -75,10 +77,12 @@ type
         result := {$IF __arm64__}"arm64"{$ELSE}"x86_64"{$ENDIF};
         {$ELSEIF IOS}
         result := "arm64";
-        {$ELSEIF WATCHOS}
-        result := {$IF __arm64_32__}"arm64_32"{$ELSE}"armv7k"{$ENDIF};
         {$ELSEIF TVOS}
         result := "arm64";
+        {$ELSEIF VISIONOS}
+        result := "arm64";
+        {$ELSEIF WATCHOS}
+        result := {$IF __arm64_32__}"arm64_32"{$ELSE}"armv7k"{$ENDIF};
         {$ELSE}
           {$ERROR Unsupported Apple platform}
         {$ENDIF}

@@ -1,0 +1,68 @@
+﻿<?xml version="1.0" encoding="utf-8" standalone="yes"?>
+<Project xmlns="http://schemas.microsoft.com/developer/msbuild/2003" DefaultTargets="Build" ToolsVersion="4.0">
+  <PropertyGroup>
+    <ProductVersion>3.5</ProductVersion>
+    <RootNamespace>RemObjects.Elements.System</RootNamespace>
+    <OutputType>StaticLibrary</OutputType>
+    <AssemblyName>Island</AssemblyName>
+    <AllowGlobals>True</AllowGlobals>
+    <Configuration Condition="'$(Configuration)' == ''">Release</Configuration>
+    <TargetFrameworkVersion>v4.0</TargetFrameworkVersion>
+    <Name>Island (Darwin visionOS)</Name>
+    <ProjectGuid>{A03A4DEE-84AE-44AB-8E8B-004AD4205FD5}</ProjectGuid>
+    <Mode>Island</Mode>
+    <NoIsland>True</NoIsland>
+    <WarnOnCaseMismatch>True</WarnOnCaseMismatch>
+    <Platform Condition="'$(Platform)' == ''">AnyCPU</Platform>
+    <GenerateDebugInfo>True</GenerateDebugInfo>
+    <DefineConstants>POSIX;POSIX_LIGHT</DefineConstants>
+    <SDK>visionOS</SDK>
+    <DefaultGlobalsToPublic>True</DefaultGlobalsToPublic>
+    <DeploymentTargetVersion>1.0</DeploymentTargetVersion>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)' == 'Debug'">
+    <OutputPath>Bin\Debug</OutputPath>
+    <EnableAsserts>True</EnableAsserts>
+    <Optimize>False</Optimize>
+    <CaptureConsoleOutput>False</CaptureConsoleOutput>
+    <RuntimeVersion>v25</RuntimeVersion>
+    <XmlDoc>False</XmlDoc>
+    <XmlDocWarningLevel>WarningOnPublicMembers</XmlDocWarningLevel>
+    <EnableUnmanagedDebugging>False</EnableUnmanagedDebugging>
+    <GenerateDebugInfo>True</GenerateDebugInfo>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)' == 'Release'">
+    <OutputPath>Bin\Release</OutputPath>
+    <EnableAsserts>False</EnableAsserts>
+    <CaptureConsoleOutput>False</CaptureConsoleOutput>
+    <StartMode>Project</StartMode>
+    <CpuType>x86</CpuType>
+    <RuntimeVersion>v25</RuntimeVersion>
+    <XmlDoc>False</XmlDoc>
+    <XmlDocWarningLevel>WarningOnPublicMembers</XmlDocWarningLevel>
+    <EnableUnmanagedDebugging>False</EnableUnmanagedDebugging>
+    <GenerateDebugInfo>False</GenerateDebugInfo>
+    <Optimize>True</Optimize>
+  </PropertyGroup>
+  <ItemGroup>
+    <Compile Include="BoehmGC.pas" />
+    <Compile Include="Posix_FFI_x64.pas" />
+    <Compile Include="ManagedThreadPool.pas" />
+    <Compile Include="PosixHelpers.pas" />
+    <Compile Include="DarwinNumbers.pas" />
+    <Compile Include="Swift.pas" />
+    <Compile Include="Posix_FFI_ARM64.pas" />
+    <Compile Include="SwiftString.pas" />
+    <Compile Include="SwiftObject.pas" />
+    <Compile Include="SwiftAny.pas" />
+    <Compile Include="SwiftArray.pas" />
+  </ItemGroup>
+  <ItemGroup>
+    <Reference Include="gc" />
+    <Reference Include="rtl" />
+    <Reference Include="Foundation" />
+    <Reference Include="CoreFoundation" />
+  </ItemGroup>
+  <Import Project="$(MSBuildExtensionsPath)\RemObjects Software\Elements\RemObjects.Elements.Island.Darwin.targets" />
+  <Import Project="Island.Shared.projitems" Label="Shared" />
+</Project>
