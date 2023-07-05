@@ -6,11 +6,12 @@ uses
   rtl;
 
 type
-  atexitfunc = public procedure();
+  atexitfunc = public procedure(o: ^Void);
 
   atexitrec = record
   public
     func: atexitfunc;
+    arg: ^Void;
     next: ^atexitrec;
   end;
 
@@ -33,6 +34,19 @@ type
     Target: IntPtr; assembly;
 
     class var atexitlist: ^atexitrec;
+
+    {$IFDEF DARWIN}
+    [SymbolName('__cxa_atexit')]
+    class method CXXExit(aFN: atexitfunc; aArg: ^Void; aDummy: ^Void): Integer;
+    begin
+      var rec := ^atexitrec(malloc(sizeOf(atexitrec)));
+    // TODO: make atomic
+      rec^.func := aFN;
+      rec^.arg := aArg;
+      rec^.next := atexitlist;
+      atexitlist := rec;
+    end;
+    {$ENDIF}
 
     {$IFDEF ANDROID}
     //[SymbolName('__executable_start')]
@@ -627,7 +641,7 @@ method ExternalCalls.fini;
 begin
   //_finilist;
   while atexitlist <> nil do begin
-    atexitlist^.func();
+    atexitlist^.func(atexitlist^.arg);
     atexitlist := atexitlist^.next;
   end;
   BoehmGC.UnloadGC;
@@ -853,6 +867,7 @@ begin
   rec^.next := atexitlist;
   atexitlist := rec;
 end;
+
 
 {$IFDEF ARM and not arm64 and not DARWIN}
 method ExternalCalls.ExceptionHandler(aState: rtl._Unwind_Action; aECB: ^rtl.__struct__Unwind_Control_Block; aCtx: ^Void): rtl._Unwind_Reason_Code;
