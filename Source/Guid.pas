@@ -34,6 +34,37 @@ type
       Data4_7 := Value[15];
     end;
 
+    constructor(Value: array [0..15] of Byte);
+    begin
+      Data1 := UInt32(Value[3]) shl 24 + UInt32(Value[2]) shl 16 + UInt32(Value[1]) shl 8 + UInt32(Value[0]);
+      Data2 := UInt16(Value[5]) shl 8 + UInt16(Value[4]);
+      Data3 := UInt16(Value[7]) shl 8 + UInt16(Value[6]);
+      Data4_0 := Value[8];
+      Data4_1 := Value[9];
+      Data4_2 := Value[10];
+      Data4_3 := Value[11];
+      Data4_4 := Value[12];
+      Data4_5 := Value[13];
+      Data4_6 := Value[14];
+      Data4_7 := Value[15];
+    end;
+
+    constructor(Value: ^Byte);
+    begin
+      if Value = nil then new Exception('Value is nil');
+      Data1 := UInt32(Value[3]) shl 24 + UInt32(Value[2]) shl 16 + UInt32(Value[1]) shl 8 + UInt32(Value[0]);
+      Data2 := UInt16(Value[5]) shl 8 + UInt16(Value[4]);
+      Data3 := UInt16(Value[7]) shl 8 + UInt16(Value[6]);
+      Data4_0 := Value[8];
+      Data4_1 := Value[9];
+      Data4_2 := Value[10];
+      Data4_3 := Value[11];
+      Data4_4 := Value[12];
+      Data4_5 := Value[13];
+      Data4_6 := Value[14];
+      Data4_7 := Value[15];
+    end;
+
     constructor(Value: String);
     begin
       //0---------1---------2---------3-----
