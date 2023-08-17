@@ -561,15 +561,30 @@ type
 
     property RTTI: ^IslandTypeInfo read fValue;
 
-    property &Name: String read begin
+    property Name: String read begin
       if fValue = nil then
         exit nil;
       if IslandTypeFlags.Generic in &Flags then begin
         var lSub := new &Type(fValue^.Ext^.SubType);
         if lSub = typeOf(Array<1>) then
           exit GenericArguments.First.Name+'[]';
-        result := StripGenerics(lSub.Name);
-        result := result + '<'+ String.Join(',', GenericArguments.Select(e -> e.Name)) + '>';
+        result := StripNamespace(StripGenerics(lSub.Name));
+        result := result + '`' + GenericArguments.Count;
+        exit;
+      end;
+
+      result := StripNamespace(String.FromPAnsiChar(fValue^.Ext^.Name));
+    end;
+
+    property FullName: String read begin
+      if fValue = nil then
+        exit nil;
+      if IslandTypeFlags.Generic in &Flags then begin
+        var lSub := new &Type(fValue^.Ext^.SubType);
+        if lSub = typeOf(Array<1>) then
+          exit GenericArguments.First.FullName+'[]';
+        result := StripGenerics(lSub.FullName);
+        result := result + '<'+ String.Join(',', GenericArguments.Select(e -> e.FullName)) + '>';
         exit;
       end;
       result := String.FromPAnsiChar(fValue^.Ext^.Name);
@@ -582,6 +597,14 @@ type
       if lIndex >= 0 then
         exit s.Substring(0, lIndex);
       exit s;
+    end;
+
+    class method StripNamespace(s: String): String; private;
+    begin
+      result := s;
+      var p := result.LastIndexOf(".");
+      if p > 0 then
+        result := result.Substring(p+1);
     end;
 
     property &Flags: IslandTypeFlags read fValue^.Ext^.Flags;
@@ -639,7 +662,7 @@ type
 
     method ToString: String; override;
     begin
-      exit Name;
+      exit FullName;
     end;
 
     class method TypeIsValueType(aType: ^IslandTypeInfo): Boolean;
@@ -665,7 +688,7 @@ type
     method Instantiate<T>: Object; where T is ILifetimeStrategy<T>;
     begin
       var lCtor: MethodInfo := Methods.FirstOrDefault(a -> (MethodFlags.Constructor in a.Flags) and (not a.Arguments.Any) and (not a.IsStatic));
-      if (lCtor = nil) and not IsValueType then raise new Exception('No default constructor could be found on type '+Name);
+      if (lCtor = nil) and not IsValueType then raise new Exception('No default constructor could be found on type '+FullName);
       if IsValueType then begin
         var lRealCtor := if lCtor = nil then nil else VTCtorHelper(lCtor.Pointer);
         result := InternalCalls.Cast<Object>(T.New(fValue, SizeOfType + BoxedDataOffset - sizeOf(^Void)));
