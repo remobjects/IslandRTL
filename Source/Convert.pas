@@ -3,7 +3,9 @@
 type
   Convert = public static class
   private
+
     class const DecimalChar: Char = '.';
+
     method ParseString(s:String; out aSign: Boolean; out arr: array of Byte): Boolean;
     begin
       if String.IsNullOrEmpty(s) then exit False;
