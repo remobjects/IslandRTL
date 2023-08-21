@@ -30,7 +30,6 @@
     <XmlDocWarningLevel>WarningOnPublicMembers</XmlDocWarningLevel>
     <EnableUnmanagedDebugging>False</EnableUnmanagedDebugging>
     <GenerateDebugInfo>True</GenerateDebugInfo>
-    <Architecture>arm64</Architecture>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)' == 'Release'">
     <OutputPath>Bin\Release</OutputPath>
@@ -44,7 +43,6 @@
     <EnableUnmanagedDebugging>False</EnableUnmanagedDebugging>
     <GenerateDebugInfo>False</GenerateDebugInfo>
     <Optimize>True</Optimize>
-    <Architecture>arm64</Architecture>
   </PropertyGroup>
   <ItemGroup>
     <Compile Include="BoehmGC.pas" />
