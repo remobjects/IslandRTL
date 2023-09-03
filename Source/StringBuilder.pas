@@ -127,7 +127,7 @@ type
       Append(Data);
     end;
 
-    method Append(Value: String): StringBuilder;
+    method Append(Value: String): not nullable StringBuilder;
     begin
       if not String.IsNullOrEmpty(Value) then
         exit Append(Value, 0, Value.Length)
@@ -135,7 +135,7 @@ type
         exit self;
     end;
     [DisableInlining]
-    method Append(Value: String; StartIndex, Count: Integer): StringBuilder;
+    method Append(Value: String; StartIndex, Count: Integer): not nullable StringBuilder;
     begin
       if String.IsNullOrEmpty(Value) and (StartIndex = 0) and (Count = 0) then exit self;
       if String.IsNullOrEmpty(Value) then RaiseError('Value is null') ;
@@ -151,7 +151,7 @@ type
       exit self;
     end;
 
-    method Append(Value: Char; RepeatCount: Integer): StringBuilder;
+    method Append(Value: Char; RepeatCount: Integer): not nullable StringBuilder;
     begin
       if (RepeatCount = 0) then exit self;
       if (RepeatCount < 0) then RaiseError('RepeatCount less than zero') ;
@@ -162,24 +162,24 @@ type
       exit Append(String.FromPChar(@arr[0],RepeatCount));
     end;
 
-    method Append(Value: Char): StringBuilder;
+    method Append(Value: Char): not nullable StringBuilder;
     begin
       Length := Length + 1;
       fBuf[fLength - 1] := Value;
       exit self;
     end;
 
-    method AppendLine: StringBuilder;
+    method AppendLine: not nullable StringBuilder;
     begin
       exit Append(Environment.NewLine);
     end;
 
-    method AppendLine(Value: String): StringBuilder;
+    method AppendLine(Value: String): not nullable StringBuilder;
     begin
       exit Append(Value+Environment.NewLine);
     end;
 
-    method Append(o: Object): StringBuilder;
+    method Append(o: Object): not nullable StringBuilder;
     begin
       exit Append(o:ToString);
     end;
@@ -189,7 +189,7 @@ type
       Length := 0;
     end;
 
-    method &Remove(StartIndex, Count: Integer): StringBuilder;
+    method &Remove(StartIndex, Count: Integer): not nullable StringBuilder;
     begin
       if Count = 0 then exit self;
       if (Count < 0) then RaiseError('Count less than zero') ;
@@ -201,7 +201,7 @@ type
       exit self;
     end;
 
-    method Replace(OldChar: Char; NewChar: Char; StartIndex: Integer; Count: Integer): StringBuilder;
+    method Replace(OldChar: Char; NewChar: Char; StartIndex: Integer; Count: Integer): not nullable StringBuilder;
     begin
       if (Count < 0) then RaiseError('Count less than zero') ;
       if (StartIndex < 0) then RaiseError('StartIndex less than zero') ;
@@ -211,7 +211,7 @@ type
       exit self;
     end;
 
-    method Replace(OldValue: String; NewValue: String; StartIndex: Integer; Count: Integer): StringBuilder;
+    method Replace(OldValue: String; NewValue: String; StartIndex: Integer; Count: Integer): not nullable StringBuilder;
     begin
       if String.IsNullOrEmpty(OldValue) then RaiseError('OldValue is null') ;
       if OldValue.Length = 0 then RaiseError('The length of OldValue is zero.');
@@ -270,33 +270,33 @@ type
       exit self;
     end;
 
-    method Replace(OldChar: Char; NewChar: Char): StringBuilder;
+    method Replace(OldChar: Char; NewChar: Char): not nullable StringBuilder;
     begin
       exit Replace(OldChar, NewChar, 0, Length);
     end;
 
-    method Replace(OldValue: String; NewValue: String): StringBuilder;
+    method Replace(OldValue: String; NewValue: String): not nullable StringBuilder;
     begin
       exit Replace(OldValue, NewValue, 0, Length);
     end;
 
-    method ToString: String; override;
+    method ToString: not nullable String; override;
     begin
       if fLength = 0 then
         exit '';
-      exit String.FromPChar(@fBuf[0], fLength);
+      exit String.FromPChar(@fBuf[0], fLength) as not nullable;
     end;
 
-    method ToString(StartIndex, Count: Integer): String;
+    method ToString(StartIndex, Count: Integer): not nullable String;
     begin
       if Count = 0 then exit '';
       if (Count < 0) then RaiseError('Count less than zero') ;
       if (StartIndex < 0) then RaiseError('StartIndex less than zero') ;
       if (StartIndex + Count > Length) then RaiseError('StartIndex + Count is greater than the length');
-      exit String.FromPChar(@fBuf[StartIndex], Count);
+      exit String.FromPChar(@fBuf[StartIndex], Count) as not nullable;
     end;
 
-    method Insert(Offset: Integer; Value: String): StringBuilder;
+    method Insert(Offset: Integer; Value: String): not nullable StringBuilder;
     begin
       if (Offset < 0) then RaiseError('Offset less than zero') ;
       if (Offset + Value.Length > MaxCapacity) then RaiseError('The current length of this StringBuilder object plus the length of value exceeds MaxCapacity.');
