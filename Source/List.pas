@@ -181,17 +181,16 @@ type
         //PrivateAdd(aArray[i]);
     //end;
 
-    method ToNSArray: Foundation.NSArray<T>; inline;
+    method ToNSArray: not nullable Foundation.NSArray<T>; inline;
     begin
       result := ToNSMutableArray();
     end;
 
-    method ToNSMutableArray: Foundation.NSMutableArray<T>;
+    method ToNSMutableArray: not nullable Foundation.NSMutableArray<T>;
     begin
-      var lResult := new Foundation.NSMutableArray<T> withCapacity(Count);
+      result := new Foundation.NSMutableArray<T> withCapacity(Count);
       for i: Integer := 0 to Count-1 do
-        lResult.addObject(self[i]);
-      result := lResult;
+        result.addObject(self[i]);
     end;
 
     //operator Explicit(aArray: Foundation.NSArray<T>): ImmutableList<T>;
@@ -199,18 +198,18 @@ type
       //result := new ImmutableList<T>(aArray);
     //end;
 
-    operator Explicit(aArray: ImmutableList<T>): Foundation.NSArray<T>;
+    operator Explicit(aArray: nullable ImmutableList<T>): nullable Foundation.NSArray<T>;
     begin
       result := aArray:ToNSArray;
     end;
 
-    operator Explicit(aArray: ImmutableList<T>): Foundation.NSMutableArray<T>;
+    operator Explicit(aArray: nullable ImmutableList<T>): nullable Foundation.NSMutableArray<T>;
     begin
       result := aArray:ToNSMutableArray;
     end;
     {$ENDIF}
 
-    method GetEnumerator: IEnumerator<T>;
+    method GetEnumerator: not nullable IEnumerator<T>;
     begin
       exit new ListEnumerator<T>(Self);
     end;
@@ -257,7 +256,7 @@ type
       exit nil;
     end;
 
-    method FindAll(Match: Predicate<T>): List<T>;
+    method FindAll(Match: Predicate<T>): not nullable List<T>;
     begin
       result := new List<T>;
       for i : Integer := 0 to fCount-1 do
@@ -294,19 +293,19 @@ type
       exit -1;
     end;
 
-    method ToArray: array of T;
+    method ToArray: not nullable array of T;
     begin
       result := new array of T(fCount);
       CopyTo(result);
     end;
 
-    method CopyTo(&array: array of T);
+    method CopyTo(&array: not nullable array of T);
     begin
       if length(&array)< fCount then new ArgumentException('The number of elements in the source List<T> is greater than the number of elements that the destination array can contain.');
       CopyTo(0, &array, 0, fCount);
     end;
 
-    method CopyTo(&array: array of T; arrayIndex: Integer);
+    method CopyTo(&array: not nullable array of T; arrayIndex: Integer);
     begin
       if arrayIndex <0 then new ArgumentOutOfRangeException('arrayIndex is less than 0.');
       if length(&array)< fCount+arrayIndex then new ArgumentException('The number of elements in the source List<T> is greater than the available space from arrayIndex to the end of the destination array.');
@@ -314,7 +313,7 @@ type
     end;
 
     {$HIDE W27}
-    method CopyTo(&index: Integer; &array: array of T; arrayIndex: Integer; &count: Integer);
+    method CopyTo(&index: Integer; &array: not nullable array of T; arrayIndex: Integer; &count: Integer);
     begin
       if not assigned(&array) then new ArgumentNullException('array is nil.');
       if &index <0 then new ArgumentOutOfRangeException('index is less than 0.');
@@ -334,7 +333,8 @@ type
 
     property Count: Integer read fCount;
     property Item[i: Integer]: T read GetItem protected write SetItem; virtual; default;
-    method ToString: String; override;
+
+    method ToString: not nullable String; override;
     begin
       exit $"{Integer(InternalCalls.Cast(self)).ToString.PadStart(if defined("CPU64") then 16 else 8, '0')} Count: {Count}";
     end;
@@ -374,9 +374,9 @@ type
       inc(fCount);
     end;
 
-    method AddRange(Items: ImmutableList<T>);
+    method AddRange(Items: nullable ImmutableList<T>);
     begin
-      if (Items <> nil) and (Items.Count > 0) then begin
+      if (length(Items) > 0) then begin
         if fCount + Items.Count >= Capacity then begin
           Grow(fCount + Items.Count);
         end;
@@ -387,9 +387,9 @@ type
       end;
     end;
 
-    method AddRange(Items: array of T);
+    method AddRange(Items: nullable array of T);
     begin
-      if (length(Items)>0) then begin
+      if (length(Items) > 0) then begin
         if fCount + length(Items) >= Capacity then begin
           Grow(fCount + Items.Count);
         end;
@@ -410,13 +410,12 @@ type
       InsertRange(&Index, [anItem]);
     end;
 
-    method InsertRange(&Index: Integer; Items: ImmutableList<T>);
+    method InsertRange(&Index: Integer; Items: not nullable ImmutableList<T>);
     begin
-      if Items = nil then RaiseError('Items must be assigned');
       InsertRange(&Index, Items.fItems);
     end;
 
-    method InsertRange(&Index: Integer; Items: array of T);
+    method InsertRange(&Index: Integer; Items: not nullable array of T);
     begin
       var it_len:= length(Items);
       if it_len = 0 then exit;
@@ -451,7 +450,6 @@ type
       end;
     end;
 
-
     method &Remove(anItem: T): Boolean;
     begin
       var i := IndexOf(anItem);
@@ -478,7 +476,7 @@ type
       fCount := newlength;
     end;
 
-    method Sort(Comparison: Comparison<T>);
+    method Sort(Comparison: not nullable Comparison<T>);
     begin
       QuickSort(0, fCount-1, Comparison);
     end;
