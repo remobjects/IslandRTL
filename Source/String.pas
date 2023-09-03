@@ -19,7 +19,7 @@ type
     constructor; empty; // not callable
     {$IFDEF WINDOWS}
     method doLCMapString(aInvariant: Boolean := false; aMode:LCMapStringTransformMode := LCMapStringTransformMode.None):String;
-    method doLCMapString(aLocale: Locale; aMode:LCMapStringTransformMode := LCMapStringTransformMode.None): String;
+    method doLCMapString(aLocale: Locale; aMode:LCMapStringTransformMode := LCMapStringTransformMode.None): not nullable String;
     {$ENDIF}
     method TestChar(c: Char; Arr : array of Char): Boolean;
     class method RaiseError(aMessage: String);
@@ -27,18 +27,18 @@ type
     method GetNonGenericEnumerator: IEnumerator; implements IEnumerable.GetEnumerator;
     method GetEnumerator: IEnumerator<Char>;iterator;
   assembly
-    class method AllocString(aLen: Integer): String;
+    class method AllocString(aLen: Integer): not nullable String;
   public
     //constructor(aArray: array of Char);
-    //constructor(c: ^Char; aCharCount: Integer): String;
-    class method FromCharArray(aArray: array of Char): String;
-    class method FromPChar(c: ^Char; aCharCount: Integer): String;
-    class method FromPChar(c: ^Char): String;
+    //constructor(c: ^Char; aCharCount: Integer): not nullable String;
+    class method FromCharArray(aArray: array of Char): nullable String;
+    class method FromPChar(c: ^Char; aCharCount: Integer): nullable String;
+    class method FromPChar(c: ^Char): nullable String;
     class method FromPAnsiChar(c: ^AnsiChar; aCharCount: Integer): nullable String;
     class method FromPAnsiChar(c: ^AnsiChar): nullable String;
-    class method FromRepeatedChar(c: Char; aCharCount: Integer): String;
-    class method FromChar(c: Char): String;
-    class method IsNullOrEmpty(value: String):Boolean;
+    class method FromRepeatedChar(c: Char; aCharCount: Integer): not nullable String;
+    class method FromChar(c: Char): nullable String;
+    class method IsNullOrEmpty(value: String): Boolean;
     method ToAnsiChars(aNullTerminate: Boolean := false): array of AnsiChar;
     method ToCharArray(aNullTerminate: Boolean := false): array of Char; inline;
     method ToCharArray(StartIndex: Integer; aLength: Integer; aNullTerminate: Boolean := false): array of Char;
@@ -51,19 +51,19 @@ type
 
     method CopyTo(SourceIndex: Integer; destination: array of Char; DestinationIndex: Integer; Count: Integer);
     method Insert(aIndex: Integer; aNewValue: String): not nullable String;
-    method &Remove(StartIndex: Integer): String; inline;
-    method &Remove(StartIndex: Integer; Count: Integer): String;
+    method &Remove(StartIndex: Integer): not nullable String; inline;
+    method &Remove(StartIndex: Integer; Count: Integer): not nullable String;
     method CompareTo(Value: String): Integer;
     method CompareToIgnoreCase(Value: String): Integer;
     method &Equals(aOther: String): Boolean;
     method &Equals(aOther: Object): Boolean; override;
     method EqualsIgnoreCase(aOther: String): Boolean;
     method EqualsIgnoreCaseInvariant(aOther: String): Boolean;
-    class method &Join(Separator: String; Value: array of String): String;
-    class method &Join(Separator: String; Value: IEnumerable<String>): String;
-    class method &Join<T>(Separator: String; Value: IEnumerable<T>): String;
-    class method &Join(Separator: String; Value: array of String; StartIndex: Integer; Count: Integer): String;
-    class method &Join(Separator: String; Value: array of Object): String;
+    class method &Join(Separator: String; Value: array of String): not nullable String;
+    class method &Join(Separator: String; Value: IEnumerable<String>): not nullable String;
+    class method &Join<T>(Separator: String; Value: IEnumerable<T>): not nullable String;
+    class method &Join(Separator: String; Value: array of String; StartIndex: Integer; Count: Integer): not nullable String;
+    class method &Join(Separator: String; Value: array of Object): not nullable String;
     method Contains(Value: String): Boolean;
     method IndexOf(Value: String): Integer;
     method IndexOf(Value: String; aStartFromIndex: Integer): Integer;
@@ -73,36 +73,36 @@ type
     method LastIndexOfAny(anyOf: array of Char): Integer;
     method Substring(StartIndex: Integer): not nullable String;
     method Substring(StartIndex: Integer; aLength: Integer): not nullable String;
-    method Substring(aRange: Range): String;
-    method Split(Separator: String; aRemoveEmptyEntries: Boolean := false; aMax: Integer := -1): array of String;
-    method Replace(OldValue, NewValue: String): not nullable String;
-    method PadStart(TotalWidth: Integer): String; inline;
-    method PadStart(TotalWidth: Integer; PaddingChar: Char): String;
-    method PadEnd(TotalWidth: Integer): String; inline;
-    method PadEnd(TotalWidth: Integer; PaddingChar: Char): String;
-    method ToLower(aInvariant: Boolean := false): String;
-    method ToUpper(aInvariant: Boolean := false): String;
-    method ToLowerInvariant: String;inline;
-    method ToUpperInvariant: String;inline;
-    method ToLower(aLocale: Locale): String;
-    method ToUpper(aLocale: Locale): String;
-    method Trim: String;
-    method Trim(aChars: array of Char): String;
-    method TrimStart: String;
-    method TrimStart(aChars: array of Char): String;
-    method TrimEnd: String;
-    method TrimEnd(aChars: array of Char): String;
+    method Substring(aRange: Range): not nullable String;
+    method Split(Separator: String; aRemoveEmptyEntries: Boolean := false; aMax: Integer := -1): not nullable array of String;
+    method Replace(OldValue, NewValue: not nullable String): not nullable String;
+    method PadStart(TotalWidth: Integer): not nullable String; inline;
+    method PadStart(TotalWidth: Integer; PaddingChar: Char): not nullable String;
+    method PadEnd(TotalWidth: Integer): not nullable String; inline;
+    method PadEnd(TotalWidth: Integer; PaddingChar: Char): not nullable String;
+    method ToLower(aInvariant: Boolean := false): not nullable String;
+    method ToUpper(aInvariant: Boolean := false): not nullable String;
+    method ToLowerInvariant: not nullable String;inline;
+    method ToUpperInvariant: not nullable String;inline;
+    method ToLower(aLocale: Locale): not nullable String;
+    method ToUpper(aLocale: Locale): not nullable String;
+    method Trim: not nullable String;
+    method Trim(aChars: array of Char): not nullable String;
+    method TrimStart: not nullable String;
+    method TrimStart(aChars: array of Char): not nullable String;
+    method TrimEnd: not nullable String;
+    method TrimEnd(aChars: array of Char): not nullable String;
     method StartsWith(Value: String; aInvariant: Boolean := false): Boolean;
     method EndsWith(Value: String; aInvariant: Boolean := false): Boolean;
-    class method Format(aFormat: not nullable String; params aArguments: not nullable array of Object): String;
+    class method Format(aFormat: not nullable String; params aArguments: not nullable array of Object): not nullable String;
 
     class method Compare(aLeft, aRight: String): Integer;
-    class operator Add(aLeft, aRight: String): String;
-    class operator Add(aLeft: String; aChar: Char): String;
-    class operator Add(aLeft: Char; aRight: String): String;
-    class operator Add(aLeft: String; aRight: Object): String;
-    class operator Add(aLeft: Object; aRight: String): String;
-    class operator Implicit(Value: Char): String;
+    class operator Add(aLeft, aRight: String): nullable String;
+    class operator Add(aLeft: String; aChar: Char): not nullable String;
+    class operator Add(aLeft: Char; aRight: String): not nullable String;
+    class operator Add(aLeft: String; aRight: Object): nullable String;
+    class operator Add(aLeft: Object; aRight: String): nullable String;
+    class operator Implicit(Value: Char): not nullable String;
     class operator Greater(Value1, Value2: String): Boolean;
     class operator Less(Value1, Value2: String): Boolean;
     class operator GreaterOrEqual(Value1, Value2: String): Boolean;
@@ -152,7 +152,7 @@ begin
     yield (@fFirstChar)[i];
 end;
 
-class method String.FromPChar(c: ^Char; aCharCount: Integer): String;
+class method String.FromPChar(c: ^Char; aCharCount: Integer): nullable String;
 begin
   if c = nil then exit nil;
   result := AllocString(aCharCount);
@@ -242,7 +242,7 @@ begin
   exit (@self.fFirstChar)[i];
 end;
 
-class operator String.Add(aLeft, aRight: String): String;
+class operator String.Add(aLeft, aRight: String): nullable String;
 begin
   if (Object(aLeft) = nil) or (aLeft.Length = 0) then exit aRight;
   if (Object(aRight) = nil) or (aRight.Length = 0) then exit aLeft;
@@ -251,7 +251,7 @@ begin
   memcpy((@result.fFirstChar) + aLeft.Length, @aRight.fFirstChar, aRight.Length * 2);
 end;
 
-class operator String.Add(aLeft: String; aChar: Char): String;
+class operator String.Add(aLeft: String; aChar: Char): not nullable String;
 begin
   if (Object(aLeft) = nil) or (aLeft.Length = 0) then exit aChar;
   result := AllocString(aLeft.Length + 1);
@@ -259,7 +259,7 @@ begin
   (@result.fFirstChar)[aLeft.Length] := aChar;
 end;
 
-class operator String.Add(aLeft: Char; aRight: String): String;
+class operator String.Add(aLeft: Char; aRight: String): not nullable String;
 begin
   if (Object(aRight) = nil) or (aRight.Length = 0) then exit aLeft;
   result := AllocString(aRight.Length + 1);
@@ -268,25 +268,25 @@ begin
 end;
 
 
-class operator String.Add(aLeft: String; aRight: Object): String;
+class operator String.Add(aLeft: String; aRight: Object): nullable String;
 begin
   exit aLeft + (aRight:ToString);
 end;
 
-class operator String.Add(aLeft: Object; aRight: String): String;
+class operator String.Add(aLeft: Object; aRight: String): nullable String;
 begin
   exit (aLeft:ToString) + aRight;
 end;
 
-class operator String.Implicit(Value: Char): String;
+class operator String.Implicit(Value: Char): not nullable String;
 begin
   result := AllocString(1);
   result.fFirstChar := Value;
 end;
 
-class method String.AllocString(aLen: Integer): String;
+class method String.AllocString(aLen: Integer): not nullable String;
 begin
-  result := InternalCalls.Cast<String>(DefaultGC.New(InternalCalls.GetTypeInfo<String>(), (sizeOf(Object) + sizeOf(Integer) + if defined('DARWIN') then sizeOf(IntPtr) else 0) + 2 * aLen));
+  result := InternalCalls.Cast<String>(DefaultGC.New(InternalCalls.GetTypeInfo<String>(), (sizeOf(Object) + sizeOf(Integer) + if defined('DARWIN') then sizeOf(IntPtr) else 0) + 2 * aLen)) as not nullable;
   result.fLength := aLen;
 end;
 
@@ -300,7 +300,7 @@ begin
   exit Utilities.CalcHash(@fFirstChar, fLength*2);
 end;
 
-method String.Trim: String;
+method String.Trim: not nullable String;
 begin
   if String.IsNullOrEmpty(self) then exit self;
   var lStart := 0;
@@ -316,7 +316,7 @@ begin
   result := Substring(lStart, lEnd-lStart+1);
 end;
 
-method String.Trim(aChars: array of Char): String;
+method String.Trim(aChars: array of Char): not nullable String;
 begin
   if String.IsNullOrEmpty(self) then exit self;
   var lStart := 0;
@@ -332,7 +332,7 @@ begin
   result := Substring(lStart, lEnd-lStart+1);
 end;
 
-method String.TrimStart: String;
+method String.TrimStart: not nullable String;
 begin
   if String.IsNullOrEmpty(self) then exit self;
   var lStart := 0;
@@ -344,7 +344,7 @@ begin
   result := Substring(lStart, lEnd-lStart+1);
 end;
 
-method String.TrimStart(aChars: array of Char): String;
+method String.TrimStart(aChars: array of Char): not nullable String;
 begin
   if String.IsNullOrEmpty(self) then exit self;
   var lStart := 0;
@@ -356,7 +356,7 @@ begin
   result := Substring(lStart, lEnd-lStart+1);
 end;
 
-method String.TrimEnd: String;
+method String.TrimEnd: not nullable String;
 begin
   if String.IsNullOrEmpty(self) then exit self;
   var len := self.Length;
@@ -368,7 +368,7 @@ begin
   result := Substring(0, lEnd+1);
 end;
 
-method String.TrimEnd(aChars: array of Char): String;
+method String.TrimEnd(aChars: array of Char): not nullable String;
 begin
   if String.IsNullOrEmpty(self) then exit self;
   var len := self.Length;
@@ -399,7 +399,7 @@ begin
   {$SHOW W46}
 end;
 
-method String.Substring(aRange: Range): String;
+method String.Substring(aRange: Range): not nullable String;
 begin
   var lStart := aRange.fStart.GetOffset(fLength);
   var lEnd := aRange.fEnd.GetOffset(fLength);
@@ -568,21 +568,21 @@ begin
   exit self.IndexOf(Value,0);
 end;
 
-method String.Replace(OldValue, NewValue: String): not nullable String;
+method String.Replace(OldValue, NewValue: not nullable String): not nullable String;
 begin
   result := self;
   var oldValue_Length := OldValue.Length;
   var newValue_Length := NewValue.Length;
-  var lstart:=0;
+  var lStart:=0;
   repeat
-    lstart := result.IndexOf(OldValue, lstart);
-    if lstart <> -1 then begin
-      var lrest : not nullable String := '';
-      if lstart+oldValue_Length < result.Length then lrest := result.Substring(lstart+oldValue_Length);
-      result := result.Substring(0, lstart)+NewValue+lrest;
-      inc(lstart, newValue_Length);
+    lStart := result.IndexOf(OldValue, lStart);
+    if lStart <> -1 then begin
+      var lRest : not nullable String := '';
+      if lStart+oldValue_Length < result.Length then lRest := result.Substring(lStart+oldValue_Length);
+      result := result.Substring(0, lStart)+NewValue+lRest as not nullable;
+      inc(lStart, newValue_Length);
   end;
-  until lstart = -1;
+  until lStart = -1;
 end;
 
 method String.TestChar(c: Char; Arr : array of Char): Boolean;
@@ -641,12 +641,12 @@ begin
   memcpy((@result.fFirstChar) + aIndex + aNewValue.Length, (@fFirstChar) + aIndex, (self.Length - aIndex) * 2);
 end;
 
-method String.&Remove(StartIndex: Integer): String;
+method String.&Remove(StartIndex: Integer): not nullable String;
 begin
   result := &Remove(StartIndex, Length - StartIndex);
 end;
 
-method String.&Remove(StartIndex: Integer; Count: Integer): String;
+method String.&Remove(StartIndex: Integer; Count: Integer): not nullable String;
 begin
   result := AllocString(self.Length - Count);
   memcpy(@result.fFirstChar, @fFirstChar, StartIndex * 2);
@@ -663,7 +663,7 @@ begin
   exit String.Compare(self:ToLower(), Value:ToLower());
 end;
 
-method String.Split(Separator: String; aRemoveEmptyEntries: Boolean := false; aMax: Integer := -1): array of String;
+method String.Split(Separator: String; aRemoveEmptyEntries: Boolean := false; aMax: Integer := -1): not nullable array of String;
 begin
   if (Separator = nil) or (Separator = '') or (aMax in [0, 1]) then begin
     result := new String[1];
@@ -713,7 +713,7 @@ begin
   if (lrequired_size = 0) and (rtl.GetLastError <> 0) then RaiseError('Problem with calling LCMapString (2nd call)');
 end;
 
-method String.doLCMapString(aLocale: Locale; aMode:LCMapStringTransformMode := LCMapStringTransformMode.None): String;
+method String.doLCMapString(aLocale: Locale; aMode:LCMapStringTransformMode := LCMapStringTransformMode.None): not nullable String;
 begin
   if self.Length = 0 then exit self;
 
@@ -731,12 +731,12 @@ begin
 end;
 {$ENDIF}
 
-method String.PadStart(TotalWidth: Integer): String;
+method String.PadStart(TotalWidth: Integer): not nullable String;
 begin
   exit PadStart(TotalWidth, ' ');
 end;
 
-method String.PadStart(TotalWidth: Integer; PaddingChar: Char): String;
+method String.PadStart(TotalWidth: Integer; PaddingChar: Char): not nullable String;
 begin
   if TotalWidth < 0 then raise new ArgumentOutOfRangeException('TotalWidth is less than zero.');
   var lTotal := TotalWidth - self.Length;
@@ -746,12 +746,12 @@ begin
     exit FromRepeatedChar(PaddingChar, lTotal) + self;
 end;
 
-method String.PadEnd(TotalWidth: Integer): String;
+method String.PadEnd(TotalWidth: Integer): not nullable String;
 begin
   exit PadEnd(TotalWidth, ' ');
 end;
 
-method String.PadEnd(TotalWidth: Integer; PaddingChar: Char): String;
+method String.PadEnd(TotalWidth: Integer; PaddingChar: Char): not nullable String;
 begin
   if TotalWidth < 0 then raise new ArgumentOutOfRangeException('TotalWidth is less than zero.');
   var lTotal := TotalWidth - self.Length;
@@ -761,7 +761,7 @@ begin
     result := self + FromRepeatedChar(PaddingChar, lTotal);
 end;
 
-method String.ToLower(aInvariant: Boolean := false): String;
+method String.ToLower(aInvariant: Boolean := false): not nullable String;
 begin
   {$IF WEBASSEMBLY}
   exit WebAssembly.GetStringFromHandle(WebAssemblyCalls.ToLower(@fFirstChar, Length, aInvariant), true);
@@ -770,7 +770,7 @@ begin
   {$ENDIF}
 end;
 
-method String.ToUpper(aInvariant: Boolean := false): String;
+method String.ToUpper(aInvariant: Boolean := false): not nullable String;
 begin
   {$IF WEBASSEMBLY}
   exit WebAssembly.GetStringFromHandle(WebAssemblyCalls.Toupper(@fFirstChar, Length, aInvariant), true);
@@ -808,17 +808,17 @@ begin
   if (aIndex < 0) or (aIndex >= fLength) then raise Utilities.CreateIndexOutOfRangeException(aIndex, fLength-1);
 end;
 
-class method String.FromPChar(c: ^Char): String;
+class method String.FromPChar(c: ^Char): nullable String;
 begin
   exit FromPChar(c, PCharLen(c));
 end;
 
-class method String.FromChar(c: Char): String;
+class method String.FromChar(c: Char): nullable String;
 begin
   exit FromPChar(@c, 1);
 end;
 
-class method String.FromRepeatedChar(c: Char; aCharCount: Integer): String;
+class method String.FromRepeatedChar(c: Char; aCharCount: Integer): not nullable String;
 begin
   if aCharCount = 0 then exit '';
   result := AllocString(aCharCount);
@@ -832,7 +832,7 @@ begin
   exit FromPAnsiChar(c, {$IFDEF WINDOWS OR WEBASSEMBLY}ExternalCalls.strlen(c){$ELSEIF POSIX_LIGHT}rtl.strlen(c){$ELSE}{$ERROR Unsupported platform}{$ENDIF});
 end;
 
-class method String.Format(aFormat: not nullable String; params aArguments: not nullable array of Object): String;
+class method String.Format(aFormat: not nullable String; params aArguments: not nullable array of Object): not nullable String;
 begin
   var arg_count := aArguments.Length;
   var sb := new StringBuilder(aFormat.Length + aArguments.Length*8);
@@ -967,7 +967,7 @@ begin
   constructor(if aArray = nil then nil else @aArray[0], if aArray = nil then nil else aArray.Length);
 end;*/
 
-class method String.FromCharArray(aArray: array of Char): String;
+class method String.FromCharArray(aArray: array of Char): nullable String;
 begin
   if aArray = nil then
     exit FromPChar(nil,0)
@@ -977,13 +977,13 @@ begin
     exit FromPChar(@aArray[0], aArray.Length);
 end;
 
-class method String.Join(Separator: String; Value: array of String): String;
+class method String.Join(Separator: String; Value: array of String): not nullable String;
 begin
   if Value = nil then raise new ArgumentNullException('Value is nil.');
   exit String.Join(Separator, Value, 0, length(Value));
 end;
 
-class method String.Join(Separator: String; Value: array of String; StartIndex: Integer; Count: Integer): String;
+class method String.Join(Separator: String; Value: array of String; StartIndex: Integer; Count: Integer): not nullable String;
 begin
   if Value = nil then raise new ArgumentNullException('Value is nil.');
   if StartIndex < 0 then raise new ArgumentOutOfRangeException('StartIndex is less than 0.');
@@ -1002,7 +1002,7 @@ begin
 
 end;
 
-class method String.Join(Separator: String; Value: array of Object): String;
+class method String.Join(Separator: String; Value: array of Object): not nullable String;
 begin
   if Value = nil then raise new ArgumentNullException('Value is nil.');
   if String.IsNullOrEmpty(Separator) then Separator := '';
@@ -1017,7 +1017,7 @@ begin
   exit str.ToString;
 end;
 
-class method String.Join(Separator: String; Value: IEnumerable<String>): String;
+class method String.Join(Separator: String; Value: IEnumerable<String>): not nullable String;
 begin
   if Value = nil then raise new ArgumentNullException('Value is nil.');
   if String.IsNullOrEmpty(Separator) then Separator := '';
@@ -1032,7 +1032,7 @@ begin
   exit str.ToString;
 end;
 
-class method String.Join<T>(Separator: String; Value: IEnumerable<T>): String;
+class method String.Join<T>(Separator: String; Value: IEnumerable<T>): not nullable String;
 begin
   if Value = nil then raise new ArgumentNullException('Value is nil.');
   if String.IsNullOrEmpty(Separator) then Separator := '';
@@ -1065,7 +1065,7 @@ begin
   exit -1;
 end;
 
-method String.ToLowerInvariant: String;
+method String.ToLowerInvariant: not nullable String;
 begin
   {$IF WEBASSEMBLY}
   exit WebAssembly.GetStringFromHandle(WebAssemblyCalls.ToLower(@fFirstChar, Length, true), true);
@@ -1074,7 +1074,7 @@ begin
   {$ENDIF}
 end;
 
-method String.ToUpperInvariant: String;
+method String.ToUpperInvariant: not nullable String;
 begin
   {$IF WEBASSEMBLY}
   exit WebAssembly.GetStringFromHandle(WebAssemblyCalls.Toupper(@fFirstChar, Length, true), true);
@@ -1083,7 +1083,7 @@ begin
   {$ENDIF}
 end;
 
-method String.ToLower(aLocale: Locale): String;
+method String.ToLower(aLocale: Locale): not nullable String;
 begin
   {$IFDEF WINDOWS}
   exit doLCMapString(aLocale, LCMapStringTransformMode.Lower);
@@ -1133,7 +1133,7 @@ begin
   {$ENDIF}
 end;
 
-method String.ToUpper(aLocale: Locale): String;
+method String.ToUpper(aLocale: Locale): not nullable String;
 begin
   {$IFDEF WINDOWS}
   exit doLCMapString(aLocale, LCMapStringTransformMode.Upper);

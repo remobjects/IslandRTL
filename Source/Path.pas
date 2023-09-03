@@ -35,7 +35,7 @@ begin
     FileName := FileName.Substring(0, lIndex);
 
   if NewExtension[0] = '.' then
-    result := FileName + NewExtension
+    result := FileName + NewExtension as not nullable
   else
     result := FileName + "." + NewExtension as not nullable;
 end;
