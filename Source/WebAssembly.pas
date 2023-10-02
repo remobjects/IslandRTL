@@ -674,7 +674,7 @@ type
       var lOrg := new EcmaScriptObject(aTarget);
       var lProxy := CreateProxy(aInput);
       lOrg['value'] := lProxy.Handle;
-      _ := aInput.ContinueWith(() -> begin
+      _ := aInput.ContinueWith((a) -> begin
         ReleaseProxy(lProxy);
         if aInput.IsFaulted then begin
           lOrg.Call('failed', aInput.Exception.ToString());
