@@ -771,7 +771,7 @@ begin
   if work = nil then RaiseError('error at calling CreateThreadpoolWork');
   rtl.SubmitThreadpoolWork(work);
 {$ELSEIF WEBASSEMBLY}
-WebAssembly.SetTimeout((State)-> Callback(State), 0);
+WebAssembly.SetTimeout(-> Callback(State), 0);
 {$ELSE}
   fThreadPool.Queue(new ThreadPoolCallback(Callback, State));
 {$ENDIF}
