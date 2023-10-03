@@ -141,9 +141,9 @@ begin
   rtl.dispatch_resume(fTimer);
   {$ELSEIF WEBASSEMBLY}
   if not fRepeat then
-    fTimer := WebAssemblyCalls.SetTimeout((a)->Elapsed(Data), fInterval)
+    fTimer := WebAssemblyCalls.SetTimeout(()->Elapsed(Data), fInterval)
   else
-    fTimer := WebAssemblyCalls.SetInterval((a)->Elapsed(Data), fInterval);
+    fTimer := WebAssemblyCalls.SetInterval(()->Elapsed(Data), fInterval);
   {$ENDIF}
   fEnabled := true;
 end;
