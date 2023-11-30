@@ -189,7 +189,7 @@ type
       {$IFDEF NOTHREADS}
       exit InternalCalls.Exchange(var x, 1) = 0;
       {$ELSE}
-      var cid := Thread.CurrentThreadID;
+      var cid := NativeUInt(Thread.CurrentThreadID);
 
       var lValue := InternalCalls.CompareExchange(var x, cid, NativeInt(0)); // returns old
 

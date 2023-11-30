@@ -486,11 +486,12 @@ begin
   exit rtl.realloc(ptr, size);
 end;
 
-  method free(v: ^Void);inline;
-  begin
-    rtl.Free(v);
-  end;
+method free(v: ^Void);inline;
+begin
+  rtl.Free(v);
+end;
 
+[Used]var MainThreadId := Thread.CurrentThreadID;
 {$IFDEF DARWIN}
 [SymbolName('__stack_chk_guard')]
 var __stack_chk_guard: ^Void := ^Void($DEADBEEF);  public;

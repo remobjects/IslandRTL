@@ -6,6 +6,7 @@ interface
 
 type
   ParameterizedThreadStart = public delegate (obj: Object);
+  ThreadID = {$IFDEF WINDOWS}rtl.DWORD{$ELSE}rtl.pthread_t{$ENDIF};
 
   PThread = ^Thread;
   Thread = public class
@@ -15,11 +16,10 @@ type
   assembly
     {$IFDEF WINDOWS}
     fThread: rtl.HANDLE := nil;
-    fThreadID: rtl.DWORD;
     {$ELSE}
     fthread: rtl.pthread_t := &default(rtl.pthread_t);
     {$ENDIF}
-    //fThreadID: NativeUInt;
+    fThreadID: ThreadID;
     fStarted: Integer := 0;
     fTerminated: Boolean := False;
     fDone: Boolean := False;
@@ -37,13 +37,13 @@ type
     method Abort;
     class method Sleep(aTimeout: Integer);
     class method &Yield: Boolean;
-    class property CurrentThreadID: NativeUInt read {$IFDEF WINDOWS}rtl.GetCurrentThreadID{$ELSE}NativeUInt(rtl.pthread_self()){$ENDIF};
+    class property CurrentThreadID: ThreadID read {$IFDEF WINDOWS}rtl.GetCurrentThreadID{$ELSE}rtl.pthread_self(){$ENDIF};
 
     property IsAlive: Boolean read GetAlive;
     property Name: String read fName write set_Name;
     property Priority: ThreadPriority read GetPriority write SetPriority;
     property CallStack: String read fCallStack;
-
+    property ThreadID: ThreadID read fThreadID;
   //  class property CurrentThread: Thread read GetCurrentThread;
   public
     constructor(aCallback: ParameterizedThreadStart);
@@ -430,6 +430,7 @@ begin
     if self.fThread = nil then RaiseError("Problem with creating thread");
     {$ELSE}
     rtl.pthread_create(@fthread, nil, @ThreadProc, ^Void(GCHandle.Allocate(self).Handle));
+    self.fThreadID := CurrentThreadID;
     {$ENDIF}
   end;
 end;

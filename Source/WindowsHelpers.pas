@@ -877,6 +877,7 @@ var
   [SymbolName('__guard_longjmp_table')] var __guard_longjmp_table: Integer; external;
   [SymbolName('__guard_longjmp_count')] var __guard_longjmp_count: Integer; external;
   [Used]var ModuleIsLib: Boolean := false;
+  [Used]var MainThreadId := Thread.CurrentThreadID;
 
 [SymbolName('__elements_tls_callback_method'), Used, CallingConvention(CallingConvention.Stdcall)]
 method elements_tls_callback(aHandle: ^Void; aReason: rtl.DWORD; aReserved: ^Void); public;
