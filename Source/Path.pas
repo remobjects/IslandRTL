@@ -163,8 +163,13 @@ begin
   {$ELSEIF DARWIN}
   exit (RelativePath as Foundation.NSString).stringByStandardizingPath as not nullable;
   {$ELSEIF POSIX_LIGHT}
-  {$HINT POSIX: implement Path.GetFullPath}
-  exit RelativePath;
+  var lResult := new AnsiChar[rtl._POSIX_PATH_MAX];
+  rtl.realpath(RelativePath.ToAnsiChars, @lResult[0]);
+  var lRes := String.FromPAnsiChar(@lResult[0]);
+  if String.IsNullOrEmpty(lRes) then
+    exit RelativePath
+  else
+    exit lRes as not nullable;
   {$ELSE}
   {$ERROR Unsupported platform}
   {$ENDIF}
