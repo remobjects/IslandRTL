@@ -45,21 +45,33 @@ type
 
   DefaultEqualityComparer<T> = assembly class(IEqualityComparer<T>)
   private
+    fTISObject: Boolean;
+
     class method get_Instance: DefaultEqualityComparer<T>;
     begin
       if fInstance = nil then fInstance := new DefaultEqualityComparer<T>;
       exit fInstance;
     end;
   public
+    constructor;
+    begin
+      fTISObject := typeOf(T).IsSubclassOf(typeOf(Object));
+    end;
 
     method Equals(x: T; y: T): Boolean;
     begin
-      exit x.Equals(y);
+      if fTISObject then
+        exit x.Equals(y)
+      else
+        exit ^^Void(@x)^ = ^^Void(@y)^;
     end;
 
     method GetHashCode(obj: T):Integer;
     begin
-      exit obj.GetHashCode;
+      if fTISObject then
+        exit obj.GetHashCode
+      else
+        exit Integer(^^Void(@obj)^);
     end;
 
     class var fInstance: DefaultEqualityComparer<T>; private;
@@ -69,10 +81,12 @@ type
   EqualityComparer<T> = assembly class(IEqualityComparer<T>)
   private
     fComparator: block(a, b: T): Integer;
+    fTISObject: Boolean;
   public
 
     constructor (aComparator: block(a, b: T): Integer := nil);
     begin
+      fTISObject := typeOf(T).IsSubclassOf(typeOf(Object));
       fComparator := aComparator;
     end;
 
@@ -80,13 +94,18 @@ type
     begin
       if assigned(fComparator) then
         exit fComparator(x,y) = 0
+      else if fTISObject then
+        exit x.Equals(y)
       else
-        exit x.Equals(y);
+        exit ^^Void(@x)^ = ^^Void(@y)^;
     end;
 
     method GetHashCode(obj: T):Integer;
     begin
-      exit obj.GetHashCode;
+      if fTISObject then
+        exit obj.GetHashCode
+      else
+        exit Integer(^^Void(@obj)^);
     end;
   end;
 
