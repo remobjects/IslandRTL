@@ -413,5 +413,10 @@ type
     constructor; empty;
   end;
 
+  [AttributeUsage(AttributeTargets.Method or AttributeTargets.Property or AttributeTargets.Field or AttributeTargets.Class or AttributeTargets.Struct or AttributeTargets.Interface or AttributeTargets.Enum)]
+  OmitFromHeaderAttribute = public class(Attribute)
+  public
+    constructor; empty;
+  end;
 
 end.
