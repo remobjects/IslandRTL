@@ -79,7 +79,7 @@ type
       if IsFromEnd then begin
         exit ToStringFromEnd();
       end;
-      exit Int32(Value).toString;
+      exit Int32(Value).ToString;
     end;
 
   private
@@ -92,7 +92,7 @@ type
 
     method ToStringFromEnd: String;
     begin
-      exit #94 + Value.toString;
+      exit #94 + Value.ToString;
     end;
 
     var fValue: Integer;
