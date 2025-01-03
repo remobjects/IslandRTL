@@ -5,7 +5,6 @@
     <RootNamespace>RemObjects.Elements.Island.Tests</RootNamespace>
     <ProjectGuid>{A6EE5E8A-1A5C-45EC-B8CC-0092F3D6AB7B}</ProjectGuid>
     <OutputType>Executable</OutputType>
-    <AssemblyName>Island.Tests.Darwin</AssemblyName>
     <AllowGlobals>False</AllowGlobals>
     <AllowLegacyWith>False</AllowLegacyWith>
     <AllowLegacyOutParams>False</AllowLegacyOutParams>
@@ -13,6 +12,7 @@
     <AllowUnsafeCode>False</AllowUnsafeCode>
     <Configuration Condition="'$(Configuration)' == ''">Release</Configuration>
     <TargetFrameworkVersion>v4.0</TargetFrameworkVersion>
+    <BinaryName>Island.Tests.Darwin.macOS</BinaryName>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)' == 'Debug' ">
     <Optimize>False</Optimize>
