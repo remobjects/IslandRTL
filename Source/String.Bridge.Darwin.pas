@@ -20,7 +20,7 @@ type
     begin
       if assigned(aValue) then begin
         if not assigned(aValue.fCachedNSString) then begin
-          aValue.fCachedNSString := new Foundation.NSString withCharacters(@aValue.fFirstChar) length(aValue.Length);
+          aValue.fCachedNSString := Foundation.NSString.alloc.initWithCharacters(@aValue.fFirstChar) length(aValue.Length);
         end;
         result := aValue.fCachedNSString;
       end;
