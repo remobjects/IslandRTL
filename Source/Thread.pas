@@ -26,6 +26,7 @@ type
     fCallback: ParameterizedThreadStart;
     fCallbackObject: Object := nil;
     fCallStack: String;
+    fInitialName: String;
     method Execute;
     method RaiseError(aMessage: String);
     method GetPriority: ThreadPriority;
@@ -40,13 +41,18 @@ type
     class property CurrentThreadID: ThreadID read {$IFDEF WINDOWS}rtl.GetCurrentThreadID{$ELSE}rtl.pthread_self(){$ENDIF};
 
     property IsAlive: Boolean read GetAlive;
+    {$IF DARWIN}
+    property Name: String read get_Name;
+    {$ELSE}
     property Name: String read get_Name write set_Name;
+    {$ENDIF}
     property Priority: ThreadPriority read GetPriority write SetPriority;
     property CallStack: String read fCallStack;
     property ThreadID: ThreadID read fThreadID;
   //  class property CurrentThread: Thread read GetCurrentThread;
   public
     constructor(aCallback: ParameterizedThreadStart);
+    constructor(aInitialName: String; aCallback: ParameterizedThreadStart);
     finalizer;
   end;
 
@@ -410,6 +416,13 @@ begin
   self.fCallStack := nil;
 end;
 
+constructor Thread(aInitialName: String; aCallback: ParameterizedThreadStart);
+begin
+  self.fCallback := aCallback;
+  self.fCallStack := nil;
+  self.fInitialName := aInitialName;
+end;
+
 method Thread.RaiseError(aMessage: String);
 begin
   {$IFDEF WINDOWS}
@@ -454,6 +467,15 @@ end;
 
 method Thread.Execute;
 begin
+  if length(fInitialName) > 0 then begin
+    {$IF FUCHSIA}
+    // not supported here (yet?)
+    {$ELSEIF DARWIN}
+    rtl.pthread_setname_np(fInitialName.ToAnsiChars);
+    {$ELSE}
+    Name := fInitialName;
+    {$ENDIF}
+  end;
   fCallback(fCallbackObject);
 end;
 
@@ -495,13 +517,15 @@ end;
 method Thread.set_Name(aValue: String);
 begin
   if length(aValue) > 0 then begin
-    {$IFDEF WINDOWS}
+    {$IF FUCHSIA OR DARWIN}
+    raise new NotSupportedException("Setting a thread's name is not supported on this platform.");
+    {$ELSEIF WINDOWS}
     var lName: rtl.LPCWSTR := aValue.ToLPCWSTR;
     var hr := rtl.SetThreadDescription(fThread, lName);
     if hr < 0 then
       raise new Exception('Failed to set thread name');
-    {$ELSEIF DARWIN OR FUCHSIA}
-    raise new NotSupportedException('Unsupported platform');
+    {$ELSEIF DARWIN}
+    Foundation.NSThread.currentThread.name := aValue;
     {$ELSE}
     rtl.pthread_setname_np(fThread, @aValue.ToAnsiChars[0])
     {$ENDIF}
@@ -512,15 +536,15 @@ end;
 {$IFDEF ANDROID}[Warning("Thread.Name cannot be read on Android")]{$ENDIF}
 method Thread.get_Name: String;
 begin
-  {$IFDEF WINDOWS}
+  {$IF FUCHSIA OR ANDROID}
+  //result := nil;
+  {$ELSEIF WINDOWS}
   var lpName: ^rtl.PWSTR;
   var hr := rtl.GetThreadDescription(fThread, lpName);
   if (hr ≥ 0) and assigned(lpName) then begin
     result := String.FromPChar(^Char(lpName));
     rtl.LocalFree(lpName); // Free the allocated memory for the thread name
   end;
-  {$ELSEIF FUCHSIA OR ANDROID}
-  raise new NotSupportedException('Unsupported platform');
   {$ELSE}
   // Unix specific code to get thread name
   var lBuffer: array[0..63] of AnsiChar; // Linux thread name limit is typically 16 characters, macOS is 64
