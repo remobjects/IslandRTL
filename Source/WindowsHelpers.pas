@@ -363,9 +363,7 @@ type
     [SymbolName('_setjmpex'), Naked, DisableOptimizations, DisableInliningAttribute]
     class method setjmpex(var buf: rtl.jmp_buf);
     begin
-      var p: rtl.CONTEXT;
-      rtl.RtlCaptureContext(@p);
-      memcpy(@buf, @p, Math.Min(sizeOf(rtl.CONTEXT), sizeOf(rtl.jmp_buf)));
+      // Nothing needed on arm64 here.
     end;
     {$ELSEIF _WIN64}
     [SymbolName('_setjmp'), Naked, DisableOptimizations, DisableInliningAttribute]
