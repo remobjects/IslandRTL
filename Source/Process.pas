@@ -334,11 +334,18 @@ end;
 
 class method Process.RunAsync(aCommand: not nullable String; aArguments: ImmutableList<String> := nil; aEnvironment: nullable ImmutableDictionary<String, String> := nil; aWorkingDirectory: nullable String := nil; aStdOutCallback: block(aLine: String); aStdErrCallback: block(aLine: String) := nil; aFinishedCallback: block(aExitCode: Integer) := nil): Process;
 begin
-  result := new Process(aCommand, aArguments, aEnvironment, aWorkingDirectory);
-  result.RedirectOutput := True;
-  result.Prepare;
   {$IFDEF WINDOWS OR (POSIX AND NOT IOS)}
-  result.StartAsync(aStdOutCallback, aStdErrCallback, aFinishedCallback);
+  var lProcess := new Process(aCommand, aArguments, aEnvironment, aWorkingDirectory);
+  lProcess.RedirectOutput := True;
+  lProcess.Prepare;
+  lProcess.StartAsync(aStdOutCallback, aStdErrCallback) begin
+    if assigned(aFinishedCallback) then
+      aFinishedCallback(aExitCode);
+    if lProcess.ExitCode = 0 then; // keep lProcess from GCing
+  end;
+  result := lProcess;
+  {$ELSE}
+  raise new NotImplementedException("Process.RunAsync is not implemented for this platform.");
   {$ENDIF}
 end;
 
@@ -371,23 +378,21 @@ begin
   {$IF WINDOWS}
   Prepare;
   var lCommand := Command.ToCharArray(true);
-  var lArgsPointer: rtl.LPWSTR;
-  var lArguments: array of Char;
 
+  var lArgsPointer: rtl.LPWSTR := nil;
   if Arguments.Count > 0 then begin
-    lArguments := (Command + ' ' + String.Join(' ', Arguments)).ToCharArray(true);
-    lArgsPointer := @lArguments[0];
-  end
-  else
-    lArgsPointer := nil;
+    var lArguments := '"'+Command+'"';
+    for each s in Arguments do
+      lArguments := lArguments+ ' "'+s+'"';
+    var lArgumentsArray := lArguments.ToCharArray(true);
+    lArgsPointer := @lArgumentsArray[0];
+  end;
 
-  var lWorkingDirPointer: rtl.LPWSTR;
+  var lWorkingDirPointer: rtl.LPWSTR := nil;
   if length(WorkingDirectory) > 0 then begin
     var lWorkDir := WorkingDirectory.ToCharArray(true);
     lWorkingDirPointer := @lWorkDir[0];
-  end
-  else
-    lWorkingDirPointer := nil;
+  end;
 
   fWaitHandle := rtl.HANDLE(-1);
   result := rtl.CreateProcess(@lCommand[0], lArgsPointer, nil, nil, true, 0, nil, lWorkingDirPointer, @fStartUpInfo, @fProcessInfo);
@@ -397,18 +402,11 @@ begin
   Prepare;
   var lCommand := Command.ToAnsiChars(true);
 
-  writeLn($"in island222 aArguments {Arguments}");
-  for each a in Arguments do
-    writeLn($"a {a}");
-
   var lArgs := new ^AnsiChar[Arguments.Count + 2];
   lArgs[0] := @lCommand[0];
   for i: Integer := 0 to Arguments.Count - 1 do
     lArgs[i+1] := @Arguments[i].ToAnsiChars(true)[0];
   lArgs[Arguments.Count] := nil;
-
-  for i := 0 to Arguments.Count-1 do
-    writeLn("-  "+String.FromPAnsiChar(lArgs[i]));
 
   var lEnvp := new ^AnsiChar[Environment.Count + 1];
   var i: Integer := 0;
@@ -491,7 +489,7 @@ begin
   fOutputDataBlock := aStdOutCallback;
   fErrorDataBlock := aErrorCallback;
   Start;
-  rtl.RegisterWaitForSingleObject(@fWaitHandle, fProcessInfo.hProcess, @WaitHandler, InternalCalls.Cast(self), 333, 0);
+  rtl.RegisterWaitForSingleObject(@fWaitHandle, fProcessInfo.hProcess, @WaitHandler, InternalCalls.Cast(self), 333, rtl.WT_EXECUTEONLYONCE or rtl.WT_EXECUTEDEFAULT);
 end;
 
 method Process.GetCurrentOutput(StdOutput: Boolean): String;
@@ -520,8 +518,8 @@ begin
   lOutput := lProcess.GetCurrentOutput(false);
   lProcess.ProcessStdOutData(lOutput, false, lProcess.OnErrorData);
 
-  if not Boolean(TimerOrEnd) then begin
-    if lProcess.OnFinished ≠ nil then
+  if TimerOrEnd = 0 then begin
+    if assigned(lProcess.OnFinished) then
       lProcess.OnFinished(lProcess.ExitCode);
     lProcess.CleanUp;
   end;
