@@ -2,9 +2,12 @@
 
 interface
 
+{$DEFINE USE_OXYGENE_IMPLEMENTATIONS}
+
 type
   Math = public class
   private
+    {$IFDEF USE_OXYGENE_IMPLEMENTATIONS}
     const SIN_ACCURACY_ITERATION = 21+1;
     const ln2 = 0.693147180559945309417232121458176568075500134360255254120680009493393621969694715605863326996418687542001481020570685733685520235758130557;
     {$REGION EXP2 lookup table}
@@ -62,84 +65,193 @@ type
           1.00000000000000133,
           1.00000000000000067];
     {$ENDREGION}
+    {$ENDIF USE_OXYGENE_IMPLEMENTATIONS}
     class method IntPow(x:Double; y: Integer): Double;
   public
-    [SymbolName('fabs')]
-    class method Abs(i: Double): Double;
-    class method Abs(i: Int64): Int64;
+    // These methods always have implementations here (eg are overrides pushing to Int64)
     class method Abs(i: Integer): Integer;
-    class method Max(a,b: Double): Double;
     class method Max(a,b: Integer): Integer;
-    class method Max(a,b: Int64): Int64;
-    class method Min(a,b: Double): Double;
     class method Min(a,b: Integer): Integer;
-    class method Min(a,b: Int64): Int64;
-    [SymbolName('fmod'), Used]
-    {$IFDEF WebAssembly}[DLLExport]{$ENDIF}
-    class method fmod(x, y: Double): Double;
-    [SymbolName('fmodf'), Used]
+    class method Pow(x:Double; y: Integer): Double;
     {$IFDEF WebAssembly}[DLLExport]{$ENDIF}
     class method fmodf(x,y: Single): Single;
-
-    class method IEEERemainder(x, y: Double): Double;
-    [SymbolName('acos')]
-    class method Acos(d: Double): Double;
-    [SymbolName('asin')]
-    class method Asin(d: Double): Double;
-    [SymbolName('atan')]
-    class method Atan(d: Double): Double;
-    [SymbolName('atan2')]
-    class method Atan2(x,y: Double): Double;
-    [SymbolName('ceil')]
-    class method Ceiling(d: Double): Double;
-    [SymbolName('ceilf')]
-    class method Ceiling(d: Single): Single;
-    [SymbolName('cos')]
-    class method Cos(d: Double): Double;
-    [SymbolName('cosh')]
-    class method Cosh(d: Double): Double;
-    [SymbolName('exp')]
-    class method Exp(d: Double): Double;
-    class method Exp2(d: Double):Double;
-    [SymbolName('floor'), Used]
-    {$IFDEF WebAssembly}[DLLExport]{$ENDIF}
-    class method Floor(d: Double): Double;
-    [SymbolName('floorf'), Used]
     {$IFDEF WebAssembly}[DLLExport]{$ENDIF}
     class method Floor(d: Single): Single;
-    [SymbolName('log')]
+
+    {$IFDEF USE_OXYGENE_IMPLEMENTATIONS}
+    class method Abs(i: Double): Double;
+    class method Abs(i: Int64): Int64;
+    //class method Abs(i: Integer): Integer;
+    class method Max(a,b: Double): Double;
+    class method Max(a,b: Int64): Int64;
+    //class method Max(a,b: Integer): Integer;
+    class method Min(a,b: Double): Double;
+    class method Min(a,b: Int64): Int64;
+    //class method Min(a,b: Integer): Integer;
+    {$IFDEF WebAssembly}[DLLExport]{$ENDIF}
+    class method fmod(x, y: Double): Double;
+    class method IEEERemainder(x, y: Double): Double;
+    class method Acos(d: Double): Double;
+    class method Asin(d: Double): Double;
+    class method Atan(d: Double): Double;
+    class method Atan2(x,y: Double): Double;
+    class method Ceiling(d: Double): Double;
+    class method Ceiling(d: Single): Single;
+    class method Cos(d: Double): Double;
+    class method Cosh(d: Double): Double;
+    class method Exp(d: Double): Double;
+    class method Exp2(d: Double):Double;
+    {$IFDEF WebAssembly}[DLLExport]{$ENDIF}
+    class method Floor(d: Double): Double;
     class method Log(a: Double): Double;
     class method Log2(a: Double): Double;
-    [SymbolName('log10')]
     class method Log10(a: Double): Double;
-    class method Pow(x:Double; y: Integer): Double;
-    [SymbolName('pow')]
+    //class method Pow(x:Double; y: Integer): Double;
     class method Pow(x, y: Double): Double;
-    [SymbolName('round')]
     class method Round(a: Double): Double;
     class method Sign(d: Double): Integer;
-    [SymbolName('sin')]
     class method Sin(x: Double): Double;
-    [SymbolName('sinh')]
     class method Sinh(x: Double): Double;
-    [SymbolName('sqrt')]
     class method Sqrt(d: Double): Double;
-    [SymbolName('tan')]
     class method Tan(d: Double): Double;
-    [SymbolName('tanh')]
     class method Tanh(d:   Double): Double;
-    [SymbolName('trunc'), Used]
     {$IFDEF WebAssembly}[DLLExport]{$ENDIF}
     class method Truncate(d: Double): Double;
-    [SymbolName('truncf'), Used]
     {$IFDEF WebAssembly}[DLLExport]{$ENDIF}
     class method Truncate(d: Single): Single;
+
+    {$ELSE}
+
+    // Use SymbolName -- LLVM
+
+    [SymbolName('fabs')]
+    class method Abs(i: Double): Double; external;
+    [SymbolName('abs')]
+    class method Abs(i: Int64): Int64; external;
+
+    [SymbolName('fmax')]
+    class method Max(a,b: Double): Double; external;
+    class method Max(a,b: Int64): Int64; external;
+    //class method Max(a,b: Integer): Integer;
+    [SymbolName('fmin')]
+    class method Min(a,b: Double): Double; external;
+    class method Min(a,b: Int64): Int64; external;
+    [SymbolName('fmod')]
+    {$IFDEF WebAssembly}[DLLExport]{$ENDIF}
+    class method fmod(x, y: Double): Double; external;
+    [SymbolName('remainder')]
+    class method IEEERemainder(x, y: Double): Double; external;
+    [SymbolName('acos')]
+    class method Acos(d: Double): Double; external;
+    [SymbolName('asin')]
+    class method Asin(d: Double): Double; external;
+    [SymbolName('atan')]
+    class method Atan(d: Double): Double; external;
+    [SymbolName('atan2')]
+    class method Atan2(x,y: Double): Double; external;
+    [SymbolName('ceil')]
+    class method Ceiling(d: Double): Double; external;
+    [SymbolName('ceilf')]
+    class method Ceiling(d: Single): Single; external;
+    [SymbolName('cos')]
+    class method Cos(d: Double): Double; external;
+    [SymbolName('cosh')]
+    class method Cosh(d: Double): Double; external;
+    [SymbolName('exp')]
+    class method Exp(d: Double): Double; external;
+    [SymbolName('exp2')]
+    class method Exp2(d: Double):Double; external;
+    [SymbolName('floor'), Used]
+    {$IFDEF WebAssembly}[DLLExport]{$ENDIF}
+    class method Floor(d: Double): Double; external;
+    [SymbolName('log')]
+    class method Log(a: Double): Double; external;
+    [SymbolName('log2')]
+    class method Log2(a: Double): Double; external;
+    [SymbolName('log10')]
+    class method Log10(a: Double): Double; external;
+    //class method Pow(x:Double; y: Integer): Double;
+    [SymbolName('pow')]
+    class method Pow(x, y: Double): Double; external;
+    [SymbolName('round')]
+    class method Round(a: Double): Double; external;
+    //class method Sign(d: Double): Integer; external;
+    [SymbolName('sin')]
+    class method Sin(x: Double): Double; external;
+    [SymbolName('sinh')]
+    class method Sinh(x: Double): Double; external;
+    [SymbolName('sqrt')]
+    class method Sqrt(d: Double): Double; external;
+    [SymbolName('tan')]
+    class method Tan(d: Double): Double; external;
+    [SymbolName('tanh')]
+    class method Tanh(d:   Double): Double; external;
+    [SymbolName('trunc')]
+    {$IFDEF WebAssembly}[DLLExport]{$ENDIF}
+    class method Truncate(d: Double): Double; external;
+    [SymbolName('truncf'), Used]
+    {$IFDEF WebAssembly}[DLLExport]{$ENDIF}
+    class method Truncate(d: Single): Single; external;
+
+    {$ENDIF USE_OXYGENE_IMPLEMENTATIONS}
 
     const PI: Double = 3.141592653589793238462643383279502884197169399375105820974944592307816406286208998628034825342117067982148086513282306647093844609550582232;
     const E:  Double = 2.718281828459045235360287471352662497757247093699959574966967627724076630353547594571382178525166427427466391932;
   end;
 
 implementation
+
+// The following methods always have implementations here
+
+class method Math.Abs(i: Integer): Integer;
+begin
+  exit Abs(Int64(i));
+end;
+
+class method Math.Max(a,b: Integer): Integer;
+begin
+  exit Max(Int64(a), Int64(b));
+end;
+
+class method Math.Min(a,b: Integer): Integer;
+begin
+  exit Min(Int64(a), Int64(b));
+end;
+
+class method Math.Pow(x:Double; y: Integer): Double;
+begin
+  exit Pow(x, Double(y));
+end;
+
+class method Math.fmodf(x,y: Single): Single;
+begin
+  exit fmod(Double(x), Double(y));
+end;
+
+class method Math.Floor(d: Single): Single;
+begin
+  exit Floor(Double(d));
+end;
+
+class method Math.IntPow(x: Double; y: Integer): Double;
+begin
+  if y = 0 then exit 1.0;
+  if y = 1 then exit x;
+  var fl := y mod 2 = 1;
+  if fl then dec(y);
+  var res: Double := x;
+  while (y mod 2) = 0 do begin
+    res := res*res;
+    y := y shr 1;
+  end;
+  res := IntPow(res, y);
+  if fl then res := res * x;
+  exit res;
+end;
+
+{$IFDEF USE_OXYGENE_IMPLEMENTATIONS}
+
+// The following methods have implementations only if not found via intrinsics or the system C runtime, eg UCRT, libm, etc
 
 class method Math.Abs(i: Double): Double;
 begin
@@ -151,20 +263,20 @@ begin
   exit if i < 0 then - i else i;
 end;
 
-class method Math.Abs(i: Integer): Integer;
-begin
-  exit if i < 0 then - i else i;
-end;
+//class method Math.Abs(i: Integer): Integer;
+//begin
+  //exit if i < 0 then - i else i;
+//end;
 
 class method Math.Max(a,b: Double): Double;
 begin
   exit if a < b then b else a;
 end;
 
-class method Math.Max(a,b: Integer): Integer;
-begin
-  exit if a < b then b else a;
-end;
+//class method Math.Max(a,b: Integer): Integer;
+//begin
+  //exit if a < b then b else a;
+//end;
 
 class method Math.Max(a,b: Int64): Int64;
 begin
@@ -176,10 +288,10 @@ begin
   exit if a > b then b else a;
 end;
 
-class method Math.Min(a,b: Integer): Integer;
-begin
-  exit if a > b then b else a;
-end;
+//class method Math.Min(a,b: Integer): Integer;
+//begin
+  //exit if a > b then b else a;
+//end;
 
 class method Math.Min(a,b: Int64): Int64;
 begin
@@ -329,13 +441,13 @@ begin
   exit Exp2(d/ln2);
 end;
 
-class method Math.Floor(d: Single): Single;
-begin
-  var xi := Integer(d);
-  if d < xi then
-    exit xi -1;
-  exit xi;
-end;
+//class method Math.Floor(d: Single): Single;
+//begin
+  //var xi := Integer(d);
+  //if d < xi then
+    //exit xi -1;
+  //exit xi;
+//end;
 
 class method Math.Floor(d: Double): Double;
 begin
@@ -412,20 +524,18 @@ begin
   end;
 end;
 
-
 class method Math.Log10(a: Double): Double;
 begin
   exit Log(a)/Log(10);
 end;
 
-
-class method Math.Pow(x: Double; y: Integer): Double;
-begin
-  if y >= 0 then
-    exit IntPow(x, y)
-  else
-    exit 1.0 / IntPow(x, -y);
-end;
+//class method Math.Pow(x: Double; y: Integer): Double;
+//begin
+  //if y >= 0 then
+    //exit IntPow(x, y)
+  //else
+    //exit 1.0 / IntPow(x, -y);
+//end;
 
 class method Math.Pow(x, y: Double): Double;
 begin
@@ -455,7 +565,8 @@ end;
 
 class method Math.Sin(x: Double): Double;
 begin
-  //result := x^1/1! - x^3/3! + x^5/5! - x^7/7! ...
+  // result := x^1/1! - x^3/3! + x^5/5! - x^7/7! ...
+
   var x2: Double := - x*x;
   var r: Double := x;
   var it := 1;
@@ -510,26 +621,11 @@ begin
   exit (Abs(x) - (Abs(y) *  (Floor(Abs(x) / Abs(y))))) * Sign(x);
 end;
 
+//class method Math.fmodf(x,y: Single): Single;
+//begin
+  //exit Math.fmod(x, y);
+//end;
 
-class method Math.fmodf(x,y: Single): Single;
-begin
-  exit Math.fmod(x, y);
-end;
-
-class method Math.IntPow(x: Double; y: Integer): Double;
-begin
-  if y = 0 then exit 1.0;
-  if y = 1 then exit x;
-  var fl := y mod 2 = 1;
-  if fl then dec(y);
-  var res: Double := x;
-  while (y mod 2) = 0 do begin
-    res := res*res;
-    y := y shr 1;
-  end;
-  res := IntPow(res, y);
-  if fl then res := res * x;
-  exit res;
-end;
+{$ENDIF USE_OXYGENE_IMPLEMENTATIONS}
 
 end.
