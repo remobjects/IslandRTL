@@ -2,11 +2,60 @@
 
 interface
 
-{$DEFINE USE_OXYGENE_IMPLEMENTATIONS}
+{.$DEFINE USE_OXYGENE_IMPLEMENTATIONS}
+{.$DEFINE USE_LLVM_IMPLEMENTATIONS}
+{$DEFINE USE_UCRT_IMPLEMENTATIONS}
+
+{$IFNDEF USE_OXYGENE_IMPLEMENTATIONS}
+  {$IFNDEF USE_UCRT_IMPLEMENTATIONS}
+    {$IFNDEF USE_LLVM_IMPLEMENTATIONS}
+      {$ERROR 'You must define one of: USE_OXYGENE_IMPLEMENTATIONS, USE_UCRT_IMPLEMENTATIONS, or USE_LLVM_IMPLEMENTATIONS'}
+    {$ENDIF}
+  {$ENDIF}
+{$ENDIF}
+
+//{$IFDEF USE_UCRT_IMPLEMENTATIONS}
+//uses
+  //Elements.RTL;
+//{$ENDIF}
 
 type
+  {$IFDEF USE_UCRT_IMPLEMENTATIONS}
+  TMathFunc = function(x: Double): Double;
+  TMathFunc2 = function(x, y: Double): Double;
+  {$ENDIF}
+
   Math = public class
   private
+    {$IFDEF USE_UCRT_IMPLEMENTATIONS}
+    class var UCRTHandle: rtl.HMODULE;
+    class var UCRTAbs: TMathFunc;
+    class var UCRTFmod: TMathFunc2;
+    class var UCRTRemainder: TMathFunc2;
+    class var UCRTAcos: TMathFunc;
+    class var UCRTAsin: TMathFunc;
+    class var UCRTAtan: TMathFunc;
+    class var UCRTAtan2: TMathFunc2;
+    class var UCRTCeil: TMathFunc;
+    class var UCRTCos: TMathFunc;
+    class var UCRTCosh: TMathFunc;
+    class var UCRTExp: TMathFunc;
+    class var UCRTExp2: TMathFunc;
+    class var UCRTFloor: TMathFunc;
+    class var UCRTLog: TMathFunc;
+    class var UCRTLog2: TMathFunc;
+    class var UCRTLog10: TMathFunc;
+    class var UCRTPow: TMathFunc2;
+    class var UCRTRound: TMathFunc;
+    class var UCRTSin: TMathFunc;
+    class var UCRTSinh: TMathFunc;
+    class var UCRTSqrt: TMathFunc;
+    class var UCRTTan: TMathFunc;
+    class var UCRTTanh: TMathFunc;
+    class var UCRTTrunc: TMathFunc;
+    class method InitializeUCRT;
+    class method FinalizeUCRT;
+    {$ENDIF}
     {$IFDEF USE_OXYGENE_IMPLEMENTATIONS}
     const SIN_ACCURACY_ITERATION = 21+1;
     const ln2 = 0.693147180559945309417232121458176568075500134360255254120680009493393621969694715605863326996418687542001481020570685733685520235758130557;
@@ -73,21 +122,19 @@ type
     class method Max(a,b: Integer): Integer;
     class method Min(a,b: Integer): Integer;
     class method Pow(x:Double; y: Integer): Double;
-    {$IFDEF WebAssembly}[DLLExport]{$ENDIF}
-    class method fmodf(x,y: Single): Single;
-    {$IFDEF WebAssembly}[DLLExport]{$ENDIF}
-    class method Floor(d: Single): Single;
+    //{$IFDEF WebAssembly}[DLLExport]{$ENDIF}
+    //class method fmodf(x,y: Single): Single;
+    //{$IFDEF WebAssembly}[DLLExport]{$ENDIF}
+    //class method Floor(d: Single): Single;
 
+    // Math functions with different implementations based on defines
     {$IFDEF USE_OXYGENE_IMPLEMENTATIONS}
     class method Abs(i: Double): Double;
     class method Abs(i: Int64): Int64;
-    //class method Abs(i: Integer): Integer;
     class method Max(a,b: Double): Double;
     class method Max(a,b: Int64): Int64;
-    //class method Max(a,b: Integer): Integer;
     class method Min(a,b: Double): Double;
     class method Min(a,b: Int64): Int64;
-    //class method Min(a,b: Integer): Integer;
     {$IFDEF WebAssembly}[DLLExport]{$ENDIF}
     class method fmod(x, y: Double): Double;
     class method IEEERemainder(x, y: Double): Double;
@@ -106,7 +153,6 @@ type
     class method Log(a: Double): Double;
     class method Log2(a: Double): Double;
     class method Log10(a: Double): Double;
-    //class method Pow(x:Double; y: Integer): Double;
     class method Pow(x, y: Double): Double;
     class method Round(a: Double): Double;
     class method Sign(d: Double): Integer;
@@ -119,23 +165,58 @@ type
     class method Truncate(d: Double): Double;
     {$IFDEF WebAssembly}[DLLExport]{$ENDIF}
     class method Truncate(d: Single): Single;
+    {$ENDIF}
 
-    {$ELSE}
+    {$IFDEF USE_UCRT_IMPLEMENTATIONS}
+    class method Abs(i: Double): Double;
+    class method Abs(i: Int64): Int64;
+    class method Max(a,b: Double): Double;
+    class method Max(a,b: Int64): Int64;
+    class method Min(a,b: Double): Double;
+    class method Min(a,b: Int64): Int64;
+    //{$IFDEF WebAssembly}[DLLExport]{$ENDIF}
+    class method fmod(x, y: Double): Double;
+    class method IEEERemainder(x, y: Double): Double;
+    class method Acos(d: Double): Double;
+    class method Asin(d: Double): Double;
+    class method Atan(d: Double): Double;
+    class method Atan2(x,y: Double): Double;
+    class method Ceiling(d: Double): Double;
+    class method Ceiling(d: Single): Single;
+    class method Cos(d: Double): Double;
+    class method Cosh(d: Double): Double;
+    class method Exp(d: Double): Double;
+    class method Exp2(d: Double):Double;
+    //{$IFDEF WebAssembly}[DLLExport]{$ENDIF}
+    class method Floor(d: Double): Double;
+    class method Log(a: Double): Double;
+    class method Log2(a: Double): Double;
+    class method Log10(a: Double): Double;
+    class method Pow(x, y: Double): Double;
+    class method Round(a: Double): Double;
+    class method Sign(d: Double): Integer;
+    class method Sin(x: Double): Double;
+    class method Sinh(x: Double): Double;
+    class method Sqrt(d: Double): Double;
+    class method Tan(d: Double): Double;
+    class method Tanh(d:   Double): Double;
+    //{$IFDEF WebAssembly}[DLLExport]{$ENDIF}
+    class method Truncate(d: Double): Double;
+    //{$IFDEF WebAssembly}[DLLExport]{$ENDIF}
+    class method Truncate(d: Single): Single;
+    {$ENDIF}
 
-    // Use SymbolName -- LLVM
-
+    {$IFDEF USE_LLVM_IMPLEMENTATIONS}
     [SymbolName('fabs')]
     class method Abs(i: Double): Double; external;
     [SymbolName('abs')]
     class method Abs(i: Int64): Int64; external;
-
     [SymbolName('fmax')]
     class method Max(a,b: Double): Double; external;
-    class method Max(a,b: Int64): Int64; external;
-    //class method Max(a,b: Integer): Integer;
+    class method Max(a,b: Int64): Int64;
     [SymbolName('fmin')]
     class method Min(a,b: Double): Double; external;
-    class method Min(a,b: Int64): Int64; external;
+    class method Min(a,b: Int64): Int64;
     [SymbolName('fmod')]
     {$IFDEF WebAssembly}[DLLExport]{$ENDIF}
     class method fmod(x, y: Double): Double; external;
@@ -170,12 +251,11 @@ type
     class method Log2(a: Double): Double; external;
     [SymbolName('log10')]
     class method Log10(a: Double): Double; external;
-    //class method Pow(x:Double; y: Integer): Double;
     [SymbolName('pow')]
     class method Pow(x, y: Double): Double; external;
     [SymbolName('round')]
     class method Round(a: Double): Double; external;
-    //class method Sign(d: Double): Integer; external;
+    class method Sign(d: Double): Integer;
     [SymbolName('sin')]
     class method Sin(x: Double): Double; external;
     [SymbolName('sinh')]
@@ -192,14 +272,109 @@ type
     [SymbolName('truncf'), Used]
     {$IFDEF WebAssembly}[DLLExport]{$ENDIF}
     class method Truncate(d: Single): Single; external;
-
-    {$ENDIF USE_OXYGENE_IMPLEMENTATIONS}
+    {$ENDIF}
 
     const PI: Double = 3.141592653589793238462643383279502884197169399375105820974944592307816406286208998628034825342117067982148086513282306647093844609550582232;
     const E:  Double = 2.718281828459045235360287471352662497757247093699959574966967627724076630353547594571382178525166427427466391932;
+
+    {$IFDEF USE_UCRT_IMPLEMENTATIONS}
+    type
+      AutoCleanup = class
+      public
+        constructor;
+        begin
+          Math.InitializeUCRT;
+        end;
+
+        finalizer;
+        begin
+          Math.FinalizeUCRT;
+        end;
+      end;
+
+    class var _ := new AutoCleanup; // triggers init + cleanup
+    {$ENDIF USE_UCRT_IMPLEMENTATIONS}
   end;
 
+  //{$IFDEF USE_UCRT_IMPLEMENTATIONS}
+  //__Global = public partial static class
+  //private
+  //public
+    //class constructor;
+    //class finalizer;
+  //end;
+  //{$ENDIF USE_UCRT_IMPLEMENTATIONS}
+
 implementation
+
+{$IFDEF USE_UCRT_IMPLEMENTATIONS}
+class method Math.InitializeUCRT;
+begin
+  Console.WriteLine('Initializing...');
+  UCRTHandle := rtl.LoadLibrary('ucrtbase.dll');
+  Console.WriteLine(String.Format('got ucrt handle: {0}', UInt64(UCRTHandle)));
+  if UCRTHandle = nil then
+    raise new Exception('Failed to load ucrtbase.dll');
+
+  UCRTAbs := TMathFunc(rtl.GetProcAddress(UCRTHandle, 'fabs'));
+  //Console.WriteLine(String.Format('got abs ptr: {0}', UInt64(UCRTAbs)));
+  UCRTFmod := TMathFunc2(rtl.GetProcAddress(UCRTHandle, 'fmod'));
+  UCRTRemainder := TMathFunc2(rtl.GetProcAddress(UCRTHandle, 'remainder'));
+  UCRTAcos := TMathFunc(rtl.GetProcAddress(UCRTHandle, 'acos'));
+  UCRTAsin := TMathFunc(rtl.GetProcAddress(UCRTHandle, 'asin'));
+  UCRTAtan := TMathFunc(rtl.GetProcAddress(UCRTHandle, 'atan'));
+  UCRTAtan2 := TMathFunc2(rtl.GetProcAddress(UCRTHandle, 'atan2'));
+  UCRTCeil := TMathFunc(rtl.GetProcAddress(UCRTHandle, 'ceil'));
+  UCRTCos := TMathFunc(rtl.GetProcAddress(UCRTHandle, 'cos'));
+  UCRTCosh := TMathFunc(rtl.GetProcAddress(UCRTHandle, 'cosh'));
+  UCRTExp := TMathFunc(rtl.GetProcAddress(UCRTHandle, 'exp'));
+  UCRTExp2 := TMathFunc(rtl.GetProcAddress(UCRTHandle, 'exp2'));
+  UCRTFloor := TMathFunc(rtl.GetProcAddress(UCRTHandle, 'floor'));
+  UCRTLog := TMathFunc(rtl.GetProcAddress(UCRTHandle, 'log'));
+  UCRTLog2 := TMathFunc(rtl.GetProcAddress(UCRTHandle, 'log2'));
+  UCRTLog10 := TMathFunc(rtl.GetProcAddress(UCRTHandle, 'log10'));
+  UCRTPow := TMathFunc2(rtl.GetProcAddress(UCRTHandle, 'pow'));
+  UCRTRound := TMathFunc(rtl.GetProcAddress(UCRTHandle, 'round'));
+  UCRTSin := TMathFunc(rtl.GetProcAddress(UCRTHandle, 'sin'));
+  UCRTSinh := TMathFunc(rtl.GetProcAddress(UCRTHandle, 'sinh'));
+  UCRTSqrt := TMathFunc(rtl.GetProcAddress(UCRTHandle, 'sqrt'));
+  UCRTTan := TMathFunc(rtl.GetProcAddress(UCRTHandle, 'tan'));
+  UCRTTanh := TMathFunc(rtl.GetProcAddress(UCRTHandle, 'tanh'));
+  UCRTTrunc := TMathFunc(rtl.GetProcAddress(UCRTHandle, 'trunc'));
+
+  // Verify all function pointers were loaded successfully
+  // !!! this is debug code, this can be cleaner!
+  var TMathFuncPointers: array of ^Void := [
+    ^Void(UCRTAbs), ^Void(UCRTFmod), ^Void(UCRTRemainder), ^Void(UCRTAcos), ^Void(UCRTAsin),
+    ^Void(UCRTAtan), ^Void(UCRTAtan2), ^Void(UCRTCeil), ^Void(UCRTCos), ^Void(UCRTCosh),
+    ^Void(UCRTExp), ^Void(UCRTExp2), ^Void(UCRTFloor), ^Void(UCRTLog), ^Void(UCRTLog2),
+    ^Void(UCRTLog10), ^Void(UCRTPow), ^Void(UCRTRound), ^Void(UCRTSin), ^Void(UCRTSinh),
+    ^Void(UCRTSqrt), ^Void(UCRTTan), ^Void(UCRTTanh), ^Void(UCRTTrunc)
+  ];
+
+  var FunctionNames: array of String := [
+    'fabs', 'fmod', 'remainder', 'acos', 'asin', 'atan', 'atan2', 'ceil', 'cos', 'cosh',
+    'exp', 'exp2', 'floor', 'log', 'log2', 'log10', 'pow', 'round', 'sin', 'sinh',
+    'sqrt', 'tan', 'tanh', 'trunc'
+  ];
+
+  for i: Integer := 0 to length(TMathFuncPointers) - 1 do begin
+    if TMathFuncPointers[i] = nil then
+      raise new Exception(String.Format('Failed to load UCRT function: {0}', FunctionNames[i]));
+  end;
+end;
+
+class method Math.FinalizeUCRT;
+begin
+  Console.WriteLine('Finalizing...');
+  if UCRTHandle <> nil then begin
+    Console.WriteLine('Freeing library...');
+    rtl.FreeLibrary(UCRTHandle);
+    UCRTHandle := nil;
+    Console.WriteLine('Library freed.');
+  end;
+end;
+{$ENDIF}
 
 // The following methods always have implementations here
 
@@ -223,15 +398,15 @@ begin
   exit Pow(x, Double(y));
 end;
 
-class method Math.fmodf(x,y: Single): Single;
-begin
-  exit fmod(Double(x), Double(y));
-end;
+//class method Math.fmodf(x,y: Single): Single;
+//begin
+  //exit fmod(Double(x), Double(y));
+//end;
 
-class method Math.Floor(d: Single): Single;
-begin
-  exit Floor(Double(d));
-end;
+//class method Math.Floor(d: Single): Single;
+//begin
+  //exit Floor(Double(d));
+//end;
 
 class method Math.IntPow(x: Double; y: Integer): Double;
 begin
@@ -627,5 +802,272 @@ end;
 //end;
 
 {$ENDIF USE_OXYGENE_IMPLEMENTATIONS}
+
+{$IFDEF USE_UCRT_IMPLEMENTATIONS}
+
+// UCRT implementations - call function pointers
+
+class method Math.Abs(i: Double): Double;
+begin
+  assert(assigned(UCRTAbs), 'UCRTAbs not assigned');
+  exit UCRTAbs(i);
+end;
+
+class method Math.Abs(i: Int64): Int64;
+begin
+  exit if i < 0 then -i else i; // No abs function for Int64 in UCRT, use simple implementation
+end;
+
+class method Math.Max(a,b: Double): Double;
+begin
+  exit if a > b then a else b; // No max function in UCRT, use simple implementation
+end;
+
+class method Math.Max(a,b: Int64): Int64;
+begin
+  exit if a > b then a else b; // No max function in UCRT, use simple implementation
+end;
+
+class method Math.Min(a,b: Double): Double;
+begin
+  exit if a < b then a else b; // No min function in UCRT, use simple implementation
+end;
+
+class method Math.Min(a,b: Int64): Int64;
+begin
+  exit if a < b then a else b; // No min function in UCRT, use simple implementation
+end;
+
+class method Math.fmod(x, y: Double): Double;
+begin
+  assert(assigned(UCRTFmod), 'fmod not assigned');
+  exit UCRTFmod(x, y);
+end;
+
+class method Math.IEEERemainder(x, y: Double): Double;
+begin
+  assert(assigned(UCRTRemainder), 'IEEERemainder not assigned');
+  exit UCRTRemainder(x, y);
+end;
+
+class method Math.Acos(d: Double): Double;
+begin
+  assert(assigned(UCRTAcos), 'Acos not assigned');
+  exit UCRTAcos(d);
+end;
+
+class method Math.Asin(d: Double): Double;
+begin
+  assert(assigned(UCRTAsin), 'Asin not assigned');
+  exit UCRTAsin(d);
+end;
+
+class method Math.Atan(d: Double): Double;
+begin
+  assert(assigned(UCRTAtan), 'Atan not assigned');
+  exit UCRTAtan(d);
+end;
+
+class method Math.Atan2(x,y: Double): Double;
+begin
+  assert(assigned(UCRTAtan2), 'Atan2 not assigned');
+  exit UCRTAtan2(x, y);
+end;
+
+class method Math.Ceiling(d: Double): Double;
+begin
+  assert(assigned(UCRTCeil), 'Ceiling not assigned');
+  exit UCRTCeil(d);
+end;
+
+class method Math.Ceiling(d: Single): Single;
+begin
+  exit Ceiling(Double(d)); // Use always-present Oxygene implementation
+end;
+
+class method Math.Cos(d: Double): Double;
+begin
+  assert(assigned(UCRTCos), 'Cos not assigned');
+  exit UCRTCos(d);
+end;
+
+class method Math.Cosh(d: Double): Double;
+begin
+  assert(assigned(UCRTCosh), 'Cosh not assigned');
+  exit UCRTCosh(d);
+end;
+
+class method Math.Exp(d: Double): Double;
+begin
+  assert(assigned(UCRTExp), 'Exp not assigned');
+  exit UCRTExp(d);
+end;
+
+class method Math.Exp2(d: Double): Double;
+begin
+  assert(assigned(UCRTExp2), 'Exp2 not assigned');
+  exit UCRTExp2(d);
+end;
+
+class method Math.Floor(d: Double): Double;
+begin
+  assert(assigned(UCRTFloor), 'Floor not assigned');
+  exit UCRTFloor(d);
+end;
+
+class method Math.Log(a: Double): Double;
+begin
+  assert(assigned(UCRTLog), 'Log not assigned');
+  exit UCRTLog(a);
+end;
+
+class method Math.Log2(a: Double): Double;
+begin
+  assert(assigned(UCRTLog2), 'Log2 not assigned');
+  exit UCRTLog2(a);
+end;
+
+class method Math.Log10(a: Double): Double;
+begin
+  assert(assigned(UCRTLog10), 'Log10 not assigned');
+  exit UCRTLog10(a);
+end;
+
+class method Math.Pow(x, y: Double): Double;
+begin
+  assert(assigned(UCRTPow), 'Pow not assigned');
+  exit UCRTPow(x, y);
+end;
+
+class method Math.Round(a: Double): Double;
+begin
+  assert(assigned(UCRTRound), 'UCRTRound not assigned');
+  exit UCRTRound(a);
+end;
+
+class method Math.Sign(d: Double): Integer;
+begin
+  if d = 0 then exit 0;
+  if d < 0 then exit -1 else exit 1;
+end;
+
+class method Math.Sin(x: Double): Double;
+begin
+  assert(assigned(UCRTSin), 'Sin not assigned');
+  exit UCRTSin(x);
+end;
+
+class method Math.Sinh(x: Double): Double;
+begin
+  assert(assigned(UCRTSinh), 'UCRTSinh not assigned');
+  exit UCRTSinh(x);
+end;
+
+class method Math.Sqrt(d: Double): Double;
+begin
+  assert(assigned(UCRTSqrt), 'Sqrt not assigned');
+  exit UCRTSqrt(d);
+end;
+
+class method Math.Tan(d: Double): Double;
+begin
+  assert(assigned(UCRTTan), 'Tan not assigned');
+  exit UCRTTan(d);
+end;
+
+class method Math.Tanh(d: Double): Double;
+begin
+  assert(assigned(UCRTTanh), 'Tanh not assigned');
+  exit UCRTTanh(d);
+end;
+
+class method Math.Truncate(d: Double): Double;
+begin
+  assert(assigned(UCRTTrunc), 'Truncate not assigned');
+  exit UCRTTrunc(d);
+end;
+
+class method Math.Truncate(d: Single): Single;
+begin
+  exit Truncate(Double(d)); // Use always-present Oxygene implementation
+end;
+
+{$ENDIF USE_UCRT_IMPLEMENTATIONS}
+
+{$IFDEF USE_LLVM_IMPLEMENTATIONS}
+
+// LLVM implementations for methods that don't have SymbolName mapping
+
+class method Math.Max(a,b: Int64): Int64;
+begin
+  exit if a > b then a else b;
+end;
+
+class method Math.Min(a,b: Int64): Int64;
+begin
+  exit if a < b then a else b;
+end;
+
+class method Math.Sign(d: Double): Integer;
+begin
+  if d = 0 then exit 0;
+  if d < 0 then exit -1 else exit 1;
+end;
+
+{$ENDIF USE_LLVM_IMPLEMENTATIONS}
+
+
+//-> Task RemObjects.EBuild.Elements.ElementsLink started for performance-oxygene.
+               //-> Task Link started for performance-oxygene, Island-Windows.
+//D:                "C:\Program Files (x86)\RemObjects Software\Elements\Bin\win-arm64\lld.exe" -flavor link "@C:\Users\work\AppData\Local\RemObjects Software\EBuild\Obj\854B9DE6BD16D16A7A14F5335FE5AD801B92BD51\Release\Island-Windows\LinkerCommandline.txt"
+//E:                undefined symbol: fmod
+                  //> >>> referenced by performanceoxygene.output.lib(Program-ba5d98a337cb0d7c034cbeb041862f7b.o):(ms_t1c_performanceoxygene_d_Program1b_TestCeiling__Double__Scalar)
+                  //> >>> referenced by performanceoxygene.output.lib(Program-ba5d98a337cb0d7c034cbeb041862f7b.o):(ms_t1c_performanceoxygene_d_Program1b_TestCeiling__Double__Scalar)
+                  //> >>> referenced by performanceoxygene.output.lib(Program-ba5d98a337cb0d7c034cbeb041862f7b.o):(ms_t1c_performanceoxygene_d_Program1b_TestCeiling__Single__Scalar)
+                  //> >>> referenced 9 more times
+//E:                undefined symbol: floor
+                  //> >>> referenced by /__windows_drive__c/ci/b/elements/937/source/rtl2/source/remobjects.elements.rtl/convert.pas:291
+                  //> >>>               Elements.lib(Convert-05fc323a40b901913f55360bbae19e28.o):(ms_t25_RemObjects_d_Elements_d_RTL_d_Convert7_ToInt32nd)
+                  //> >>> referenced by /__windows_drive__c/ci/b/elements/937/source/rtl2/source/remobjects.elements.rtl/convert.pas:742
+                  //> >>>               Elements.lib(Convert-05fc323a40b901913f55360bbae19e28.o):(ms_t25_RemObjects_d_Elements_d_RTL_d_Convert7_ToInt64nd)
+                  //> >>> referenced by /__windows_drive__c/ci/b/elements/937/source/rtl2/source/remobjects.elements.rtl/convert.pas:988
+                  //> >>>               Elements.lib(Convert-05fc323a40b901913f55360bbae19e28.o):(ms_t25_RemObjects_d_Elements_d_RTL_d_Convert6_ToBytend)
+
+[DLLExport]
+[SymbolName('fmod')] // export with this name, unmangled
+method fmod(a, b: Double): Double;
+begin
+  exit Math.fmod(a, b);
+end;
+
+[DLLExport]
+[SymbolName('fmodf')] // export with this name, unmangled
+method fmodf(a, b: Single): Single;
+begin
+  exit Math.fmod(a, b);
+end;
+
+[DLLExport]
+[SymbolName('floor')] // export with this name, unmangled
+method floor(x: Double): Double;
+begin
+  exit Math.Floor(x);
+end;
+
+//{$IFDEF USE_UCRT_IMPLEMENTATIONS}
+//class constructor __Global;
+//begin
+  //writeLn('global init!');
+  //Math.InitializeUCRT;
+  ////rtl.atexit(@Math.FinalizeUCRT);
+//end;
+
+//class finalizer __Global;
+//begin
+  //writeLn('global final!');
+  //Math.FinalizeUCRT;
+//end;
+
+//{$ENDIF USE_UCRT_IMPLEMENTATIONS}
 
 end.
