@@ -382,7 +382,7 @@ begin
     lArgsPointer := nil;
 
   var lWorkingDirPointer: rtl.LPWSTR;
-  if WorkingDirectory ≠ '' then begin
+  if length(WorkingDirectory) > 0 then begin
     var lWorkDir := WorkingDirectory.ToCharArray(true);
     lWorkingDirPointer := @lWorkDir[0];
   end
@@ -397,11 +397,18 @@ begin
   Prepare;
   var lCommand := Command.ToAnsiChars(true);
 
+  writeLn($"in island222 aArguments {Arguments}");
+  for each a in Arguments do
+    writeLn($"a {a}");
+
   var lArgs := new ^AnsiChar[Arguments.Count + 2];
   lArgs[0] := @lCommand[0];
   for i: Integer := 0 to Arguments.Count - 1 do
     lArgs[i+1] := @Arguments[i].ToAnsiChars(true)[0];
   lArgs[Arguments.Count] := nil;
+
+  for i := 0 to Arguments.Count-1 do
+    writeLn("-  "+String.FromPAnsiChar(lArgs[i]));
 
   var lEnvp := new ^AnsiChar[Environment.Count + 1];
   var i: Integer := 0;
