@@ -11,13 +11,13 @@ type
   PThread = ^Thread;
   Thread = public class
   private
-    method set_Name(value: String);
-    fName: String := '';
+    method set_Name(aValue: String);
+    method get_Name: String;
   assembly
     {$IFDEF WINDOWS}
     fThread: rtl.HANDLE := nil;
     {$ELSE}
-    fthread: rtl.pthread_t := &default(rtl.pthread_t);
+    fThread: rtl.pthread_t := &default(rtl.pthread_t);
     {$ENDIF}
     fThreadID: ThreadID;
     fStarted: Integer := 0;
@@ -26,6 +26,7 @@ type
     fCallback: ParameterizedThreadStart;
     fCallbackObject: Object := nil;
     fCallStack: String;
+    fInitialName: String;
     method Execute;
     method RaiseError(aMessage: String);
     method GetPriority: ThreadPriority;
@@ -40,13 +41,18 @@ type
     class property CurrentThreadID: ThreadID read {$IFDEF WINDOWS}rtl.GetCurrentThreadID{$ELSE}rtl.pthread_self(){$ENDIF};
 
     property IsAlive: Boolean read GetAlive;
-    property Name: String read fName write set_Name;
+    {$IF DARWIN}
+    property Name: String read get_Name;
+    {$ELSE}
+    property Name: String read get_Name write set_Name;
+    {$ENDIF}
     property Priority: ThreadPriority read GetPriority write SetPriority;
     property CallStack: String read fCallStack;
     property ThreadID: ThreadID read fThreadID;
   //  class property CurrentThread: Thread read GetCurrentThread;
   public
     constructor(aCallback: ParameterizedThreadStart);
+    constructor(aInitialName: String; aCallback: ParameterizedThreadStart);
     finalizer;
   end;
 
@@ -327,7 +333,7 @@ begin
   {$ELSEIF POSIX}
   var pol: Int32;
   var sched: rtl.__struct_sched_param;
-  rtl. pthread_getschedparam(fthread, @pol, @sched);
+  rtl. pthread_getschedparam(fThread, @pol, @sched);
   var pri := {$IFDEF DARWIN or ARM64 OR FUCHSIA}sched.sched_priority{$ELSE}sched.__sched_priority{$ENDIF};
   if pri < -1 then exit ThreadPriority.Lowest
   else if pri = -1 then exit ThreadPriority.BelowNormal
@@ -410,6 +416,13 @@ begin
   self.fCallStack := nil;
 end;
 
+constructor Thread(aInitialName: String; aCallback: ParameterizedThreadStart);
+begin
+  self.fCallback := aCallback;
+  self.fCallStack := nil;
+  self.fInitialName := aInitialName;
+end;
+
 method Thread.RaiseError(aMessage: String);
 begin
   {$IFDEF WINDOWS}
@@ -429,7 +442,7 @@ begin
     self.fThread := rtl.CreateThread(nil,0, lStart, ^Void(GCHandle.Allocate(self).Handle), 0, @fThreadID);
     if self.fThread = nil then RaiseError("Problem with creating thread");
     {$ELSE}
-    rtl.pthread_create(@fthread, nil, @ThreadProc, ^Void(GCHandle.Allocate(self).Handle));
+    rtl.pthread_create(@fThread, nil, @ThreadProc, ^Void(GCHandle.Allocate(self).Handle));
     self.fThreadID := CurrentThreadID;
     {$ENDIF}
   end;
@@ -454,6 +467,15 @@ end;
 
 method Thread.Execute;
 begin
+  if length(fInitialName) > 0 then begin
+    {$IF FUCHSIA}
+    // not supported here (yet?)
+    {$ELSEIF DARWIN}
+    rtl.pthread_setname_np(fInitialName.ToAnsiChars);
+    {$ELSE}
+    Name := fInitialName;
+    {$ENDIF}
+  end;
   fCallback(fCallbackObject);
 end;
 
@@ -486,36 +508,51 @@ begin
   {$IFDEF WINDOWS}
   if self.fThread <> nil then rtl.CloseHandle(fThread);
   {$ELSE}
-  rtl.pthread_detach(fthread);
+  rtl.pthread_detach(fThread);
   {$ENDIF}
 end;
 
-{$IFDEF DARWIN}[Warning("Thread.Name cannot be setbon Darwin")]{$ENDIF}
-{$IFDEF FUCHSIA}[Warning("Thread.Name cannot be setbon Fuchsia")]{$ENDIF}
-method Thread.set_Name(value: String);
+{$IFDEF DARWIN}[Warning("Thread.Name cannot be set on Darwin")]{$ENDIF}
+{$IFDEF FUCHSIA}[Warning("Thread.Name cannot be set on Fuchsia")]{$ENDIF}
+method Thread.set_Name(aValue: String);
 begin
-  if not String.IsNullOrEmpty(Name) or (Name.Trim.Length <> 0) then begin
-    {$IFDEF WINDOWS}
-    var lThreadNameInfo: ThreadNameInfo;
-    lThreadNameInfo.FType := $1000;
-    lThreadNameInfo.FName := Name.ToLPCWSTR;
-    lThreadNameInfo.FThreadID := fThreadID;
-    lThreadNameInfo.FFlags := 0;
-    try
-      {$IFDEF _WIN64}
-      rtl.RaiseException($406D1388, 0, sizeOf(lThreadNameInfo) / sizeOf(NativeUInt), ^UInt64(^Void(@lThreadNameInfo)));
-      {$ELSE}
-      rtl.RaiseException($406D1388, 0, sizeOf(lThreadNameInfo) / sizeOf(NativeUInt), ^UInt32(^Void(@lThreadNameInfo)));
-      {$ENDIF}
-    except
-    end;
+  if length(aValue) > 0 then begin
+    {$IF FUCHSIA OR DARWIN}
+    raise new NotSupportedException("Setting a thread's name is not supported on this platform.");
+    {$ELSEIF WINDOWS}
+    var lName: rtl.LPCWSTR := aValue.ToLPCWSTR;
+    var hr := rtl.SetThreadDescription(fThread, lName);
+    if hr < 0 then
+      raise new Exception('Failed to set thread name');
+    {$ELSEIF DARWIN}
+    Foundation.NSThread.currentThread.name := aValue;
     {$ELSE}
-    {$IFNDEF DARWIN OR FUCHSIA}
-    rtl.pthread_setname_np(fthread, @Name.ToAnsiChars[0])
-    {$ENDIF}
+    rtl.pthread_setname_np(fThread, @aValue.ToAnsiChars[0])
     {$ENDIF}
   end;
 end;
+
+{$IFDEF FUCHSIA}[Warning("Thread.Name cannot be read on Fuchsia")]{$ENDIF}
+{$IFDEF ANDROID}[Warning("Thread.Name cannot be read on Android")]{$ENDIF}
+method Thread.get_Name: String;
+begin
+  {$IF FUCHSIA OR ANDROID}
+  //result := nil;
+  {$ELSEIF WINDOWS}
+  var lpName: ^rtl.PWSTR;
+  var hr := rtl.GetThreadDescription(fThread, lpName);
+  if (hr ≥ 0) and assigned(lpName) then begin
+    result := String.FromPChar(^Char(lpName));
+    rtl.LocalFree(lpName); // Free the allocated memory for the thread name
+  end;
+  {$ELSE}
+  // Unix specific code to get thread name
+  var lBuffer: array[0..63] of AnsiChar; // Linux thread name limit is typically 16 characters, macOS is 64
+  rtl.pthread_getname_np(fThread, @lBuffer, sizeOf(lBuffer));
+  result := String.FromPAnsiChar(@lBuffer);
+  {$ENDIF}
+end;
+
 
 {$IFDEF WINDOWS}
 constructor WaitHandle(aHandle: rtl.HANDLE);

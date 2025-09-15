@@ -132,7 +132,7 @@ type
     begin
       doTest3(Single.PositiveInfinity);
       doTest3(Single.NegativeInfinity);
-      doTest3(Single.NAN);
+      doTest3(Single.NaN);
     end;
 
   end;
