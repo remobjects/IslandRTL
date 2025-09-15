@@ -459,11 +459,16 @@ begin
         dec(exponent);
       end
       else begin
+        if t1 > 9 then break;
         fl := false;
         data[cur_position]:= t1;
         inc(cur_position);
       end;
       if cur_position >= maxpos then break;
+
+      // 5 extra digits should be enough for detecting last digits
+      if (cur_position > (aPrecision + 5)) and (t1 <> 5) then break;
+      t_orig:= t_orig mod 1;
     end;
   end;
   {$ENDREGION}
@@ -674,11 +679,16 @@ begin
         dec(exponent);
       end
       else begin
+        if t1 > 9 then break;
         fl := false;
         data[cur_position]:= t1;
         inc(cur_position);
       end;
       if cur_position >= maxpos then break;
+
+      // 5 extra digits should be enough for detecting last digits
+      if (cur_position > (aPrecision + 5)) and (t1 <> 5) then break;
+      t_orig:= t_orig mod 1;
     end;
   end;
   {$ENDREGION}
