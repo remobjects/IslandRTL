@@ -687,7 +687,7 @@ begin
       if cur_position >= maxpos then break;
 
       // 5 extra digits should be enough for detecting last digits
-      if (cur_position > (aPrecision + 5)) and (t1 <> 5) then break;
+      if (cur_position > (aNumberOfDecimalDigits + 5)) and (t1 <> 5) then break;
       t_orig:= t_orig mod 1;
     end;
   end;
