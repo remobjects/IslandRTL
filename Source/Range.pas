@@ -1,4 +1,4 @@
-﻿namespace Remobjects.Elements.System;
+﻿namespace RemObjects.Elements.System;
 
 type
   &Index = public record(IEquatable<&Index>)
