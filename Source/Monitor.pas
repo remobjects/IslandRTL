@@ -34,7 +34,7 @@ type
   public
     method AddLast(val: T);
     method RemoveFirst: T;
-    property Count: Integer;
+    property Count: Integer read fCount;
   end;
 
   SingleLinkedListNode<T> = class
