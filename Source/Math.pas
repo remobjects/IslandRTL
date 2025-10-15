@@ -3,8 +3,8 @@
 interface
 
 {.$DEFINE USE_OXYGENE_IMPLEMENTATIONS}
-{.$DEFINE USE_LLVM_IMPLEMENTATIONS}
-{$DEFINE USE_UCRT_IMPLEMENTATIONS}
+{$DEFINE USE_LLVM_IMPLEMENTATIONS}
+{.$DEFINE USE_UCRT_IMPLEMENTATIONS}
 
 {$IFNDEF USE_OXYGENE_IMPLEMENTATIONS}
   {$IFNDEF USE_UCRT_IMPLEMENTATIONS}
@@ -207,69 +207,71 @@ type
     {$ENDIF}
 
     {$IFDEF USE_LLVM_IMPLEMENTATIONS}
-    [SymbolName('fabs')]
+    [SymbolName('llvm.fabs.f64')]
     class method Abs(i: Double): Double; external;
-    [SymbolName('abs')]
-    class method Abs(i: Int64): Int64; external;
-    [SymbolName('fmax')]
+    class method Abs(i: Int64): Int64;
+    [SymbolName('llvm.maxnum.f64')]
     class method Max(a,b: Double): Double; external;
-    class method Max(a,b: Int64): Int64;
-    [SymbolName('fmin')]
+    [SymbolName('llvm.smax.i64')]
+    class method Max(a,b: Int64): Int64; external;
+    [SymbolName('llvm.minnum.f64')]
     class method Min(a,b: Double): Double; external;
-    class method Min(a,b: Int64): Int64;
+    [SymbolName('llvm.smin.i64')]
+    class method Min(a,b: Int64): Int64; external;
+    // Note: No direct LLVM intrinsic for fmod - falls back to libm
     [SymbolName('fmod')]
-    {$IFDEF WebAssembly}[DLLExport]{$ENDIF}
+    //{$IFDEF WebAssembly}[DLLExport]{$ENDIF}
     class method fmod(x, y: Double): Double; external;
-    [SymbolName('remainder')]
-    class method IEEERemainder(x, y: Double): Double; external;
-    [SymbolName('acos')]
+    // IEEE remainder implemented inline
+    class method IEEERemainder(x, y: Double): Double;
+    [SymbolName('llvm.acos.f64')]
     class method Acos(d: Double): Double; external;
-    [SymbolName('asin')]
+    [SymbolName('llvm.asin.f64')]
     class method Asin(d: Double): Double; external;
-    [SymbolName('atan')]
+    [SymbolName('llvm.atan.f64')]
     class method Atan(d: Double): Double; external;
-    [SymbolName('atan2')]
+    [SymbolName('llvm.atan2.f64')]
     class method Atan2(x,y: Double): Double; external;
-    [SymbolName('ceil')]
+    [SymbolName('llvm.ceil.f64')]
     class method Ceiling(d: Double): Double; external;
-    [SymbolName('ceilf')]
+    [SymbolName('llvm.ceil.f32')]
     class method Ceiling(d: Single): Single; external;
-    [SymbolName('cos')]
+    [SymbolName('llvm.cos.f64')]
     class method Cos(d: Double): Double; external;
-    [SymbolName('cosh')]
+    [SymbolName('llvm.cosh.f64')]
     class method Cosh(d: Double): Double; external;
-    [SymbolName('exp')]
+    [SymbolName('llvm.exp.f64')]
     class method Exp(d: Double): Double; external;
-    [SymbolName('exp2')]
+    [SymbolName('llvm.exp2.f64')]
     class method Exp2(d: Double):Double; external;
-    [SymbolName('floor'), Used]
+    [SymbolName('llvm.floor.f64'), Used]
     {$IFDEF WebAssembly}[DLLExport]{$ENDIF}
     class method Floor(d: Double): Double; external;
-    [SymbolName('log')]
+    [SymbolName('llvm.log.f64')]
     class method Log(a: Double): Double; external;
-    [SymbolName('log2')]
+    [SymbolName('llvm.log2.f64')]
     class method Log2(a: Double): Double; external;
-    [SymbolName('log10')]
+    [SymbolName('llvm.log10.f64')]
     class method Log10(a: Double): Double; external;
-    [SymbolName('pow')]
+    [SymbolName('llvm.pow.f64')]
     class method Pow(x, y: Double): Double; external;
-    [SymbolName('round')]
+    [SymbolName('llvm.round.f64')]
     class method Round(a: Double): Double; external;
     class method Sign(d: Double): Integer;
-    [SymbolName('sin')]
+    [SymbolName('llvm.sin.f64')]
     class method Sin(x: Double): Double; external;
-    [SymbolName('sinh')]
+    [SymbolName('llvm.sinh.f64')]
     class method Sinh(x: Double): Double; external;
-    [SymbolName('sqrt')]
+    [SymbolName('llvm.sqrt.f64')]
     class method Sqrt(d: Double): Double; external;
-    [SymbolName('tan')]
+    [SymbolName('llvm.tan.f64')]
     class method Tan(d: Double): Double; external;
-    [SymbolName('tanh')]
+    [SymbolName('llvm.tanh.f64')]
     class method Tanh(d:   Double): Double; external;
-    [SymbolName('trunc')]
+    [SymbolName('llvm.trunc.f64')]
     {$IFDEF WebAssembly}[DLLExport]{$ENDIF}
     class method Truncate(d: Double): Double; external;
-    [SymbolName('truncf'), Used]
+    [SymbolName('llvm.trunc.f32'), Used]
     {$IFDEF WebAssembly}[DLLExport]{$ENDIF}
     class method Truncate(d: Single): Single; external;
     {$ENDIF}
@@ -996,16 +998,30 @@ end;
 
 {$IFDEF USE_LLVM_IMPLEMENTATIONS}
 
-// LLVM implementations for methods that don't have SymbolName mapping
+// LLVM implementations for methods that don't have direct intrinsic mapping
 
-class method Math.Max(a,b: Int64): Int64;
+[SymbolName('llvm.abs.i64')]
+method llvm_abs_i64(value: Int64; is_int_min_poison: Boolean): Int64; external;
+
+class method Math.Abs(i: Int64): Int64;
 begin
-  exit if a > b then a else b;
+  exit llvm_abs_i64(i, false);
 end;
 
-class method Math.Min(a,b: Int64): Int64;
+class method Math.IEEERemainder(x, y: Double): Double;
 begin
-  exit if a < b then a else b;
+  // IEEE 754 remainder: x - n*y where n is the integer nearest to x/y
+  // If x/y is exactly halfway between two integers, choose the even one
+  var quotient := x / y;
+  var n := Round(quotient);
+  
+  // Handle the halfway case - round to even
+  if Abs(quotient - n) = 0.5 then begin
+    if (Trunc(n) mod 2) <> 0 then
+      n := n + if quotient > 0 then -1 else 1;
+  end;
+  
+  exit x - n * y;
 end;
 
 class method Math.Sign(d: Double): Integer;
