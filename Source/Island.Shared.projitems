@@ -56,6 +56,8 @@
     <Compile Include="Floats.pas" />
     <Compile Include="Integers.pas" />
     <Compile Include="Math.pas" />
+    <Compile Include="Math.LLVMVectorLib.pas" />
+    <Compile Include="Math.PurePascal.pas" />
     <Compile Include="Object.pas" />
     <Compile Include="String.pas" />
     <Compile Include="$(MSBuildThisFileDirectory)Reflection\Reflection.pas" />
