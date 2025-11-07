@@ -4,6 +4,11 @@ namespace RemObjects.Elements.System;
 // Fallback for platforms/architectures that don't support SLEEF vector math
 // (WebAssembly, Android, mobile Darwin platforms, unsupported architectures)
 
+// Check same conditions as Math.pas - must be kept in sync!
+{$IF (WINDOWS OR (DARWIN AND NOT (IOS OR TVOS OR WATCHOS OR VISIONOS)) OR (LINUX AND NOT ANDROID)) AND (i386 OR x86_64 OR ARM64)}
+  {$DEFINE USE_LLVM_MATH_VECTORLIB}
+{$ENDIF}
+
 {$IFNDEF USE_LLVM_MATH_VECTORLIB}
 
 interface

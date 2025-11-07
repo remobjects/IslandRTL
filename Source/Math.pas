@@ -1,4 +1,4 @@
-namespace RemObjects.Elements.System;
+﻿namespace RemObjects.Elements.System;
 
 interface
 
@@ -8,6 +8,8 @@ interface
 // Two implementations available:
 //   1. Math.LLVMVectorLib.pas - SLEEF-based (ENABLED for supported platforms)
 //   2. Math.PurePascal.pas    - Pure Pascal fallback
+// This is: Windows, macOS, and Linux (but not variants like Android, iOS, etc) using ARM64, Intel x86_64, and i386
+// You MUST keep this up to date with Elements' IslandOutput.pas, ShouldUseVectorMathLib()
 {$IF (WINDOWS OR (DARWIN AND NOT (IOS OR TVOS OR WATCHOS OR VISIONOS)) OR (LINUX AND NOT ANDROID)) AND (i386 OR x86_64 OR ARM64)}
   {$DEFINE USE_LLVM_MATH_VECTORLIB}  // Uses SLEEF library with LLVM vectorization
 {$ENDIF}
@@ -96,6 +98,67 @@ type
     class method Sign(d: Double): Integer;
 
     // Transcendental functions (implemented via LLVM intrinsics or Pure Pascal)
+    {$IFDEF USE_LLVM_MATH_VECTORLIB}
+    // SLEEF-enabled platforms: Use LLVM intrinsics for vectorization
+    // Intrinsics allow LLVM to vectorize in optimized builds
+    // In debug builds, intrinsics get lowered to C names, which are provided by export wrappers
+    [SymbolName('llvm.acos.f64')]
+    class method Acos(d: Double): Double; external;
+    [SymbolName('llvm.asin.f64')]
+    class method Asin(d: Double): Double; external;
+    [SymbolName('llvm.atan.f64')]
+    class method Atan(d: Double): Double; external;
+    [SymbolName('llvm.atan2.f64')]
+    class method Atan2(x,y: Double): Double; external;
+    [SymbolName('llvm.ceil.f64')]
+    class method Ceiling(d: Double): Double; external;
+    [SymbolName('llvm.ceil.f32')]
+    class method Ceiling(d: Single): Single; external;
+    // SLEEF-enabled platforms: Use LLVM intrinsics for vectorization
+    // Intrinsics allow LLVM to vectorize in optimized builds
+    // In debug builds, intrinsics get lowered to C names, which are provided by export wrappers
+    [SymbolName('llvm.cos.f64')]
+    class method Cos(d: Double): Double; external;
+    [SymbolName('llvm.cosh.f64')]
+    class method Cosh(d: Double): Double; external;
+    [SymbolName('llvm.exp.f64')]
+    class method Exp(d: Double): Double; external;
+    [SymbolName('llvm.exp2.f64')]
+    class method Exp2(d: Double): Double; external;
+    [SymbolName('llvm.floor.f64'), Used]
+    {$IFDEF WebAssembly}[DLLExport]{$ENDIF}
+    class method Floor(d: Double): Double; external;
+    [SymbolName('llvm.floor.f32'), Used]
+    {$IFDEF WebAssembly}[DLLExport]{$ENDIF}
+    class method Floor(d: Single): Single; external;
+    [SymbolName('llvm.log.f64')]
+    class method Log(a: Double): Double; external;
+    [SymbolName('llvm.log2.f64')]
+    class method Log2(a: Double): Double; external;
+    [SymbolName('llvm.log10.f64')]
+    class method Log10(a: Double): Double; external;
+    [SymbolName('llvm.pow.f64')]
+    class method Pow(x, y: Double): Double; external;
+    [SymbolName('llvm.round.f64')]
+    class method Round(a: Double): Double; external;
+    [SymbolName('llvm.sin.f64')]
+    class method Sin(x: Double): Double; external;
+    [SymbolName('llvm.sinh.f64')]
+    class method Sinh(x: Double): Double; external;
+    [SymbolName('llvm.sqrt.f64')]
+    class method Sqrt(d: Double): Double; external;
+    [SymbolName('llvm.tan.f64')]
+    class method Tan(d: Double): Double; external;
+    [SymbolName('llvm.tanh.f64')]
+    class method Tanh(d: Double): Double; external;
+    [SymbolName('llvm.trunc.f64'), Used]
+    {$IFDEF WebAssembly}[DLLExport]{$ENDIF}
+    class method Truncate(d: Double): Double; external;
+    [SymbolName('llvm.trunc.f32'), Used]
+    {$IFDEF WebAssembly}[DLLExport]{$ENDIF}
+    class method Truncate(d: Single): Single; external;
+    {$ELSE}
+    // Non-SLEEF platforms: Use plain C names
     [SymbolName('acos')]
     class method Acos(d: Double): Double;
     [SymbolName('asin')]
@@ -126,7 +189,6 @@ type
     class method Log2(a: Double): Double;
     [SymbolName('log10')]
     class method Log10(a: Double): Double;
-    class method Pow(x:Double; y: Integer): Double;
     [SymbolName('pow')]
     class method Pow(x, y: Double): Double;
     [SymbolName('round')]
@@ -147,6 +209,10 @@ type
     [SymbolName('truncf'), Used]
     {$IFDEF WebAssembly}[DLLExport]{$ENDIF}
     class method Truncate(d: Single): Single;
+    {$ENDIF}
+
+    // Integer overload of Pow has custom implementation (not external)
+    class method Pow(x:Double; y: Integer): Double;
 
     const PI: Double = 3.141592653589793238462643383279502884197169399375105820974944592307816406286208998628034825342117067982148086513282306647093844609550582232;
     const E:  Double = 2.718281828459045235360287471352662497757247093699959574966967627724076630353547594571382178525166427427466391932;

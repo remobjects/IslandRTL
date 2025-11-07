@@ -106,9 +106,6 @@
       <Virtual>True</Virtual>
     </Folder>
     <Compile Include="$(MSBuildThisFileDirectory)TimeSpan.pas" />
-    <Folder Include="$(MSBuildThisFileDirectory)New Folder">
-      <Virtual>True</Virtual>
-    </Folder>
     <Compile Include="$(MSBuildThisFileDirectory)Bridges.Swift.pas" />
     <Compile Include="$(MSBuildThisFileDirectory)Bridges.Cocoa+Swift.pas" />
   </ItemGroup>
