@@ -1,30 +1,31 @@
-namespace RemObjects.Elements.System;
+﻿namespace RemObjects.Elements.System;
 
 // SLEEF Vector Math Library Implementation for Island RTL
 // =========================================================
 //
 // This file provides SLEEF-based implementations for Math class methods
-// that enable LLVM auto-vectorization through the VecFuncs system.
+// that enable LLVM auto-vectorization through VecFuncs.def mappings.
 //
-// SLEEF library exports functions like Sleef_sind1_u10, NOT plain "sin".
-// For LLVM auto-vectorization to work, we need:
-//   1. Plain C names (sin, cos, etc.) as external declarations for the optimizer
-//   2. Actual implementations that forward to SLEEF scalar functions
+// ARCHITECTURE:
+// 1. User code calls Math.Sin(x) (in a loop or sequence, ie, anywhere vectorisation is clear)
+// 2. Compiler generates call to Sleef_sind1_u10 (SLEEF scalar function) (this is inlined, occurs anyway but via 'inline')
+// 3. LLVM optimizer checks VecFuncs.def for Sleef_sind1_u10 mapping
+// 4. VecFuncs.def maps Sleef_sind1_u10 → Sleef_sind2_u10advsimd (vector) or other wider vector funcs
+//    (This should also occur if there is a reference to C-RTL name 'sin()' or llvm.sin.* intrinsic,
+//    but this way we know for sure what will be emitted.)
+// 5. Loop vectorizer replaces scalar calls with vector SLEEF calls
 //
-// This file provides:
-//   - Internal SLEEF scalar function declarations (Sleef_sind1_u10, etc.)
-//   - Math class method implementations that forward to SLEEF
-//   - Export functions with plain C names for LLVM vectorization
+// - SleefInternal: External declarations for SLEEF scalar functions
+// - Math class: Public API that forwards to SleefInternal
 //
-// How LLVM auto-vectorization works:
-// 1. User code calls Math.Sin(x) in a loop
-// 2. Compiler generates call to symbol "sin"
-// 3. LLVM optimizer sees call to "sin" and checks VecFuncs.def
-// 4. VecFuncs.def maps "sin" -> "Sleef_sind2_u10advsimd" (vector SLEEF)
-// 5. InjectTLIMappings attaches VFABI attribute to enable vectorization
-// 6. Loop vectorizer replaces scalar calls with vector SLEEF calls
-// 7. Linker resolves "sin" to sin_impl() (below), which calls Sleef_sind1_u10
-// 8. Linker resolves "Sleef_sind2_u10advsimd" to sleef.lib (vector function)
+// Attributes [MemoryNone, NoExcept, WillReturn] are crtical for this to work correctly.
+// Without them, the methods will remain scalar. LLVM can only vectorise methods that
+// it knows do not modify memory (MemoryNone), do not throw (NoExcept); WillReturn
+// may or may not affect it, but is safe for these methods, and does allow other optimisations.
+// MemoryNone also allows speculative execution on the CPU since there's no need for memory
+// gating -- the method's results are based only on the method's parameters.
+// These are required because the methods live in sleef.lib, and so to LLVM they're opaque
+// and could do anything. We need to tell it that they're safe to vectorise.
 
 // Check same conditions as Math.pas - must be kept in sync!
 {$IF (WINDOWS OR (DARWIN AND NOT (IOS OR TVOS OR WATCHOS OR VISIONOS)) OR (LINUX AND NOT ANDROID)) AND (i386 OR x86_64 OR ARM64)}
@@ -39,69 +40,71 @@ type
   Math = public partial class
   public
     // Transcendental functions - implemented via SLEEF
-    [SymbolName('acos'), MemoryNone, NoExcept, WillReturn]
-    class method Acos(d: Double): Double;
-    [SymbolName('asin'), MemoryNone, NoExcept, WillReturn]
-    class method Asin(d: Double): Double;
-    [SymbolName('atan'), MemoryNone, NoExcept, WillReturn]
-    class method Atan(d: Double): Double;
-    [SymbolName('atan2'), MemoryNone, NoExcept, WillReturn]
-    class method Atan2(x,y: Double): Double;
-    [SymbolName('ceil'), MemoryNone, NoExcept, WillReturn]
-    class method Ceiling(d: Double): Double;
-    [SymbolName('ceilf'), MemoryNone, NoExcept, WillReturn]
-    class method Ceiling(d: Single): Single;
-    [SymbolName('cos'), MemoryNone, NoExcept, WillReturn]
-    class method Cos(d: Double): Double;
-    [SymbolName('cosh'), MemoryNone, NoExcept, WillReturn]
-    class method Cosh(d: Double): Double;
-    [SymbolName('exp'), MemoryNone, NoExcept, WillReturn]
-    class method Exp(d: Double): Double;
-    [SymbolName('exp2'), MemoryNone, NoExcept, WillReturn]
-    class method Exp2(d: Double): Double;
-    [SymbolName('floor'), MemoryNone, NoExcept, WillReturn]
-    class method Floor(d: Double): Double;
-    [SymbolName('floorf'), MemoryNone, NoExcept, WillReturn]
-    class method Floor(d: Single): Single;
-    [SymbolName('log'), MemoryNone, NoExcept, WillReturn]
-    class method Log(a: Double): Double;
-    [SymbolName('log2'), MemoryNone, NoExcept, WillReturn]
-    class method Log2(a: Double): Double;
-    [SymbolName('log10'), MemoryNone, NoExcept, WillReturn]
-    class method Log10(a: Double): Double;
-    [SymbolName('pow'), MemoryNone, NoExcept, WillReturn]
-    class method Pow(x, y: Double): Double;
-    [SymbolName('round'), MemoryNone, NoExcept, WillReturn]
-    class method Round(a: Double): Double;
-    [SymbolName('sin'), MemoryNone, NoExcept, WillReturn]
-    class method Sin(x: Double): Double;
-    [SymbolName('sinh'), MemoryNone, NoExcept, WillReturn]
-    class method Sinh(x: Double): Double;
-    [SymbolName('sqrt'), MemoryNone, NoExcept, WillReturn]
-    class method Sqrt(d: Double): Double;
-    [SymbolName('sqrtf'), MemoryNone, NoExcept, WillReturn]
-    class method Sqrt(d: Single): Single;
-    [SymbolName('tan'), MemoryNone, NoExcept, WillReturn]
-    class method Tan(d: Double): Double;
-    [SymbolName('tanh'), MemoryNone, NoExcept, WillReturn]
-    class method Tanh(d: Double): Double;
-    [SymbolName('trunc'), MemoryNone, NoExcept, WillReturn]
-    class method Truncate(d: Double): Double;
-    [SymbolName('truncf'), MemoryNone, NoExcept, WillReturn]
-    class method Truncate(d: Single): Single;
+    // Attributes guide LLVM optimization without affecting function names
+    [MemoryNone, NoExcept, WillReturn]
+    class method Acos(d: Double): Double; inline;
+    [MemoryNone, NoExcept, WillReturn]
+    class method Asin(d: Double): Double; inline;
+    [MemoryNone, NoExcept, WillReturn]
+    class method Atan(d: Double): Double; inline;
+    [MemoryNone, NoExcept, WillReturn]
+    class method Atan2(x,y: Double): Double; inline;
+    [MemoryNone, NoExcept, WillReturn]
+    class method Ceiling(d: Double): Double; inline;
+    [MemoryNone, NoExcept, WillReturn]
+    class method Ceiling(d: Single): Single; inline;
+    [MemoryNone, NoExcept, WillReturn]
+    class method Cos(d: Double): Double; inline;
+    [MemoryNone, NoExcept, WillReturn]
+    class method Cosh(d: Double): Double; inline;
+    [MemoryNone, NoExcept, WillReturn]
+    class method Exp(d: Double): Double; inline;
+    [MemoryNone, NoExcept, WillReturn]
+    class method Exp2(d: Double): Double; inline;
+    [MemoryNone, NoExcept, WillReturn]
+    class method Floor(d: Double): Double; inline;
+    [MemoryNone, NoExcept, WillReturn]
+    class method Floor(d: Single): Single; inline;
+    [MemoryNone, NoExcept, WillReturn]
+    class method Log(a: Double): Double; inline;
+    [MemoryNone, NoExcept, WillReturn]
+    class method Log2(a: Double): Double; inline;
+    [MemoryNone, NoExcept, WillReturn]
+    class method Log10(a: Double): Double; inline;
+    [MemoryNone, NoExcept, WillReturn]
+    class method Pow(x, y: Double): Double; inline;
+    [MemoryNone, NoExcept, WillReturn]
+    class method Round(a: Double): Double; inline;
+    [MemoryNone, NoExcept, WillReturn]
+    class method Sin(x: Double): Double; inline;
+    [MemoryNone, NoExcept, WillReturn]
+    class method Sinh(x: Double): Double; inline;
+    [MemoryNone, NoExcept, WillReturn]
+    class method Sqrt(d: Double): Double; inline;
+    [MemoryNone, NoExcept, WillReturn]
+    class method Sqrt(d: Single): Single; inline;
+    [MemoryNone, NoExcept, WillReturn]
+    class method Tan(d: Double): Double; inline;
+    [MemoryNone, NoExcept, WillReturn]
+    class method Tanh(d: Double): Double; inline;
+    [MemoryNone, NoExcept, WillReturn]
+    class method Truncate(d: Double): Double; inline;
+    [MemoryNone, NoExcept, WillReturn]
+    class method Truncate(d: Single): Single; inline;
     // Utility functions with SLEEF implementations
-    [SymbolName('fabs'), MemoryNone, NoExcept, WillReturn]
-    class method Abs(i: Double): Double;
-    [SymbolName('fmod'), MemoryNone, NoExcept, WillReturn]
-    class method fmod(x, y: Double): Double;
-    [SymbolName('fmodf'), MemoryNone, NoExcept, WillReturn]
-    class method fmodf(x,y: Single): Single;
+    [MemoryNone, NoExcept, WillReturn]
+    class method Abs(i: Double): Double; inline;
+    [MemoryNone, NoExcept, WillReturn]
+    class method fmod(x, y: Double): Double; inline;
+    [MemoryNone, NoExcept, WillReturn]
+    class method fmodf(x,y: Single): Single; inline;
   end;
 
 implementation
 
 type
   // Internal SLEEF scalar function declarations
+  // These link directly to the SLEEF library (sleef.lib)
   SleefInternal = static class
   assembly  // assembly = internal visibility (accessible within same assembly)
     // Trigonometric functions
@@ -206,6 +209,7 @@ type
 
 // Math class implementations - forward to SLEEF functions
 // These provide the public API that user code calls
+// The compiler automatically inlines these trivial one-line wrappers
 
 class method Math.Abs(i: Double): Double;
 begin
@@ -345,181 +349,6 @@ end;
 class method Math.Truncate(d: Single): Single;
 begin
   exit SleefInternal.Sleef_truncf1(d);
-end;
-
-// Export implementations - provide plain C names for debug builds
-// When LLVM intrinsics (llvm.sin.f64, etc.) are lowered to plain C calls,
-// these export functions are linked to provide the actual SLEEF implementations
-// These are needed because sleef.lib only exports "Sleef_sind1_u10", not "sin"
-// LLVM needs to see calls to "sin" to apply VecFuncs.def mappings
-
-[Export, SymbolName('sin'), CallingConvention(CallingConvention.Cdecl), MemoryNone, NoExcept, WillReturn]
-function sin_impl(x: Double): Double;
-begin
-  exit SleefInternal.Sleef_sind1_u10(x);
-end;
-
-[Export, SymbolName('cos'), CallingConvention(CallingConvention.Cdecl), MemoryNone, NoExcept, WillReturn]
-function cos_impl(x: Double): Double;
-begin
-  exit SleefInternal.Sleef_cosd1_u10(x);
-end;
-
-[Export, SymbolName('tan'), CallingConvention(CallingConvention.Cdecl), MemoryNone, NoExcept, WillReturn]
-function tan_impl(x: Double): Double;
-begin
-  exit SleefInternal.Sleef_tand1_u10(x);
-end;
-
-[Export, SymbolName('asin'), CallingConvention(CallingConvention.Cdecl), MemoryNone, NoExcept, WillReturn]
-function asin_impl(x: Double): Double;
-begin
-  exit SleefInternal.Sleef_asind1_u10(x);
-end;
-
-[Export, SymbolName('acos'), CallingConvention(CallingConvention.Cdecl), MemoryNone, NoExcept, WillReturn]
-function acos_impl(x: Double): Double;
-begin
-  exit SleefInternal.Sleef_acosd1_u10(x);
-end;
-
-[Export, SymbolName('atan'), CallingConvention(CallingConvention.Cdecl), MemoryNone, NoExcept, WillReturn]
-function atan_impl(x: Double): Double;
-begin
-  exit SleefInternal.Sleef_atand1_u10(x);
-end;
-
-[Export, SymbolName('atan2'), CallingConvention(CallingConvention.Cdecl), MemoryNone, NoExcept, WillReturn]
-function atan2_impl(y: Double; x: Double): Double;
-begin
-  exit SleefInternal.Sleef_atan2d1_u10(y, x);
-end;
-
-[Export, SymbolName('sinh'), CallingConvention(CallingConvention.Cdecl), MemoryNone, NoExcept, WillReturn]
-function sinh_impl(x: Double): Double;
-begin
-  exit SleefInternal.Sleef_sinhd1_u10(x);
-end;
-
-[Export, SymbolName('cosh'), CallingConvention(CallingConvention.Cdecl), MemoryNone, NoExcept, WillReturn]
-function cosh_impl(x: Double): Double;
-begin
-  exit SleefInternal.Sleef_coshd1_u10(x);
-end;
-
-[Export, SymbolName('tanh'), CallingConvention(CallingConvention.Cdecl), MemoryNone, NoExcept, WillReturn]
-function tanh_impl(x: Double): Double;
-begin
-  exit SleefInternal.Sleef_tanhd1_u10(x);
-end;
-
-[Export, SymbolName('exp'), CallingConvention(CallingConvention.Cdecl), MemoryNone, NoExcept, WillReturn]
-function exp_impl(x: Double): Double;
-begin
-  exit SleefInternal.Sleef_expd1_u10(x);
-end;
-
-[Export, SymbolName('exp2'), CallingConvention(CallingConvention.Cdecl), MemoryNone, NoExcept, WillReturn]
-function exp2_impl(x: Double): Double;
-begin
-  exit SleefInternal.Sleef_exp2d1_u10(x);
-end;
-
-[Export, SymbolName('log'), CallingConvention(CallingConvention.Cdecl), MemoryNone, NoExcept, WillReturn]
-function log_impl(x: Double): Double;
-begin
-  exit SleefInternal.Sleef_logd1_u10(x);
-end;
-
-[Export, SymbolName('log2'), CallingConvention(CallingConvention.Cdecl), MemoryNone, NoExcept, WillReturn]
-function log2_impl(x: Double): Double;
-begin
-  exit SleefInternal.Sleef_log2d1_u10(x);
-end;
-
-[Export, SymbolName('log10'), CallingConvention(CallingConvention.Cdecl), MemoryNone, NoExcept, WillReturn]
-function log10_impl(x: Double): Double;
-begin
-  exit SleefInternal.Sleef_log10d1_u10(x);
-end;
-
-[Export, SymbolName('pow'), CallingConvention(CallingConvention.Cdecl), MemoryNone, NoExcept, WillReturn]
-function pow_impl(x: Double; y: Double): Double;
-begin
-  exit SleefInternal.Sleef_powd1_u10(x, y);
-end;
-
-[Export, SymbolName('sqrt'), CallingConvention(CallingConvention.Cdecl), MemoryNone, NoExcept, WillReturn]
-function sqrt_impl(x: Double): Double;
-begin
-  exit SleefInternal.Sleef_sqrtd1_u05(x);
-end;
-
-// Temporarily disabled - linking issue
-//[Export, SymbolName('sqrtf'), CallingConvention(CallingConvention.Cdecl), MemoryNone, NoExcept, WillReturn]
-//function sqrtf_impl(x: Single): Single;
-//begin
-//  exit SleefInternal.Sleef_sqrtf1(x);
-//end;
-
-[Export, SymbolName('ceil'), CallingConvention(CallingConvention.Cdecl), MemoryNone, NoExcept, WillReturn]
-function ceil_impl(x: Double): Double;
-begin
-  exit SleefInternal.Sleef_ceild1(x);
-end;
-
-[Export, SymbolName('ceilf'), CallingConvention(CallingConvention.Cdecl), MemoryNone, NoExcept, WillReturn]
-function ceilf_impl(x: Single): Single;
-begin
-  exit SleefInternal.Sleef_ceilf1(x);
-end;
-
-[Export, SymbolName('floor'), CallingConvention(CallingConvention.Cdecl), MemoryNone, NoExcept, WillReturn]
-function floor_impl(x: Double): Double;
-begin
-  exit SleefInternal.Sleef_floord1(x);
-end;
-
-[Export, SymbolName('floorf'), CallingConvention(CallingConvention.Cdecl), MemoryNone, NoExcept, WillReturn]
-function floorf_impl(x: Single): Single;
-begin
-  exit SleefInternal.Sleef_floorf1(x);
-end;
-
-[Export, SymbolName('trunc'), CallingConvention(CallingConvention.Cdecl), MemoryNone, NoExcept, WillReturn]
-function trunc_impl(x: Double): Double;
-begin
-  exit SleefInternal.Sleef_truncd1(x);
-end;
-
-[Export, SymbolName('truncf'), CallingConvention(CallingConvention.Cdecl), MemoryNone, NoExcept, WillReturn]
-function truncf_impl(x: Single): Single;
-begin
-  exit SleefInternal.Sleef_truncf1(x);
-end;
-
-[Export, SymbolName('round'), CallingConvention(CallingConvention.Cdecl), MemoryNone, NoExcept, WillReturn]
-function round_impl(x: Double): Double;
-begin
-  exit SleefInternal.Sleef_roundd1(x);
-end;
-
-[Export, SymbolName('fabs'), CallingConvention(CallingConvention.Cdecl), MemoryNone, NoExcept, WillReturn]
-function fabs_impl(x: Double): Double;
-begin
-  exit SleefInternal.Sleef_fabsd1(x);
-end;
-
-[Export, SymbolName('fmod'), CallingConvention(CallingConvention.Cdecl), MemoryNone, NoExcept, WillReturn]
-function fmod_impl(x: Double; y: Double): Double;
-begin
-  exit SleefInternal.Sleef_fmodd1(x, y);
-end;
-
-[Export, SymbolName('fmodf'), CallingConvention(CallingConvention.Cdecl), MemoryNone, NoExcept, WillReturn]
-function fmodf_impl(x: Single; y: Single): Single;
-begin
-  exit SleefInternal.Sleef_fmodf1(x, y);
 end;
 
 {$ENDIF}
