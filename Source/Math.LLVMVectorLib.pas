@@ -37,6 +37,65 @@ interface
 
 type
   Math = public partial class
+  public
+    // Transcendental functions - implemented via SLEEF
+    [SymbolName('acos'), MemoryNone, NoExcept, WillReturn]
+    class method Acos(d: Double): Double;
+    [SymbolName('asin'), MemoryNone, NoExcept, WillReturn]
+    class method Asin(d: Double): Double;
+    [SymbolName('atan'), MemoryNone, NoExcept, WillReturn]
+    class method Atan(d: Double): Double;
+    [SymbolName('atan2'), MemoryNone, NoExcept, WillReturn]
+    class method Atan2(x,y: Double): Double;
+    [SymbolName('ceil'), MemoryNone, NoExcept, WillReturn]
+    class method Ceiling(d: Double): Double;
+    [SymbolName('ceilf'), MemoryNone, NoExcept, WillReturn]
+    class method Ceiling(d: Single): Single;
+    [SymbolName('cos'), MemoryNone, NoExcept, WillReturn]
+    class method Cos(d: Double): Double;
+    [SymbolName('cosh'), MemoryNone, NoExcept, WillReturn]
+    class method Cosh(d: Double): Double;
+    [SymbolName('exp'), MemoryNone, NoExcept, WillReturn]
+    class method Exp(d: Double): Double;
+    [SymbolName('exp2'), MemoryNone, NoExcept, WillReturn]
+    class method Exp2(d: Double): Double;
+    [SymbolName('floor'), MemoryNone, NoExcept, WillReturn]
+    class method Floor(d: Double): Double;
+    [SymbolName('floorf'), MemoryNone, NoExcept, WillReturn]
+    class method Floor(d: Single): Single;
+    [SymbolName('log'), MemoryNone, NoExcept, WillReturn]
+    class method Log(a: Double): Double;
+    [SymbolName('log2'), MemoryNone, NoExcept, WillReturn]
+    class method Log2(a: Double): Double;
+    [SymbolName('log10'), MemoryNone, NoExcept, WillReturn]
+    class method Log10(a: Double): Double;
+    [SymbolName('pow'), MemoryNone, NoExcept, WillReturn]
+    class method Pow(x, y: Double): Double;
+    [SymbolName('round'), MemoryNone, NoExcept, WillReturn]
+    class method Round(a: Double): Double;
+    [SymbolName('sin'), MemoryNone, NoExcept, WillReturn]
+    class method Sin(x: Double): Double;
+    [SymbolName('sinh'), MemoryNone, NoExcept, WillReturn]
+    class method Sinh(x: Double): Double;
+    [SymbolName('sqrt'), MemoryNone, NoExcept, WillReturn]
+    class method Sqrt(d: Double): Double;
+    [SymbolName('sqrtf'), MemoryNone, NoExcept, WillReturn]
+    class method Sqrt(d: Single): Single;
+    [SymbolName('tan'), MemoryNone, NoExcept, WillReturn]
+    class method Tan(d: Double): Double;
+    [SymbolName('tanh'), MemoryNone, NoExcept, WillReturn]
+    class method Tanh(d: Double): Double;
+    [SymbolName('trunc'), MemoryNone, NoExcept, WillReturn]
+    class method Truncate(d: Double): Double;
+    [SymbolName('truncf'), MemoryNone, NoExcept, WillReturn]
+    class method Truncate(d: Single): Single;
+    // Utility functions with SLEEF implementations
+    [SymbolName('fabs'), MemoryNone, NoExcept, WillReturn]
+    class method Abs(i: Double): Double;
+    [SymbolName('fmod'), MemoryNone, NoExcept, WillReturn]
+    class method fmod(x, y: Double): Double;
+    [SymbolName('fmodf'), MemoryNone, NoExcept, WillReturn]
+    class method fmodf(x,y: Single): Single;
   end;
 
 implementation
@@ -103,6 +162,9 @@ type
     [SymbolName('Sleef_sqrtd1_u05')]
     class method Sleef_sqrtd1_u05(x: Double): Double; external;
 
+    [SymbolName('Sleef_sqrtf1')]
+    class method Sleef_sqrtf1(x: Single): Single; external;
+
     [SymbolName('Sleef_cbrtd1_u10')]
     class method Sleef_cbrtd1_u10(x: Double): Double; external;
 
@@ -142,169 +204,319 @@ type
     class method Sleef_fmodf1(x: Single; y: Single): Single; external;
   end;
 
+// Math class implementations - forward to SLEEF functions
+// These provide the public API that user code calls
+
+class method Math.Abs(i: Double): Double;
+begin
+  exit SleefInternal.Sleef_fabsd1(i);
+end;
+
+class method Math.Acos(d: Double): Double;
+begin
+  exit SleefInternal.Sleef_acosd1_u10(d);
+end;
+
+class method Math.Asin(d: Double): Double;
+begin
+  exit SleefInternal.Sleef_asind1_u10(d);
+end;
+
+class method Math.Atan(d: Double): Double;
+begin
+  exit SleefInternal.Sleef_atand1_u10(d);
+end;
+
+class method Math.Atan2(x, y: Double): Double;
+begin
+  exit SleefInternal.Sleef_atan2d1_u10(x, y);
+end;
+
+class method Math.Ceiling(d: Double): Double;
+begin
+  exit SleefInternal.Sleef_ceild1(d);
+end;
+
+class method Math.Ceiling(d: Single): Single;
+begin
+  exit SleefInternal.Sleef_ceilf1(d);
+end;
+
+class method Math.Cos(d: Double): Double;
+begin
+  exit SleefInternal.Sleef_cosd1_u10(d);
+end;
+
+class method Math.Cosh(d: Double): Double;
+begin
+  exit SleefInternal.Sleef_coshd1_u10(d);
+end;
+
+class method Math.Exp(d: Double): Double;
+begin
+  exit SleefInternal.Sleef_expd1_u10(d);
+end;
+
+class method Math.Exp2(d: Double): Double;
+begin
+  exit SleefInternal.Sleef_exp2d1_u10(d);
+end;
+
+class method Math.Floor(d: Double): Double;
+begin
+  exit SleefInternal.Sleef_floord1(d);
+end;
+
+class method Math.Floor(d: Single): Single;
+begin
+  exit SleefInternal.Sleef_floorf1(d);
+end;
+
+class method Math.fmod(x, y: Double): Double;
+begin
+  exit SleefInternal.Sleef_fmodd1(x, y);
+end;
+
+class method Math.fmodf(x, y: Single): Single;
+begin
+  exit SleefInternal.Sleef_fmodf1(x, y);
+end;
+
+class method Math.Log(a: Double): Double;
+begin
+  exit SleefInternal.Sleef_logd1_u10(a);
+end;
+
+class method Math.Log2(a: Double): Double;
+begin
+  exit SleefInternal.Sleef_log2d1_u10(a);
+end;
+
+class method Math.Log10(a: Double): Double;
+begin
+  exit SleefInternal.Sleef_log10d1_u10(a);
+end;
+
+class method Math.Pow(x, y: Double): Double;
+begin
+  exit SleefInternal.Sleef_powd1_u10(x, y);
+end;
+
+class method Math.Round(a: Double): Double;
+begin
+  exit SleefInternal.Sleef_roundd1(a);
+end;
+
+class method Math.Sin(x: Double): Double;
+begin
+  exit SleefInternal.Sleef_sind1_u10(x);
+end;
+
+class method Math.Sinh(x: Double): Double;
+begin
+  exit SleefInternal.Sleef_sinhd1_u10(x);
+end;
+
+class method Math.Sqrt(d: Double): Double;
+begin
+  exit SleefInternal.Sleef_sqrtd1_u05(d);
+end;
+
+class method Math.Sqrt(d: Single): Single;
+begin
+  exit SleefInternal.Sleef_sqrtf1(d);
+end;
+
+class method Math.Tan(d: Double): Double;
+begin
+  exit SleefInternal.Sleef_tand1_u10(d);
+end;
+
+class method Math.Tanh(d: Double): Double;
+begin
+  exit SleefInternal.Sleef_tanhd1_u10(d);
+end;
+
+class method Math.Truncate(d: Double): Double;
+begin
+  exit SleefInternal.Sleef_truncd1(d);
+end;
+
+class method Math.Truncate(d: Single): Single;
+begin
+  exit SleefInternal.Sleef_truncf1(d);
+end;
+
 // Export implementations - provide plain C names for debug builds
 // When LLVM intrinsics (llvm.sin.f64, etc.) are lowered to plain C calls,
 // these export functions are linked to provide the actual SLEEF implementations
 // These are needed because sleef.lib only exports "Sleef_sind1_u10", not "sin"
 // LLVM needs to see calls to "sin" to apply VecFuncs.def mappings
 
-[Export, SymbolName('sin'), CallingConvention(CallingConvention.Cdecl)]
+[Export, SymbolName('sin'), CallingConvention(CallingConvention.Cdecl), MemoryNone, NoExcept, WillReturn]
 function sin_impl(x: Double): Double;
 begin
   exit SleefInternal.Sleef_sind1_u10(x);
 end;
 
-[Export, SymbolName('cos'), CallingConvention(CallingConvention.Cdecl)]
+[Export, SymbolName('cos'), CallingConvention(CallingConvention.Cdecl), MemoryNone, NoExcept, WillReturn]
 function cos_impl(x: Double): Double;
 begin
   exit SleefInternal.Sleef_cosd1_u10(x);
 end;
 
-[Export, SymbolName('tan'), CallingConvention(CallingConvention.Cdecl)]
+[Export, SymbolName('tan'), CallingConvention(CallingConvention.Cdecl), MemoryNone, NoExcept, WillReturn]
 function tan_impl(x: Double): Double;
 begin
   exit SleefInternal.Sleef_tand1_u10(x);
 end;
 
-[Export, SymbolName('asin'), CallingConvention(CallingConvention.Cdecl)]
+[Export, SymbolName('asin'), CallingConvention(CallingConvention.Cdecl), MemoryNone, NoExcept, WillReturn]
 function asin_impl(x: Double): Double;
 begin
   exit SleefInternal.Sleef_asind1_u10(x);
 end;
 
-[Export, SymbolName('acos'), CallingConvention(CallingConvention.Cdecl)]
+[Export, SymbolName('acos'), CallingConvention(CallingConvention.Cdecl), MemoryNone, NoExcept, WillReturn]
 function acos_impl(x: Double): Double;
 begin
   exit SleefInternal.Sleef_acosd1_u10(x);
 end;
 
-[Export, SymbolName('atan'), CallingConvention(CallingConvention.Cdecl)]
+[Export, SymbolName('atan'), CallingConvention(CallingConvention.Cdecl), MemoryNone, NoExcept, WillReturn]
 function atan_impl(x: Double): Double;
 begin
   exit SleefInternal.Sleef_atand1_u10(x);
 end;
 
-[Export, SymbolName('atan2'), CallingConvention(CallingConvention.Cdecl)]
+[Export, SymbolName('atan2'), CallingConvention(CallingConvention.Cdecl), MemoryNone, NoExcept, WillReturn]
 function atan2_impl(y: Double; x: Double): Double;
 begin
   exit SleefInternal.Sleef_atan2d1_u10(y, x);
 end;
 
-[Export, SymbolName('sinh'), CallingConvention(CallingConvention.Cdecl)]
+[Export, SymbolName('sinh'), CallingConvention(CallingConvention.Cdecl), MemoryNone, NoExcept, WillReturn]
 function sinh_impl(x: Double): Double;
 begin
   exit SleefInternal.Sleef_sinhd1_u10(x);
 end;
 
-[Export, SymbolName('cosh'), CallingConvention(CallingConvention.Cdecl)]
+[Export, SymbolName('cosh'), CallingConvention(CallingConvention.Cdecl), MemoryNone, NoExcept, WillReturn]
 function cosh_impl(x: Double): Double;
 begin
   exit SleefInternal.Sleef_coshd1_u10(x);
 end;
 
-[Export, SymbolName('tanh'), CallingConvention(CallingConvention.Cdecl)]
+[Export, SymbolName('tanh'), CallingConvention(CallingConvention.Cdecl), MemoryNone, NoExcept, WillReturn]
 function tanh_impl(x: Double): Double;
 begin
   exit SleefInternal.Sleef_tanhd1_u10(x);
 end;
 
-[Export, SymbolName('exp'), CallingConvention(CallingConvention.Cdecl)]
+[Export, SymbolName('exp'), CallingConvention(CallingConvention.Cdecl), MemoryNone, NoExcept, WillReturn]
 function exp_impl(x: Double): Double;
 begin
   exit SleefInternal.Sleef_expd1_u10(x);
 end;
 
-[Export, SymbolName('exp2'), CallingConvention(CallingConvention.Cdecl)]
+[Export, SymbolName('exp2'), CallingConvention(CallingConvention.Cdecl), MemoryNone, NoExcept, WillReturn]
 function exp2_impl(x: Double): Double;
 begin
   exit SleefInternal.Sleef_exp2d1_u10(x);
 end;
 
-[Export, SymbolName('log'), CallingConvention(CallingConvention.Cdecl)]
+[Export, SymbolName('log'), CallingConvention(CallingConvention.Cdecl), MemoryNone, NoExcept, WillReturn]
 function log_impl(x: Double): Double;
 begin
   exit SleefInternal.Sleef_logd1_u10(x);
 end;
 
-[Export, SymbolName('log2'), CallingConvention(CallingConvention.Cdecl)]
+[Export, SymbolName('log2'), CallingConvention(CallingConvention.Cdecl), MemoryNone, NoExcept, WillReturn]
 function log2_impl(x: Double): Double;
 begin
   exit SleefInternal.Sleef_log2d1_u10(x);
 end;
 
-[Export, SymbolName('log10'), CallingConvention(CallingConvention.Cdecl)]
+[Export, SymbolName('log10'), CallingConvention(CallingConvention.Cdecl), MemoryNone, NoExcept, WillReturn]
 function log10_impl(x: Double): Double;
 begin
   exit SleefInternal.Sleef_log10d1_u10(x);
 end;
 
-[Export, SymbolName('pow'), CallingConvention(CallingConvention.Cdecl)]
+[Export, SymbolName('pow'), CallingConvention(CallingConvention.Cdecl), MemoryNone, NoExcept, WillReturn]
 function pow_impl(x: Double; y: Double): Double;
 begin
   exit SleefInternal.Sleef_powd1_u10(x, y);
 end;
 
-[Export, SymbolName('sqrt'), CallingConvention(CallingConvention.Cdecl)]
+[Export, SymbolName('sqrt'), CallingConvention(CallingConvention.Cdecl), MemoryNone, NoExcept, WillReturn]
 function sqrt_impl(x: Double): Double;
 begin
   exit SleefInternal.Sleef_sqrtd1_u05(x);
 end;
 
-[Export, SymbolName('ceil'), CallingConvention(CallingConvention.Cdecl)]
+// Temporarily disabled - linking issue
+//[Export, SymbolName('sqrtf'), CallingConvention(CallingConvention.Cdecl), MemoryNone, NoExcept, WillReturn]
+//function sqrtf_impl(x: Single): Single;
+//begin
+//  exit SleefInternal.Sleef_sqrtf1(x);
+//end;
+
+[Export, SymbolName('ceil'), CallingConvention(CallingConvention.Cdecl), MemoryNone, NoExcept, WillReturn]
 function ceil_impl(x: Double): Double;
 begin
   exit SleefInternal.Sleef_ceild1(x);
 end;
 
-[Export, SymbolName('ceilf'), CallingConvention(CallingConvention.Cdecl)]
+[Export, SymbolName('ceilf'), CallingConvention(CallingConvention.Cdecl), MemoryNone, NoExcept, WillReturn]
 function ceilf_impl(x: Single): Single;
 begin
   exit SleefInternal.Sleef_ceilf1(x);
 end;
 
-[Export, SymbolName('floor'), CallingConvention(CallingConvention.Cdecl)]
+[Export, SymbolName('floor'), CallingConvention(CallingConvention.Cdecl), MemoryNone, NoExcept, WillReturn]
 function floor_impl(x: Double): Double;
 begin
   exit SleefInternal.Sleef_floord1(x);
 end;
 
-[Export, SymbolName('floorf'), CallingConvention(CallingConvention.Cdecl)]
+[Export, SymbolName('floorf'), CallingConvention(CallingConvention.Cdecl), MemoryNone, NoExcept, WillReturn]
 function floorf_impl(x: Single): Single;
 begin
   exit SleefInternal.Sleef_floorf1(x);
 end;
 
-[Export, SymbolName('trunc'), CallingConvention(CallingConvention.Cdecl)]
+[Export, SymbolName('trunc'), CallingConvention(CallingConvention.Cdecl), MemoryNone, NoExcept, WillReturn]
 function trunc_impl(x: Double): Double;
 begin
   exit SleefInternal.Sleef_truncd1(x);
 end;
 
-[Export, SymbolName('truncf'), CallingConvention(CallingConvention.Cdecl)]
+[Export, SymbolName('truncf'), CallingConvention(CallingConvention.Cdecl), MemoryNone, NoExcept, WillReturn]
 function truncf_impl(x: Single): Single;
 begin
   exit SleefInternal.Sleef_truncf1(x);
 end;
 
-[Export, SymbolName('round'), CallingConvention(CallingConvention.Cdecl)]
+[Export, SymbolName('round'), CallingConvention(CallingConvention.Cdecl), MemoryNone, NoExcept, WillReturn]
 function round_impl(x: Double): Double;
 begin
   exit SleefInternal.Sleef_roundd1(x);
 end;
 
-[Export, SymbolName('fabs'), CallingConvention(CallingConvention.Cdecl)]
+[Export, SymbolName('fabs'), CallingConvention(CallingConvention.Cdecl), MemoryNone, NoExcept, WillReturn]
 function fabs_impl(x: Double): Double;
 begin
   exit SleefInternal.Sleef_fabsd1(x);
 end;
 
-[Export, SymbolName('fmod'), CallingConvention(CallingConvention.Cdecl)]
+[Export, SymbolName('fmod'), CallingConvention(CallingConvention.Cdecl), MemoryNone, NoExcept, WillReturn]
 function fmod_impl(x: Double; y: Double): Double;
 begin
   exit SleefInternal.Sleef_fmodd1(x, y);
 end;
 
-[Export, SymbolName('fmodf'), CallingConvention(CallingConvention.Cdecl)]
+[Export, SymbolName('fmodf'), CallingConvention(CallingConvention.Cdecl), MemoryNone, NoExcept, WillReturn]
 function fmodf_impl(x: Single; y: Single): Single;
 begin
   exit SleefInternal.Sleef_fmodf1(x, y);

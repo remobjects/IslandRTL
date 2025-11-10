@@ -15,6 +15,37 @@ interface
 
 type
   Math = public partial class
+  public
+    // Transcendental functions - implemented in Pure Pascal
+    class method Acos(d: Double): Double;
+    class method Asin(d: Double): Double;
+    class method Atan(d: Double): Double;
+    class method Atan2(x,y: Double): Double;
+    class method Ceiling(d: Double): Double;
+    class method Ceiling(d: Single): Single;
+    class method Cos(d: Double): Double;
+    class method Cosh(d: Double): Double;
+    class method Exp(d: Double): Double;
+    class method Exp2(d: Double): Double;
+    class method Floor(d: Double): Double;
+    class method Floor(d: Single): Single;
+    class method Log(a: Double): Double;
+    class method Log2(a: Double): Double;
+    class method Log10(a: Double): Double;
+    class method Pow(x, y: Double): Double;
+    class method Round(a: Double): Double;
+    class method Sin(x: Double): Double;
+    class method Sinh(x: Double): Double;
+    class method Sqrt(d: Double): Double;
+    class method Sqrt(d: Single): Single;
+    class method Tan(d: Double): Double;
+    class method Tanh(d: Double): Double;
+    class method Truncate(d: Double): Double;
+    class method Truncate(d: Single): Single;
+    // Utility functions
+    class method Abs(i: Double): Double;
+    class method fmod(x, y: Double): Double;
+    class method fmodf(x,y: Single): Single;
   end;
 
 implementation
@@ -317,6 +348,32 @@ end;
 class method Math.Sqrt(d: Double): Double;
 begin
   exit Exp2((0.5 * Log(d))/ln2); // Pow(d, 0.5) = Exp(0.5 * Log(d)) = Exp2((0.5 * Log(d))/ln2);
+end;
+
+class method Math.Sqrt(d: Single): Single;
+begin
+  exit Single(Sqrt(Double(d)));
+end;
+
+// Utility functions
+
+class method Math.Abs(i: Double): Double;
+begin
+  exit if i < 0 then -i else i;
+end;
+
+class method Math.fmod(x, y: Double): Double;
+begin
+  // from https://msdn.microsoft.com/en-us/library/system.math.ieeeremainder%28v=vs.110%29.aspx
+  // Modulus = (Math.Abs(dividend) - (Math.Abs(divisor) *
+  //           (Math.Floor(Math.Abs(dividend) / Math.Abs(divisor))))) *
+  //           Math.Sign(dividend)
+  exit (Abs(x) - (Abs(y) *  (Floor(Abs(x) / Abs(y))))) * Sign(x);
+end;
+
+class method Math.fmodf(x, y: Single): Single;
+begin
+  exit (Abs(x) - (Abs(y) *  (Floor(Abs(x) / Abs(y))))) * Sign(x);
 end;
 
 {$ENDIF}

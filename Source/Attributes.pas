@@ -191,6 +191,34 @@ type
     constructor(); empty;
   end;
 
+  [AttributeUsage(AttributeTargets.Method)]
+  MemoryNoneAttribute = public class(Attribute)
+  private
+  public
+    constructor(); empty;
+  end;
+
+  [AttributeUsage(AttributeTargets.Method)]
+  MemoryReadOnlyAttribute = public class(Attribute)
+  private
+  public
+    constructor(); empty;
+  end;
+
+  [AttributeUsage(AttributeTargets.Method)]
+  NoExceptAttribute = public class(Attribute)
+  private
+  public
+    constructor(); empty;
+  end;
+
+  [AttributeUsage(AttributeTargets.Method)]
+  WillReturnAttribute = public class(Attribute)
+  private
+  public
+    constructor(); empty;
+  end;
+
   [AttributeUsage(AttributeTargets.Field)]
   AliasAttribute = public class(Attribute)
   private

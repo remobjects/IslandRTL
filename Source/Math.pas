@@ -76,9 +76,7 @@ type
     {$ENDREGION}
     class method IntPow(x:Double; y: Integer): Double;
   public
-    // Simple utility methods (no LLVM intrinsics needed)
-    [SymbolName('fabs')]
-    class method Abs(i: Double): Double;
+    // Utility methods with implementations in this file
     class method Abs(i: Int64): Int64;
     class method Abs(i: Integer): Integer;
     class method Max(a,b: Double): Double;
@@ -87,129 +85,65 @@ type
     class method Min(a,b: Double): Double;
     class method Min(a,b: Integer): Integer;
     class method Min(a,b: Int64): Int64;
-    [SymbolName('fmod'), Used]
-    {$IFDEF WebAssembly}[DLLExport]{$ENDIF}
-    class method fmod(x, y: Double): Double;
-    [SymbolName('fmodf'), Used]
-    {$IFDEF WebAssembly}[DLLExport]{$ENDIF}
-    class method fmodf(x,y: Single): Single;
-
     class method IEEERemainder(x, y: Double): Double;
     class method Sign(d: Double): Integer;
 
-    // Transcendental functions (implemented via LLVM intrinsics or Pure Pascal)
-    {$IFDEF USE_LLVM_MATH_VECTORLIB}
-    // SLEEF-enabled platforms: Use LLVM intrinsics for vectorization
-    // Intrinsics allow LLVM to vectorize in optimized builds
-    // In debug builds, intrinsics get lowered to C names, which are provided by export wrappers
-    [SymbolName('llvm.acos.f64')]
-    class method Acos(d: Double): Double; external;
-    [SymbolName('llvm.asin.f64')]
-    class method Asin(d: Double): Double; external;
-    [SymbolName('llvm.atan.f64')]
-    class method Atan(d: Double): Double; external;
-    [SymbolName('llvm.atan2.f64')]
-    class method Atan2(x,y: Double): Double; external;
-    [SymbolName('llvm.ceil.f64')]
-    class method Ceiling(d: Double): Double; external;
-    [SymbolName('llvm.ceil.f32')]
-    class method Ceiling(d: Single): Single; external;
-    // SLEEF-enabled platforms: Use LLVM intrinsics for vectorization
-    // Intrinsics allow LLVM to vectorize in optimized builds
-    // In debug builds, intrinsics get lowered to C names, which are provided by export wrappers
-    [SymbolName('llvm.cos.f64')]
-    class method Cos(d: Double): Double; external;
-    [SymbolName('llvm.cosh.f64')]
-    class method Cosh(d: Double): Double; external;
-    [SymbolName('llvm.exp.f64')]
-    class method Exp(d: Double): Double; external;
-    [SymbolName('llvm.exp2.f64')]
-    class method Exp2(d: Double): Double; external;
-    [SymbolName('llvm.floor.f64'), Used]
-    {$IFDEF WebAssembly}[DLLExport]{$ENDIF}
-    class method Floor(d: Double): Double; external;
-    [SymbolName('llvm.floor.f32'), Used]
-    {$IFDEF WebAssembly}[DLLExport]{$ENDIF}
-    class method Floor(d: Single): Single; external;
-    [SymbolName('llvm.log.f64')]
-    class method Log(a: Double): Double; external;
-    [SymbolName('llvm.log2.f64')]
-    class method Log2(a: Double): Double; external;
-    [SymbolName('llvm.log10.f64')]
-    class method Log10(a: Double): Double; external;
-    [SymbolName('llvm.pow.f64')]
-    class method Pow(x, y: Double): Double; external;
-    [SymbolName('llvm.round.f64')]
-    class method Round(a: Double): Double; external;
-    [SymbolName('llvm.sin.f64')]
-    class method Sin(x: Double): Double; external;
-    [SymbolName('llvm.sinh.f64')]
-    class method Sinh(x: Double): Double; external;
-    [SymbolName('llvm.sqrt.f64')]
-    class method Sqrt(d: Double): Double; external;
-    [SymbolName('llvm.tan.f64')]
-    class method Tan(d: Double): Double; external;
-    [SymbolName('llvm.tanh.f64')]
-    class method Tanh(d: Double): Double; external;
-    [SymbolName('llvm.trunc.f64'), Used]
-    {$IFDEF WebAssembly}[DLLExport]{$ENDIF}
-    class method Truncate(d: Double): Double; external;
-    [SymbolName('llvm.trunc.f32'), Used]
-    {$IFDEF WebAssembly}[DLLExport]{$ENDIF}
-    class method Truncate(d: Single): Single; external;
-    {$ELSE}
-    // Non-SLEEF platforms: Use plain C names
-    [SymbolName('acos')]
-    class method Acos(d: Double): Double;
-    [SymbolName('asin')]
-    class method Asin(d: Double): Double;
-    [SymbolName('atan')]
-    class method Atan(d: Double): Double;
-    [SymbolName('atan2')]
-    class method Atan2(x,y: Double): Double;
-    [SymbolName('ceil')]
-    class method Ceiling(d: Double): Double;
-    [SymbolName('ceilf')]
-    class method Ceiling(d: Single): Single;
-    [SymbolName('cos')]
-    class method Cos(d: Double): Double;
-    [SymbolName('cosh')]
-    class method Cosh(d: Double): Double;
-    [SymbolName('exp')]
-    class method Exp(d: Double): Double;
-    class method Exp2(d: Double):Double;
-    [SymbolName('floor'), Used]
-    {$IFDEF WebAssembly}[DLLExport]{$ENDIF}
-    class method Floor(d: Double): Double;
-    [SymbolName('floorf'), Used]
-    {$IFDEF WebAssembly}[DLLExport]{$ENDIF}
-    class method Floor(d: Single): Single;
-    [SymbolName('log')]
-    class method Log(a: Double): Double;
-    class method Log2(a: Double): Double;
-    [SymbolName('log10')]
-    class method Log10(a: Double): Double;
-    [SymbolName('pow')]
-    class method Pow(x, y: Double): Double;
-    [SymbolName('round')]
-    class method Round(a: Double): Double;
-    [SymbolName('sin')]
-    class method Sin(x: Double): Double;
-    [SymbolName('sinh')]
-    class method Sinh(x: Double): Double;
-    [SymbolName('sqrt')]
-    class method Sqrt(d: Double): Double;
-    [SymbolName('tan')]
-    class method Tan(d: Double): Double;
-    [SymbolName('tanh')]
-    class method Tanh(d: Double): Double;
-    [SymbolName('trunc'), Used]
-    {$IFDEF WebAssembly}[DLLExport]{$ENDIF}
-    class method Truncate(d: Double): Double;
-    [SymbolName('truncf'), Used]
-    {$IFDEF WebAssembly}[DLLExport]{$ENDIF}
-    class method Truncate(d: Single): Single;
-    {$ENDIF}
+    // Math functions with SLEEF implementations are declared in Math.LLVMVectorLib.pas
+    // (or Math.PurePascal.pas for non-SLEEF platforms)
+
+    // {$ELSE}
+    // // Non-SLEEF platforms: Use plain C names
+    // [SymbolName('acos')]
+    // class method Acos(d: Double): Double;
+    // [SymbolName('asin')]
+    // class method Asin(d: Double): Double;
+    // [SymbolName('atan')]
+    // class method Atan(d: Double): Double;
+    // [SymbolName('atan2')]
+    // class method Atan2(x,y: Double): Double;
+    // [SymbolName('ceil')]
+    // class method Ceiling(d: Double): Double;
+    // [SymbolName('ceilf')]
+    // class method Ceiling(d: Single): Single;
+    // [SymbolName('cos')]
+    // class method Cos(d: Double): Double;
+    // [SymbolName('cosh')]
+    // class method Cosh(d: Double): Double;
+    // [SymbolName('exp')]
+    // class method Exp(d: Double): Double;
+    // class method Exp2(d: Double):Double;
+    // [SymbolName('floor'), Used]
+    // {$IFDEF WebAssembly}[DLLExport]{$ENDIF}
+    // class method Floor(d: Double): Double;
+    // [SymbolName('floorf'), Used]
+    // {$IFDEF WebAssembly}[DLLExport]{$ENDIF}
+    // class method Floor(d: Single): Single;
+    // [SymbolName('log')]
+    // class method Log(a: Double): Double;
+    // class method Log2(a: Double): Double;
+    // [SymbolName('log10')]
+    // class method Log10(a: Double): Double;
+    // [SymbolName('pow')]
+    // class method Pow(x, y: Double): Double;
+    // [SymbolName('round')]
+    // class method Round(a: Double): Double;
+    // [SymbolName('sin')]
+    // class method Sin(x: Double): Double;
+    // [SymbolName('sinh')]
+    // class method Sinh(x: Double): Double;
+    // [SymbolName('sqrt')]
+    // class method Sqrt(d: Double): Double;
+    // [SymbolName('tan')]
+    // class method Tan(d: Double): Double;
+    // [SymbolName('tanh')]
+    // class method Tanh(d: Double): Double;
+    // [SymbolName('trunc'), Used]
+    // {$IFDEF WebAssembly}[DLLExport]{$ENDIF}
+    // class method Truncate(d: Double): Double;
+    // [SymbolName('truncf'), Used]
+    // {$IFDEF WebAssembly}[DLLExport]{$ENDIF}
+    // class method Truncate(d: Single): Single;
+    // {$ENDIF}
 
     // Integer overload of Pow has custom implementation (not external)
     class method Pow(x:Double; y: Integer): Double;
@@ -221,11 +155,6 @@ type
 implementation
 
 // Simple utility methods - always use these implementations
-class method Math.Abs(i: Double): Double;
-begin
-  exit if i < 0 then - i else i;
-end;
-
 class method Math.Abs(i: Int64): Int64;
 begin
   exit if i < 0 then - i else i;
@@ -278,20 +207,6 @@ begin
   // IEEERemainder = dividend - (divisor * Math.Round(dividend / divisor))
   if y = 0 then exit Double.NaN;
   exit (x - y * Round(x / y));
-end;
-
-class method Math.fmod(x: Double; y: Double): Double;
-begin
-  // from https://msdn.microsoft.com/en-us/library/system.math.ieeeremainder%28v=vs.110%29.aspx
-  // Modulus = (Math.Abs(dividend) - (Math.Abs(divisor) *
-  //           (Math.Floor(Math.Abs(dividend) / Math.Abs(divisor))))) *
-  //           Math.Sign(dividend)
-  exit (Abs(x) - (Abs(y) *  (Floor(Abs(x) / Abs(y))))) * Sign(x);
-end;
-
-class method Math.fmodf(x,y: Single): Single;
-begin
-  exit Math.fmod(x, y);
 end;
 
 class method Math.IntPow(x: Double; y: Integer): Double;
