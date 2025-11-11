@@ -8,11 +8,14 @@
 //
 // ARCHITECTURE:
 // 1. User code calls Math.Sin(x) (in a loop or sequence, ie, anywhere vectorisation is clear)
-// 2. Compiler generates call to Sleef_sind1_u10 (SLEEF scalar function) (this is inlined, occurs anyway but via 'inline')
-// 3. LLVM optimizer checks VecFuncs.def for Sleef_sind1_u10 mapping
+// 2. Via SleefInternal.[sleef-name-for-sin], the compiler generates a call to Sleef_sind1_u10
+//    (the SLEEF scalar function) (this is inlined, occurs anyway but via 'inline')
+// 3. The LLVM optimizer checks VecFuncs.def for Sleef_sind1_u10 mapping
 // 4. VecFuncs.def maps Sleef_sind1_u10 → Sleef_sind2_u10advsimd (vector) or other wider vector funcs
 //    (This should also occur if there is a reference to C-RTL name 'sin()' or llvm.sin.* intrinsic,
 //    but this way we know for sure what will be emitted.)
+//    (SleefInternal.sin and other methods have SymbolName attributes of sin (and other methods)
+//    in order to generate a mapping between C RTL names so the vectoriser can recognise those too.)
 // 5. Loop vectorizer replaces scalar calls with vector SLEEF calls
 //
 // - SleefInternal: External declarations for SLEEF scalar functions
@@ -91,7 +94,6 @@ type
     class method Truncate(d: Double): Double; inline;
     [MemoryNone, NoExcept, WillReturn]
     class method Truncate(d: Single): Single; inline;
-    // Utility functions with SLEEF implementations
     [MemoryNone, NoExcept, WillReturn]
     class method Abs(i: Double): Double; inline;
     [MemoryNone, NoExcept, WillReturn]
@@ -107,6 +109,63 @@ type
   // These link directly to the SLEEF library (sleef.lib)
   SleefInternal = static class
   assembly  // assembly = internal visibility (accessible within same assembly)
+    // C RTL symbol exports for LLVM vectorization and SLEEF dependencies
+    // These are hidden from public API but exported with C names via SymbolName
+    [SymbolName('acos'), Used]
+    class method acos(d: Double): Double; inline;
+    [SymbolName('asin'), Used]
+    class method asin(d: Double): Double; inline;
+    [SymbolName('atan'), Used]
+    class method atan(d: Double): Double; inline;
+    [SymbolName('atan2'), Used]
+    class method atan2(y, x: Double): Double; inline;
+    [SymbolName('ceil'), Used]
+    class method ceil(d: Double): Double; inline;
+    [SymbolName('ceilf'), Used]
+    class method ceilf(d: Single): Single; inline;
+    [SymbolName('cos'), Used]
+    class method cos(d: Double): Double; inline;
+    [SymbolName('cosh'), Used]
+    class method cosh(d: Double): Double; inline;
+    [SymbolName('exp'), Used]
+    class method exp(d: Double): Double; inline;
+    [SymbolName('exp2'), Used]
+    class method exp2(d: Double): Double; inline;
+    [SymbolName('fabs'), Used]
+    class method fabs(d: Double): Double; inline;
+    [SymbolName('floor'), Used]
+    class method floor(d: Double): Double; inline;
+    [SymbolName('floorf'), Used]
+    class method floorf(d: Single): Single; inline;
+    [SymbolName('fmod'), Used]
+    class method fmod(x, y: Double): Double; inline;
+    [SymbolName('log'), Used]
+    class method log(d: Double): Double; inline;
+    [SymbolName('log2'), Used]
+    class method log2(d: Double): Double; inline;
+    [SymbolName('log10'), Used]
+    class method log10(d: Double): Double; inline;
+    [SymbolName('pow'), Used]
+    class method pow(x, y: Double): Double; inline;
+    [SymbolName('round'), Used]
+    class method round(d: Double): Double; inline;
+    [SymbolName('sin'), Used]
+    class method sin(d: Double): Double; inline;
+    [SymbolName('sinh'), Used]
+    class method sinh(d: Double): Double; inline;
+    [SymbolName('sqrt'), Used]
+    class method sqrt(d: Double): Double; inline;
+    [SymbolName('sqrtf'), Used]
+    class method sqrtf(d: Single): Single; inline;
+    [SymbolName('tan'), Used]
+    class method tan(d: Double): Double; inline;
+    [SymbolName('tanh'), Used]
+    class method tanh(d: Double): Double; inline;
+    [SymbolName('trunc'), Used]
+    class method trunc(d: Double): Double; inline;
+    [SymbolName('truncf'), Used]
+    class method truncf(d: Single): Single; inline;
+
     // Trigonometric functions
     [SymbolName('Sleef_sind1_u10')]
     class method Sleef_sind1_u10(x: Double): Double; external;
@@ -349,6 +408,142 @@ end;
 class method Math.Truncate(d: Single): Single;
 begin
   exit SleefInternal.Sleef_truncf1(d);
+end;
+
+// C RTL symbol exports - hidden in SleefInternal for LLVM vectorization
+class method SleefInternal.acos(d: Double): Double;
+begin
+  exit Sleef_acosd1_u10(d);
+end;
+
+class method SleefInternal.asin(d: Double): Double;
+begin
+  exit Sleef_asind1_u10(d);
+end;
+
+class method SleefInternal.atan(d: Double): Double;
+begin
+  exit Sleef_atand1_u10(d);
+end;
+
+class method SleefInternal.atan2(y, x: Double): Double;
+begin
+  exit Sleef_atan2d1_u10(y, x);
+end;
+
+class method SleefInternal.ceil(d: Double): Double;
+begin
+  exit Sleef_ceild1(d);
+end;
+
+class method SleefInternal.ceilf(d: Single): Single;
+begin
+  exit Sleef_ceilf1(d);
+end;
+
+class method SleefInternal.cos(d: Double): Double;
+begin
+  exit Sleef_cosd1_u10(d);
+end;
+
+class method SleefInternal.cosh(d: Double): Double;
+begin
+  exit Sleef_coshd1_u10(d);
+end;
+
+class method SleefInternal.exp(d: Double): Double;
+begin
+  exit Sleef_expd1_u10(d);
+end;
+
+class method SleefInternal.exp2(d: Double): Double;
+begin
+  exit Sleef_exp2d1_u10(d);
+end;
+
+class method SleefInternal.fabs(d: Double): Double;
+begin
+  exit Sleef_fabsd1(d);
+end;
+
+class method SleefInternal.floor(d: Double): Double;
+begin
+  exit Sleef_floord1(d);
+end;
+
+class method SleefInternal.floorf(d: Single): Single;
+begin
+  exit Sleef_floorf1(d);
+end;
+
+class method SleefInternal.fmod(x, y: Double): Double;
+begin
+  exit Sleef_fmodd1(x, y);
+end;
+
+class method SleefInternal.log(d: Double): Double;
+begin
+  exit Sleef_logd1_u10(d);
+end;
+
+class method SleefInternal.log2(d: Double): Double;
+begin
+  exit Sleef_log2d1_u10(d);
+end;
+
+class method SleefInternal.log10(d: Double): Double;
+begin
+  exit Sleef_log10d1_u10(d);
+end;
+
+class method SleefInternal.pow(x, y: Double): Double;
+begin
+  exit Sleef_powd1_u10(x, y);
+end;
+
+class method SleefInternal.round(d: Double): Double;
+begin
+  exit Sleef_roundd1(d);
+end;
+
+class method SleefInternal.sin(d: Double): Double;
+begin
+  exit Sleef_sind1_u10(d);
+end;
+
+class method SleefInternal.sinh(d: Double): Double;
+begin
+  exit Sleef_sinhd1_u10(d);
+end;
+
+class method SleefInternal.sqrt(d: Double): Double;
+begin
+  exit Sleef_sqrtd1_u05(d);
+end;
+
+class method SleefInternal.sqrtf(d: Single): Single;
+begin
+  exit Sleef_sqrtf1(d);
+end;
+
+class method SleefInternal.tan(d: Double): Double;
+begin
+  exit Sleef_tand1_u10(d);
+end;
+
+class method SleefInternal.tanh(d: Double): Double;
+begin
+  exit Sleef_tanhd1_u10(d);
+end;
+
+class method SleefInternal.trunc(d: Double): Double;
+begin
+  exit Sleef_truncd1(d);
+end;
+
+class method SleefInternal.truncf(d: Single): Single;
+begin
+  exit Sleef_truncf1(d);
 end;
 
 {$ENDIF}
