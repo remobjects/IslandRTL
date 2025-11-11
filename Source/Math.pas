@@ -8,9 +8,9 @@ interface
 // Two implementations available:
 //   1. Math.LLVMVectorLib.pas - SLEEF-based (ENABLED for supported platforms)
 //   2. Math.PurePascal.pas    - Pure Pascal fallback
-// This is: Windows, macOS, and Linux (but not variants like Android, iOS, etc) using ARM64, Intel x86_64, and i386
+// Supported: Windows (), macOS (ARM), Linux (non-Android) on i386, x86_64, ARM64
 // You MUST keep this up to date with Elements' IslandOutput.pas, ShouldUseVectorMathLib()
-{$IF (WINDOWS OR (DARWIN AND NOT (IOS OR TVOS OR WATCHOS OR VISIONOS)) OR (LINUX AND NOT ANDROID)) AND (i386 OR x86_64 OR ARM64)}
+{$IF ((WINDOWS AND (i386 OR x86_64 OR ARM64)) OR ((DARWIN AND NOT (IOS OR TVOS OR WATCHOS OR VISIONOS)) AND (i386 OR x86_64 OR ARM64)) OR ((LINUX AND NOT ANDROID) AND (i386 OR x86_64 OR ARM64)))}
   {$DEFINE USE_LLVM_MATH_VECTORLIB}  // Uses SLEEF library with LLVM vectorization
 {$ENDIF}
 
@@ -88,62 +88,8 @@ type
     class method IEEERemainder(x, y: Double): Double;
     class method Sign(d: Double): Integer;
 
-    // Math functions with SLEEF implementations are declared in Math.LLVMVectorLib.pas
+    // Math functions with SLEEF/LLVM implementations are declared in Math.LLVMVectorLib.pas
     // (or Math.PurePascal.pas for non-SLEEF platforms)
-
-    // {$ELSE}
-    // // Non-SLEEF platforms: Use plain C names
-    // [SymbolName('acos')]
-    // class method Acos(d: Double): Double;
-    // [SymbolName('asin')]
-    // class method Asin(d: Double): Double;
-    // [SymbolName('atan')]
-    // class method Atan(d: Double): Double;
-    // [SymbolName('atan2')]
-    // class method Atan2(x,y: Double): Double;
-    // [SymbolName('ceil')]
-    // class method Ceiling(d: Double): Double;
-    // [SymbolName('ceilf')]
-    // class method Ceiling(d: Single): Single;
-    // [SymbolName('cos')]
-    // class method Cos(d: Double): Double;
-    // [SymbolName('cosh')]
-    // class method Cosh(d: Double): Double;
-    // [SymbolName('exp')]
-    // class method Exp(d: Double): Double;
-    // class method Exp2(d: Double):Double;
-    // [SymbolName('floor'), Used]
-    // {$IFDEF WebAssembly}[DLLExport]{$ENDIF}
-    // class method Floor(d: Double): Double;
-    // [SymbolName('floorf'), Used]
-    // {$IFDEF WebAssembly}[DLLExport]{$ENDIF}
-    // class method Floor(d: Single): Single;
-    // [SymbolName('log')]
-    // class method Log(a: Double): Double;
-    // class method Log2(a: Double): Double;
-    // [SymbolName('log10')]
-    // class method Log10(a: Double): Double;
-    // [SymbolName('pow')]
-    // class method Pow(x, y: Double): Double;
-    // [SymbolName('round')]
-    // class method Round(a: Double): Double;
-    // [SymbolName('sin')]
-    // class method Sin(x: Double): Double;
-    // [SymbolName('sinh')]
-    // class method Sinh(x: Double): Double;
-    // [SymbolName('sqrt')]
-    // class method Sqrt(d: Double): Double;
-    // [SymbolName('tan')]
-    // class method Tan(d: Double): Double;
-    // [SymbolName('tanh')]
-    // class method Tanh(d: Double): Double;
-    // [SymbolName('trunc'), Used]
-    // {$IFDEF WebAssembly}[DLLExport]{$ENDIF}
-    // class method Truncate(d: Double): Double;
-    // [SymbolName('truncf'), Used]
-    // {$IFDEF WebAssembly}[DLLExport]{$ENDIF}
-    // class method Truncate(d: Single): Single;
-    // {$ENDIF}
 
     // Integer overload of Pow has custom implementation (not external)
     class method Pow(x:Double; y: Integer): Double;
