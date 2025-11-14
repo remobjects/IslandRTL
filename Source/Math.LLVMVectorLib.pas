@@ -39,6 +39,13 @@
 // - Any other code expecting C RTL names gets them
 // Simple function exports (sqrt) forward to LLVM intrinsics; complex ones forward to SLEEF.
 //
+// Win32 (i386) Special Handling:
+// On 32-bit x86 without SSE4.1, LLVM intrinsics like llvm.ceil.f64 are NOT real intrinsics -
+// they lower to library calls (e.g., llvm.ceil.f64 → call to 'ceil'). This creates infinite
+// recursion when our RTL exports 'ceil' that calls llvm.ceil.f64.
+// Solution: On i386, C RTL exports for simple functions (ceil, floor, trunc, round, sqrt, fabs)
+// call SLEEF scalar functions directly instead of using LLVM intrinsics.
+//
 // - SleefInternal: External declarations for SLEEF scalar functions and LLVM intrinsics
 // - Math class: Public API that forwards to SleefInternal
 //
@@ -489,12 +496,24 @@ end;
 
 class method SleefInternal.ceil(d: Double): Double;
 begin
+  {$IF i386}
+  // Win32: LLVM intrinsics lower to library calls causing recursion
+  // Call SLEEF directly instead
+  exit Sleef_ceild1(d);
+  {$ELSE}
   exit llvm_ceil_f64(d);  // Forward to LLVM intrinsic for SLEEF library dependency
+  {$ENDIF}
 end;
 
 class method SleefInternal.ceilf(d: Single): Single;
 begin
+  {$IF i386}
+  // Win32: LLVM intrinsics lower to library calls causing recursion
+  // Call SLEEF directly instead
+  exit Sleef_ceilf1(d);
+  {$ELSE}
   exit llvm_ceil_f32(d);  // Forward to LLVM intrinsic for SLEEF library dependency
+  {$ENDIF}
 end;
 
 class method SleefInternal.cos(d: Double): Double;
@@ -519,17 +538,35 @@ end;
 
 class method SleefInternal.fabs(d: Double): Double;
 begin
+  {$IF i386}
+  // Win32: LLVM intrinsics lower to library calls causing recursion
+  // Call SLEEF directly instead
+  exit Sleef_fabsd1(d);
+  {$ELSE}
   exit llvm_fabs_f64(d);  // Forward to LLVM intrinsic for SLEEF library dependency
+  {$ENDIF}
 end;
 
 class method SleefInternal.floor(d: Double): Double;
 begin
+  {$IF i386}
+  // Win32: LLVM intrinsics lower to library calls causing recursion
+  // Call SLEEF directly instead
+  exit Sleef_floord1(d);
+  {$ELSE}
   exit llvm_floor_f64(d);  // Forward to LLVM intrinsic for SLEEF library dependency
+  {$ENDIF}
 end;
 
 class method SleefInternal.floorf(d: Single): Single;
 begin
+  {$IF i386}
+  // Win32: LLVM intrinsics lower to library calls causing recursion
+  // Call SLEEF directly instead
+  exit Sleef_floorf1(d);
+  {$ELSE}
   exit llvm_floor_f32(d);  // Forward to LLVM intrinsic for SLEEF library dependency
+  {$ENDIF}
 end;
 
 class method SleefInternal.fmod(x, y: Double): Double;
@@ -559,7 +596,13 @@ end;
 
 class method SleefInternal.round(d: Double): Double;
 begin
+  {$IF i386}
+  // Win32: LLVM intrinsics lower to library calls causing recursion
+  // Call SLEEF directly instead
+  exit Sleef_roundd1(d);
+  {$ELSE}
   exit llvm_round_f64(d);  // Forward to LLVM intrinsic for SLEEF library dependency
+  {$ENDIF}
 end;
 
 class method SleefInternal.sin(d: Double): Double;
@@ -574,12 +617,24 @@ end;
 
 class method SleefInternal.sqrt(d: Double): Double;
 begin
+  {$IF i386}
+  // Win32: LLVM intrinsics lower to library calls causing recursion
+  // Call SLEEF directly instead
+  exit Sleef_sqrtd1_u05(d);
+  {$ELSE}
   exit llvm_sqrt_f64(d);  // Forward to LLVM intrinsic for SLEEF library dependency
+  {$ENDIF}
 end;
 
 class method SleefInternal.sqrtf(d: Single): Single;
 begin
+  {$IF i386}
+  // Win32: LLVM intrinsics lower to library calls causing recursion
+  // Call SLEEF directly instead
+  exit Sleef_sqrtf1(d);
+  {$ELSE}
   exit llvm_sqrt_f32(d);  // Forward to LLVM intrinsic for SLEEF library dependency
+  {$ENDIF}
 end;
 
 class method SleefInternal.tan(d: Double): Double;
@@ -594,12 +649,24 @@ end;
 
 class method SleefInternal.trunc(d: Double): Double;
 begin
+  {$IF i386}
+  // Win32: LLVM intrinsics lower to library calls causing recursion
+  // Call SLEEF directly instead
+  exit Sleef_truncd1(d);
+  {$ELSE}
   exit llvm_trunc_f64(d);  // Forward to LLVM intrinsic for SLEEF library dependency
+  {$ENDIF}
 end;
 
 class method SleefInternal.truncf(d: Single): Single;
 begin
+  {$IF i386}
+  // Win32: LLVM intrinsics lower to library calls causing recursion
+  // Call SLEEF directly instead
+  exit Sleef_truncf1(d);
+  {$ELSE}
   exit llvm_trunc_f32(d);  // Forward to LLVM intrinsic for SLEEF library dependency
+  {$ENDIF}
 end;
 
 {$ENDIF}
