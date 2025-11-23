@@ -60,9 +60,9 @@
 // (For intrinsics, LLVM already knows this, but the attributes don't hurt.)
 
 // Check same conditions as Math.pas - must be kept in sync!
-// SLEEF supported: Windows (all arch), macOS ARM64 only
-// NOT supported: Linux, iOS, tvOS, watchOS, visionOS, Android, WebAssembly, macOS x64
-{$IF ((WINDOWS AND (i386 OR x86_64 OR ARM64)) OR ((DARWIN AND NOT (IOS OR TVOS OR WATCHOS OR VISIONOS)) AND ARM64))}
+// SLEEF supported: Windows (all arch), macOS (all arch)
+// NOT supported: Linux, iOS, tvOS, watchOS, visionOS, Android, WebAssembly
+{$IF ((WINDOWS AND (i386 OR x86_64 OR ARM64)) OR ((DARWIN AND NOT (IOS OR TVOS OR WATCHOS OR VISIONOS)) AND (ARM64 OR x86_64)))}
   {$DEFINE USE_LLVM_MATH_VECTORLIB}
 {$ENDIF}
 
