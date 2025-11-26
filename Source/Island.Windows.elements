@@ -17,6 +17,7 @@
     <DefineConstants>WINDOWS</DefineConstants>
     <Optimize>False</Optimize>
     <DefaultGlobalsToPublic>True</DefaultGlobalsToPublic>
+    <Architecture>x86_64;arm64</Architecture>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)' == 'Debug'">
     <OutputPath>Bin\Debug</OutputPath>
