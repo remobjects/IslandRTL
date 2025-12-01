@@ -1,11 +1,11 @@
-namespace RemObjects.Elements.System;
+﻿namespace RemObjects.Elements.System;
 
 // Pure Pascal Implementation
 // Fallback for platforms/architectures that don't support SLEEF vector math
 // (WebAssembly, Android, mobile Darwin platforms, unsupported architectures)
 
 // Check same conditions as Math.pas - must be kept in sync!
-{$IF ((WINDOWS AND (i386 OR x86_64 OR ARM64)) OR ((DARWIN AND NOT (IOS OR TVOS OR WATCHOS OR VISIONOS)) AND (i386 OR x86_64 OR ARM64)) OR ((LINUX AND NOT ANDROID) AND (i386 OR x86_64 OR ARM64)))}
+{$IF ((WINDOWS AND (i386 OR x86_64 OR ARM64)) OR (DARWIN AND MACOS) OR ((LINUX AND NOT ANDROID) AND (i386 OR x86_64 OR ARM64)))}
   {$DEFINE USE_LLVM_MATH_VECTORLIB}
 {$ENDIF}
 
