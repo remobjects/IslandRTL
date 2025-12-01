@@ -10,7 +10,9 @@ interface
 //   2. Math.PurePascal.pas    - Pure Pascal fallback
 // Supported: Windows (), macOS (ARM), Linux (non-Android) on i386, x86_64, ARM64
 // You MUST keep this up to date with Elements' IslandOutput.pas, ShouldUseVectorMathLib()
-{$IF ((WINDOWS AND (i386 OR x86_64 OR ARM64)) OR ((DARWIN AND NOT (IOS OR TVOS OR WATCHOS OR VISIONOS)) AND (i386 OR x86_64 OR ARM64)) OR ((LINUX AND NOT ANDROID) AND (i386 OR x86_64 OR ARM64)))}
+
+// Check same conditions as Math.pas - must be kept in sync!
+{$IF WINDOWS OR (DARWIN AND MACOS) OR ((LINUX AND NOT ANDROID) AND (i386 OR x86_64 OR ARM64)))}
   {$DEFINE USE_LLVM_MATH_VECTORLIB}  // Uses SLEEF library with LLVM vectorization
 {$ENDIF}
 
