@@ -12,7 +12,7 @@ interface
 // You MUST keep this up to date with Elements' IslandOutput.pas, ShouldUseVectorMathLib()
 
 // Check same conditions as Math.pas - must be kept in sync!
-{$IF WINDOWS OR (DARWIN AND MACOS) OR ((LINUX AND NOT ANDROID) AND (i386 OR x86_64 OR ARM64)))}
+{$IF WINDOWS OR (DARWIN AND MACOS) OR ((LINUX AND NOT ANDROID) AND (i386 OR x86_64 OR ARM64))}
   {$DEFINE USE_LLVM_MATH_VECTORLIB}  // Uses SLEEF library with LLVM vectorization
 {$ENDIF}
 
