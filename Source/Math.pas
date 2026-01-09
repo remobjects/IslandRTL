@@ -5,10 +5,11 @@ interface
 // Platform and architecture gating for SLEEF vector math library
 // Must match compiler's ShouldUseVectorMathLib logic
 //
-// Two implementations available:
+// Two implementations are available:
 //   1. Math.LLVMVectorLib.pas - SLEEF-based (ENABLED for supported platforms)
 //   2. Math.PurePascal.pas    - Pure Pascal fallback
-// Supported: Windows (), macOS (ARM), Linux (non-Android) on i386, x86_64, ARM64
+//
+// Supported: Windows ( i386, x86_64, arm64), macOS (x86_64, arm64), Linux (non-Android) on i386, x86_64, arm64
 // You MUST keep this up to date with Elements' IslandOutput.pas, ShouldUseVectorMathLib()
 
 // Check same conditions as Math.pas - must be kept in sync!
