@@ -48,6 +48,70 @@ type
     class method fmodf(x,y: Single): Single;
   end;
 
+  // C RTL exports - provide standard C library math function names
+  // These are needed because code may reference functions like 'fmod', 'sin', etc.
+  // by their C names rather than the Pascal Math.* methods
+  CRTLMathExports = assembly static class
+  public
+    // Simple functions
+    [SymbolName('sqrt'), Used]
+    class method sqrt(d: Double): Double;
+    [SymbolName('sqrtf'), Used]
+    class method sqrtf(d: Single): Single;
+    [SymbolName('ceil'), Used]
+    class method ceil(d: Double): Double;
+    [SymbolName('ceilf'), Used]
+    class method ceilf(d: Single): Single;
+    [SymbolName('floor'), Used]
+    class method floor(d: Double): Double;
+    [SymbolName('floorf'), Used]
+    class method floorf(d: Single): Single;
+    [SymbolName('trunc'), Used]
+    class method trunc(d: Double): Double;
+    [SymbolName('truncf'), Used]
+    class method truncf(d: Single): Single;
+    [SymbolName('round'), Used]
+    class method round(d: Double): Double;
+    [SymbolName('fabs'), Used]
+    class method fabs(d: Double): Double;
+
+    // Complex functions
+    [SymbolName('acos'), Used]
+    class method acos(d: Double): Double;
+    [SymbolName('asin'), Used]
+    class method asin(d: Double): Double;
+    [SymbolName('atan'), Used]
+    class method atan(d: Double): Double;
+    [SymbolName('atan2'), Used]
+    class method atan2(y, x: Double): Double;
+    [SymbolName('cos'), Used]
+    class method cos(d: Double): Double;
+    [SymbolName('cosh'), Used]
+    class method cosh(d: Double): Double;
+    [SymbolName('exp'), Used]
+    class method exp(d: Double): Double;
+    [SymbolName('exp2'), Used]
+    class method exp2(d: Double): Double;
+    [SymbolName('fmod'), Used]
+    class method fmod(x, y: Double): Double;
+    [SymbolName('log'), Used]
+    class method log(d: Double): Double;
+    [SymbolName('log2'), Used]
+    class method log2(d: Double): Double;
+    [SymbolName('log10'), Used]
+    class method log10(d: Double): Double;
+    [SymbolName('pow'), Used]
+    class method pow(x, y: Double): Double;
+    [SymbolName('sin'), Used]
+    class method sin(d: Double): Double;
+    [SymbolName('sinh'), Used]
+    class method sinh(d: Double): Double;
+    [SymbolName('tan'), Used]
+    class method tan(d: Double): Double;
+    [SymbolName('tanh'), Used]
+    class method tanh(d: Double): Double;
+  end;
+
 implementation
 
 // Trigonometric functions
@@ -374,6 +438,143 @@ end;
 class method Math.fmodf(x, y: Single): Single;
 begin
   exit (Abs(x) - (Abs(y) *  (Floor(Abs(x) / Abs(y))))) * Sign(x);
+end;
+
+// C RTL exports - forward to Math class methods
+
+class method CRTLMathExports.sqrt(d: Double): Double;
+begin
+  exit Math.Sqrt(d);
+end;
+
+class method CRTLMathExports.sqrtf(d: Single): Single;
+begin
+  exit Math.Sqrt(d);
+end;
+
+class method CRTLMathExports.ceil(d: Double): Double;
+begin
+  exit Math.Ceiling(d);
+end;
+
+class method CRTLMathExports.ceilf(d: Single): Single;
+begin
+  exit Math.Ceiling(d);
+end;
+
+class method CRTLMathExports.floor(d: Double): Double;
+begin
+  exit Math.Floor(d);
+end;
+
+class method CRTLMathExports.floorf(d: Single): Single;
+begin
+  exit Math.Floor(d);
+end;
+
+class method CRTLMathExports.trunc(d: Double): Double;
+begin
+  exit Math.Truncate(d);
+end;
+
+class method CRTLMathExports.truncf(d: Single): Single;
+begin
+  exit Math.Truncate(d);
+end;
+
+class method CRTLMathExports.round(d: Double): Double;
+begin
+  exit Math.Round(d);
+end;
+
+class method CRTLMathExports.fabs(d: Double): Double;
+begin
+  exit Math.Abs(d);
+end;
+
+class method CRTLMathExports.acos(d: Double): Double;
+begin
+  exit Math.Acos(d);
+end;
+
+class method CRTLMathExports.asin(d: Double): Double;
+begin
+  exit Math.Asin(d);
+end;
+
+class method CRTLMathExports.atan(d: Double): Double;
+begin
+  exit Math.Atan(d);
+end;
+
+class method CRTLMathExports.atan2(y, x: Double): Double;
+begin
+  exit Math.Atan2(y, x);
+end;
+
+class method CRTLMathExports.cos(d: Double): Double;
+begin
+  exit Math.Cos(d);
+end;
+
+class method CRTLMathExports.cosh(d: Double): Double;
+begin
+  exit Math.Cosh(d);
+end;
+
+class method CRTLMathExports.exp(d: Double): Double;
+begin
+  exit Math.Exp(d);
+end;
+
+class method CRTLMathExports.exp2(d: Double): Double;
+begin
+  exit Math.Exp2(d);
+end;
+
+class method CRTLMathExports.fmod(x, y: Double): Double;
+begin
+  exit Math.fmod(x, y);
+end;
+
+class method CRTLMathExports.log(d: Double): Double;
+begin
+  exit Math.Log(d);
+end;
+
+class method CRTLMathExports.log2(d: Double): Double;
+begin
+  exit Math.Log2(d);
+end;
+
+class method CRTLMathExports.log10(d: Double): Double;
+begin
+  exit Math.Log10(d);
+end;
+
+class method CRTLMathExports.pow(x, y: Double): Double;
+begin
+  exit Math.Pow(x, y);
+end;
+
+class method CRTLMathExports.sin(d: Double): Double;
+begin
+  exit Math.Sin(d);
+end;
+
+class method CRTLMathExports.sinh(d: Double): Double;
+begin
+  exit Math.Sinh(d);
+end;
+
+class method CRTLMathExports.tan(d: Double): Double;
+begin
+  exit Math.Tan(d);
+end;
+
+class method CRTLMathExports.tanh(d: Double): Double;
+begin
+  exit Math.Tanh(d);
 end;
 
 {$ENDIF}
