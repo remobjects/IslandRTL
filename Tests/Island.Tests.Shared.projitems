@@ -4,9 +4,8 @@
     <MSBuildAllProjects>$(MSBuildAllProjects);$(MSBuildThisFileFullPath)</MSBuildAllProjects>
     <HasSharedItems>true</HasSharedItems>
     <SharedGUID>{8BC0E3A8-C6B3-4FCC-AC6B-D80EE04F2628}</SharedGUID>
-  </PropertyGroup>
-  <PropertyGroup Label="Configuration">
     <Import_RootNamespace>Island.Tests.Shared</Import_RootNamespace>
+    <ProjectGuid>{8BC0E3A8-C6B3-4FCC-AC6B-D80EE04F2628}</ProjectGuid>
   </PropertyGroup>
   <ItemGroup>
     <Compile Include="$(MSBuildThisFileDirectory)BitConverterTest.pas" />
