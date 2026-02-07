@@ -9,5 +9,5 @@ implementation
 
 begin
   var lTests := Discovery.DiscoverTests();
-  Runner.RunTests(lTests) withListener(Runner.DefaultListener);
+  result := Runner.RunTests(lTests) withListener(Runner.DefaultListener).ExitCode;
 end.

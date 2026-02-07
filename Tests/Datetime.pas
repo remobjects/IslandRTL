@@ -83,7 +83,7 @@ type
     method DateTime_Parse;
     begin
       var lDate := DateTime.TryParse('25/06/2021');
-      Assert.IsNotNil(lDate);
+      Check.IsNotNil(lDate);
       lDate := DateTime.TryParse('25/06/2021 12:58:30');
       Check.IsNotNil(lDate);
       lDate := DateTime.TryParse('25/06/2021 12:58');
