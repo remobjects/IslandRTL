@@ -35,7 +35,7 @@ type
       Check.AreEqual(d1, d2);
       var d3 := DateTime.FromOleDate(1.0*date.AddDays(-date.DaysTo1899).Ticks / DateTime.TicksPerDay);
 
-      Check.AreEqual(date, d3);
+      Check.AreEqual(date, d3); // somehow off by a few tick, SOME TIMES?
     end;
 
     method DateTime_AddMonth_nonLeapYear;
@@ -82,12 +82,21 @@ type
 
     method DateTime_Parse;
     begin
-      var lDate := DateTime.TryParse('25/06/2021');
+      // these invalid (day second)
+      var lDate := DateTime.TryParse('06/25/2021');
       Check.IsNotNil(lDate);
+      lDate := DateTime.TryParse('06/25/2021 12:58:30');
+      Check.IsNotNil(lDate);
+      lDate := DateTime.TryParse('06/25/2021 12:58');
+      Check.IsNotNil(lDate);
+
+      // these are invalid (day first)
+      lDate := DateTime.TryParse('25/06/2021');
+      Check.IsNil(lDate);
       lDate := DateTime.TryParse('25/06/2021 12:58:30');
-      Check.IsNotNil(lDate);
+      Check.IsNil(lDate);
       lDate := DateTime.TryParse('25/06/2021 12:58');
-      Check.IsNotNil(lDate);
+      Check.IsNil(lDate);
 
       lDate := DateTime.TryParse('25/06/2021 12:58:30', 'dd/MM/yyyy hh:mm:ss');
       Check.IsNotNil(lDate);
