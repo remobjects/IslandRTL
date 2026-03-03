@@ -424,7 +424,8 @@ type
     {$ENDIF}
   end;
 
-  Int64Pair = public packed record public a,b: Int64; end;
+  [Packed]
+  Int64Pair = public record public a,b: Int64; end;
 
   DwarfEHEncodingType = public enum (
     DW_EH_PE_absptr = $00,
