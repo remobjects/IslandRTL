@@ -29,6 +29,14 @@ type
       else raise new Exception('invalid KeyName');
     end;
 
+    method IntDeleteValue(KeyName: String; ValueName: String): rtl.LSTATUS;
+    begin
+      var subKeyName: String;
+      var lrootkey := ParseKeyName(KeyName, out subKeyName);
+      var lsubKey := subKeyName.ToLPCWSTR;
+      exit rtl.RegDeleteKeyValueW(lrootkey, lsubKey, ValueName.ToLPCWSTR);
+    end;
+
   public
     const CurrentUser = 'HKEY_CURRENT_USER';
     const LocalMachine = 'HKEY_LOCAL_MACHINE';
@@ -177,7 +185,7 @@ type
           else if Value is Int64 then SetValue(KeyName,ValueName,Value,RegistryValueKind.QWord)
           else if Value is array of String then SetValue(KeyName,ValueName,Value,RegistryValueKind.MultiString)
           else if Value is array of Byte then SetValue(KeyName,ValueName,Value,RegistryValueKind.Binary)
-          else if Value = nil then DeleteValue(KeyName,ValueName)
+          else if Value = nil then DeleteExistingValue(KeyName,ValueName)
           else raise new Exception('Unsupported Value');
           exit;
         end;
@@ -223,12 +231,20 @@ type
 
     method DeleteValue(KeyName: String; ValueName: String): Boolean;
     begin
-      var subKeyName: String;
-      var lrootkey := ParseKeyName(KeyName, out subKeyName);
-      var lsubKey := subKeyName.ToLPCWSTR;
-      var res := rtl.RegDeleteKeyValueW(lrootkey, lsubKey, ValueName.ToLPCWSTR);
-      if res <> rtl.ERROR_SUCCESS then
+      var res := IntDeleteValue(KeyName, ValueName);
+      var r := res = rtl.ERROR_SUCCESS;
+      if not r then
         raise new Exception('error code is '+res.ToString);
+      exit r;
+    end;
+
+    method DeleteExistingValue(KeyName: String; ValueName: String): Boolean;
+    begin
+      var res := IntDeleteValue(KeyName, ValueName);
+      var r := res in [rtl.ERROR_SUCCESS, rtl.ERROR_FILE_NOT_FOUND];
+      if not r then
+        raise new Exception('error code is '+res.ToString);
+      exit r;
     end;
 
     method DeleteKey(KeyName: String): Boolean;
