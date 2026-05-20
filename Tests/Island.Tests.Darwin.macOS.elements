@@ -45,7 +45,9 @@
   <ItemGroup>
     <Reference Include="gc" />
     <Reference Include="rtl" />
-    <Reference Include="EUnit" />
+    <Reference Include="EUnit">
+      <HintPath>..\..\EUnit\bin\Debug\macOS\arm64\EUnit.fx</HintPath>
+    </Reference>
     <Reference Include="Elements" />
     <Reference Include="Island" />
   </ItemGroup>

@@ -23,7 +23,11 @@ type
   {$IFDEF ARM and not ARM64 and not DARWIN}
   rtl.__struct__Unwind_Exception = rtl.__struct__Unwind_Control_Block;
   {$ELSEIF not exists('rtl.__struct__Unwind_Exception')}
-  rtl.__struct__Unwind_Exception = rtl._Unwind_Exception;
+    {$IF EXISTS('rtl._Unwind_Exception')}
+    rtl.__struct__Unwind_Exception = public rtl._Unwind_Exception;
+    {$ELSE}
+    {$ERROR Type rtl._Unwind_Exception is required to build this library}
+    {$ENDIF}
   {$ENDIF}
 
   ExternalCalls = public static class
@@ -420,7 +424,8 @@ type
     {$ENDIF}
   end;
 
-  Int64Pair = public packed record public a,b: Int64; end;
+  [Packed]
+  Int64Pair = public record public a,b: Int64; end;
 
   DwarfEHEncodingType = public enum (
     DW_EH_PE_absptr = $00,

@@ -3,6 +3,8 @@ Microsoft Visual Studio Solution File, Format Version 12.00
 # RemObjects Fire
 Project("{656346d9-4656-40da-a068-22d5425d4639}") = "Island.Tests.Darwin.macOS", "Island.Tests.Darwin.macOS.elements", "{a6ee5e8a-1a5c-45ec-b8cc-0092f3d6ab7b}"
 EndProject
+Project("{656346d9-4656-40da-a068-22d5425d4639}") = "Island.Tests.Shared", "Island.Tests.Shared.elements", "{8bc0e3a8-c6b3-4fcc-ac6b-d80ee04f2628}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|AnyCPU = Debug|AnyCPU
