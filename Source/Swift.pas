@@ -335,6 +335,8 @@ type
 
 
       var lDLL := rtl.dlopen('libswiftCore.dylib', 0);
+      if lDLL = nil then
+        lDLL := rtl.dlopen('/usr/lib/swift/libswiftCore.dylib', 0);
       if lDLL = nil then raise new Exception('libswiftCore.dylib not present!');
 
       swift_getInitializedObjCClass := SwiftIntPtrApi(rtl.dlsym(lDLL, 'swift_getInitializedObjCClass'));
@@ -490,7 +492,7 @@ method GetProtocolDescriptorForBidirectionalCollection: ^Void; assembly;
   begin
     result := ProtocolDescriptorForBidirectionalCollection;
     if not assigned(result) then begin
-      ProtocolDescriptorForBidirectionalCollection := Process.GetCachedProcAddress('libswiftCore.dylib', '$sSayxGSKsMc');
+      ProtocolDescriptorForBidirectionalCollection := Process.GetCachedProcAddress('/usr/lib/swift/libswiftCore.dylib', '$sSayxGSKsMc');
       result := ProtocolDescriptorForBidirectionalCollection;
     end;
   end;
@@ -499,7 +501,7 @@ method GetProtocolDescriptorForBidirectionalCollection: ^Void; assembly;
   begin
     result := ProtocolDescriptorForRangeReplaceableCollection;
     if not assigned(result) then begin
-      ProtocolDescriptorForRangeReplaceableCollection := Process.GetCachedProcAddress('libswiftCore.dylib', '$sSayxGSmsMc');
+      ProtocolDescriptorForRangeReplaceableCollection := Process.GetCachedProcAddress('/usr/lib/swift/libswiftCore.dylib', '$sSayxGSmsMc');
       result := ProtocolDescriptorForRangeReplaceableCollection;
     end;
   end;

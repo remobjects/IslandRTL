@@ -15,14 +15,14 @@ type
     begin
       SwiftStrong.swift_bridgeObjectRelease(IntPtr(aView^._object));
     end;
-    [DelayLoadDllImport('libswiftCore.dylib', '$sSS9UTF16ViewV5countSivg'), CallingConvention(CallingConvention.Swift)]
+    [DelayLoadDllImport('/usr/lib/swift/libswiftCore.dylib', '$sSS9UTF16ViewV5countSivg'), CallingConvention(CallingConvention.Swift)]
     class method UTF16Count(aVal1: UInt64; aVal2: ^Void): IntPtr; external;
 
-    [DelayLoadDllImport('libswiftCore.dylib', '$sSS9UTF16ViewV10startIndexSS0D0Vvg'), CallingConvention(CallingConvention.Swift)]
+    [DelayLoadDllImport('/usr/lib/swift/libswiftCore.dylib', '$sSS9UTF16ViewV10startIndexSS0D0Vvg'), CallingConvention(CallingConvention.Swift)]
     class method UTF16FirstIndex(aVal1: UInt64; aVal2: ^Void): Int64; external;
-    [DelayLoadDllImport('libswiftCore.dylib', '$sSS9UTF16ViewV5index5afterSS5IndexVAF_tF'), CallingConvention(CallingConvention.Swift)]
+    [DelayLoadDllImport('/usr/lib/swift/libswiftCore.dylib', '$sSS9UTF16ViewV5index5afterSS5IndexVAF_tF'), CallingConvention(CallingConvention.Swift)]
     class method UTF16NextIndex(aPrev: Int64; aVal1: UInt64; aVal2: ^Void): Int64; external;
-    [DelayLoadDllImport('libswiftCore.dylib', '$sSS9UTF16ViewVys6UInt16VSS5IndexVcig'), CallingConvention(CallingConvention.Swift)]
+    [DelayLoadDllImport('/usr/lib/swift/libswiftCore.dylib', '$sSS9UTF16ViewVys6UInt16VSS5IndexVcig'), CallingConvention(CallingConvention.Swift)]
     class method UTF16GetChar(aIndex: Int64; aVal1: UInt64; aVal2: ^Void): Char; external;
   end;
 
@@ -50,14 +50,14 @@ type
     begin
       SwiftStrong.swift_bridgeObjectRelease(IntPtr(aView^._object));
     end;
-    [DelayLoadDllImport('libswiftCore.dylib', '$sSS9UTF16ViewV5countSivg'), CallingConvention(CallingConvention.Swift)]
+    [DelayLoadDllImport('/usr/lib/swift/libswiftCore.dylib', '$sSS9UTF16ViewV5countSivg'), CallingConvention(CallingConvention.Swift)]
     class method UTF16Count(aVal1: UInt64; aVal2: ^Void): IntPtr; external;
 
-    [DelayLoadDllImport('libswiftCore.dylib', '$sSS9UTF16ViewV10startIndexSS0D0Vvg'), CallingConvention(CallingConvention.Swift)]
+    [DelayLoadDllImport('/usr/lib/swift/libswiftCore.dylib', '$sSS9UTF16ViewV10startIndexSS0D0Vvg'), CallingConvention(CallingConvention.Swift)]
     class method UTF16FirstIndex(aVal1: UInt64; aVal2: ^Void): Int64; external;
-    [DelayLoadDllImport('libswiftCore.dylib', '$sSS9UTF16ViewV5index5afterSS5IndexVAF_tF'), CallingConvention(CallingConvention.Swift)]
+    [DelayLoadDllImport('/usr/lib/swift/libswiftCore.dylib', '$sSS9UTF16ViewV5index5afterSS5IndexVAF_tF'), CallingConvention(CallingConvention.Swift)]
     class method UTF16NextIndex(aPrev: Int64; aVal1: UInt64; aVal2: ^Void): Int64; external;
-    [DelayLoadDllImport('libswiftCore.dylib', '$sSS9UTF16ViewVys6UInt16VSS5IndexVcig'), CallingConvention(CallingConvention.Swift)]
+    [DelayLoadDllImport('/usr/lib/swift/libswiftCore.dylib', '$sSS9UTF16ViewVys6UInt16VSS5IndexVcig'), CallingConvention(CallingConvention.Swift)]
     class method UTF16GetChar(aIndex: Int64; aVal1: UInt64; aVal2: ^Void): Char; external;
   end;
 
@@ -74,14 +74,14 @@ type
     begin
       SwiftStrong.swift_bridgeObjectRelease(IntPtr(aView^._object));
     end;
-    [DelayLoadDllImport('libswiftCore.dylib', '$sSS9UTF16ViewV5countSivg'), CallingConvention(CallingConvention.Swift)]
+    [DelayLoadDllImport('/usr/lib/swift/libswiftCore.dylib', '$sSS9UTF16ViewV5countSivg'), CallingConvention(CallingConvention.Swift)]
     class method UTF16Count(aVal1: UInt64; aVal2: ^Void): IntPtr; external;
 
-    [DelayLoadDllImport('libswiftCore.dylib', '$sSS9UTF16ViewV10startIndexSS0D0Vvg'), CallingConvention(CallingConvention.Swift)]
+    [DelayLoadDllImport('/usr/lib/swift/libswiftCore.dylib', '$sSS9UTF16ViewV10startIndexSS0D0Vvg'), CallingConvention(CallingConvention.Swift)]
     class method UTF16FirstIndex(aVal1: UInt64; aVal2: ^Void): Int64; external;
-    [DelayLoadDllImport('libswiftCore.dylib', '$sSS9UTF16ViewV5index5afterSS5IndexVAF_tF'), CallingConvention(CallingConvention.Swift)]
+    [DelayLoadDllImport('/usr/lib/swift/libswiftCore.dylib', '$sSS9UTF16ViewV5index5afterSS5IndexVAF_tF'), CallingConvention(CallingConvention.Swift)]
     class method UTF16NextIndex(aPrev: Int64; aVal1: UInt64; aVal2: ^Void): Int64; external;
-    [DelayLoadDllImport('libswiftCore.dylib', '$sSS9UTF16ViewVys6UInt16VSS5IndexVcig'), CallingConvention(CallingConvention.Swift)]
+    [DelayLoadDllImport('/usr/lib/swift/libswiftCore.dylib', '$sSS9UTF16ViewVys6UInt16VSS5IndexVcig'), CallingConvention(CallingConvention.Swift)]
     class method UTF16GetChar(aIndex: Int64; aVal1: UInt64; aVal2: ^Void): Char; external;
   end;
 
@@ -91,19 +91,21 @@ type
     _countAndFlagsBits: UInt64;
     _object: ^Void;
 
-    class var fTypeInfo := Process.GetCachedProcAddress('libswiftCore.dylib', '$sSSN');
+    class var fTypeInfo := Process.GetCachedProcAddress('/usr/lib/swift/libswiftCore.dylib', '$sSSN');
     class property VWT: ^SwiftValueWitnessTable read ^^SwiftValueWitnessTable(fTypeInfo)[-1];
 
     [DelayLoadDllImport('/usr/lib/swift/libswiftFoundation.dylib', '$sSS10FoundationE14utf16CodeUnits5countSSSPys6UInt16VG_SitcfC'), CallingConvention(CallingConvention.Swift)]
     class method StringFromUTF16(aVal: ^Char; aLength: IntPtr): UTF16View; external;
 
-    [DelayLoadDllImport('libswiftCore.dylib', '$sSS5utf16SS9UTF16ViewVvg'), CallingConvention(CallingConvention.Swift)]
+    [DelayLoadDllImport('/usr/lib/swift/libswiftCore.dylib', '$sSS5utf16SS9UTF16ViewVvg'), CallingConvention(CallingConvention.Swift)]
     class method __UTF16View(aVal: UInt64; aVal2: ^Void): UTF16View; external;
 
     property Data: ^Void read @_countAndFlagsBits;
     property &Type: ^SwiftTypeRecord read ^SwiftTypeRecord(fTypeInfo);
 
   public
+    property UTF16Length: IntPtr read GetUTF16Length;
+
     finalizer;
     begin
       VWT^.destroy(IntPtr(@self), ^SwiftTypeRecord(fTypeInfo));
@@ -136,6 +138,13 @@ type
         _countAndFlagsBits := lWork._countAndFlagsBits;
         _object := lWork._object;
       end;
+    end;
+
+    method GetUTF16Length: IntPtr;
+    begin
+      var lView := __UTF16View(_countAndFlagsBits, _object);
+      result := UTF16View.UTF16Count(lView._countAndFlagsBits, lView._object);
+      UTF16View.DestroyUTF16View(@lView);
     end;
 
     method ToString: String; override;
