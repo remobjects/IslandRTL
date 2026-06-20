@@ -982,9 +982,7 @@ begin
     rtl._Unwind_SetIP(aCtx, ExternalCalls.Target);
     {$ENDIF}
     if lForeign then
-      ForeignExceptionImplementation.Free(^UInt64(@aECB.exception_class)^, lRecord)
-    else
-      free(lRecord);
+      ForeignExceptionImplementation.Free(^UInt64(@aECB.exception_class)^, lRecord);
     exit rtl._Unwind_Reason_Code._URC_INSTALL_CONTEXT;
   end;
   exit {$IFNDEF ARM and not DARWIN}rtl._Unwind_Reason_Code._URC_FATAL_PHASE1_ERROR{$ELSE}rtl._Unwind_Reason_Code._URC_FAILURE{$ENDIF};
@@ -1068,9 +1066,6 @@ begin
       var lRec := ^CXXException(aEx);
       lRec := ^CXXException(@^Byte(lRec)[-Int32((^Byte(@lRec^.Unwind) - ^Byte(lRec))) - (sizeOf(IntPtr) * 2)]);
       free(lRec)
-    end
-    else begin
-      free(lRecord);
     end;
     exit rtl._Unwind_Reason_Code._URC_INSTALL_CONTEXT;
   end;
