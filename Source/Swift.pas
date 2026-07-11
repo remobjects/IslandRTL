@@ -468,20 +468,20 @@ type
       lVWT^.assignWithCopy(IntPtr(lTar), IntPtr(aInput), aInputType);
   end;
 
-  [DelayLoadDllImport('libswiftCore.dylib', 'swift_allocBox'), CallingConvention(CallingConvention.Swift)]
+  [DelayLoadDllImport('/usr/lib/swift/libswiftCore.dylib', 'swift_allocBox'), CallingConvention(CallingConvention.Swift)]
   method swift_allocBox(aType: ^SwiftTypeRecord): SwiftBoxResult; external;
 
-  [DelayLoadDllImport('libswiftCore.dylib', 'swift_projectBox'), CallingConvention(CallingConvention.Swift)]
+  [DelayLoadDllImport('/usr/lib/swift/libswiftCore.dylib', 'swift_projectBox'), CallingConvention(CallingConvention.Swift)]
   method swift_projectBox(aInput: ^SwiftRefcounted): ^Void; external;
 
-  [DelayLoadDllImport('libswiftCore.dylib', 'swift_getEnumCaseMultiPayload'), CallingConvention(CallingConvention.Swift)]
+  [DelayLoadDllImport('/usr/lib/swift/libswiftCore.dylib', 'swift_getEnumCaseMultiPayload'), CallingConvention(CallingConvention.Swift)]
   method swift_getEnumCaseMultiPayload(aVal: ^Void; aTypeInfo: ^Void): Integer; external;
 
-  [DelayLoadDllImport('libswiftCore.dylib', 'swift_storeEnumTagMultiPayload'), CallingConvention(CallingConvention.Swift)]
+  [DelayLoadDllImport('/usr/lib/swift/libswiftCore.dylib', 'swift_storeEnumTagMultiPayload'), CallingConvention(CallingConvention.Swift)]
   method swift_storeEnumTagMultiPayload(aVal: ^Void; aTypeInfo: ^Void; aEnumVal: Integer); external;
 
 
-  [DelayLoadDllImport('libswiftCore.dylib', 'swift_getWitnessTable')]
+  [DelayLoadDllImport('/usr/lib/swift/libswiftCore.dylib', 'swift_getWitnessTable')]
   method swift_getWitnessTable(aPD: IntPtr; aType: IntPtr; aVal: IntPtr): IntPtr; external; public;
 
 

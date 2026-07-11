@@ -92,7 +92,8 @@ type
     _object: ^Void;
 
     class var fTypeInfo := Process.GetCachedProcAddress('/usr/lib/swift/libswiftCore.dylib', '$sSSN');
-    class property VWT: ^SwiftValueWitnessTable read ^^SwiftValueWitnessTable(fTypeInfo)[-1];
+    class property SwiftTypeInfo: ^SwiftTypeRecord read GetSwiftTypeInfo;
+    class property VWT: ^SwiftValueWitnessTable read ^^SwiftValueWitnessTable(SwiftTypeInfo)[-1];
 
     [DelayLoadDllImport('/usr/lib/swift/libswiftFoundation.dylib', '$sSS10FoundationE14utf16CodeUnits5countSSSPys6UInt16VG_SitcfC'), CallingConvention(CallingConvention.Swift)]
     class method StringFromUTF16(aVal: ^Char; aLength: IntPtr): UTF16View; external;
@@ -101,20 +102,27 @@ type
     class method __UTF16View(aVal: UInt64; aVal2: ^Void): UTF16View; external;
 
     property Data: ^Void read @_countAndFlagsBits;
-    property &Type: ^SwiftTypeRecord read ^SwiftTypeRecord(fTypeInfo);
+    property &Type: ^SwiftTypeRecord read SwiftTypeInfo;
 
   public
     property UTF16Length: IntPtr read GetUTF16Length;
 
+    class method GetSwiftTypeInfo: ^SwiftTypeRecord;
+    begin
+      if fTypeInfo = nil then
+        fTypeInfo := Process.GetCachedProcAddress('/usr/lib/swift/libswiftCore.dylib', '$sSSN');
+      exit ^SwiftTypeRecord(fTypeInfo);
+    end;
+
     finalizer;
     begin
-      VWT^.destroy(IntPtr(@self), ^SwiftTypeRecord(fTypeInfo));
+      VWT^.destroy(IntPtr(@self), SwiftTypeInfo);
     end;
 
     constructor(aVal: ^Void; aCopy: Boolean);
     begin
       if aCopy then begin
-        VWT^.initializeWithCopy(IntPtr(@self), IntPtr(aVal), ^SwiftTypeRecord(fTypeInfo));
+        VWT^.initializeWithCopy(IntPtr(@self), IntPtr(aVal), SwiftTypeInfo);
       end else begin
         self._countAndFlagsBits := ^SwiftString(aVal)^._countAndFlagsBits;
         self._object := ^SwiftString(aVal)^._object;
@@ -123,12 +131,12 @@ type
 
     constructor Copy(var aValue: SwiftString);
     begin
-      VWT^.initializeWithCopy(IntPtr(@self), IntPtr(@aValue), ^SwiftTypeRecord(fTypeInfo));
+      VWT^.initializeWithCopy(IntPtr(@self), IntPtr(@aValue), SwiftTypeInfo);
     end;
 
     class operator Assign(var aDest: SwiftString; var aSource: SwiftString);
     begin
-      VWT^.assignWithCopy(IntPtr(@aDest), IntPtr(@aSource), ^SwiftTypeRecord(fTypeInfo));
+      VWT^.assignWithCopy(IntPtr(@aDest), IntPtr(@aSource), SwiftTypeInfo);
     end;
 
     constructor(aValue: String);
