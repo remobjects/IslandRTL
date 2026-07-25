@@ -26,6 +26,14 @@ type
     next: ^atexitrec;
   end;
 
+  {$IFDEF ARM64}
+  StackProbe = assembly static class
+  public
+    [SymbolName('__chkstk'), Naked, DisableOptimizations, DisableInliningAttribute, Used]
+    class method _chkstk;
+  end;
+  {$ENDIF}
+
   ExternalCalls = public static class
   private
 
@@ -316,12 +324,14 @@ type
     [SymbolName('wcslen')]
     class method wcslen(c: ^Char): Integer;
 
+    {$IFNDEF ARM64}
     {$IFDEF _WIN64}
     [SymbolName('__chkstk'), Naked, DisableOptimizations, DisableInliningAttribute, Used]
     {$ELSE}
     [SymbolName('_chkstk'), Naked, DisableOptimizations, DisableInliningAttribute, Used]
     {$ENDIF}
     class method _chkstk;
+    {$ENDIF}
 
     // WARNING, malloc/free are NOT good functions to use, but libgc needs these to get started
     [SymbolName('malloc')]
@@ -1339,9 +1349,9 @@ end;
   {$ERROR Unsupported Architecture}
 {$ENDIF}
 
-class method ExternalCalls._chkstk;
+{$IFDEF ARM64}
+class method StackProbe._chkstk;
 begin
-  {$IF ARM64}
   // This version is licensed under the Apache License v2.0 with LLVM Exceptions. See https://llvm.org/LICENSE.txt; from the LLVM compiler-rt project.
   InternalCalls.VoidAsm(
   "
@@ -1353,8 +1363,12 @@ begin
         ldr    xzr, [x17]
         b.gt   loop
         ret
-  ", "", false, false);
-  {$ELSEIF X86_64}
+  ", "", true, false);
+end;
+{$ELSE}
+class method ExternalCalls._chkstk;
+begin
+  {$IF X86_64}
   // This version is dual licensed under the MIT and the University of Illinois Open Source Licenses. See LICENSE.TXT for details; from the llvm compiler-RT project.
   InternalCalls.VoidAsm(
   "
@@ -1402,6 +1416,7 @@ begin
     {$ERROR Unsupported Architecture}
   {$ENDIF}
 end;
+{$ENDIF}
 
 class method ExternalCalls._wassert;
 begin
