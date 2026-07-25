@@ -1342,7 +1342,18 @@ end;
 class method ExternalCalls._chkstk;
 begin
   {$IF ARM64}
-    raise new NotImplementedException("_chkstk is not implemented yet for arm64");
+  // This version is licensed under the Apache License v2.0 with LLVM Exceptions. See https://llvm.org/LICENSE.txt; from the LLVM compiler-rt project.
+  InternalCalls.VoidAsm(
+  "
+        lsl    x16, x15, #4
+        mov    x17, sp
+  loop:
+        sub    x17, x17, #4096
+        subs   x16, x16, #4096
+        ldr    xzr, [x17]
+        b.gt   loop
+        ret
+  ", "", false, false);
   {$ELSEIF X86_64}
   // This version is dual licensed under the MIT and the University of Illinois Open Source Licenses. See LICENSE.TXT for details; from the llvm compiler-RT project.
   InternalCalls.VoidAsm(
