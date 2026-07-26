@@ -134,7 +134,7 @@ type
     class var _GLOBAL_OFFSET_TABLE_: Integer; private; external;
     {$ENDIF}
 
-    {$IF NOT EMSCRIPTEN AND NOT ANDROID and not DARWIN}
+    {$IF NOT EMSCRIPTEN AND NOT ANDROID and not DARWIN and not FUCHSIA}
     [SymbolName('_start'), InlineAsm(
     {$IFDEF ARM64}"
        mov  x29, #0x0
@@ -218,7 +218,7 @@ type
     method libc_main(main: LibCEntryHelper; argc: Integer; argv: ^^Char; aInit: LibCEntryHelper; aFini: LibCFinalizerHelper); external;
     {$ENDIF}
 
-    {$IFDEF DARWIN}
+    {$IF DARWIN OR FUCHSIA}
     [SymbolName('main')]
     method main(argc: Integer; argv: ^^AnsiChar; env: ^^AnsiChar): Integer;
     {$ENDIF}
@@ -596,7 +596,7 @@ begin
   // FAIL
 end;
 
-{$IFDEF DARWIN}
+{$IF DARWIN OR FUCHSIA}
 method ExternalCalls.main(argc: Integer; argv: ^^AnsiChar; env: ^^AnsiChar): Integer;
 begin
   exit Entrypoint(argc, argv, env);
@@ -615,7 +615,7 @@ begin
     lArgs[i - 1] := String.FromPAnsiChar(argv[i]);
   try
     exit UserEntryPoint(lArgs);
-    {$IF NOT EMSCRIPTEN AND NOT ANDROID and not DARWIN}
+    {$IF NOT EMSCRIPTEN AND NOT ANDROID and not DARWIN and not FUCHSIA}
     {$HIDE H14}
     ExternalCalls.libc_main(nil, 0, nil, nil, nil); // do not remove, this is there to ensure it's linked in.
     {$SHOW H14}

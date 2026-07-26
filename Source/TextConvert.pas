@@ -60,11 +60,11 @@ type
       {$ENDIF}
     end;
   assembly
-    {$IFDEF POSIX_LIGHT AND NOT ANDROID}
+    {$IFDEF POSIX_LIGHT AND NOT ANDROID AND NOT FUCHSIA}
     class var fUTF16ToCurrent, fCurrentToUtf16: rtl.iconv_t;
     {$ENDIF}
   public
-    {$IFDEF POSIX and not ANDROID}
+    {$IFDEF POSIX and not ANDROID and not FUCHSIA}
     class constructor;
     begin
       rtl.setlocale(rtl.LC_ALL, "");
@@ -494,7 +494,7 @@ type
       var len := rtl.WideCharToMultiByte(rtl.CP_ACP, 0, aValue.FirstChar, aValue.Length, nil, 0, nil, nil);
       result := new Byte[len];
       rtl.WideCharToMultiByte(rtl.CP_ACP, 0, aValue.FirstChar, aValue.Length, rtl.LPSTR(@result[0]), len, nil, nil);
-      {$ELSEIF ANDROID}
+      {$ELSEIF ANDROID OR FUCHSIA}
       var b := StringToUTF8(aValue, false);
       result := new Byte[b.Length];
       rtl.memcpy(@result[0], @b[0], b.Length);
@@ -530,7 +530,7 @@ type
       var len := rtl.MultiByteToWideChar(rtl.CP_ACP, 0, rtl.LPCCH(@aValue[aOffset]), aCount, nil, 0);
       result := String.AllocString(len);
       rtl.MultiByteToWideChar(rtl.CP_ACP, 0, rtl.LPCCH(@aValue[aOffset]), aCount, @result.fFirstChar, len);
-      {$ELSEIF ANDROID or WebAssembly}
+      {$ELSEIF ANDROID or WebAssembly or FUCHSIA}
       exit TextConvert.UTF8ToString(aValue, aOffset, aCount);
       {$ELSE}
       var lNewData: ^AnsiChar := nil;

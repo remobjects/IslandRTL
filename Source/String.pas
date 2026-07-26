@@ -135,7 +135,7 @@ type
     method ToString: String;
   end;
 
-{$IFDEF POSIX_LIGHT AND NOT ANDROID}
+{$IFDEF POSIX_LIGHT AND NOT ANDROID AND NOT FUCHSIA}
 method iconv_helper(cd: rtl.iconv_t; inputdata: ^AnsiChar; inputdatalength: rtl.size_t; suggestedlength: Integer; out aresult: ^AnsiChar): Integer; public;
 {$ENDIF}
 
@@ -159,7 +159,7 @@ begin
   memcpy(@result.fFirstChar, c, aCharCount * 2);
 end;
 
-{$IFDEF POSIX_LIGHT AND NOT ANDROID}
+{$IFDEF POSIX_LIGHT AND NOT ANDROID AND NOT FUCHSIA}
 method iconv_helper(cd: rtl.iconv_t; inputdata: ^AnsiChar; inputdatalength: rtl.size_t; suggestedlength: Integer; out aresult: ^AnsiChar): Integer;
 begin
   var outputdata := ^AnsiChar(rtl.malloc(suggestedlength));
@@ -193,7 +193,7 @@ begin
   var len := rtl.MultiByteToWideChar(rtl.CP_ACP, 0, c, aCharCount, nil, 0);
   result := AllocString(len);
   rtl.MultiByteToWideChar(rtl.CP_ACP, 0, c, aCharCount, @result.fFirstChar, len);
-  {$ELSEIF ANDROID or WEBASSEMBLY}
+  {$ELSEIF ANDROID or WEBASSEMBLY or FUCHSIA}
   var b := new Byte[aCharCount];
   Array.Copy(^Byte(c), b, 0, aCharCount);
   exit Encoding.UTF8.GetString(b);
@@ -217,7 +217,7 @@ begin
   result := new AnsiChar[len+ if aNullTerminate then 1 else 0];
   if len <> 0 then
     rtl.WideCharToMultiByte(rtl.CP_ACP, 0, @self.fFirstChar, Length, rtl.LPSTR(@result[0]), len, nil, nil);
-  {$ELSEIF ANDROID or WEBASSEMBLY}
+  {$ELSEIF ANDROID or WEBASSEMBLY or FUCHSIA}
   var b := Encoding.UTF8.GetBytes(self, false);
   result := new AnsiChar[b.Length + if aNullTerminate then 1 else 0];
   if b.Length <> 0 then
