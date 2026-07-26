@@ -210,7 +210,11 @@ type
     {$ENDIF}, '', true, false
     )]
     method _start; external;
+    {$IFDEF FUCHSIA}
+    [SymbolName('__libc_start_main', 'libc.so'), &weak]
+    {$ELSE}
     [SymbolName('__libc_start_main', 'libc.so.6'), &weak]
+    {$ENDIF}
     method libc_main(main: LibCEntryHelper; argc: Integer; argv: ^^Char; aInit: LibCEntryHelper; aFini: LibCFinalizerHelper); external;
     {$ENDIF}
 
