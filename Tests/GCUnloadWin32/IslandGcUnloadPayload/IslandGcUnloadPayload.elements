@@ -1,0 +1,30 @@
+<?xml version="1.0" encoding="utf-8" standalone="yes"?>
+<Project xmlns="http://schemas.microsoft.com/developer/msbuild/2003" DefaultTargets="Build" ToolsVersion="4.0">
+  <PropertyGroup>
+    <ProductVersion>3.5</ProductVersion>
+    <RootNamespace>IslandGcUnloadPayload</RootNamespace>
+    <ProjectGuid>{4EFEB482-CB0F-4BB6-9228-96344F0A37BD}</ProjectGuid>
+    <OutputType>Library</OutputType>
+    <AssemblyName>IslandGcUnloadPayload</AssemblyName>
+    <Configuration Condition="'$(Configuration)' == ''">Debug</Configuration>
+    <Architecture>i386</Architecture>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)' == 'Debug'">
+    <Optimize>False</Optimize>
+    <OutputPath>..\Bin</OutputPath>
+    <ConditionalDefines>DEBUG;TRACE</ConditionalDefines>
+    <GenerateDebugInfo>True</GenerateDebugInfo>
+    <EnableAsserts>True</EnableAsserts>
+  </PropertyGroup>
+  <ItemGroup>
+    <Reference Include="gc" />
+    <Reference Include="rtl" />
+    <Reference Include="Island">
+      <HintPath>..\..\..\_gc_unload\island-bin\Windows\i386\Island.fx</HintPath>
+    </Reference>
+  </ItemGroup>
+  <ItemGroup>
+    <Compile Include="Payload.pas" />
+  </ItemGroup>
+  <Import Project="$(MSBuildExtensionsPath)\RemObjects Software\Elements\RemObjects.Elements.Island.Windows.targets" />
+</Project>

@@ -419,8 +419,9 @@ type
       if fWasFinalized then exit;
       fWasFinalized := true;
       if fLocal then begin
-        GC_gcollect_and_unmap();
-        GC_deinit();
+        // DLL detach may be called by a native thread that never entered Island.
+        fSharedMemory.register();
+        fSharedMemory.collect();
       end;
       Utilities.SpinLockEnter(var fLock);
       try
