@@ -120,34 +120,6 @@ AllowBeta=1
 AllowFull=1
 
 DisplayName=Island Contributor License, Hydrogene/Island
-ProjectName=Island (Darwin watchOS)
-ProjectFileName=Island.Darwin.watchOS.elements
-ProjectGuid={ec1f85c8-f514-4566-9f51-e1bb64ec1514}
-ProjectAssemblyName=Island
-ProjectOutputType=StaticLibrary
-
-[License]
-LicenseType=Project
-Product=Oxygene
-Platform=Island
-AllowBeta=1
-AllowFull=1
-
-DisplayName=Island Contributor License, Oxygene/Island
-ProjectName=Island (Darwin watchOS)
-ProjectFileName=Island.Darwin.watchOS.elements
-ProjectGuid={ec1f85c8-f514-4566-9f51-e1bb64ec1514}
-ProjectAssemblyName=Island
-ProjectOutputType=StaticLibrary
-
-[License]
-LicenseType=Project
-Product=Hydrogene
-Platform=Island
-AllowBeta=1
-AllowFull=1
-
-DisplayName=Island Contributor License, Hydrogene/Island
 ProjectName=Island (Linux)
 ProjectFileName=Island.Linux.elements
 ProjectGuid={a2c670b6-db38-401a-ae00-71515c87ccc5}
