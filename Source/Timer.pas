@@ -47,6 +47,9 @@ implementation
 [CallingConvention(CallingConvention.Stdcall)]
 procedure TimerCallback(lpParam: rtl.PVOID; TimerOrWaitFired: Byte);
 begin
+  // Windows timer callbacks run on native thread-pool threads, outside Island's thread setup.
+  // Register the thread with the GC to avoid "Collecting from unknown thread" if this callback triggers GC work.
+  BoehmGC.EnsureCurrentThreadRegistration;
   var lTimer := InternalCalls.Cast<Timer>(lpParam);
   lTimer.Elapsed(lTimer.Data);
 end;

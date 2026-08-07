@@ -1,0 +1,30 @@
+﻿<?xml version="1.0" encoding="utf-8" standalone="yes"?>
+<Project xmlns="http://schemas.microsoft.com/developer/msbuild/2003" DefaultTargets="Build" ToolsVersion="4.0">
+  <PropertyGroup>
+    <ProductVersion>3.5</ProductVersion>
+    <RootNamespace>RawTimerQueue</RootNamespace>
+    <ProjectGuid>{9BB26190-2B12-4F83-BD7C-F59C9A31993C}</ProjectGuid>
+    <OutputType>Exe</OutputType>
+    <AssemblyName>RawTimerQueue</AssemblyName>
+    <Configuration Condition="'$(Configuration)' == ''">Debug</Configuration>
+    <Architecture>x86_64</Architecture>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)' == 'Debug'">
+    <Optimize>False</Optimize>
+    <OutputPath>..\Bin\Windows\x86_64</OutputPath>
+    <ConditionalDefines>DEBUG;TRACE</ConditionalDefines>
+    <GenerateDebugInfo>True</GenerateDebugInfo>
+    <EnableAsserts>True</EnableAsserts>
+  </PropertyGroup>
+  <ItemGroup>
+    <Reference Include="gc" />
+    <Reference Include="rtl" />
+    <Reference Include="Island">
+      <HintPath>..\..\..\_codex_gc_test\island-bin\Windows\x86_64\Island.fx</HintPath>
+    </Reference>
+  </ItemGroup>
+  <ItemGroup>
+    <Compile Include="Program.pas" />
+  </ItemGroup>
+  <Import Project="$(MSBuildExtensionsPath)\RemObjects Software\Elements\RemObjects.Elements.Island.Windows.targets" />
+</Project>

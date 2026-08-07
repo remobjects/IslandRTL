@@ -329,6 +329,35 @@ type
       end;
     end;
     {$ENDIF}
+    {$IFDEF WINDOWS}
+    const ThreadNotChecked = 0;
+    const ThreadRegisteredByOwner = 1;
+    const ThreadAlreadyRegistered = 2;
+    const ThreadRegisteredForCallback = 3;
+
+    // For TLS safety, do not use exotic types like enums; enum TLS storage is untested here.
+    [ThreadLocal]
+    class var fThreadRegistrationState: Integer;
+
+    class method RegisterCurrentThread(aKeepRegistered: Boolean);
+    begin
+      if fThreadRegistrationState <> 0 then
+        exit;
+
+      var lResult := fSharedMemory.register();
+      if lResult = 0 then
+        fThreadRegistrationState := if aKeepRegistered then ThreadRegisteredForCallback else ThreadRegisteredByOwner
+      else if lResult = 1 then
+        fThreadRegistrationState := ThreadAlreadyRegistered;
+    end;
+
+    class method EnsureCurrentThreadRegistration; assembly;
+    begin
+      if fLoaded = 0 then
+        LoadGC;
+      RegisterCurrentThread(true);
+    end;
+    {$ENDIF}
 
     class method GC_my_register_my_thread: Integer;
     begin
@@ -354,6 +383,11 @@ type
 
     class method Collect(c: Integer);
     begin
+      {$IFDEF WINDOWS}
+      EnsureCurrentThreadRegistration;
+      {$ELSE}
+      if fLoaded = 0 then LoadGC;
+      {$ENDIF}
       for i: Integer := 0 to c -1 do
         fSharedMemory.collect;
     end;
@@ -361,12 +395,24 @@ type
     [SymbolName('boehmregisterthread')]
     class method RegisterThread;
     begin
+      if fLoaded = 0 then LoadGC;
+      {$IFDEF WINDOWS}
+      RegisterCurrentThread(false);
+      {$ELSE}
       fSharedMemory.register();
+      {$ENDIF}
     end;
 
     [SymbolName('boehmunregisterthread')]
     class method UnregisterThread;
     begin
+      {$IFDEF WINDOWS}
+      // Windows thread-pool callbacks do not own the native thread.
+      // Keep those registrations until thread/process exit.
+      if fThreadRegistrationState <> ThreadRegisteredByOwner then
+        exit;
+      fThreadRegistrationState := ThreadNotChecked;
+      {$ENDIF}
       fSharedMemory.unregister;
     end;
 
@@ -378,6 +424,9 @@ type
       result := ^Void(-1);
       if fLoaded = 0 then LoadGC;
 
+      {$IFDEF WINDOWS}
+      RegisterCurrentThread(true);
+      {$ENDIF}
       {$IFDEF DARWIN}
       if not Registered then GC_my_register_my_thread;
       {$ENDIF}
