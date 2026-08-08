@@ -116,7 +116,7 @@ begin
   {$WARNING Not Implememnted for Fuchsia yet}
   {$ELSEIF LINUX OR ANDROID}
   var lSigEv: rtl.sigevent_t;
-  lSigEv.sigev_notify := 2; // SIGEV_THREAD
+  lSigEv.sigev_notify := rtl.SIGEV_THREAD;
   lSigEv.sigev_value.sival_ptr := InternalCalls.Cast(self);
 
   lSigEv._sigev_un._sigev_thread._function := @TimerCallback;

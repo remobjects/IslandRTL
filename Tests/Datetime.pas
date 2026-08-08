@@ -35,7 +35,8 @@ type
       Check.AreEqual(d1, d2);
       var d3 := DateTime.FromOleDate(1.0*date.AddDays(-date.DaysTo1899).Ticks / DateTime.TicksPerDay);
 
-      Check.AreEqual(date, d3); // somehow off by a few tick, SOME TIMES?
+      // OLE dates are doubles, so sub-millisecond ticks are not guaranteed to round-trip exactly.
+      Check.LessOrEquals(Math.Abs(date.Ticks - d3.Ticks), DateTime.TicksPerMillisecond);
     end;
 
     method DateTime_AddMonth_nonLeapYear;

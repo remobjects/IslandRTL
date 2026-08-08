@@ -84,7 +84,7 @@ type
       until (not rtl.FindNextFileW(hFind, @find));
       {$ELSEIF POSIX_LIGHT}
       // code from http://pubs.opengroup.org/onlinepubs/9699919799/ was used as an example
-      var dfd: Int32 := rtl.open(FullName.ToFileName(), {$IFDEF ANDROID}0{$ELSE}rtl.O_RDONLY{$ENDIF});
+      var dfd: Int32 := rtl.open(FullName.ToFileName(), rtl.O_RDONLY);
       var d: ^rtl.DIR := rtl.fdopendir(dfd);
       if d = nil then begin
         exit lResult;
@@ -93,7 +93,7 @@ type
       var dp: ^rtl.__struct_dirent := rtl.readdir(d);
       while (dp <> nil) do begin
         var fn := String.FromPAnsiChar(@dp^.d_name[0]);
-        var ffd: Int32 := rtl.openat(dfd, dp^.d_name, {$IFDEF ANDROID}0{$ELSE}rtl.O_RDONLY{$ENDIF});
+        var ffd: Int32 := rtl.openat(dfd, dp^.d_name, rtl.O_RDONLY);
         try
           if ffd = -1 then continue;
           try
@@ -134,7 +134,7 @@ type
       until (not rtl.FindNextFileW(hFind, @find));
       {$ELSEIF POSIX_LIGHT}
       // code from http://pubs.opengroup.org/onlinepubs/9699919799/ was used as an example
-      var dfd: Int32 := rtl.open(FullName.ToFileName(), {$IFDEF ANDROID}0{$ELSE}rtl.O_RDONLY{$ENDIF});
+      var dfd: Int32 := rtl.open(FullName.ToFileName(), rtl.O_RDONLY);
       var d: ^rtl.DIR := rtl.fdopendir(dfd);
       if d = nil then
         exit lResult;
@@ -145,7 +145,7 @@ type
         // skip `.` and `..`
         try
           if (fn='.') or (fn='..') then continue;
-          var ffd: Int32 := rtl.openat(dfd, dp^.d_name, {$IFDEF ANDROID}0{$ELSE}rtl.O_RDONLY{$ENDIF});
+        var ffd: Int32 := rtl.openat(dfd, dp^.d_name, rtl.O_RDONLY);
           if ffd = -1 then continue;
           try
             var statbuf: rtl.__struct_stat;

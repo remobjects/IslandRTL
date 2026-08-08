@@ -538,7 +538,7 @@ end;
 
 method CheckForLastError(aMessage: String := '');
 begin
-  var code := {$IFDEF ANDROID}rtl.errno^{$ELSE}rtl.errno{$ENDIF};
+  var code := {$IFDEF ANDROID}rtl.__errno()^{$ELSE}rtl.errno{$ENDIF};
   if code <> 0 then begin
     var mes := (if aMessage <> '' then  aMessage + ', ' else '')+'errno is '+code.ToString;
     raise new Exception(mes);
