@@ -450,7 +450,7 @@ begin
   {$IF WINDOWS}
   rtl.TerminateProcess(fProcessInfo.hProcess, -1);
   {$ELSEIF POSIX AND NOT IOS}
-  rtl.kill(fProcessId, rtl.SIGKILL);
+  rtl.kill(fProcessId, {$IFDEF ANDROID}9{$ELSE}rtl.SIGKILL{$ENDIF}); // SIGKILL
   {$ENDIF}
 end;
 

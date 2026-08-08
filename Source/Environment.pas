@@ -233,7 +233,7 @@ type
       loop begin
         var buf := new AnsiChar[len];
         if rtl.getcwd(@buf[0], len) = nil then begin
-          if rtl.errno = rtl.ERANGE then
+          if rtl.errno^ = 34 then // ERANGE
             len := len  *2
           else
             exit nil;
