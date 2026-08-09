@@ -16,6 +16,7 @@
     <Platform Condition="'$(Platform)' == ''">AnyCPU</Platform>
     <GenerateDebugInfo>True</GenerateDebugInfo>
     <DefaultGlobalsToPublic>True</DefaultGlobalsToPublic>
+    <KnownConditionalDefines>POSIX_LIGHT</KnownConditionalDefines>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)' == 'Debug'">
     <OutputPath>Bin\Debug</OutputPath>
@@ -27,6 +28,7 @@
     <XmlDocWarningLevel>WarningOnPublicMembers</XmlDocWarningLevel>
     <EnableUnmanagedDebugging>False</EnableUnmanagedDebugging>
     <GenerateDebugInfo>True</GenerateDebugInfo>
+    <ConditionalDefines>DEBUG;POSIX_LIGHT</ConditionalDefines>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)' == 'Release'">
     <OutputPath>Bin\Release</OutputPath>
@@ -40,6 +42,7 @@
     <EnableUnmanagedDebugging>False</EnableUnmanagedDebugging>
     <GenerateDebugInfo>False</GenerateDebugInfo>
     <Optimize>True</Optimize>
+    <ConditionalDefines>POSIX_LIGHT</ConditionalDefines>
   </PropertyGroup>
   <ItemGroup>
     <Compile Include="BoehmGC.pas" />
