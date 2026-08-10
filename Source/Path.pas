@@ -163,7 +163,7 @@ begin
   {$ELSEIF DARWIN}
   exit (RelativePath as Foundation.NSString).stringByStandardizingPath as not nullable;
   {$ELSEIF POSIX_LIGHT}
-  var lResult := new AnsiChar[rtl._POSIX_PATH_MAX];
+  var lResult := new AnsiChar[{$IFDEF ANDROID}rtl.PATH_MAX{$ELSE}rtl._POSIX_PATH_MAX{$ENDIF}];
   rtl.realpath(RelativePath.ToAnsiChars, @lResult[0]);
   var lRes := String.FromPAnsiChar(@lResult[0]);
   if String.IsNullOrEmpty(lRes) then

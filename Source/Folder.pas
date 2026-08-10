@@ -145,7 +145,7 @@ type
         // skip `.` and `..`
         try
           if (fn='.') or (fn='..') then continue;
-          var ffd: Int32 := rtl.openat(dfd, dp^.d_name, rtl.O_RDONLY);
+        var ffd: Int32 := rtl.openat(dfd, dp^.d_name, rtl.O_RDONLY);
           if ffd = -1 then continue;
           try
             var statbuf: rtl.__struct_stat;

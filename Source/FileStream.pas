@@ -14,10 +14,8 @@ type
   PlatformHandle = rtl.HANDLE;
   {$ELSEIF FUCHSIA}
   PlatformHandle = ^rtl.zx_handle_t;
-  {$ELSEIF ANDROID OR DARWIN or ARM64}
-  PlatformHandle = ^rtl.FILE;
   {$ELSEIF POSIX}
-  PlatformHandle = ^rtl._IO_FILE;
+  PlatformHandle = ^rtl.FILE;
   {$ENDIF}
 
   FileStream = public class(Stream)
@@ -159,7 +157,7 @@ begin
   //exit pos.__pos;
   {$ELSE}
   CheckForIOError(rtl.fseeko64(fHandle, Offset, lOrigin));
-  var pos: rtl._G_fpos64_t;
+  var pos: rtl.__fpos64_t;
   CheckForIOError(rtl.fgetpos64(fHandle, @pos));
   exit pos.__pos;
   {$ENDIF}

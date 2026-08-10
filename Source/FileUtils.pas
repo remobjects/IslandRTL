@@ -86,21 +86,6 @@ type
     end;
     {$ENDIF}
 
-    {$IFDEF POSIX AND NOT ANDROID and not DARWIN}
-    [SymbolName('stat')]
-    method stat(file: ^AnsiChar; buf: ^rtl.__struct_stat): Int32;
-    begin
-      exit rtl.__xstat(rtl._STAT_VER, file, buf);
-    end;
-
-    [SymbolName('fstat')]
-    method fstat(fd: Int32; buf: ^rtl.__struct_stat): Int32;
-    begin
-      exit rtl.__fxstat(rtl._STAT_VER, fd, buf);
-    end;
-
-    {$ENDIF}
-
   end;
 
 {$IFDEF WINDOWS}
