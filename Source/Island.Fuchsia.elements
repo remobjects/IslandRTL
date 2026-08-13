@@ -17,6 +17,7 @@
     <GenerateDebugInfo>True</GenerateDebugInfo>
     <DefaultGlobalsToPublic>True</DefaultGlobalsToPublic>
     <KnownConditionalDefines>POSIX_LIGHT</KnownConditionalDefines>
+    <Architecture>x86_64;arm64</Architecture>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)' == 'Debug'">
     <OutputPath>Bin\Debug</OutputPath>

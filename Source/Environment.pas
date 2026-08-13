@@ -65,7 +65,7 @@ type
       {$IFDEF WINDOWS}
       result := {$IF i386}"i386"{$ELSEIF ARM64}"arm64"{$ELSEIF x86_64}"x86_64"{$ELSE}{$ERROR Unsupported achitecture}{$ENDIF};
       {$ELSEIF FUCHSIA}
-      result := {$IF __x86_64__}"x64"{$ELSEIF __aarch64__}"arm64"{$ELSE}{$ERROR Unsupported achitecture}{$ENDIF};
+      result := {$IF __x86_64__}"x86_64"{$ELSEIF __aarch64__}"arm64"{$ELSE}{$ERROR Unsupported achitecture}{$ENDIF};
       {$ELSEIF ANDROID}
       result := {$IF arm64_v8a}"arm64-v8a"{$ELSEIF armeabi}"armeabi"{$ELSEIF armeabi_v7a}"armeabi-v7a"{$ELSEIF i386}"x86"{$ELSEIF __x86_64__}"x86_64"{$ELSE}{$ERROR Unsupported achitecture}{$ENDIF}
       {$ELSEIF LINUX}
