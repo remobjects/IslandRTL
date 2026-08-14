@@ -206,6 +206,35 @@ type
     finalizer;
   end;
 
+  FidlProtocolConnection<T> = public class(IDisposable)
+  private
+    fConnection: not nullable FidlConnection;
+
+    class method DefaultProtocolName: not nullable String;
+    class method DecodeUInt32(aTask: not nullable Task): UInt32;
+  assembly
+    constructor(aConnection: not nullable FidlConnection);
+  public
+    class method Connect(aProtocolName: nullable String := nil): not nullable FidlProtocolConnection<T>;
+
+    method CallAsync(aOrdinal: UInt64;
+                     aPayload: nullable array of Byte := nil;
+                     aHandles: nullable array of FidlOutgoingHandle := nil;
+                     aOptions: FidlCallOptions := default(FidlCallOptions)): not nullable Task<FidlIncomingMessage>;
+    method CallUInt32Async(aOrdinal: UInt64;
+                           aValue: UInt32): not nullable Task<UInt32>;
+    method CallUInt32Async(aOrdinal: UInt64;
+                           aValue: UInt32;
+                           aOptions: FidlCallOptions): not nullable Task<UInt32>;
+    method SendOneWay(aOrdinal: UInt64;
+                      aPayload: nullable array of Byte := nil;
+                      aHandles: nullable array of FidlOutgoingHandle := nil): not nullable Task;
+
+    property Transport: not nullable FidlConnection read fConnection;
+    method Dispose;
+    finalizer;
+  end;
+
 implementation
 
 const
@@ -1027,6 +1056,81 @@ begin
 end;
 
 finalizer FidlConnection;
+begin
+  Dispose;
+end;
+
+constructor FidlProtocolConnection<T>(aConnection: not nullable FidlConnection);
+begin
+  fConnection := aConnection;
+end;
+
+class method FidlProtocolConnection<T>.DefaultProtocolName: not nullable String;
+begin
+  var lName := typeOf(T).FullName;
+  var lSeparator := lName.LastIndexOf(".");
+  if lSeparator < 1 then
+    raise new FidlProtocolException($"Protocol type '{lName}' does not have a FIDL library namespace.");
+  result := lName.Substring(0, lSeparator)+"/"+lName.Substring(lSeparator+1);
+end;
+
+class method FidlProtocolConnection<T>.Connect(aProtocolName: nullable String): not nullable FidlProtocolConnection<T>;
+begin
+  var lProtocolName := if length(aProtocolName) = 0 then DefaultProtocolName else aProtocolName;
+  result := new FidlProtocolConnection<T>(FidlConnection.Connect(lProtocolName));
+end;
+
+method FidlProtocolConnection<T>.CallAsync(aOrdinal: UInt64;
+                                           aPayload: nullable array of Byte;
+                                           aHandles: nullable array of FidlOutgoingHandle;
+                                           aOptions: FidlCallOptions): not nullable Task<FidlIncomingMessage>;
+begin
+  result := fConnection.CallAsync(aOrdinal, aPayload, aHandles, aOptions);
+end;
+
+method FidlProtocolConnection<T>.CallUInt32Async(aOrdinal: UInt64;
+                                                 aValue: UInt32): not nullable Task<UInt32>;
+begin
+  result := CallUInt32Async(aOrdinal, aValue, default(FidlCallOptions));
+end;
+
+method FidlProtocolConnection<T>.CallUInt32Async(aOrdinal: UInt64;
+                                                 aValue: UInt32;
+                                                 aOptions: FidlCallOptions): not nullable Task<UInt32>;
+begin
+  var lEncoder := new FidlEncoder(8);
+  lEncoder.WriteUInt32(aValue);
+  lEncoder.Align(8);
+  result := fConnection.CallAsync(aOrdinal, lEncoder.ToArray, nil, aOptions).ContinueWith<UInt32>(@DecodeUInt32) as not nullable;
+end;
+
+class method FidlProtocolConnection<T>.DecodeUInt32(aTask: not nullable Task): UInt32;
+begin
+  var lMessage := Task<FidlIncomingMessage>(aTask).Result;
+  try
+    var lDecoder := lMessage.BodyDecoder;
+    result := lDecoder.ReadUInt32;
+    lDecoder.Align(8);
+    if lDecoder.Remaining <> 0 then
+      raise new FidlProtocolException("A fixed UInt32 FIDL response contains trailing data.");
+  finally
+    lMessage.Dispose;
+  end;
+end;
+
+method FidlProtocolConnection<T>.SendOneWay(aOrdinal: UInt64;
+                                            aPayload: nullable array of Byte;
+                                            aHandles: nullable array of FidlOutgoingHandle): not nullable Task;
+begin
+  result := fConnection.SendOneWay(aOrdinal, aPayload, aHandles);
+end;
+
+method FidlProtocolConnection<T>.Dispose;
+begin
+  fConnection.Dispose;
+end;
+
+finalizer FidlProtocolConnection<T>;
 begin
   Dispose;
 end;
