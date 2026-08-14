@@ -19,8 +19,15 @@ type
     constructor(aStatus: Int32);
   end;
 
+  FidlDeadlineExceededException = public class(FidlTransportException)
+  public
+    constructor;
+  end;
+
   FidlCallOptions = public record
   public
+    class method WithDeadline(aDeadline: Int64): FidlCallOptions;
+    class method WithTimeoutMilliseconds(aMilliseconds: Int64): FidlCallOptions;
     property Deadline: Int64 read write;
   end;
 
@@ -133,12 +140,13 @@ type
     property Remaining: Integer read length(fBuffer)-fPosition;
   end;
 
-  FidlIncomingMessage = public class
+  FidlIncomingMessage = public class(IDisposable)
   private
     fBytes: not nullable array of Byte;
     fHandles: not nullable array of FidlHandle;
     fTransactionID: UInt32;
     fOrdinal: UInt64;
+    fDisposed: Int32;
   assembly
     constructor(aBytes: not nullable array of Byte; aHandles: not nullable array of FidlHandle);
   public
@@ -147,6 +155,9 @@ type
     property TransactionID: UInt32 read fTransactionID;
     property Ordinal: UInt64 read fOrdinal;
     method BodyDecoder: not nullable FidlDecoder;
+    method TakeHandle(aIndex: Integer): not nullable FidlHandle;
+    method Dispose;
+    finalizer;
   end;
 
   FidlConnection = public class(IDisposable)
@@ -154,12 +165,18 @@ type
     fChannel: not nullable FidlChannelHandle;
     fDispatcherKey: UInt64;
     fLock: not nullable Monitor := new Monitor;
+    fWriteLock: not nullable Monitor := new Monitor;
     fPending := new Dictionary<UInt32, TaskCompletionSource<FidlIncomingMessage>>;
+    fDeadlines := new Dictionary<UInt32, Int64>;
+    fExpiredTransactions := new HashSet<UInt32>;
+    fExpiredTransactionOrder := new Queue<UInt32>;
     fNextTransactionID: UInt32;
     fDisposed: Int32;
 
     method AllocateTransactionID: UInt32;
     method CompleteResponse(aMessage: not nullable FidlIncomingMessage);
+    method NextDeadline: Int64;
+    method ExpireDeadlines(aNow: Int64);
     method Fail(aException: not nullable Exception);
     method Send(aTransactionID: UInt32;
                 aOrdinal: UInt64;
@@ -197,6 +214,7 @@ const
   FidlEpitaphOrdinal: UInt64 = UInt64.MaxValue;
   FidlMaximumMessageBytes = 65536;
   FidlMaximumMessageHandles = 64;
+  FidlMaximumExpiredTransactions = 1024;
 
 type
   [Packed]
@@ -217,11 +235,13 @@ type
     fNextKey: Int64;
 
     method Arm(aConnection: not nullable FidlConnection);
+    method SnapshotConnections: not nullable List<FidlConnection>;
     method ThreadMain(aState: Object);
   public
     constructor;
     method RegisterConnection(aConnection: not nullable FidlConnection);
     method UnregisterConnection(aConnection: not nullable FidlConnection);
+    method WakeForDeadline;
 
     class property Shared: not nullable FidlDispatcher read new FidlDispatcher; lazy;
   end;
@@ -235,6 +255,29 @@ end;
 constructor FidlConnectionClosedException(aStatus: Int32);
 begin
   inherited constructor("The FIDL connection was closed", aStatus);
+end;
+
+constructor FidlDeadlineExceededException;
+begin
+  inherited constructor("The FIDL call deadline was exceeded", Int32(rtl.ZX_ERR_TIMED_OUT));
+end;
+
+class method FidlCallOptions.WithDeadline(aDeadline: Int64): FidlCallOptions;
+begin
+  if aDeadline < 0 then
+    raise new ArgumentOutOfRangeException("aDeadline");
+  result.Deadline := aDeadline;
+end;
+
+class method FidlCallOptions.WithTimeoutMilliseconds(aMilliseconds: Int64): FidlCallOptions;
+begin
+  if aMilliseconds < 0 then
+    raise new ArgumentOutOfRangeException("aMilliseconds");
+  var lNow := Int64(rtl.zx_clock_get_monotonic);
+  if aMilliseconds > (Int64.MaxValue-lNow) div 1000000 then
+    result.Deadline := Int64.MaxValue
+  else
+    result.Deadline := lNow+aMilliseconds*1000000;
 end;
 
 constructor FidlHandle(aHandle: rtl.zx_handle_t; aObjectType: UInt32; aRights: UInt32);
@@ -542,6 +585,33 @@ begin
   result := new FidlDecoder(fBytes, FidlTransactionalHeaderSize);
 end;
 
+method FidlIncomingMessage.TakeHandle(aIndex: Integer): not nullable FidlHandle;
+begin
+  if (aIndex < 0) or (aIndex >= length(fHandles)) then
+    raise new ArgumentOutOfRangeException("aIndex");
+  var lHandle := fHandles[aIndex];
+  if not assigned(lHandle) then
+    raise new InvalidStateException($"FIDL handle {aIndex} has already been taken.");
+  fHandles[aIndex] := nil;
+  result := lHandle as not nullable;
+end;
+
+method FidlIncomingMessage.Dispose;
+begin
+  if InternalCalls.Exchange(var fDisposed, 1) <> 0 then
+    exit;
+  for i: Integer := 0 to length(fHandles)-1 do
+    if assigned(fHandles[i]) then begin
+      fHandles[i].Dispose;
+      fHandles[i] := nil;
+    end;
+end;
+
+finalizer FidlIncomingMessage;
+begin
+  Dispose;
+end;
+
 constructor FidlDispatcher;
 begin
   if sizeOf(FidlPortPacket) <> 48 then
@@ -569,6 +639,14 @@ begin
     aConnection.Fail(new FidlTransportException("Could not arm the FIDL channel wait", Int32(lStatus)));
 end;
 
+method FidlDispatcher.SnapshotConnections: not nullable List<FidlConnection>;
+begin
+  result := new List<FidlConnection>;
+  locking fLock do
+    for each lConnection in fConnections.Values do
+      result.Add(lConnection);
+end;
+
 method FidlDispatcher.RegisterConnection(aConnection: not nullable FidlConnection);
 begin
   var lKey := UInt64(InternalCalls.Increment(var fNextKey)+1);
@@ -590,21 +668,48 @@ begin
   aConnection.DispatcherKey := 0;
 end;
 
+method FidlDispatcher.WakeForDeadline;
+begin
+  var lPacket: FidlPortPacket;
+  lPacket.Key := 0;
+  lPacket.PacketType := UInt32(rtl.ZX_PKT_TYPE_USER);
+  lPacket.Status := Int32(rtl.ZX_OK);
+  var lStatus := rtl.zx_port_queue(fPort.RawHandle, @lPacket);
+  if (lStatus <> rtl.ZX_OK) and (lStatus <> rtl.ZX_ERR_BAD_HANDLE) then
+    raise new FidlTransportException("Could not wake the FIDL deadline dispatcher", Int32(lStatus));
+end;
+
 method FidlDispatcher.ThreadMain(aState: Object);
 begin
   loop begin
-    var lPacket: FidlPortPacket;
-    var lStatus := rtl.zx_port_wait(fPort.RawHandle, rtl.zx_instant_mono_t(Int64.MaxValue), @lPacket);
-    if lStatus <> rtl.ZX_OK then
-      continue;
-    var lConnection: FidlConnection;
-    var lFound: Boolean;
-    locking fLock do
-      lFound := fConnections.TryGetValue(lPacket.Key, out lConnection);
-    if lFound and assigned(lConnection) then begin
-      lConnection.HandlePacket;
-      Arm(lConnection);
+    var lConnections := SnapshotConnections;
+    var lDeadline := Int64.MaxValue;
+    for each lConnection in lConnections do begin
+      var lConnectionDeadline := lConnection.NextDeadline;
+      if lConnectionDeadline < lDeadline then
+        lDeadline := lConnectionDeadline;
     end;
+
+    var lPacket: FidlPortPacket;
+    var lStatus := rtl.zx_port_wait(fPort.RawHandle, rtl.zx_instant_mono_t(lDeadline), @lPacket);
+    if (lStatus <> rtl.ZX_OK) and (lStatus <> rtl.ZX_ERR_TIMED_OUT) then
+      continue;
+
+    if lStatus = rtl.ZX_OK then begin
+      var lConnection: FidlConnection;
+      var lFound: Boolean;
+      locking fLock do
+        lFound := fConnections.TryGetValue(lPacket.Key, out lConnection);
+      if lFound and assigned(lConnection) then begin
+        lConnection.HandlePacket;
+        Arm(lConnection);
+      end;
+    end;
+
+    lConnections := SnapshotConnections;
+    var lNow := Int64(rtl.zx_clock_get_monotonic);
+    for each lConnection in lConnections do
+      lConnection.ExpireDeadlines(lNow);
   end;
 end;
 
@@ -647,7 +752,7 @@ begin
       fNextTransactionID := fNextTransactionID and $7fffffff;
       if fNextTransactionID = 0 then
         fNextTransactionID := 1;
-    until not fPending.ContainsKey(fNextTransactionID);
+    until not fPending.ContainsKey(fNextTransactionID) and not fExpiredTransactions.Contains(fNextTransactionID);
     result := fNextTransactionID;
   end;
 end;
@@ -657,31 +762,33 @@ method FidlConnection.Send(aTransactionID: UInt32;
                            aPayload: nullable array of Byte;
                            aHandles: nullable array of FidlOutgoingHandle): Int32;
 begin
-  var lEncoder := new FidlEncoder(FidlTransactionalHeaderSize+length(aPayload));
-  lEncoder.WriteTransactionalHeader(aTransactionID, aOrdinal);
-  lEncoder.WriteBytes(aPayload);
-  var lBytes := lEncoder.ToArray;
+  locking fWriteLock do begin
+    var lEncoder := new FidlEncoder(FidlTransactionalHeaderSize+length(aPayload));
+    lEncoder.WriteTransactionalHeader(aTransactionID, aOrdinal);
+    lEncoder.WriteBytes(aPayload);
+    var lBytes := lEncoder.ToArray;
 
-  var lDispositions: array of rtl.zx_handle_disposition_t;
-  if length(aHandles) > 0 then begin
-    lDispositions := new rtl.zx_handle_disposition_t[length(aHandles)];
-    for i: Integer := 0 to length(aHandles)-1 do begin
-      lDispositions[i].operation := rtl.ZX_HANDLE_OP_MOVE;
-      lDispositions[i].handle := aHandles[i].Handle.ReleaseHandle;
-      lDispositions[i].&type := rtl.zx_obj_type_t(aHandles[i].ObjectType);
-      lDispositions[i].rights := rtl.zx_rights_t(aHandles[i].Rights);
-      lDispositions[i].result := rtl.ZX_OK;
+    var lDispositions: array of rtl.zx_handle_disposition_t;
+    if length(aHandles) > 0 then begin
+      lDispositions := new rtl.zx_handle_disposition_t[length(aHandles)];
+      for i: Integer := 0 to length(aHandles)-1 do begin
+        lDispositions[i].operation := rtl.ZX_HANDLE_OP_MOVE;
+        lDispositions[i].handle := aHandles[i].Handle.ReleaseHandle;
+        lDispositions[i].&type := rtl.zx_obj_type_t(aHandles[i].ObjectType);
+        lDispositions[i].rights := rtl.zx_rights_t(aHandles[i].Rights);
+        lDispositions[i].result := rtl.ZX_OK;
+      end;
     end;
-  end;
 
-  var lBytesPointer := if length(lBytes) = 0 then nil else @lBytes[0];
-  var lHandlesPointer := if length(lDispositions) = 0 then nil else @lDispositions[0];
-  result := Int32(rtl.zx_channel_write_etc(fChannel.RawHandle,
-                                           0,
-                                           lBytesPointer,
-                                           UInt32(length(lBytes)),
-                                           lHandlesPointer,
-                                           UInt32(length(lDispositions))));
+    var lBytesPointer := if length(lBytes) = 0 then nil else @lBytes[0];
+    var lHandlesPointer := if length(lDispositions) = 0 then nil else @lDispositions[0];
+    result := Int32(rtl.zx_channel_write_etc(fChannel.RawHandle,
+                                             0,
+                                             lBytesPointer,
+                                             UInt32(length(lBytes)),
+                                             lHandlesPointer,
+                                             UInt32(length(lDispositions))));
+  end;
 end;
 
 method FidlConnection.CallAsync(aOrdinal: UInt64;
@@ -694,15 +801,56 @@ begin
     lClosed.SetException(new FidlConnectionClosedException(Int32(rtl.ZX_ERR_PEER_CLOSED)));
     exit lClosed.Task as not nullable;
   end;
-  var lTransactionID := AllocateTransactionID;
+  if aOptions.Deadline < 0 then
+    raise new ArgumentOutOfRangeException("aOptions.Deadline");
+
   var lCompletion := new TaskCompletionSource<FidlIncomingMessage>;
-  locking fLock do
-    fPending.Add(lTransactionID, lCompletion);
+  if (aOptions.Deadline > 0) and (aOptions.Deadline <= Int64(rtl.zx_clock_get_monotonic)) then begin
+    lCompletion.SetException(new FidlDeadlineExceededException);
+    exit lCompletion.Task as not nullable;
+  end;
+
+  var lTransactionID := AllocateTransactionID;
+  var lAdded: Boolean;
+  locking fLock do begin
+    if fDisposed = 0 then begin
+      fPending.Add(lTransactionID, lCompletion);
+      if aOptions.Deadline > 0 then
+        fDeadlines.Add(lTransactionID, aOptions.Deadline);
+      lAdded := true;
+    end;
+  end;
+  if not lAdded then begin
+    lCompletion.SetException(new FidlConnectionClosedException(Int32(rtl.ZX_ERR_PEER_CLOSED)));
+    exit lCompletion.Task as not nullable;
+  end;
+
+  if aOptions.Deadline > 0 then begin
+    try
+      FidlDispatcher.Shared.WakeForDeadline;
+    except
+      on E: Exception do begin
+        var lRemoved: Boolean;
+        locking fLock do begin
+          lRemoved := fPending.Remove(lTransactionID);
+          fDeadlines.Remove(lTransactionID);
+        end;
+        if lRemoved then
+          lCompletion.SetException(E);
+        exit lCompletion.Task as not nullable;
+      end;
+    end;
+  end;
+
   var lStatus := Send(lTransactionID, aOrdinal, aPayload, aHandles);
   if lStatus <> rtl.ZX_OK then begin
-    locking fLock do
-      fPending.Remove(lTransactionID);
-    lCompletion.SetException(new FidlTransportException("Could not send the FIDL request", lStatus));
+    var lRemoved: Boolean;
+    locking fLock do begin
+      lRemoved := fPending.Remove(lTransactionID);
+      fDeadlines.Remove(lTransactionID);
+    end;
+    if lRemoved then
+      lCompletion.SetException(new FidlTransportException("Could not send the FIDL request", lStatus));
   end;
   result := lCompletion.Task as not nullable;
 end;
@@ -722,15 +870,64 @@ end;
 method FidlConnection.CompleteResponse(aMessage: not nullable FidlIncomingMessage);
 begin
   var lCompletion: TaskCompletionSource<FidlIncomingMessage>;
+  var lExpired: Boolean;
   locking fLock do begin
-    if fPending.TryGetValue(aMessage.TransactionID, out lCompletion) then
+    if fPending.TryGetValue(aMessage.TransactionID, out lCompletion) then begin
       fPending.Remove(aMessage.TransactionID);
+      fDeadlines.Remove(aMessage.TransactionID);
+    end
+    else
+      lExpired := fExpiredTransactions.Remove(aMessage.TransactionID);
+  end;
+  if lExpired then begin
+    aMessage.Dispose;
+    exit;
   end;
   if not assigned(lCompletion) then begin
+    aMessage.Dispose;
     Fail(new FidlProtocolException($"Received a FIDL response for unknown transaction {aMessage.TransactionID}."));
     exit;
   end;
   lCompletion.SetResult(aMessage);
+end;
+
+method FidlConnection.NextDeadline: Int64;
+begin
+  result := Int64.MaxValue;
+  locking fLock do
+    for each lDeadline in fDeadlines.Values do
+      if lDeadline < result then
+        result := lDeadline;
+end;
+
+method FidlConnection.ExpireDeadlines(aNow: Int64);
+begin
+  var lExpiredIDs := new List<UInt32>;
+  var lCompletions := new List<TaskCompletionSource<FidlIncomingMessage>>;
+  locking fLock do begin
+    for each lPair in fDeadlines do
+      if lPair.Value <= aNow then
+        lExpiredIDs.Add(lPair.Key);
+
+    for each lTransactionID in lExpiredIDs do begin
+      var lCompletion: TaskCompletionSource<FidlIncomingMessage>;
+      if fPending.TryGetValue(lTransactionID, out lCompletion) then begin
+        fPending.Remove(lTransactionID);
+        lCompletions.Add(lCompletion);
+        fExpiredTransactions.Add(lTransactionID);
+        fExpiredTransactionOrder.Enqueue(lTransactionID);
+      end;
+      fDeadlines.Remove(lTransactionID);
+    end;
+
+    while fExpiredTransactionOrder.Count > FidlMaximumExpiredTransactions do begin
+      var lOldest := fExpiredTransactionOrder.Dequeue;
+      fExpiredTransactions.Remove(lOldest);
+    end;
+  end;
+
+  for each lCompletion in lCompletions do
+    lCompletion.SetException(new FidlDeadlineExceededException);
 end;
 
 method FidlConnection.HandlePacket;
@@ -763,26 +960,40 @@ begin
                                     UInt32(lHandleInfo[i].&type),
                                     UInt32(lHandleInfo[i].rights));
 
+    var lMessage: FidlIncomingMessage;
     try
-      var lMessage := new FidlIncomingMessage(lMessageBytes, lHandles);
+      lMessage := new FidlIncomingMessage(lMessageBytes, lHandles);
       if (lMessage.TransactionID = 0) and (lMessage.Ordinal = FidlEpitaphOrdinal) then begin
         var lDecoder := lMessage.BodyDecoder;
         var lEpitaphStatus := lDecoder.ReadInt32;
+        lMessage.Dispose;
         Fail(new FidlConnectionClosedException(lEpitaphStatus));
         exit;
       end;
       if lMessage.TransactionID = 0 then begin
         if assigned(EventReceived) then begin
           try
-            EventReceived(lMessage);
-          except
+            try
+              EventReceived(lMessage);
+            except
+            end;
+          finally
+            lMessage.Dispose;
           end;
-        end;
+        end
+        else
+          lMessage.Dispose;
       end
       else
         CompleteResponse(lMessage);
     except
       on E: Exception do begin
+        if assigned(lMessage) then
+          lMessage.Dispose
+        else
+          for each lHandle in lHandles do
+            if assigned(lHandle) then
+              lHandle.Dispose;
         Fail(E);
         exit;
       end;
@@ -802,6 +1013,9 @@ begin
     for each lCompletion in fPending.Values do
       lPending.Add(lCompletion);
     fPending.Clear;
+    fDeadlines.Clear;
+    fExpiredTransactions.Clear;
+    fExpiredTransactionOrder.Clear;
   end;
   for each lCompletion in lPending do
     lCompletion.SetException(aException);
