@@ -206,12 +206,22 @@ type
     finalizer;
   end;
 
+  FidlUInt32Codec = assembly sealed class
+  private
+    class method CompleteCall(aTask: not nullable Task; aState: nullable Object);
+    class method Decode(aTask: not nullable Task): UInt32;
+  public
+    class method CallAsync(aConnection: not nullable FidlConnection;
+                           aOrdinal: UInt64;
+                           aValue: UInt32;
+                           aOptions: FidlCallOptions): not nullable Task<UInt32>;
+  end;
+
   FidlProtocolConnection<T> = public class(IDisposable)
   private
     fConnection: not nullable FidlConnection;
 
     class method DefaultProtocolName: not nullable String;
-    class method DecodeUInt32(aTask: not nullable Task): UInt32;
   assembly
     constructor(aConnection: not nullable FidlConnection);
   public
@@ -1098,13 +1108,38 @@ method FidlProtocolConnection<T>.CallUInt32Async(aOrdinal: UInt64;
                                                  aValue: UInt32;
                                                  aOptions: FidlCallOptions): not nullable Task<UInt32>;
 begin
+  result := FidlUInt32Codec.CallAsync(fConnection, aOrdinal, aValue, aOptions);
+end;
+
+class method FidlUInt32Codec.CallAsync(aConnection: not nullable FidlConnection;
+                                       aOrdinal: UInt64;
+                                       aValue: UInt32;
+                                       aOptions: FidlCallOptions): not nullable Task<UInt32>;
+begin
   var lEncoder := new FidlEncoder(8);
   lEncoder.WriteUInt32(aValue);
   lEncoder.Align(8);
-  result := fConnection.CallAsync(aOrdinal, lEncoder.ToArray, nil, aOptions).ContinueWith<UInt32>(@DecodeUInt32) as not nullable;
+  var lCompletion := new TaskCompletionSource<UInt32>;
+  var lCall := aConnection.CallAsync(aOrdinal, lEncoder.ToArray, nil, aOptions);
+  _ := lCall.ContinueWith(@CompleteCall, lCompletion);
+  result := lCompletion.Task as not nullable;
 end;
 
-class method FidlProtocolConnection<T>.DecodeUInt32(aTask: not nullable Task): UInt32;
+class method FidlUInt32Codec.CompleteCall(aTask: not nullable Task; aState: nullable Object);
+begin
+  var lCompletion := TaskCompletionSource<UInt32>(aState);
+  try
+    if aTask.IsFaulted then
+      lCompletion.SetException(aTask.Exception)
+    else
+      lCompletion.SetResult(Decode(aTask));
+  except
+    on E: Exception do
+      lCompletion.SetException(E);
+  end;
+end;
+
+class method FidlUInt32Codec.Decode(aTask: not nullable Task): UInt32;
 begin
   var lMessage := Task<FidlIncomingMessage>(aTask).Result;
   try
