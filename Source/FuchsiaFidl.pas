@@ -75,6 +75,17 @@ type
     constructor(aHandle: rtl.zx_handle_t);
   end;
 
+  FidlEndpointPair<T> = public class
+  private
+    fClient: not nullable FidlClientEnd<T>;
+    fServer: not nullable FidlServerEnd<T>;
+    constructor(aClient: not nullable FidlClientEnd<T>; aServer: not nullable FidlServerEnd<T>);
+  public
+    class method Create: not nullable FidlEndpointPair<T>;
+    property Client: not nullable FidlClientEnd<T> read fClient;
+    property Server: not nullable FidlServerEnd<T> read fServer;
+  end;
+
   FidlOutgoingHandle = public class
   private
     fHandle: not nullable FidlHandle;
@@ -156,6 +167,70 @@ type
     property Ordinal: UInt64 read fOrdinal;
     method BodyDecoder: not nullable FidlDecoder;
     method TakeHandle(aIndex: Integer): not nullable FidlHandle;
+    method Dispose;
+    finalizer;
+  end;
+
+  FidlServerBinding = public class;
+
+  FidlServerRequest = public class(IDisposable)
+  private
+    fBinding: not nullable FidlServerBinding;
+    fMessage: not nullable FidlIncomingMessage;
+    fReplied: Int32;
+  assembly
+    constructor(aBinding: not nullable FidlServerBinding; aMessage: not nullable FidlIncomingMessage);
+  public
+    property TransactionID: UInt32 read fMessage.TransactionID;
+    property Ordinal: UInt64 read fMessage.Ordinal;
+    method BodyDecoder: not nullable FidlDecoder;
+    method TakeHandle(aIndex: Integer): not nullable FidlHandle;
+    method Reply(aPayload: nullable array of Byte := nil;
+                 aHandles: nullable array of FidlOutgoingHandle := nil);
+    method Dispose;
+    finalizer;
+  end;
+
+  FidlServerBinding = public class(IDisposable)
+  private
+    fChannel: not nullable FidlChannelHandle;
+    fHandler: not nullable Func<FidlServerRequest, Task>;
+    fWriteLock: not nullable Monitor := new Monitor;
+    fDispatcherKey: UInt64;
+    fDisposed: Int32;
+
+    method Send(aTransactionID: UInt32;
+                aOrdinal: UInt64;
+                aPayload: nullable array of Byte;
+                aHandles: nullable array of FidlOutgoingHandle): Int32;
+    method Dispatch(aState: Object);
+    class method CompleteDispatch(aTask: not nullable Task; aState: nullable Object);
+  assembly
+    method HandlePacket;
+    method Fail(aException: not nullable Exception);
+    property Channel: not nullable FidlChannelHandle read fChannel;
+    property DispatcherKey: UInt64 read fDispatcherKey write fDispatcherKey;
+  public
+    constructor(aChannel: not nullable FidlChannelHandle;
+                aHandler: not nullable Func<FidlServerRequest, Task>);
+    class method Bind<T>(aEndpoint: not nullable FidlServerEnd<T>;
+                         aHandler: not nullable Func<FidlServerRequest, Task>): not nullable FidlServerBinding;
+    method CloseWithEpitaph(aStatus: Int32);
+    property IsDisposed: Boolean read fDisposed <> 0;
+    event Closed: Action<Exception>;
+    method Dispose;
+    finalizer;
+  end;
+
+  FidlProtocolServerBinding<T> = public class(IDisposable)
+  private
+    fBinding: not nullable FidlServerBinding;
+    constructor(aBinding: not nullable FidlServerBinding);
+  public
+    class method Bind(aEndpoint: not nullable FidlServerEnd<T>;
+                      aHandler: not nullable Func<FidlServerRequest, Task>): not nullable FidlProtocolServerBinding<T>;
+    property Transport: not nullable FidlServerBinding read fBinding;
+    method CloseWithEpitaph(aStatus: Int32);
     method Dispose;
     finalizer;
   end;
@@ -248,6 +323,7 @@ type
     constructor(aConnection: not nullable FidlConnection);
   public
     class method Connect(aProtocolName: nullable String := nil): not nullable FidlProtocolConnection<T>;
+    class method FromEndpoint(aEndpoint: not nullable FidlClientEnd<T>): not nullable FidlProtocolConnection<T>;
 
     method CallAsync(aOrdinal: UInt64;
                      aPayload: nullable array of Byte := nil;
@@ -303,15 +379,19 @@ type
     fThread: not nullable Thread;
     fLock: not nullable Monitor := new Monitor;
     fConnections := new Dictionary<UInt64, FidlConnection>;
+    fServers := new Dictionary<UInt64, FidlServerBinding>;
     fNextKey: Int64;
 
     method Arm(aConnection: not nullable FidlConnection);
+    method Arm(aServer: not nullable FidlServerBinding);
     method SnapshotConnections: not nullable List<FidlConnection>;
     method ThreadMain(aState: Object);
   public
     constructor;
     method RegisterConnection(aConnection: not nullable FidlConnection);
     method UnregisterConnection(aConnection: not nullable FidlConnection);
+    method RegisterServer(aServer: not nullable FidlServerBinding);
+    method UnregisterServer(aServer: not nullable FidlServerBinding);
     method WakeForDeadline;
 
     class property Shared: not nullable FidlDispatcher read new FidlDispatcher; lazy;
@@ -395,6 +475,20 @@ end;
 constructor FidlServerEnd<T>(aHandle: rtl.zx_handle_t);
 begin
   inherited constructor(aHandle);
+end;
+
+constructor FidlEndpointPair<T>(aClient: not nullable FidlClientEnd<T>;
+                                aServer: not nullable FidlServerEnd<T>);
+begin
+  fClient := aClient;
+  fServer := aServer;
+end;
+
+class method FidlEndpointPair<T>.Create: not nullable FidlEndpointPair<T>;
+begin
+  var lPair := FidlConnection.CreateChannelPair;
+  result := new FidlEndpointPair<T>(new FidlClientEnd<T>(lPair.Client.ReleaseHandle),
+                                    new FidlServerEnd<T>(lPair.Server.ReleaseHandle));
 end;
 
 constructor FidlOutgoingHandle(aHandle: not nullable FidlHandle; aObjectType: UInt32; aRights: UInt32);
@@ -683,6 +777,247 @@ begin
   Dispose;
 end;
 
+constructor FidlServerRequest(aBinding: not nullable FidlServerBinding;
+                              aMessage: not nullable FidlIncomingMessage);
+begin
+  fBinding := aBinding;
+  fMessage := aMessage;
+end;
+
+method FidlServerRequest.BodyDecoder: not nullable FidlDecoder;
+begin
+  result := fMessage.BodyDecoder;
+end;
+
+method FidlServerRequest.TakeHandle(aIndex: Integer): not nullable FidlHandle;
+begin
+  result := fMessage.TakeHandle(aIndex);
+end;
+
+method FidlServerRequest.Reply(aPayload: nullable array of Byte;
+                               aHandles: nullable array of FidlOutgoingHandle);
+begin
+  if TransactionID = 0 then
+    raise new InvalidStateException("A one-way FIDL request cannot receive a reply.");
+  if InternalCalls.Exchange(var fReplied, 1) <> 0 then
+    raise new InvalidStateException("A FIDL request has already been replied to.");
+  var lStatus := fBinding.Send(TransactionID, Ordinal, aPayload, aHandles);
+  if lStatus <> rtl.ZX_OK then begin
+    var lException := new FidlTransportException("Could not send the FIDL response", lStatus);
+    fBinding.Fail(lException);
+    raise lException;
+  end;
+end;
+
+method FidlServerRequest.Dispose;
+begin
+  fMessage.Dispose;
+end;
+
+finalizer FidlServerRequest;
+begin
+  Dispose;
+end;
+
+constructor FidlServerBinding(aChannel: not nullable FidlChannelHandle;
+                              aHandler: not nullable Func<FidlServerRequest, Task>);
+begin
+  fChannel := aChannel;
+  fHandler := aHandler;
+  FidlDispatcher.Shared.RegisterServer(self);
+end;
+
+class method FidlServerBinding.Bind<T>(aEndpoint: not nullable FidlServerEnd<T>;
+                                       aHandler: not nullable Func<FidlServerRequest, Task>): not nullable FidlServerBinding;
+begin
+  result := new FidlServerBinding(aEndpoint, aHandler);
+end;
+
+method FidlServerBinding.Send(aTransactionID: UInt32;
+                              aOrdinal: UInt64;
+                              aPayload: nullable array of Byte;
+                              aHandles: nullable array of FidlOutgoingHandle): Int32;
+begin
+  locking fWriteLock do begin
+    if IsDisposed then
+      exit Int32(rtl.ZX_ERR_BAD_HANDLE);
+    var lEncoder := new FidlEncoder(FidlTransactionalHeaderSize+length(aPayload));
+    lEncoder.WriteTransactionalHeader(aTransactionID, aOrdinal);
+    lEncoder.WriteBytes(aPayload);
+    var lBytes := lEncoder.ToArray;
+
+    var lDispositions: array of rtl.zx_handle_disposition_t;
+    if length(aHandles) > 0 then begin
+      lDispositions := new rtl.zx_handle_disposition_t[length(aHandles)];
+      for i: Integer := 0 to length(aHandles)-1 do begin
+        lDispositions[i].operation := rtl.ZX_HANDLE_OP_MOVE;
+        lDispositions[i].handle := aHandles[i].Handle.ReleaseHandle;
+        lDispositions[i].&type := rtl.zx_obj_type_t(aHandles[i].ObjectType);
+        lDispositions[i].rights := rtl.zx_rights_t(aHandles[i].Rights);
+        lDispositions[i].result := rtl.ZX_OK;
+      end;
+    end;
+
+    var lBytesPointer := if length(lBytes) = 0 then nil else @lBytes[0];
+    var lHandlesPointer := if length(lDispositions) = 0 then nil else @lDispositions[0];
+    result := Int32(rtl.zx_channel_write_etc(fChannel.RawHandle,
+                                             0,
+                                             lBytesPointer,
+                                             UInt32(length(lBytes)),
+                                             lHandlesPointer,
+                                             UInt32(length(lDispositions))));
+  end;
+end;
+
+method FidlServerBinding.Dispatch(aState: Object);
+begin
+  var lRequest := FidlServerRequest(aState);
+  try
+    var lTask := fHandler(lRequest);
+    if assigned(lTask) then
+      _ := lTask.ContinueWith(@CompleteDispatch, lRequest)
+    else
+      lRequest.Dispose;
+  except
+    on E: Exception do begin
+      lRequest.Dispose;
+      Fail(E);
+    end;
+  end;
+end;
+
+class method FidlServerBinding.CompleteDispatch(aTask: not nullable Task; aState: nullable Object);
+begin
+  var lRequest := FidlServerRequest(aState);
+  try
+    if aTask.IsFaulted then
+      lRequest.fBinding.Fail(aTask.Exception);
+  finally
+    lRequest.Dispose;
+  end;
+end;
+
+method FidlServerBinding.HandlePacket;
+begin
+  loop begin
+    var lBytes := new Byte[FidlMaximumMessageBytes];
+    var lHandleInfo := new rtl.zx_handle_info_t[FidlMaximumMessageHandles];
+    var lActualBytes, lActualHandles: UInt32;
+    var lStatus := rtl.zx_channel_read_etc(fChannel.RawHandle,
+                                           0,
+                                           @lBytes[0],
+                                           @lHandleInfo[0],
+                                           UInt32(length(lBytes)),
+                                           UInt32(length(lHandleInfo)),
+                                           @lActualBytes,
+                                           @lActualHandles);
+    if lStatus = rtl.ZX_ERR_SHOULD_WAIT then
+      exit;
+    if lStatus <> rtl.ZX_OK then begin
+      Fail(new FidlConnectionClosedException(Int32(lStatus)));
+      exit;
+    end;
+
+    var lMessageBytes := new Byte[Integer(lActualBytes)];
+    if lActualBytes > 0 then
+      &Array.Copy(lBytes, 0, lMessageBytes, 0, Integer(lActualBytes));
+    var lHandles := new FidlHandle[Integer(lActualHandles)];
+    for i: Integer := 0 to Integer(lActualHandles)-1 do
+      lHandles[i] := new FidlHandle(lHandleInfo[i].handle,
+                                    UInt32(lHandleInfo[i].&type),
+                                    UInt32(lHandleInfo[i].rights));
+
+    var lMessage: FidlIncomingMessage;
+    try
+      lMessage := new FidlIncomingMessage(lMessageBytes, lHandles);
+      if (lMessage.TransactionID = 0) and (lMessage.Ordinal = FidlEpitaphOrdinal) then begin
+        var lDecoder := lMessage.BodyDecoder;
+        var lEpitaphStatus := lDecoder.ReadInt32;
+        lMessage.Dispose;
+        Fail(new FidlConnectionClosedException(lEpitaphStatus));
+        exit;
+      end;
+      var lRequest := new FidlServerRequest(self, lMessage);
+      lMessage := nil;
+      ThreadPool.QueueUserWorkItem(@Dispatch, lRequest);
+    except
+      on E: Exception do begin
+        if assigned(lMessage) then
+          lMessage.Dispose
+        else
+          for each lHandle in lHandles do
+            if assigned(lHandle) then
+              lHandle.Dispose;
+        Fail(E);
+        exit;
+      end;
+    end;
+  end;
+end;
+
+method FidlServerBinding.CloseWithEpitaph(aStatus: Int32);
+begin
+  if IsDisposed then
+    exit;
+  var lEncoder := new FidlEncoder(8);
+  lEncoder.WriteInt32(aStatus);
+  lEncoder.Align(8);
+  var lWriteStatus := Send(0, FidlEpitaphOrdinal, lEncoder.ToArray, nil);
+  if lWriteStatus = rtl.ZX_OK then
+    Fail(new FidlConnectionClosedException(aStatus))
+  else
+    Fail(new FidlTransportException("Could not send the FIDL epitaph", lWriteStatus));
+end;
+
+method FidlServerBinding.Fail(aException: not nullable Exception);
+begin
+  if InternalCalls.Exchange(var fDisposed, 1) <> 0 then
+    exit;
+  FidlDispatcher.Shared.UnregisterServer(self);
+  fChannel.Dispose;
+  if assigned(Closed) then
+    try
+      Closed(aException);
+    except
+    end;
+end;
+
+method FidlServerBinding.Dispose;
+begin
+  Fail(new FidlConnectionClosedException(Int32(rtl.ZX_ERR_CANCELED)));
+end;
+
+finalizer FidlServerBinding;
+begin
+  Dispose;
+end;
+
+constructor FidlProtocolServerBinding<T>(aBinding: not nullable FidlServerBinding);
+begin
+  fBinding := aBinding;
+end;
+
+class method FidlProtocolServerBinding<T>.Bind(aEndpoint: not nullable FidlServerEnd<T>;
+                                               aHandler: not nullable Func<FidlServerRequest, Task>): not nullable FidlProtocolServerBinding<T>;
+begin
+  result := new FidlProtocolServerBinding<T>(FidlServerBinding.Bind<T>(aEndpoint, aHandler));
+end;
+
+method FidlProtocolServerBinding<T>.CloseWithEpitaph(aStatus: Int32);
+begin
+  fBinding.CloseWithEpitaph(aStatus);
+end;
+
+method FidlProtocolServerBinding<T>.Dispose;
+begin
+  fBinding.Dispose;
+end;
+
+finalizer FidlProtocolServerBinding<T>;
+begin
+  Dispose;
+end;
+
 constructor FidlDispatcher;
 begin
   if sizeOf(FidlPortPacket) <> 48 then
@@ -708,6 +1043,20 @@ begin
                                           rtl.ZX_WAIT_ASYNC_ONCE);
   if lStatus <> rtl.ZX_OK then
     aConnection.Fail(new FidlTransportException("Could not arm the FIDL channel wait", Int32(lStatus)));
+end;
+
+method FidlDispatcher.Arm(aServer: not nullable FidlServerBinding);
+begin
+  if aServer.IsDisposed then
+    exit;
+  var lSignals := rtl.ZX_CHANNEL_READABLE or rtl.ZX_CHANNEL_PEER_CLOSED;
+  var lStatus := rtl.zx_object_wait_async(aServer.Channel.RawHandle,
+                                          fPort.RawHandle,
+                                          aServer.DispatcherKey,
+                                          lSignals,
+                                          rtl.ZX_WAIT_ASYNC_ONCE);
+  if lStatus <> rtl.ZX_OK then
+    aServer.Fail(new FidlTransportException("Could not arm the FIDL server-channel wait", Int32(lStatus)));
 end;
 
 method FidlDispatcher.SnapshotConnections: not nullable List<FidlConnection>;
@@ -739,6 +1088,27 @@ begin
   aConnection.DispatcherKey := 0;
 end;
 
+method FidlDispatcher.RegisterServer(aServer: not nullable FidlServerBinding);
+begin
+  var lKey := UInt64(InternalCalls.Increment(var fNextKey)+1);
+  if lKey = 0 then
+    raise new InvalidStateException("The FIDL dispatcher exhausted its connection keys.");
+  aServer.DispatcherKey := lKey;
+  locking fLock do
+    fServers.Add(lKey, aServer);
+  Arm(aServer);
+end;
+
+method FidlDispatcher.UnregisterServer(aServer: not nullable FidlServerBinding);
+begin
+  if aServer.DispatcherKey = 0 then
+    exit;
+  rtl.zx_port_cancel(fPort.RawHandle, aServer.Channel.RawHandle, aServer.DispatcherKey);
+  locking fLock do
+    fServers.Remove(aServer.DispatcherKey);
+  aServer.DispatcherKey := 0;
+end;
+
 method FidlDispatcher.WakeForDeadline;
 begin
   var lPacket: FidlPortPacket;
@@ -768,12 +1138,20 @@ begin
 
     if lStatus = rtl.ZX_OK then begin
       var lConnection: FidlConnection;
+      var lServer: FidlServerBinding;
       var lFound: Boolean;
-      locking fLock do
+      locking fLock do begin
         lFound := fConnections.TryGetValue(lPacket.Key, out lConnection);
+        if not lFound then
+          lFound := fServers.TryGetValue(lPacket.Key, out lServer);
+      end;
       if lFound and assigned(lConnection) then begin
         lConnection.HandlePacket;
         Arm(lConnection);
+      end;
+      if lFound and assigned(lServer) then begin
+        lServer.HandlePacket;
+        Arm(lServer);
       end;
     end;
 
@@ -1120,6 +1498,11 @@ class method FidlProtocolConnection<T>.Connect(aProtocolName: nullable String): 
 begin
   var lProtocolName := if length(aProtocolName) = 0 then DefaultProtocolName else aProtocolName;
   result := new FidlProtocolConnection<T>(FidlConnection.Connect(lProtocolName));
+end;
+
+class method FidlProtocolConnection<T>.FromEndpoint(aEndpoint: not nullable FidlClientEnd<T>): not nullable FidlProtocolConnection<T>;
+begin
+  result := new FidlProtocolConnection<T>(new FidlConnection(aEndpoint));
 end;
 
 method FidlProtocolConnection<T>.CallAsync(aOrdinal: UInt64;
