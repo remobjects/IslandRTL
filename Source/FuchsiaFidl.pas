@@ -217,6 +217,28 @@ type
                            aOptions: FidlCallOptions): not nullable Task<UInt32>;
   end;
 
+  FidlStringCodec = assembly sealed class
+  private
+    class method CompleteCall(aTask: not nullable Task; aState: nullable Object);
+    class method Decode(aTask: not nullable Task): not nullable String;
+  public
+    class method CallAsync(aConnection: not nullable FidlConnection;
+                           aOrdinal: UInt64;
+                           aValue: not nullable String;
+                           aOptions: FidlCallOptions): not nullable Task<String>;
+  end;
+
+  FidlByteVectorCodec = assembly sealed class
+  private
+    class method CompleteCall(aTask: not nullable Task; aState: nullable Object);
+    class method Decode(aTask: not nullable Task): not nullable array of Byte;
+  public
+    class method CallAsync(aConnection: not nullable FidlConnection;
+                           aOrdinal: UInt64;
+                           aValue: not nullable array of Byte;
+                           aOptions: FidlCallOptions): not nullable Task<array of Byte>;
+  end;
+
   FidlProtocolConnection<T> = public class(IDisposable)
   private
     fConnection: not nullable FidlConnection;
@@ -236,6 +258,16 @@ type
     method CallUInt32Async(aOrdinal: UInt64;
                            aValue: UInt32;
                            aOptions: FidlCallOptions): not nullable Task<UInt32>;
+    method CallStringAsync(aOrdinal: UInt64;
+                           aValue: not nullable String): not nullable Task<String>;
+    method CallStringAsync(aOrdinal: UInt64;
+                           aValue: not nullable String;
+                           aOptions: FidlCallOptions): not nullable Task<String>;
+    method CallByteVectorAsync(aOrdinal: UInt64;
+                               aValue: not nullable array of Byte): not nullable Task<array of Byte>;
+    method CallByteVectorAsync(aOrdinal: UInt64;
+                               aValue: not nullable array of Byte;
+                               aOptions: FidlCallOptions): not nullable Task<array of Byte>;
     method SendOneWay(aOrdinal: UInt64;
                       aPayload: nullable array of Byte := nil;
                       aHandles: nullable array of FidlOutgoingHandle := nil): not nullable Task;
@@ -1148,6 +1180,131 @@ begin
     lDecoder.Align(8);
     if lDecoder.Remaining <> 0 then
       raise new FidlProtocolException("A fixed UInt32 FIDL response contains trailing data.");
+  finally
+    lMessage.Dispose;
+  end;
+end;
+
+method FidlProtocolConnection<T>.CallStringAsync(aOrdinal: UInt64;
+                                                 aValue: not nullable String): not nullable Task<String>;
+begin
+  result := CallStringAsync(aOrdinal, aValue, default(FidlCallOptions));
+end;
+
+method FidlProtocolConnection<T>.CallStringAsync(aOrdinal: UInt64;
+                                                 aValue: not nullable String;
+                                                 aOptions: FidlCallOptions): not nullable Task<String>;
+begin
+  result := FidlStringCodec.CallAsync(fConnection, aOrdinal, aValue, aOptions);
+end;
+
+class method FidlStringCodec.CallAsync(aConnection: not nullable FidlConnection;
+                                       aOrdinal: UInt64;
+                                       aValue: not nullable String;
+                                       aOptions: FidlCallOptions): not nullable Task<String>;
+begin
+  var lBytes := Encoding.UTF8.GetBytes(aValue, false);
+  var lEncoder := new FidlEncoder(16+length(lBytes));
+  lEncoder.WriteUInt64(UInt64(length(lBytes)));
+  lEncoder.WriteUInt64(UInt64.MaxValue);
+  lEncoder.WriteBytes(lBytes);
+  lEncoder.Align(8);
+  var lCompletion := new TaskCompletionSource<String>;
+  var lCall := aConnection.CallAsync(aOrdinal, lEncoder.ToArray, nil, aOptions);
+  _ := lCall.ContinueWith(@CompleteCall, lCompletion);
+  result := lCompletion.Task as not nullable;
+end;
+
+class method FidlStringCodec.CompleteCall(aTask: not nullable Task; aState: nullable Object);
+begin
+  var lCompletion := TaskCompletionSource<String>(aState);
+  try
+    if aTask.IsFaulted then
+      lCompletion.SetException(aTask.Exception)
+    else
+      lCompletion.SetResult(Decode(aTask));
+  except
+    on E: Exception do
+      lCompletion.SetException(E);
+  end;
+end;
+
+class method FidlStringCodec.Decode(aTask: not nullable Task): not nullable String;
+begin
+  var lMessage := Task<FidlIncomingMessage>(aTask).Result;
+  try
+    var lDecoder := lMessage.BodyDecoder;
+    var lCount := lDecoder.ReadUInt64;
+    if lDecoder.ReadUInt64 <> UInt64.MaxValue then
+      raise new FidlProtocolException("A non-nullable FIDL string is absent.");
+    if lCount > UInt64(Int32.MaxValue) then
+      raise new FidlProtocolException("A FIDL string exceeds the supported size.");
+    result := Encoding.UTF8.GetString(lDecoder.ReadBytes(Integer(lCount)));
+    lDecoder.Align(8);
+    if lDecoder.Remaining <> 0 then
+      raise new FidlProtocolException("A FIDL string response contains trailing data.");
+  finally
+    lMessage.Dispose;
+  end;
+end;
+
+method FidlProtocolConnection<T>.CallByteVectorAsync(aOrdinal: UInt64;
+                                                     aValue: not nullable array of Byte): not nullable Task<array of Byte>;
+begin
+  result := CallByteVectorAsync(aOrdinal, aValue, default(FidlCallOptions));
+end;
+
+method FidlProtocolConnection<T>.CallByteVectorAsync(aOrdinal: UInt64;
+                                                     aValue: not nullable array of Byte;
+                                                     aOptions: FidlCallOptions): not nullable Task<array of Byte>;
+begin
+  result := FidlByteVectorCodec.CallAsync(fConnection, aOrdinal, aValue, aOptions);
+end;
+
+class method FidlByteVectorCodec.CallAsync(aConnection: not nullable FidlConnection;
+                                           aOrdinal: UInt64;
+                                           aValue: not nullable array of Byte;
+                                           aOptions: FidlCallOptions): not nullable Task<array of Byte>;
+begin
+  var lEncoder := new FidlEncoder(16+length(aValue));
+  lEncoder.WriteUInt64(UInt64(length(aValue)));
+  lEncoder.WriteUInt64(UInt64.MaxValue);
+  lEncoder.WriteBytes(aValue);
+  lEncoder.Align(8);
+  var lCompletion := new TaskCompletionSource<array of Byte>;
+  var lCall := aConnection.CallAsync(aOrdinal, lEncoder.ToArray, nil, aOptions);
+  _ := lCall.ContinueWith(@CompleteCall, lCompletion);
+  result := lCompletion.Task as not nullable;
+end;
+
+class method FidlByteVectorCodec.CompleteCall(aTask: not nullable Task; aState: nullable Object);
+begin
+  var lCompletion := TaskCompletionSource<array of Byte>(aState);
+  try
+    if aTask.IsFaulted then
+      lCompletion.SetException(aTask.Exception)
+    else
+      lCompletion.SetResult(Decode(aTask));
+  except
+    on E: Exception do
+      lCompletion.SetException(E);
+  end;
+end;
+
+class method FidlByteVectorCodec.Decode(aTask: not nullable Task): not nullable array of Byte;
+begin
+  var lMessage := Task<FidlIncomingMessage>(aTask).Result;
+  try
+    var lDecoder := lMessage.BodyDecoder;
+    var lCount := lDecoder.ReadUInt64;
+    if lDecoder.ReadUInt64 <> UInt64.MaxValue then
+      raise new FidlProtocolException("A non-nullable FIDL byte vector is absent.");
+    if lCount > UInt64(Int32.MaxValue) then
+      raise new FidlProtocolException("A FIDL byte vector exceeds the supported size.");
+    result := lDecoder.ReadBytes(Integer(lCount)) as not nullable;
+    lDecoder.Align(8);
+    if lDecoder.Remaining <> 0 then
+      raise new FidlProtocolException("A FIDL byte-vector response contains trailing data.");
   finally
     lMessage.Dispose;
   end;
