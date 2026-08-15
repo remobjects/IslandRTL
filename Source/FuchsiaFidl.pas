@@ -314,6 +314,48 @@ type
                            aOptions: FidlCallOptions): not nullable Task<array of Byte>;
   end;
 
+  FidlStringTable = public class
+  private
+    fStrings := new Dictionary<UInt64, String>;
+  public
+    constructor; empty;
+    method GetString(aOrdinal: UInt64): nullable String;
+    method SetString(aOrdinal: UInt64; aValue: nullable String);
+  end;
+
+  FidlMappedCallCompletion = assembly abstract class
+  private
+    method CompleteResult(aMessage: not nullable FidlIncomingMessage); virtual; abstract;
+    method SetException(aException: not nullable Exception); virtual; abstract;
+  public
+    class method CompleteCall(aTask: not nullable Task; aState: nullable Object);
+  end;
+
+  FidlStringTableCallCompletion<T> = assembly sealed class(FidlMappedCallCompletion)
+    where T is FidlStringTable;
+  private
+    fCompletion := new TaskCompletionSource<T>;
+    fKnownOrdinalMask: UInt64;
+    method CompleteResult(aMessage: not nullable FidlIncomingMessage); override;
+    method SetException(aException: not nullable Exception); override;
+  public
+    constructor(aKnownOrdinalMask: UInt64);
+    property Task: not nullable Task<T> read fCompletion.Task as not nullable;
+  end;
+
+  FidlStringTableCodec = assembly sealed class
+  private
+    class method DecodeInto(aMessage: not nullable FidlIncomingMessage;
+                            aValue: not nullable FidlStringTable;
+                            aKnownOrdinalMask: UInt64);
+  public
+    class method CallAsync<T>(aConnection: not nullable FidlConnection;
+                              aOrdinal: UInt64;
+                              aKnownOrdinalMask: UInt64;
+                              aOptions: FidlCallOptions): not nullable Task<T>;
+      where T is FidlStringTable;
+  end;
+
   FidlProtocolConnection<T> = public class(IDisposable)
   private
     fConnection: not nullable FidlConnection;
@@ -344,6 +386,13 @@ type
     method CallByteVectorAsync(aOrdinal: UInt64;
                                aValue: not nullable array of Byte;
                                aOptions: FidlCallOptions): not nullable Task<array of Byte>;
+    method CallStringTableAsync<TResult>(aOrdinal: UInt64;
+                                         aKnownOrdinalMask: UInt64): not nullable Task<TResult>;
+      where TResult is FidlStringTable;
+    method CallStringTableAsync<TResult>(aOrdinal: UInt64;
+                                         aKnownOrdinalMask: UInt64;
+                                         aOptions: FidlCallOptions): not nullable Task<TResult>;
+      where TResult is FidlStringTable;
     method SendOneWay(aOrdinal: UInt64;
                       aPayload: nullable array of Byte := nil;
                       aHandles: nullable array of FidlOutgoingHandle := nil): not nullable Task;
@@ -1691,6 +1740,151 @@ begin
   finally
     lMessage.Dispose;
   end;
+end;
+
+method FidlStringTable.GetString(aOrdinal: UInt64): nullable String;
+begin
+  if aOrdinal = 0 then
+    raise new ArgumentOutOfRangeException("aOrdinal");
+  fStrings.TryGetValue(aOrdinal, out result);
+end;
+
+method FidlStringTable.SetString(aOrdinal: UInt64; aValue: nullable String);
+begin
+  if aOrdinal = 0 then
+    raise new ArgumentOutOfRangeException("aOrdinal");
+  if assigned(aValue) then
+    fStrings[aOrdinal] := aValue
+  else
+    fStrings.Remove(aOrdinal);
+end;
+
+class method FidlMappedCallCompletion.CompleteCall(aTask: not nullable Task; aState: nullable Object);
+begin
+  var lCompletion := FidlMappedCallCompletion(aState);
+  try
+    if aTask.IsFaulted then begin
+      lCompletion.SetException(aTask.Exception);
+      exit;
+    end;
+
+    var lMessage := Task<FidlIncomingMessage>(aTask).Result;
+    try
+      lCompletion.CompleteResult(lMessage);
+    finally
+      lMessage.Dispose;
+    end;
+  except
+    on E: Exception do
+      lCompletion.SetException(E);
+  end;
+end;
+
+constructor FidlStringTableCallCompletion<T>(aKnownOrdinalMask: UInt64);
+begin
+  fKnownOrdinalMask := aKnownOrdinalMask;
+end;
+
+method FidlStringTableCallCompletion<T>.CompleteResult(aMessage: not nullable FidlIncomingMessage);
+begin
+  // Imported table proxy types contain metadata and inline accessors only, so they add no instance state.
+  // Allocate their common runtime backing object without requiring a linker symbol for an imported constructor.
+  var lValue := T(Object(new FidlStringTable));
+  FidlStringTableCodec.DecodeInto(aMessage, lValue, fKnownOrdinalMask);
+  fCompletion.SetResult(lValue);
+end;
+
+method FidlStringTableCallCompletion<T>.SetException(aException: not nullable Exception);
+begin
+  fCompletion.SetException(aException);
+end;
+
+class method FidlStringTableCodec.CallAsync<T>(aConnection: not nullable FidlConnection;
+                                               aOrdinal: UInt64;
+                                               aKnownOrdinalMask: UInt64;
+                                               aOptions: FidlCallOptions): not nullable Task<T>;
+begin
+  var lCompletion := new FidlStringTableCallCompletion<T>(aKnownOrdinalMask);
+  var lCall := aConnection.CallAsync(aOrdinal, nil, nil, aOptions);
+  _ := lCall.ContinueWith(@FidlMappedCallCompletion.CompleteCall, lCompletion);
+  result := lCompletion.Task;
+end;
+
+class method FidlStringTableCodec.DecodeInto(aMessage: not nullable FidlIncomingMessage;
+                                             aValue: not nullable FidlStringTable;
+                                             aKnownOrdinalMask: UInt64);
+begin
+  var lDecoder := aMessage.BodyDecoder;
+  var lCount := lDecoder.ReadUInt64;
+  if lDecoder.ReadUInt64 <> UInt64.MaxValue then
+    raise new FidlProtocolException("A non-nullable FIDL table is absent.");
+  if lCount > UInt64(Int32.MaxValue) then
+    raise new FidlProtocolException("A FIDL table contains too many envelopes.");
+  if lCount > UInt64(lDecoder.Remaining div 8) then
+    raise new FidlProtocolException("A FIDL table envelope vector exceeds the message body.");
+
+  var lEnvelopeCount := Integer(lCount);
+  var lByteCounts := new UInt32[lEnvelopeCount];
+  var lHandleCounts := new UInt16[lEnvelopeCount];
+  var lFlags := new UInt16[lEnvelopeCount];
+  for i: Integer := 0 to lEnvelopeCount-1 do begin
+    lByteCounts[i] := lDecoder.ReadUInt32;
+    lHandleCounts[i] := lDecoder.ReadUInt16;
+    lFlags[i] := lDecoder.ReadUInt16;
+    if (lFlags[i] <> 0) and (lFlags[i] <> 1) then
+      raise new FidlProtocolException("A FIDL table envelope has invalid flags.");
+    if (lFlags[i] = 0) and ((lByteCounts[i] and 7) <> 0) then
+      raise new FidlProtocolException("An out-of-line FIDL table envelope has an unaligned byte count.");
+    if (lFlags[i] = 0) and (lByteCounts[i] > UInt32(Int32.MaxValue)) then
+      raise new FidlProtocolException("A FIDL table envelope exceeds the supported size.");
+  end;
+
+  for i: Integer := 0 to lEnvelopeCount-1 do begin
+    var lOrdinal := UInt64(i+1);
+    var lKnownString := (lOrdinal <= 64) and ((aKnownOrdinalMask and (UInt64(1) shl i)) <> 0);
+    var lAbsent := (lByteCounts[i] = 0) and (lHandleCounts[i] = 0) and (lFlags[i] = 0);
+    if lAbsent then
+      continue;
+
+    if not lKnownString then begin
+      if lFlags[i] = 0 then
+        lDecoder.ReadBytes(Integer(lByteCounts[i]));
+      continue;
+    end;
+
+    if lFlags[i] <> 0 then
+      raise new FidlProtocolException("A FIDL string table member cannot use an inline envelope.");
+    if lHandleCounts[i] <> 0 then
+      raise new FidlProtocolException("A FIDL string table member unexpectedly contains handles.");
+
+    var lEnvelopeStart := lDecoder.Position;
+    var lStringCount := lDecoder.ReadUInt64;
+    if lDecoder.ReadUInt64 <> UInt64.MaxValue then
+      raise new FidlProtocolException("A present non-nullable FIDL table string is absent.");
+    if lStringCount > UInt64(Int32.MaxValue) then
+      raise new FidlProtocolException("A FIDL table string exceeds the supported size.");
+    var lString := Encoding.UTF8.GetString(lDecoder.ReadBytes(Integer(lStringCount)));
+    lDecoder.Align(8);
+    if lDecoder.Position-lEnvelopeStart <> Integer(lByteCounts[i]) then
+      raise new FidlProtocolException("A FIDL table string does not match its envelope byte count.");
+    aValue.SetString(lOrdinal, lString);
+  end;
+
+  if lDecoder.Remaining <> 0 then
+    raise new FidlProtocolException("A FIDL string-table response contains trailing data.");
+end;
+
+method FidlProtocolConnection<T>.CallStringTableAsync<TResult>(aOrdinal: UInt64;
+                                                               aKnownOrdinalMask: UInt64): not nullable Task<TResult>;
+begin
+  result := CallStringTableAsync<TResult>(aOrdinal, aKnownOrdinalMask, default(FidlCallOptions));
+end;
+
+method FidlProtocolConnection<T>.CallStringTableAsync<TResult>(aOrdinal: UInt64;
+                                                               aKnownOrdinalMask: UInt64;
+                                                               aOptions: FidlCallOptions): not nullable Task<TResult>;
+begin
+  result := FidlStringTableCodec.CallAsync<TResult>(fConnection, aOrdinal, aKnownOrdinalMask, aOptions);
 end;
 
 method FidlProtocolConnection<T>.SendOneWay(aOrdinal: UInt64;
