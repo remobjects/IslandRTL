@@ -26,6 +26,14 @@ type
     next: ^atexitrec;
   end;
 
+  {$IF X86_64 AND _WIN64}
+  DeferredCallerContext = record
+    StackPointer: NativeInt;
+    FramePointer: NativeInt;
+    InstructionPointer: NativeInt;
+  end;
+  {$ENDIF}
+
   {$IFDEF ARM64}
   StackProbe = assembly static class
   public
@@ -41,6 +49,32 @@ type
     class var processheap: rtl.HANDLE;
     class var fModuleHandle: rtl.HMODULE; assembly;
     class var fMainThreadID: rtl.DWORD; assembly;
+    {$IF X86_64 AND _WIN64}
+    [ThreadLocal]
+    class var fCatchHandler: NativeInt;
+    [ThreadLocal]
+    class var fCatchFrame: NativeInt;
+    [ThreadLocal]
+    class var fCatchReturnAddress: NativeInt;
+    [ThreadLocal]
+    class var fCatchReturnStack: NativeInt;
+    [ThreadLocal]
+    class var fCatchImageBase: NativeInt;
+    [ThreadLocal]
+    class var fCatchHandlerData: NativeInt;
+    [ThreadLocal]
+    class var fCatchRaiseAddress: NativeInt;
+    [ThreadLocal]
+    class var fCatchException: Object;
+    [ThreadLocal]
+    class var fDeferredException: Object;
+    [ThreadLocal]
+    class var fCatchActive: Boolean;
+    [ThreadLocal]
+    class var fDeferredRaise: Boolean;
+    [ThreadLocal]
+    class var fDeferredCallerContext: DeferredCallerContext;
+    {$ENDIF}
     class method getModuleHandle: rtl.HMODULE;
     begin
       if fModuleHandle = nil then fModuleHandle := rtl.GetModuleHandleW(nil);
@@ -1428,19 +1462,6 @@ begin
   rtl.DebugBreak;
 end;
 
-method ExternalCalls.RaiseException(aRaiseAddress: ^Void; aRaiseFrame: ^Void; aRaiseObject: Object);
-begin
-  var lData: array[0..2] of NativeUInt;
-  lData[1] := NativeUInt(if aRaiseAddress = nil then Utilities.GetReturnAddress(0) else aRaiseAddress);
-  lData[2] := NativeUInt(aRaiseFrame);
-  lData[0] := NativeUInt(InternalCalls.Cast(aRaiseObject));
-  {$IFDEF _WIN64}
-  rtl.RaiseException(ElementsExceptionCode, rtl.EXCEPTION_NONCONTINUABLE, 3, ^UInt64(@lData[0]));
-  {$ELSE}
-  rtl.RaiseException(ElementsExceptionCode, rtl.EXCEPTION_NONCONTINUABLE, 3, ^UInt32(@lData[0]));
-  {$ENDIF}
-end;
-
 {$IF ARM64}
 [InlineAsm("
 
@@ -1458,12 +1479,35 @@ method CallCatch64(aCall: NativeInt; aEBP: NativeInt): NativeInt; external;
 pushq %rbp
 movq %rdx, %rbp
 subq $$32, %rsp
+movq %rdx, 8(%rsp)
 callq *%rcx
 addq $$32, %rsp
 popq %rbp
 retq
 ", "", false, false), DisableInlining, DisableOptimizations]
 method CallCatch64(aCall: NativeInt; aEBP: NativeInt): NativeInt; external;
+
+[InlineAsm("
+pushq %rbp
+movq %rdx, %rbp
+subq $$32, %rsp
+movq %rdx, 8(%rsp)
+leaq catch_return(%rip), %rax
+movq %rax, (%r8)
+movq %rsp, (%r9)
+callq *%rcx
+catch_return:
+addq $$32, %rsp
+popq %rbp
+retq
+", "", false, false), DisableInlining, DisableOptimizations]
+method CallCatch64AfterUnwind(aCall: NativeInt; aEBP: NativeInt; var aReturnAddress: NativeInt; var aReturnStack: NativeInt): NativeInt; external;
+
+[InlineAsm("
+movq %rdx, %rsp
+jmpq *%rcx
+", "", false, false), Naked, DisableInlining, DisableOptimizations]
+method ExitCatchFunclet(aReturnAddress: NativeInt; aReturnStack: NativeInt); external;
 {$ELSEIF i386}
 [DisableInlining]
 method CallCatch32(aCall: NativeInt; aEBP: NativeInt): NativeInt;
@@ -1476,6 +1520,27 @@ end;
 {$ELSE}
   {$ERROR Unsupported Architecture}
 {$ENDIF}
+
+method ExternalCalls.RaiseException(aRaiseAddress: ^Void; aRaiseFrame: ^Void; aRaiseObject: Object);
+begin
+  {$IF X86_64 AND _WIN64}
+  if fCatchActive then begin
+    fDeferredException := coalesce(aRaiseObject, fCatchException);
+    fDeferredRaise := true;
+    fCatchRaiseAddress := NativeInt(if aRaiseAddress = nil then Utilities.GetReturnAddress(0) else aRaiseAddress);
+    ExitCatchFunclet(fCatchReturnAddress, fCatchReturnStack);
+  end;
+  {$ENDIF}
+  var lData: array[0..2] of NativeUInt;
+  lData[1] := NativeUInt(if aRaiseAddress = nil then Utilities.GetReturnAddress(0) else aRaiseAddress);
+  lData[2] := NativeUInt(aRaiseFrame);
+  lData[0] := NativeUInt(InternalCalls.Cast(aRaiseObject));
+  {$IFDEF _WIN64}
+  rtl.RaiseException(ElementsExceptionCode, rtl.EXCEPTION_NONCONTINUABLE, 3, ^UInt64(@lData[0]));
+  {$ELSE}
+  rtl.RaiseException(ElementsExceptionCode, rtl.EXCEPTION_NONCONTINUABLE, 3, ^UInt32(@lData[0]));
+  {$ENDIF}
+end;
 
 {$IF I386}
 [DisableInlining, DisableOptimizations, LinkOnce]
@@ -1538,6 +1603,97 @@ end;
 {$ENDIF}
 
 {$IFDEF _WIN64}
+{$IF X86_64}
+[SymbolName('__elements_after_unwind_run_catch'), InlineAsm("
+subq $$40, %rsp
+callq __elements_run_catch_after_unwind
+addq $$40, %rsp
+testq %rax, %rax
+jz deferred_raise
+jmpq *%rax
+deferred_raise:
+subq $$40, %rsp
+callq __elements_get_deferred_caller_context
+addq $$40, %rsp
+movq (%rax), %rsp
+movq 8(%rax), %rbp
+subq $$8, %rsp
+movq 16(%rax), %rcx
+movq %rcx, (%rsp)
+leaq __elements_raise_deferred_exception(%rip), %rax
+jmpq *%rax
+", "", false, false), Naked, DisableInlining, DisableOptimizations]
+method AfterUnwindRunCatch; external;
+
+[SymbolName('__elements_get_deferred_caller_context'), DisableInlining, DisableOptimizations]
+method GetDeferredCallerContext: NativeInt;
+begin
+  result := NativeInt(@ExternalCalls.fDeferredCallerContext);
+end;
+
+method RunDeferredCatchCleanups;
+begin
+  var msvcinfo := ^MSVCExceptionInfo(ExternalCalls.fCatchImageBase + ^Int32(ExternalCalls.fCatchHandlerData)^);
+  var lIP := ExternalCalls.fCatchRaiseAddress - ExternalCalls.fCatchImageBase;
+  var lIPMap := ^MSVCIpToSate(ExternalCalls.fCatchImageBase + msvcinfo^.IPMapEntry);
+  var lIndex := -1;
+  for i: Integer := 0 to msvcinfo^.IPMapEntries - 1 do begin
+    if lIP > lIPMap[i].IP then
+      lIndex := lIPMap[i].State
+    else
+      break;
+  end;
+
+  var lUnwindMap := ^MSVCUnwindMap(ExternalCalls.fCatchImageBase + msvcinfo^.UnwindMap);
+  while (lIndex >= 0) and (lIndex < msvcinfo^.NumUnwindMap) do begin
+    if lUnwindMap[lIndex].Cleanup <> 0 then
+      CallCatch64(ExternalCalls.fCatchImageBase + lUnwindMap[lIndex].Cleanup, ExternalCalls.fCatchFrame);
+    lIndex := lUnwindMap[lIndex].ToState;
+  end;
+end;
+
+[SymbolName('__elements_run_catch_after_unwind'), DisableInlining, DisableOptimizations]
+method RunCatchAfterUnwind: NativeInt;
+begin
+  ExternalCalls.fDeferredRaise := false;
+  ExternalCalls.fDeferredException := nil;
+  ExternalCalls.fCatchActive := true;
+  result := CallCatch64AfterUnwind(ExternalCalls.fCatchHandler, ExternalCalls.fCatchFrame, var ExternalCalls.fCatchReturnAddress, var ExternalCalls.fCatchReturnStack);
+  ExternalCalls.fCatchActive := false;
+  if ExternalCalls.fDeferredRaise then begin
+    RunDeferredCatchCleanups;
+    result := 0
+  end
+  else begin
+    ExternalCalls.fCatchHandler := 0;
+    ExternalCalls.fCatchFrame := 0;
+    ExternalCalls.fCatchReturnAddress := 0;
+    ExternalCalls.fCatchReturnStack := 0;
+    ExternalCalls.fCatchImageBase := 0;
+    ExternalCalls.fCatchHandlerData := 0;
+    ExternalCalls.fCatchRaiseAddress := 0;
+    ExternalCalls.fCatchException := nil;
+  end;
+end;
+
+[SymbolName('__elements_raise_deferred_exception'), DisableInlining, DisableOptimizations]
+method RaiseDeferredException;
+begin
+  var lException := ExternalCalls.fDeferredException;
+  ExternalCalls.fCatchHandler := 0;
+  ExternalCalls.fCatchFrame := 0;
+  ExternalCalls.fCatchReturnAddress := 0;
+  ExternalCalls.fCatchReturnStack := 0;
+  ExternalCalls.fCatchImageBase := 0;
+  ExternalCalls.fCatchHandlerData := 0;
+  ExternalCalls.fCatchRaiseAddress := 0;
+  ExternalCalls.fCatchException := nil;
+  ExternalCalls.fDeferredException := nil;
+  ExternalCalls.fDeferredRaise := false;
+  ExternalCalls.RaiseException(nil, nil, lException);
+end;
+{$ENDIF}
+
 method GetMapIndex(aIP: NativeUInt; dispatcher: rtl.PDISPATCHER_CONTEXT): Integer;
 begin
   var msvcinfo := ^MSVCExceptionInfo(dispatcher^.ImageBase + ^Int32(dispatcher^.HandlerData)^);
@@ -1556,11 +1712,26 @@ end;
 type CatchHelper = method (pExcept: ^rtl.EXCEPTION_RECORD): NativeInt;
 method IntCallCatch(pExcept: ^rtl.EXCEPTION_RECORD): NativeInt;
 begin
+  {$IF X86_64}
+  ExternalCalls.fCatchFrame := pExcept^.ExceptionInformation[1];
+  ExternalCalls.fCatchHandler := pExcept^.ExceptionInformation[2];
+  ExternalCalls.fCatchException := InternalCalls.Cast<Object>(^Void(pExcept^.ExceptionInformation[4]));
+  var lAfterUnwind: method := @AfterUnwindRunCatch;
+  exit NativeInt(^Void(lAfterUnwind));
+  {$ELSE}
   exit CallCatch64(pExcept^.ExceptionInformation[2], pExcept^.ExceptionInformation[1]);
+  {$ENDIF}
 end;
 
-method CallCatch(aCatch: ^MSVCTryMap; aHandler: ^MSVCHandlerType; arec: ^rtl.EXCEPTION_RECORD; EstFrame: UInt64; context: rtl.PCONTEXT; dispatcher: rtl.PDISPATCHER_CONTEXT);
+method CallCatch(aCatch: ^MSVCTryMap; aHandler: ^MSVCHandlerType; arec: ^rtl.EXCEPTION_RECORD; EstFrame: UInt64; context: rtl.PCONTEXT; dispatcher: rtl.PDISPATCHER_CONTEXT; aException: Exception);
 begin
+  {$IF X86_64}
+  ExternalCalls.fCatchImageBase := dispatcher^.ImageBase;
+  ExternalCalls.fCatchHandlerData := NativeInt(dispatcher^.HandlerData);
+  ExternalCalls.fDeferredCallerContext.StackPointer := dispatcher^.ContextRecord^.Rsp;
+  ExternalCalls.fDeferredCallerContext.FramePointer := dispatcher^.ContextRecord^.Rbp;
+  ExternalCalls.fDeferredCallerContext.InstructionPointer := dispatcher^.ContextRecord^.Rip;
+  {$ENDIF}
   var eh := &default(rtl.EXCEPTION_RECORD);
   eh.ExceptionCode := rtl.STATUS_UNWIND_CONSOLIDATE;
   eh.ExceptionFlags := rtl.EXCEPTION_NONCONTINUABLE;
@@ -1570,6 +1741,7 @@ begin
   eh.ExceptionInformation[1] := EstFrame;
   eh.ExceptionInformation[2] := dispatcher^.ImageBase + aHandler^.Handler;
   eh.ExceptionInformation[3] := aCatch^.TryLow;
+  eh.ExceptionInformation[4] := UInt64(InternalCalls.Cast(aException));
   rtl.RtlUnwindEx(rtl.PVOID(EstFrame), rtl.PVOID(dispatcher^.ControlPc),  @eh, nil, context, dispatcher^.HistoryTable);
 end;
 
@@ -1585,17 +1757,17 @@ begin
 
   if 0 <> (arec^.ExceptionFlags and ( rtl.EXCEPTION_UNWINDING or rtl.EXCEPTION_EXIT_UNWIND)) then begin
     var lMap := ^MSVCUnwindMap(dispatcher^.ImageBase + msvcinfo^.UnwindMap);
-    if arec^.ExceptionCode = rtl.STATUS_UNWIND_CONSOLIDATE then begin
+    if (arec^.ExceptionCode = rtl.STATUS_UNWIND_CONSOLIDATE) and (EstablisherFrame = arec^.ExceptionInformation[1]) then begin
       var lTargetState := arec^.ExceptionInformation[3];
       // special exception, we're unwinding to a specific stat
-      while (index < msvcinfo^.NumUnwindMap) and (&index <> lTargetState) do begin
+      while (index >= 0) and (index < msvcinfo^.NumUnwindMap) and (&index <> lTargetState) do begin
         if lMap[index].Cleanup <> 0 then CallCatch64(dispatcher^.ImageBase + lMap[index].Cleanup, dispatcher^.EstablisherFrame);
         index:= lMap[index].ToState;
       end;
       exit;
     end;
     // unwinding, call finally, this is generally when unwinding completely.
-    while (index < msvcinfo^.NumUnwindMap)  do begin
+    while (index >= 0) and (index < msvcinfo^.NumUnwindMap) do begin
       if lMap[index].Cleanup <> 0 then CallCatch64(dispatcher^.ImageBase + lMap[index].Cleanup, dispatcher^.EstablisherFrame);
       index:= lMap[index].ToState;
     end;
@@ -1628,12 +1800,12 @@ begin
             {$IF ARM64} // workaround for 85424: Oxygene: bad error for {IFDEF}
             if (cond = nil) or (cond(^Void(context^.Sp))) then begin
               result := 0;
-              CallCatch(tb, ht, arec, EstablisherFrame, context, dispatcher);
+              CallCatch(tb, ht, arec, EstablisherFrame, context, dispatcher, exo);
             end;
             {$ELSE}
             if (cond = nil) or (cond(^Void(context^.Rsp))) then begin
               result := 0;
-              CallCatch(tb, ht, arec, EstablisherFrame, context, dispatcher);
+              CallCatch(tb, ht, arec, EstablisherFrame, context, dispatcher, exo);
             end;
             {$ENDIF}
           end;
