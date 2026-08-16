@@ -53,6 +53,7 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="Program.pas" />
+    <Compile Include="ExceptionFilterTests.pas" />
   </ItemGroup>
   <Import Project="$(MSBuildExtensionsPath)\RemObjects Software\Elements\RemObjects.Elements.Island.Darwin.targets" />
   <Import Project="Island.Tests.Shared.projitems" Label="Shared" />

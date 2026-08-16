@@ -6,6 +6,7 @@ uses
 type
   WindowsExceptionRethrow = public class(Test)
   private
+    [DisableInlining]
     method BareRethrowFromHandler(aOriginal: Exception; var aFinallyCount: Integer);
     begin
       try
@@ -21,6 +22,7 @@ type
       end;
     end;
 
+    [DisableInlining]
     method NewExceptionFromHandler(var aFinallyCount: Integer);
     begin
       try
@@ -36,6 +38,7 @@ type
       end;
     end;
 
+    [DisableInlining]
     method RethrowAcrossIntermediateFrame(aOriginal: Exception; var aFinallyCount: Integer);
     begin
       try

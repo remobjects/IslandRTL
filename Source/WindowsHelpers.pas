@@ -26,7 +26,7 @@ type
     next: ^atexitrec;
   end;
 
-  {$IF X86_64 AND _WIN64}
+  {$IFDEF _WIN64}
   DeferredCallerContext = record
     StackPointer: NativeInt;
     FramePointer: NativeInt;
@@ -49,11 +49,13 @@ type
     class var processheap: rtl.HANDLE;
     class var fModuleHandle: rtl.HMODULE; assembly;
     class var fMainThreadID: rtl.DWORD; assembly;
-    {$IF X86_64 AND _WIN64}
+    {$IFDEF _WIN64}
     [ThreadLocal]
     class var fCatchHandler: NativeInt;
     [ThreadLocal]
     class var fCatchFrame: NativeInt;
+    [ThreadLocal]
+    class var fCatchEstablisherFrame: UInt64;
     [ThreadLocal]
     class var fCatchReturnAddress: NativeInt;
     [ThreadLocal]
@@ -74,6 +76,8 @@ type
     class var fDeferredRaise: Boolean;
     [ThreadLocal]
     class var fDeferredCallerContext: DeferredCallerContext;
+    [ThreadLocal]
+    class var fSkipCatchFrame: UInt64;
     {$ENDIF}
     class method getModuleHandle: rtl.HMODULE;
     begin
@@ -1466,14 +1470,35 @@ end;
 [InlineAsm("
 
         stp     x29, x30, [sp, #-16]!           // 16-byte Folded Spill
-        mov     x1, x29
+        sub     x29, x1, #32
         blr     x0
 
         ldp     x29, x30, [sp], #16             // 16-byte Folded Reload
         ret
-", "", false, false), DisableInlining, DisableOptimizations]
+", "", true, false), DisableInlining, DisableOptimizations]
 
 method CallCatch64(aCall: NativeInt; aEBP: NativeInt): NativeInt; external;
+
+[InlineAsm("
+        stp     x29, x30, [sp, #-16]!
+        // Island Windows ARM64 functions keep x29 32 bytes below the pre-allocation establisher.
+        sub     x29, x1, #32
+        adr     x4, catch_return
+        str     x4, [x2]
+        mov     x5, sp
+        str     x5, [x3]
+        blr     x0
+catch_return:
+        ldp     x29, x30, [sp], #16
+        ret
+", "", true, false), DisableInlining, DisableOptimizations]
+method CallCatch64AfterUnwind(aCall: NativeInt; aEBP: NativeInt; var aReturnAddress: NativeInt; var aReturnStack: NativeInt): NativeInt; external;
+
+[InlineAsm("
+        mov     sp, x1
+        br      x0
+", "", true, false), Naked, DisableInlining, DisableOptimizations]
+method ExitCatchFunclet(aReturnAddress: NativeInt; aReturnStack: NativeInt); external;
 {$ELSEIF X86_64}
 [InlineAsm("
 pushq %rbp
@@ -1523,7 +1548,7 @@ end;
 
 method ExternalCalls.RaiseException(aRaiseAddress: ^Void; aRaiseFrame: ^Void; aRaiseObject: Object);
 begin
-  {$IF X86_64 AND _WIN64}
+  {$IFDEF _WIN64}
   if fCatchActive then begin
     fDeferredException := coalesce(aRaiseObject, fCatchException);
     fDeferredRaise := true;
@@ -1572,7 +1597,7 @@ end;
 
         ldp     x29, x30, [sp], #16             // 16-byte Folded Reload
         ret
-", "", false, false), DisableInlining, DisableOptimizations]
+", "", true, false), DisableInlining, DisableOptimizations]
 method JumpToContinuation64(aAddress, aESP, aEBP: NativeInt); external;
 {$ELSEIF X86_64}
 [InlineAsm("
@@ -1622,8 +1647,24 @@ movq 16(%rax), %rcx
 movq %rcx, (%rsp)
 leaq __elements_raise_deferred_exception(%rip), %rax
 jmpq *%rax
-", "", false, false), Naked, DisableInlining, DisableOptimizations]
+", "", true, false), Naked, DisableInlining, DisableOptimizations]
 method AfterUnwindRunCatch; external;
+
+{$ELSEIF ARM64}
+[SymbolName('__elements_after_unwind_run_catch'), InlineAsm("
+bl __elements_run_catch_after_unwind
+cbz x0, deferred_raise
+br x0
+deferred_raise:
+bl __elements_get_deferred_caller_context
+ldr x1, [x0]
+ldr x29, [x0, #8]
+ldr x30, [x0, #16]
+mov sp, x1
+b __elements_raise_deferred_exception
+", "", true, false), Naked, DisableInlining, DisableOptimizations]
+method AfterUnwindRunCatch; external;
+{$ENDIF}
 
 [SymbolName('__elements_get_deferred_caller_context'), DisableInlining, DisableOptimizations]
 method GetDeferredCallerContext: NativeInt;
@@ -1656,7 +1697,6 @@ end;
 method RunCatchAfterUnwind: NativeInt;
 begin
   ExternalCalls.fDeferredRaise := false;
-  ExternalCalls.fDeferredException := nil;
   ExternalCalls.fCatchActive := true;
   result := CallCatch64AfterUnwind(ExternalCalls.fCatchHandler, ExternalCalls.fCatchFrame, var ExternalCalls.fCatchReturnAddress, var ExternalCalls.fCatchReturnStack);
   ExternalCalls.fCatchActive := false;
@@ -1667,12 +1707,14 @@ begin
   else begin
     ExternalCalls.fCatchHandler := 0;
     ExternalCalls.fCatchFrame := 0;
+    ExternalCalls.fCatchEstablisherFrame := 0;
     ExternalCalls.fCatchReturnAddress := 0;
     ExternalCalls.fCatchReturnStack := 0;
     ExternalCalls.fCatchImageBase := 0;
     ExternalCalls.fCatchHandlerData := 0;
     ExternalCalls.fCatchRaiseAddress := 0;
     ExternalCalls.fCatchException := nil;
+    ExternalCalls.fDeferredException := nil;
   end;
 end;
 
@@ -1680,19 +1722,19 @@ end;
 method RaiseDeferredException;
 begin
   var lException := ExternalCalls.fDeferredException;
+  ExternalCalls.fSkipCatchFrame := ExternalCalls.fCatchEstablisherFrame;
   ExternalCalls.fCatchHandler := 0;
   ExternalCalls.fCatchFrame := 0;
+  ExternalCalls.fCatchEstablisherFrame := 0;
   ExternalCalls.fCatchReturnAddress := 0;
   ExternalCalls.fCatchReturnStack := 0;
   ExternalCalls.fCatchImageBase := 0;
   ExternalCalls.fCatchHandlerData := 0;
   ExternalCalls.fCatchRaiseAddress := 0;
   ExternalCalls.fCatchException := nil;
-  ExternalCalls.fDeferredException := nil;
   ExternalCalls.fDeferredRaise := false;
   ExternalCalls.RaiseException(nil, nil, lException);
 end;
-{$ENDIF}
 
 method GetMapIndex(aIP: NativeUInt; dispatcher: rtl.PDISPATCHER_CONTEXT): Integer;
 begin
@@ -1712,22 +1754,27 @@ end;
 type CatchHelper = method (pExcept: ^rtl.EXCEPTION_RECORD): NativeInt;
 method IntCallCatch(pExcept: ^rtl.EXCEPTION_RECORD): NativeInt;
 begin
-  {$IF X86_64}
+  ExternalCalls.fSkipCatchFrame := 0;
+  ExternalCalls.fCatchEstablisherFrame := pExcept^.ExceptionInformation[1];
   ExternalCalls.fCatchFrame := pExcept^.ExceptionInformation[1];
   ExternalCalls.fCatchHandler := pExcept^.ExceptionInformation[2];
   ExternalCalls.fCatchException := InternalCalls.Cast<Object>(^Void(pExcept^.ExceptionInformation[4]));
   var lAfterUnwind: method := @AfterUnwindRunCatch;
   exit NativeInt(^Void(lAfterUnwind));
-  {$ELSE}
-  exit CallCatch64(pExcept^.ExceptionInformation[2], pExcept^.ExceptionInformation[1]);
-  {$ENDIF}
 end;
 
 method CallCatch(aCatch: ^MSVCTryMap; aHandler: ^MSVCHandlerType; arec: ^rtl.EXCEPTION_RECORD; EstFrame: UInt64; context: rtl.PCONTEXT; dispatcher: rtl.PDISPATCHER_CONTEXT; aException: Exception);
 begin
-  {$IF X86_64}
   ExternalCalls.fCatchImageBase := dispatcher^.ImageBase;
   ExternalCalls.fCatchHandlerData := NativeInt(dispatcher^.HandlerData);
+  {$IF ARM64}
+  ExternalCalls.fDeferredCallerContext.StackPointer := dispatcher^.ContextRecord^.Sp;
+  // The imported anonymous register union does not expose Fp; it immediately precedes Lr and Sp.
+  ExternalCalls.fDeferredCallerContext.FramePointer := ^NativeUInt(NativeInt(@dispatcher^.ContextRecord^.Sp) - 16)^;
+  // Resume exception dispatch from the caller return address. Pc still identifies the
+  // current protected region and can select its generated rethrow funclet again.
+  ExternalCalls.fDeferredCallerContext.InstructionPointer := ^NativeUInt(NativeInt(@dispatcher^.ContextRecord^.Sp) - 8)^;
+  {$ELSE}
   ExternalCalls.fDeferredCallerContext.StackPointer := dispatcher^.ContextRecord^.Rsp;
   ExternalCalls.fDeferredCallerContext.FramePointer := dispatcher^.ContextRecord^.Rbp;
   ExternalCalls.fDeferredCallerContext.InstructionPointer := dispatcher^.ContextRecord^.Rip;
@@ -1773,6 +1820,10 @@ begin
     end;
   end else begin
     // we're not unwinding, we're looking for an exception handler that takes it
+    if ExternalCalls.fSkipCatchFrame = EstablisherFrame then begin
+      ExternalCalls.fSkipCatchFrame := 0;
+      exit;
+    end;
     var exo: Exception;
     if msvcinfo^.NumTryBlocks <> 0 then begin
       if arec^.ExceptionCode = ElementsExceptionCode then begin

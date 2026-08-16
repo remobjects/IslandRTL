@@ -49,7 +49,7 @@
     <Reference Include="EUnit" />
     <Reference Include="Elements" />
     <Reference Include="Island">
-      <HintPath>..\Source\Bin\Debug\Windows\x86_64\Island.fx</HintPath>
+      <HintPath>..\Source\Bin\Debug\Windows\$(Architecture)\Island.fx</HintPath>
     </Reference>
   </ItemGroup>
   <ItemGroup>
