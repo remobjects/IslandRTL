@@ -463,54 +463,22 @@ end;
 
 class operator String.Greater(Value1, Value2: String): Boolean;
 begin
-  // Value1 > Value2 = true
-  if (Object(Value1) = nil) then exit false;    // nil > ????
-  if (Object(Value2) = nil) then exit true;     // not nil > nil
-  var min_length := iif(Value1.Length > Value2.Length, Value2.Length, Value1.Length);
-
-  for i: Integer := 0 to min_length-1 do
-    if Value1.Item[i] <= Value2.Item[i] then exit false; //  a <= b
-
-  exit Value1.Length > Value2.Length;  // xxxy > xxx
+  exit String.Compare(Value1, Value2) > 0;
 end;
 
 class operator String.Less(Value1, Value2: String): Boolean;
 begin
-  // Value1 < Value2 = true
-  if (Object(Value2) = nil) then exit false;    // ???? < nil
-  if (Object(Value1) = nil) then exit true;     // nil < not nil
-  var min_length := iif(Value1.Length > Value2.Length, Value2.Length, Value1.Length);
-
-  for i: Integer :=0 to min_length-1 do
-    if Value1.Item[i] >= Value2.Item[i] then exit false;  // b >= a
-
-  exit Value1.Length < Value2.Length; // xxx < xxxy
+  exit String.Compare(Value1, Value2) < 0;
 end;
 
 class operator String.GreaterOrEqual(Value1, Value2: String): Boolean;
 begin
-  // Value1 >= Value2 = true
-  if (Object(Value2) = nil) then exit true;     // ???? >= nil
-  if (Object(Value1) = nil) then exit false;    // nil >= ????
-  var min_length := iif(Value1.Length > Value2.Length, Value2.Length, Value1.Length);
-
-  for i: Integer :=0 to min_length-1 do
-    if Value1.Item[i] < Value2.Item[i] then exit false; //  a <= b
-
-  exit Value1.Length >= Value2.Length;  // xxxy > xxx
+  exit String.Compare(Value1, Value2) >= 0;
 end;
 
 class operator String.LessOrEqual(Value1, Value2: String): Boolean;
 begin
-  // Value1 <= Value2 = true
-  if (Object(Value1) = nil) then exit true;     // nil <= ????
-  if (Object(Value2) = nil) then exit false;    // ???? <= nil
-  var min_length := iif(Value1.Length > Value2.Length, Value2.Length, Value1.Length);
-
-  for i: Integer :=0 to min_length-1 do
-    if Value1.Item[i] > Value2.Item[i] then exit false;  // b > a
-
-  exit Value1.Length <= Value2.Length; // xxx <= xxxy
+  exit String.Compare(Value1, Value2) <= 0;
 end;
 
 //
