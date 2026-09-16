@@ -83,23 +83,31 @@ type
 
     method DateTime_Parse;
     begin
-      // these invalid (day second)
-      var lDate := DateTime.TryParse('06/25/2021');
+      // US dates are month first.
+      var lUSLocale := new Locale('en-US');
+      var lDate := DateTime.TryParse('06/25/2021', lUSLocale);
       Check.IsNotNil(lDate);
-      lDate := DateTime.TryParse('06/25/2021 12:58:30');
+      Check.AreEqual(lDate.Month, 6);
+      Check.AreEqual(lDate.Day, 25);
+      lDate := DateTime.TryParse('06/25/2021 12:58:30', lUSLocale);
       Check.IsNotNil(lDate);
-      lDate := DateTime.TryParse('06/25/2021 12:58');
+      lDate := DateTime.TryParse('06/25/2021 12:58', lUSLocale);
       Check.IsNotNil(lDate);
 
-      // these are invalid (day first)
-      lDate := DateTime.TryParse('25/06/2021');
+      // Day-first dates are not valid US input.
+      lDate := DateTime.TryParse('25/06/2021', lUSLocale);
       Check.IsNil(lDate);
-      lDate := DateTime.TryParse('25/06/2021 12:58:30');
+      lDate := DateTime.TryParse('25/06/2021 12:58:30', lUSLocale);
       Check.IsNil(lDate);
-      lDate := DateTime.TryParse('25/06/2021 12:58');
+      lDate := DateTime.TryParse('25/06/2021 12:58', lUSLocale);
       Check.IsNil(lDate);
 
-      lDate := DateTime.TryParse('25/06/2021 12:58:30', 'dd/MM/yyyy hh:mm:ss');
+      // They are valid with an explicit day-first format.
+      lDate := DateTime.TryParse('25/06/2021', 'dd/MM/yyyy', lUSLocale);
+      Check.IsNotNil(lDate);
+      Check.AreEqual(lDate.Month, 6);
+      Check.AreEqual(lDate.Day, 25);
+      lDate := DateTime.TryParse('25/06/2021 12:58:30', 'dd/MM/yyyy hh:mm:ss', lUSLocale);
       Check.IsNotNil(lDate);
     end;
   end;

@@ -325,7 +325,7 @@ begin
       end;
 
       'yy': begin // year, 00 --> 99
-        if not GetNextNumberToken(var lDateTime, var lYear, 0, MaxValue, 2) then
+        if not GetNextNumberToken(var lDateTime, var lYear, 0, MaxValue, 4) then
           exit false;
       end;
 
