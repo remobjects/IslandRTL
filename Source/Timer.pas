@@ -138,7 +138,8 @@ begin
   {$ELSEIF ISLAND AND DARWIN}
   var lQueue := rtl.dispatch_get_global_queue(rtl.DISPATCH_QUEUE_PRIORITY_DEFAULT, 0);
   fTimer := rtl.dispatch_source_create(rtl.DISPATCH_SOURCE_TYPE_TIMER, 0, 0, lQueue);
-  var lRepeatInterval := if fRepeat then (fInterval * rtl.NSEC_PER_MSEC) else 0;
+  // Dispatch uses DISPATCH_TIME_FOREVER for a one-shot timer; zero repeats immediately.
+  var lRepeatInterval := if fRepeat then (fInterval * rtl.NSEC_PER_MSEC) else rtl.DISPATCH_TIME_FOREVER;
   rtl.dispatch_source_set_timer(fTimer, rtl.dispatch_time(rtl.DISPATCH_TIME_NOW, fInterval * rtl.NSEC_PER_MSEC), lRepeatInterval, 0);
   rtl.dispatch_source_set_event_handler(fTimer, ()->Elapsed(Data));
   rtl.dispatch_resume(fTimer);
