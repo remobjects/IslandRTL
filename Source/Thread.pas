@@ -702,35 +702,32 @@ end;
 
 method EventWaitHandle.DoWait(aTimeMS: Integer): Boolean;
 begin
-  var ts, ts2: rtl.__struct_timespec;
-  rtl.clock_gettime({$IFDEF DARWIN}rtl.clockid_t._CLOCK_REALTIME{$ELSE}rtl.CLOCK_REALTIME{$ENDIF}, @ts);
-  ts.tv_nsec := ts.tv_nsec + ((aTimeMS mod 1000)  *1000);
-  ts.tv_sec := ts.tv_sec + (aTimeMS /1000);
-  rtl.pthread_mutex_lock(@fMutex);
-  loop begin
-    rtl.pthread_cond_wait(@fCV, @fMutex);
-    if fValue then begin
-      result := true;
-      if fAutoReset then fValue := false;
-      break;
-    end;
-
-    rtl.clock_gettime({$IFDEF DARWIN}rtl.clockid_t._CLOCK_REALTIME{$ELSE}rtl.CLOCK_REALTIME{$ENDIF}, @ts2);
-    if (ts2.tv_sec > ts.tv_sec) or (ts2.tv_nsec > ts.tv_nsec) then break;
+  if aTimeMS = -1 then begin
+    DoWait;
+    exit true;
   end;
+
+  var ts: rtl.__struct_timespec;
+  rtl.clock_gettime({$IFDEF DARWIN}rtl.clockid_t._CLOCK_REALTIME{$ELSE}rtl.CLOCK_REALTIME{$ENDIF}, @ts);
+  ts.tv_nsec := ts.tv_nsec + ((aTimeMS mod 1000) * 1000000);
+  ts.tv_sec := ts.tv_sec + (aTimeMS div 1000) + (ts.tv_nsec div 1000000000);
+  ts.tv_nsec := ts.tv_nsec mod 1000000000;
+  rtl.pthread_mutex_lock(@fMutex);
+  // Check the signal first; condition variables do not remember earlier signals.
+  while not fValue do begin
+    if rtl.pthread_cond_timedwait(@fCV, @fMutex, @ts) <> 0 then break;
+  end;
+  result := fValue;
+  if result and fAutoReset then fValue := false;
   rtl.pthread_mutex_unlock(@fMutex);
 end;
 
 method EventWaitHandle.DoWait;
 begin
   rtl.pthread_mutex_lock(@fMutex);
-  loop begin
+  while not fValue do
     rtl.pthread_cond_wait(@fCV, @fMutex);
-    if fValue then begin
-      if fAutoReset then fValue := false;
-      break;
-    end;
-  end;
+  if fAutoReset then fValue := false;
   rtl.pthread_mutex_unlock(@fMutex);
 end;
 
