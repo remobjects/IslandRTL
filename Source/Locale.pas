@@ -291,7 +291,9 @@ begin
   var lLocale := rtl.newlocale(rtl.LC_ALL_MASK, @lName[0], nil);
   constructor(lLocale, false);
   {$ELSEIF DARWIN}
-  var lLocale := CFLocaleCreate(nil, CFLocaleCreateCanonicalLanguageIdentifierFromString(nil, aLocale));
+  // CoreFoundation needs an NSString bridge, not the Island String object address.
+  var lName: Foundation.NSString := aLocale;
+  var lLocale := CFLocaleCreate(nil, CFLocaleCreateCanonicalLanguageIdentifierFromString(nil, bridge<CFStringRef>(lName)));
   constructor(lLocale, false);
   {$ELSEIF ICU_LOCALE OR WEBASSEMBLY}
   constructor(aLocale, false);
