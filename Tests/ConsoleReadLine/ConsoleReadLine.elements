@@ -1,0 +1,14 @@
+<Project xmlns="http://schemas.microsoft.com/developer/msbuild/2003" DefaultTargets="Build" ToolsVersion="4.0">
+  <PropertyGroup>
+    <ProjectGuid>{2B691ECB-487B-4186-900F-C06DEAA42E71}</ProjectGuid>
+    <OutputType>Executable</OutputType>
+    <AssemblyName>IslandReadLineTests</AssemblyName>
+    <SDK>macOS</SDK>
+    <Configuration Condition="'$(Configuration)' == ''">Debug</Configuration>
+    <OutputPath>bin</OutputPath>
+    <RuntimeLibrary Condition="'$(RuntimeLibrary)' == ''">../../Source/Bin/Debug/macOS/arm64/Island.fx</RuntimeLibrary>
+  </PropertyGroup>
+  <ItemGroup><Reference Include="gc" /><Reference Include="rtl" /><Reference Include="Island"><HintPath>$(RuntimeLibrary)</HintPath></Reference></ItemGroup>
+  <ItemGroup><Compile Include="Program.pas" /></ItemGroup>
+  <Import Project="$(MSBuildExtensionsPath)/RemObjects Software/Elements/RemObjects.Elements.Island.Darwin.targets" />
+</Project>

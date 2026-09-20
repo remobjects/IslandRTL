@@ -90,27 +90,30 @@ end;
 class method Console.ReadLine: String;
 begin
   {$IFNDEF WEBASSEMBLY}
-  var r: String := '';
-  var bufsize := 255;
-  var offset := 0;
-  var buf: array[0..255] of AnsiChar;
+  var lBuffer := new AnsiChar[256];
+  var lCount := 0;
   loop begin
     var ch := ReadChar();
-    if ch = #0 then break; // problem with Read
+    if ch = #0 then
+      break; // ReadChar uses #0 for end of input.
     {$IFDEF WINDOWS}
-    if ch = #13 then continue; // we need to read the #10 too
+    if ch = #13 then
+      continue; // Consume the LF of a Windows line ending too.
     {$ENDIF}
-    if ch = #10 then break; //CR was detected
-    buf[offset] := ch;
-    inc(offset);
-    if offset > bufsize then begin
-      r := r + String.FromPAnsiChar(@buf[0], bufsize);
-      offset := 0;
+    if ch = #10 then
+      break;
+    if lCount = length(lBuffer) then begin
+      var lLarger := new AnsiChar[length(lBuffer) * 2];
+      Array.Copy(lBuffer, lLarger, lCount);
+      lBuffer := lLarger;
     end;
+    lBuffer[lCount] := ch;
+    inc(lCount);
   end;
-  if offset > 0 then
-    r := r + String.FromPAnsiChar(@buf[0], offset);
-  exit r;
+  if lCount = 0 then
+    exit '';
+  // Preserve the platform encoding, but never decode a partial character.
+  exit String.FromPAnsiChar(@lBuffer[0], lCount);
   {$ENDIF}
 end;
 
