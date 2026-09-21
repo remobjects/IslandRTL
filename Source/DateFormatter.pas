@@ -121,7 +121,7 @@ type
         end;
 
         'h', 'hh': begin // hour, 1-12
-          var lHour := if Hour > 12 then Hour - 12 else Hour;
+          var lHour := if Hour mod 12 = 0 then 12 else Hour mod 12;
           if aToken.Length = 1 then
             aOutput.Append(lHour.ToString)
           else
@@ -169,22 +169,20 @@ type
         end;
 
         't': begin // first AM/PM character
-          var lData := if Hour > 12 then aLocale.DateTimeFormat.PMString else aLocale.DateTimeFormat.AMString;
+          var lData := if Hour >= 12 then aLocale.DateTimeFormat.PMString else aLocale.DateTimeFormat.AMString;
           if lData.Length > 0 then
             aOutput.Append(lData[0]);
         end;
 
         'tt', 'a': begin // AM/PM
-          var lData := if Hour > 12 then aLocale.DateTimeFormat.PMString else aLocale.DateTimeFormat.AMString;
+          var lData := if Hour >= 12 then aLocale.DateTimeFormat.PMString else aLocale.DateTimeFormat.AMString;
           if lData.Length > 0 then
             aOutput.Append(lData);
         end;
 
         'y', 'yy', 'yyy', 'yyyy', 'yyyyy': begin // year
-          if aToken.Length = 1 then
-            aOutput.Append(Year.ToString)
-          else
-            aOutput.Append(Year.ToString.PadStart(aToken.Length, '0'));
+          var lYear := if aToken.Length <= 2 then Year mod 100 else Year;
+          aOutput.Append(lYear.ToString.PadStart(aToken.Length, '0'));
         end;
 
         'z', 'zz': begin // hours from UTC
@@ -222,7 +220,8 @@ type
 
             '%': begin
               if aToken.Length = 2 then
-                aOutput.Append(InternalToString(aToken[1], aLocale, aTimeZone))
+                // A percent prefix selects a custom token, not a standard format.
+                ProcessToStringToken(aLocale, aTimeZone, aOutput, aToken.Substring(1))
               else
                 aOutput.Append(aToken);
             end;

@@ -1,4 +1,6 @@
-﻿namespace Island.Tests.Shared;
+﻿// Positive guard: DateTime_ToString checks native standard formats and custom year/hour tokens,
+// including percent escapes and the midnight/noon boundaries that failed through RTL2.
+namespace Island.Tests.Shared;
 
 uses
   RemObjects.Elements.EUnit;
@@ -79,6 +81,24 @@ type
 
       lString := lDate.ToString('s');
       Check.AreEqual(lString, '2021-06-25T10:40:33');
+
+      Check.AreEqual(lDate.ToString('%s'), '33');
+      Check.AreEqual(lDate.ToString('%d'), '25');
+      Check.AreEqual(lDate.ToString('%M'), '6');
+      Check.AreEqual(lDate.ToString('%m'), '40');
+      Check.AreEqual(lDate.ToString('yy'), '21');
+      var lEarlyYear := new DateTime(2006, 6, 25);
+      Check.AreEqual(lEarlyYear.ToString('yy'), '06');
+      Check.AreEqual(lEarlyYear.ToString('%y'), '6');
+      Check.AreEqual(lEarlyYear.ToString('yyyy'), '2006');
+
+      var lLocale := new Locale('en-US');
+      var lMidnight := new DateTime(2026, 8, 9, 0, 4, 5);
+      var lNoon := new DateTime(2026, 8, 9, 12, 4, 5);
+      Check.AreEqual(lMidnight.ToString('hh:mmtt', lLocale), '12:04AM');
+      Check.AreEqual(lMidnight.ToString('h t', lLocale), '12 A');
+      Check.AreEqual(lNoon.ToString('hh:mmtt', lLocale), '12:04PM');
+      Check.AreEqual(lNoon.ToString('h t', lLocale), '12 P');
     end;
 
     method DateTime_Parse;
