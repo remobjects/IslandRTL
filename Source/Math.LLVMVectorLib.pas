@@ -80,11 +80,19 @@ type
     [MemoryNone, NoExcept, WillReturn]
     class method Acos(d: Double): Double; inline;
     [MemoryNone, NoExcept, WillReturn]
+    class method Acos(d: Single): Single; inline;
+    [MemoryNone, NoExcept, WillReturn]
     class method Asin(d: Double): Double; inline;
+    [MemoryNone, NoExcept, WillReturn]
+    class method Asin(d: Single): Single; inline;
     [MemoryNone, NoExcept, WillReturn]
     class method Atan(d: Double): Double; inline;
     [MemoryNone, NoExcept, WillReturn]
+    class method Atan(d: Single): Single; inline;
+    [MemoryNone, NoExcept, WillReturn]
     class method Atan2(x,y: Double): Double; inline;
+    [MemoryNone, NoExcept, WillReturn]
+    class method Atan2(x,y: Single): Single; inline;
     [MemoryNone, NoExcept, WillReturn]
     class method Ceiling(d: Double): Double; inline;
     [MemoryNone, NoExcept, WillReturn]
@@ -92,11 +100,19 @@ type
     [MemoryNone, NoExcept, WillReturn]
     class method Cos(d: Double): Double; inline;
     [MemoryNone, NoExcept, WillReturn]
+    class method Cos(d: Single): Single; inline;
+    [MemoryNone, NoExcept, WillReturn]
     class method Cosh(d: Double): Double; inline;
+    [MemoryNone, NoExcept, WillReturn]
+    class method Cosh(d: Single): Single; inline;
     [MemoryNone, NoExcept, WillReturn]
     class method Exp(d: Double): Double; inline;
     [MemoryNone, NoExcept, WillReturn]
+    class method Exp(d: Single): Single; inline;
+    [MemoryNone, NoExcept, WillReturn]
     class method Exp2(d: Double): Double; inline;
+    [MemoryNone, NoExcept, WillReturn]
+    class method Exp2(d: Single): Single; inline;
     [MemoryNone, NoExcept, WillReturn]
     class method Floor(d: Double): Double; inline;
     [MemoryNone, NoExcept, WillReturn]
@@ -104,17 +120,31 @@ type
     [MemoryNone, NoExcept, WillReturn]
     class method Log(a: Double): Double; inline;
     [MemoryNone, NoExcept, WillReturn]
+    class method Log(a: Single): Single; inline;
+    [MemoryNone, NoExcept, WillReturn]
     class method Log2(a: Double): Double; inline;
+    [MemoryNone, NoExcept, WillReturn]
+    class method Log2(a: Single): Single; inline;
     [MemoryNone, NoExcept, WillReturn]
     class method Log10(a: Double): Double; inline;
     [MemoryNone, NoExcept, WillReturn]
+    class method Log10(a: Single): Single; inline;
+    [MemoryNone, NoExcept, WillReturn]
     class method Pow(x, y: Double): Double; inline;
+    [MemoryNone, NoExcept, WillReturn]
+    class method Pow(x,y: Single): Single; inline;
     [MemoryNone, NoExcept, WillReturn]
     class method Round(a: Double): Double; inline;
     [MemoryNone, NoExcept, WillReturn]
+    class method Round(a: Single): Single; inline;
+    [MemoryNone, NoExcept, WillReturn]
     class method Sin(x: Double): Double; inline;
     [MemoryNone, NoExcept, WillReturn]
+    class method Sin(x: Single): Single; inline;
+    [MemoryNone, NoExcept, WillReturn]
     class method Sinh(x: Double): Double; inline;
+    [MemoryNone, NoExcept, WillReturn]
+    class method Sinh(x: Single): Single; inline;
     [MemoryNone, NoExcept, WillReturn]
     class method Sqrt(d: Double): Double; inline;
     [MemoryNone, NoExcept, WillReturn]
@@ -122,13 +152,19 @@ type
     [MemoryNone, NoExcept, WillReturn]
     class method Tan(d: Double): Double; inline;
     [MemoryNone, NoExcept, WillReturn]
+    class method Tan(d: Single): Single; inline;
+    [MemoryNone, NoExcept, WillReturn]
     class method Tanh(d: Double): Double; inline;
+    [MemoryNone, NoExcept, WillReturn]
+    class method Tanh(d: Single): Single; inline;
     [MemoryNone, NoExcept, WillReturn]
     class method Truncate(d: Double): Double; inline;
     [MemoryNone, NoExcept, WillReturn]
     class method Truncate(d: Single): Single; inline;
     [MemoryNone, NoExcept, WillReturn]
     class method Abs(i: Double): Double; inline;
+    [MemoryNone, NoExcept, WillReturn]
+    class method Abs(i: Single): Single; inline;
     [MemoryNone, NoExcept, WillReturn]
     class method fmod(x, y: Double): Double; inline;
     [MemoryNone, NoExcept, WillReturn]
@@ -162,9 +198,13 @@ type
 
     [SymbolName('llvm.round.f64')]
     class method llvm_round_f64(d: Double): Double; external;
+    [SymbolName('llvm.round.f32')]
+    class method llvm_round_f32(d: Single): Single; external;
 
     [SymbolName('llvm.fabs.f64')]
     class method llvm_fabs_f64(d: Double): Double; external;
+    [SymbolName('llvm.fabs.f32')]
+    class method llvm_fabs_f32(d: Single): Single; external;
 
     [SymbolName('llvm.sqrt.f64')]
     class method llvm_sqrt_f64(d: Double): Double; external;
@@ -322,6 +362,9 @@ type
     [SymbolName('Sleef_roundd1')]
     class method Sleef_roundd1(x: Double): Double; external;
 
+    [SymbolName('Sleef_roundf1')]
+    class method Sleef_roundf1(x: Single): Single; external;
+
     [SymbolName('Sleef_fabsd1')]
     class method Sleef_fabsd1(x: Double): Double; external;
 
@@ -331,6 +374,54 @@ type
 
     [SymbolName('Sleef_fmodf1')]
     class method Sleef_fmodf1(x: Single; y: Single): Single; external;
+    // Scalar Single functions called by the Math overloads
+    [SymbolName('Sleef_acosf1_u10')]
+    class method Sleef_acosf1_u10(d: Single): Single; external;
+
+    [SymbolName('Sleef_asinf1_u10')]
+    class method Sleef_asinf1_u10(d: Single): Single; external;
+
+    [SymbolName('Sleef_atanf1_u10')]
+    class method Sleef_atanf1_u10(d: Single): Single; external;
+
+    [SymbolName('Sleef_atan2f1_u10')]
+    class method Sleef_atan2f1_u10(x: Single; y: Single): Single; external;
+
+    [SymbolName('Sleef_cosf1_u10')]
+    class method Sleef_cosf1_u10(d: Single): Single; external;
+
+    [SymbolName('Sleef_coshf1_u10')]
+    class method Sleef_coshf1_u10(d: Single): Single; external;
+
+    [SymbolName('Sleef_expf1_u10')]
+    class method Sleef_expf1_u10(d: Single): Single; external;
+
+    [SymbolName('Sleef_exp2f1_u10')]
+    class method Sleef_exp2f1_u10(d: Single): Single; external;
+
+    [SymbolName('Sleef_logf1_u10')]
+    class method Sleef_logf1_u10(a: Single): Single; external;
+
+    [SymbolName('Sleef_log2f1_u10')]
+    class method Sleef_log2f1_u10(a: Single): Single; external;
+
+    [SymbolName('Sleef_log10f1_u10')]
+    class method Sleef_log10f1_u10(a: Single): Single; external;
+
+    [SymbolName('Sleef_powf1_u10')]
+    class method Sleef_powf1_u10(x: Single; y: Single): Single; external;
+
+    [SymbolName('Sleef_sinf1_u10')]
+    class method Sleef_sinf1_u10(x: Single): Single; external;
+
+    [SymbolName('Sleef_sinhf1_u10')]
+    class method Sleef_sinhf1_u10(x: Single): Single; external;
+
+    [SymbolName('Sleef_tanf1_u10')]
+    class method Sleef_tanf1_u10(d: Single): Single; external;
+
+    [SymbolName('Sleef_tanhf1_u10')]
+    class method Sleef_tanhf1_u10(d: Single): Single; external;
   end;
 
 // Math class implementations - forward to SLEEF functions
@@ -475,6 +566,98 @@ end;
 class method Math.Truncate(d: Single): Single;
 begin
   exit SleefInternal.llvm_trunc_f32(d);
+end;
+
+// Single precision overloads
+
+class method Math.Acos(d: Single): Single;
+begin
+  exit SleefInternal.Sleef_acosf1_u10(d);
+end;
+
+class method Math.Asin(d: Single): Single;
+begin
+  exit SleefInternal.Sleef_asinf1_u10(d);
+end;
+
+class method Math.Atan(d: Single): Single;
+begin
+  exit SleefInternal.Sleef_atanf1_u10(d);
+end;
+
+class method Math.Atan2(x, y: Single): Single;
+begin
+  exit SleefInternal.Sleef_atan2f1_u10(x, y);
+end;
+
+class method Math.Cos(d: Single): Single;
+begin
+  exit SleefInternal.Sleef_cosf1_u10(d);
+end;
+
+class method Math.Cosh(d: Single): Single;
+begin
+  exit SleefInternal.Sleef_coshf1_u10(d);
+end;
+
+class method Math.Exp(d: Single): Single;
+begin
+  exit SleefInternal.Sleef_expf1_u10(d);
+end;
+
+class method Math.Exp2(d: Single): Single;
+begin
+  exit SleefInternal.Sleef_exp2f1_u10(d);
+end;
+
+class method Math.Log(a: Single): Single;
+begin
+  exit SleefInternal.Sleef_logf1_u10(a);
+end;
+
+class method Math.Log2(a: Single): Single;
+begin
+  exit SleefInternal.Sleef_log2f1_u10(a);
+end;
+
+class method Math.Log10(a: Single): Single;
+begin
+  exit SleefInternal.Sleef_log10f1_u10(a);
+end;
+
+class method Math.Pow(x, y: Single): Single;
+begin
+  exit SleefInternal.Sleef_powf1_u10(x, y);
+end;
+
+class method Math.Sin(x: Single): Single;
+begin
+  exit SleefInternal.Sleef_sinf1_u10(x);
+end;
+
+class method Math.Sinh(x: Single): Single;
+begin
+  exit SleefInternal.Sleef_sinhf1_u10(x);
+end;
+
+class method Math.Tan(d: Single): Single;
+begin
+  exit SleefInternal.Sleef_tanf1_u10(d);
+end;
+
+class method Math.Tanh(d: Single): Single;
+begin
+  exit SleefInternal.Sleef_tanhf1_u10(d);
+end;
+
+class method Math.Round(a: Single): Single;
+begin
+  exit SleefInternal.llvm_round_f32(a);
+end;
+
+class method Math.Abs(i: Single): Single;
+begin
+  exit SleefInternal.llvm_fabs_f32(i);
 end;
 
 // C RTL symbol exports - hidden in SleefInternal for LLVM vectorization

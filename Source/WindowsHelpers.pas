@@ -521,7 +521,9 @@ type
     [SymbolName('roundf')]
     class method roundf(x: Single): Single;
     begin
-      exit Math.Round(x);
+      // llvm.round.f32 can lower back to roundf on targets without SSE4.1.
+      // Use SLEEF directly so this export cannot call itself through Math.Round.
+      exit SleefInternal.Sleef_roundf1(x);
     end;
 
     [SymbolName('strcmp')]
