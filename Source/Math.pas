@@ -90,6 +90,7 @@ type
     class method Min(a,b: Integer): Integer;
     class method Min(a,b: Int64): Int64;
     class method IEEERemainder(x, y: Double): Double;
+    class method IEEERemainder(x, y: Single): Single;
     class method Sign(d: Double): Integer;
 
     // Math functions with SLEEF/LLVM implementations are declared in Math.LLVMVectorLib.pas
@@ -153,10 +154,67 @@ end;
 
 class method Math.IEEERemainder(x, y: Double): Double;
 begin
-  // from https://msdn.microsoft.com/en-us/library/system.math.ieeeremainder%28v=vs.110%29.aspx
-  // IEEERemainder = dividend - (divisor * Math.Round(dividend / divisor))
-  if y = 0 then exit Double.NaN;
-  exit (x - y * Round(x / y));
+  var lXBits := ^UInt64(@x)^;
+  var lYBits := ^UInt64(@y)^ and $7fffffffffffffff;
+  var lMagnitude := lXBits and $7fffffffffffffff;
+  if (lMagnitude >= $7ff0000000000000) or (lYBits = 0) or
+     (lYBits > $7ff0000000000000) then
+    exit Double.NaN;
+  if (lMagnitude = 0) or (lYBits = $7ff0000000000000) then
+    exit x;
+
+  // Work in exact significand units. Reducing modulo twice the divisor
+  // retains quotient parity, so halfway cases choose the even quotient.
+  // Unlike x - y * Round(x/y), this also handles overflowing quotients.
+  var lXExponent := Integer(lMagnitude shr 52);
+  var lYExponent := Integer(lYBits shr 52);
+  var lX := lMagnitude and $000fffffffffffff;
+  var lY := lYBits and $000fffffffffffff;
+  if lXExponent = 0 then
+    lXExponent := -1074
+  else begin
+    lX := lX or $0010000000000000;
+    dec(lXExponent, 1075);
+  end;
+  if lYExponent = 0 then
+    lYExponent := -1074
+  else begin
+    lY := lY or $0010000000000000;
+    dec(lYExponent, 1075);
+  end;
+
+  var lExponent := lYExponent;
+  if lXExponent < lYExponent then begin
+    if lYExponent - lXExponent > 1 then
+      exit x;
+    lY := lY shl 1;
+    lExponent := lXExponent;
+  end
+  else begin
+    var lModulus := lY shl 1;
+    lX := lX mod lModulus;
+    for i := 1 to lXExponent - lYExponent do
+      lX := (lX shl 1) mod lModulus;
+  end;
+
+  var lRemainder := Int64(lX);
+  if (lX shl 1) >= 3 * lY then
+    dec(lRemainder, Int64(lY shl 1))
+  else if (lX shl 1) > lY then
+    dec(lRemainder, Int64(lY));
+  var lScaleBits: UInt64;
+  if lExponent >= -1022 then
+    lScaleBits := UInt64(lExponent + 1023) shl 52
+  else
+    lScaleBits := UInt64(1) shl (lExponent + 1074);
+  result := Double(lRemainder) * ^Double(@lScaleBits)^;
+  // Apply the dividend sign as bits so an exact zero keeps that sign too.
+  ^UInt64(@result)^ := ^UInt64(@result)^ xor (lXBits and $8000000000000000);
+end;
+
+class method Math.IEEERemainder(x, y: Single): Single;
+begin
+  exit Single(IEEERemainder(Double(x), Double(y)));
 end;
 
 class method Math.IntPow(x: Double; y: Integer): Double;
