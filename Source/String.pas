@@ -424,10 +424,13 @@ begin
   if assigned(lOther) then begin
     if self.Length <> lOther.Length then
       exit false;
-    for i: Integer := 0 to self.Length-1 do
-      if self[i] <> lOther[i] then
-        exit false;
-    exit true;
+    if Object.ReferenceEquals(self, lOther) or (fLength = 0) then
+      exit true;
+    if fFirstChar <> lOther.fFirstChar then
+      exit false;
+    // Equal lengths make a bounded byte comparison safe, including embedded
+    // NULs and unpaired UTF-16 surrogates. No per-character bounds checks.
+    exit memcmp(@fFirstChar, @lOther.fFirstChar, NativeInt(fLength) * sizeOf(Char)) = 0;
   end;
 end;
 
