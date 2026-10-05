@@ -21,5 +21,6 @@
     <Compile Include="$(MSBuildThisFileDirectory)TextConvert_utf_tests.pas" />
     <Compile Include="$(MSBuildThisFileDirectory)String_Substring.pas" />
     <Compile Include="$(MSBuildThisFileDirectory)Guid.pas" />
+    <Compile Include="$(MSBuildThisFileDirectory)Optimization_Workloads.pas" />
   </ItemGroup>
 </Project>
