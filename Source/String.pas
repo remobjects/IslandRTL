@@ -23,7 +23,9 @@ type
     {$ENDIF}
     method TestChar(c: Char; Arr : array of Char): Boolean;
     class method RaiseError(aMessage: String);
-    method CheckIndex(aIndex: Integer);
+    method CheckIndex(aIndex: Integer); inline;
+    [NoReturn, DisableInlining]
+    class method RaiseIndexError(aIndex, aLength: Integer);
     method GetNonGenericEnumerator: IEnumerator; implements IEnumerable.GetEnumerator;
     method GetEnumerator: IEnumerator<Char>;iterator;
   assembly
@@ -776,7 +778,13 @@ end;
 
 method String.CheckIndex(aIndex: Integer);
 begin
-  if (aIndex < 0) or (aIndex >= fLength) then raise Utilities.CreateIndexOutOfRangeException(aIndex, fLength-1);
+  if (aIndex < 0) or (aIndex >= fLength) then RaiseIndexError(aIndex, fLength);
+end;
+
+// Keep the non-returning error path separate so bounded loops can lose their checks.
+class method String.RaiseIndexError(aIndex, aLength: Integer);
+begin
+  raise Utilities.CreateIndexOutOfRangeException(aIndex, aLength-1);
 end;
 
 class method String.FromPChar(c: ^Char): nullable String;
