@@ -1,6 +1,8 @@
 // Positive loop guards and negative bounds guards: exposing array length must
 // preserve foreach/indexed results, including empty buffers and invalid indices.
 // Also guard source evaluation, mutation, iterator and matching-loop behavior.
+// Range-check optimization guards: vector boundaries and aliases must retain
+// results, and a failed check must preserve earlier writes, even in that iteration.
 namespace Island.Tests.Shared;
 
 uses RemObjects.Elements.EUnit;
@@ -68,6 +70,22 @@ type
     begin
       inc(aCalls);
       exit [2, 4, 6, 8];
+    end;
+
+    [DisableInlining]
+    class method TransformSingle(aInput, aOutput: array of Single; aCount: Integer);
+    begin
+      for i := 0 to aCount - 1 do
+        aOutput[i] := aInput[i] * 2 + 1;
+    end;
+
+    [DisableInlining]
+    class method WriteTwoArrays(aFirst, aSecond: array of Integer; aCount: Integer);
+    begin
+      for i := 0 to aCount - 1 do begin
+        aFirst[i] := i + 10;
+        aSecond[i] := i + 20;
+      end;
     end;
 
   public
@@ -160,6 +178,71 @@ type
       for each matching lNode: OptimizationNode in lObjects do
         lSum := lSum + Integer(lNode.Value);
       Assert.AreEqual(10, lSum);
+    end;
+
+    method TransformVectorBoundariesAndAliases;
+    begin
+      for each lLength in [0, 1, 3, 4, 7, 8, 15, 16, 17, 31, 32, 33, 63, 64, 65, 1024] do begin
+        var lInput := new Single[lLength];
+        var lOutput := new Single[lLength + 1];
+        for i := 0 to lLength - 1 do
+          lInput[i] := i - 17;
+        lOutput[lLength] := -999;
+        TransformSingle(lInput, lOutput, lLength);
+        for i := 0 to lLength - 1 do
+          Assert.AreEqual(Single((i - 17) * 2 + 1), lOutput[i]);
+        Assert.AreEqual(Single(-999), lOutput[lLength]);
+        TransformSingle(lInput, lInput, lLength);
+        for i := 0 to lLength - 1 do
+          Assert.AreEqual(lOutput[i], lInput[i]);
+      end;
+      TransformSingle(nil, nil, 0);
+    end;
+
+    method TransformFailurePreservesEarlierWrites;
+    begin
+      for each lLimit in [0, 1, 15, 16, 17, 31, 32, 33, 64] do
+        for each lShortInput in [false, true] do begin
+          var lInput := new Single[if lShortInput then lLimit else lLimit + 2];
+          var lOutput := new Single[if lShortInput then lLimit + 2 else lLimit];
+          for i := 0 to length(lInput) - 1 do
+            lInput[i] := i + 1;
+          for i := 0 to length(lOutput) - 1 do
+            lOutput[i] := -999;
+          var lRaised := false;
+          try
+            TransformSingle(lInput, lOutput, lLimit + 2);
+          except
+            on E: IndexOutOfRangeException do
+              lRaised := true;
+          end;
+          Assert.IsTrue(lRaised);
+          for i := 0 to lLimit - 1 do
+            Assert.AreEqual(Single((i + 1) * 2 + 1), lOutput[i]);
+          for i := lLimit to length(lOutput) - 1 do
+            Assert.AreEqual(Single(-999), lOutput[i]);
+        end;
+    end;
+
+    method FailurePreservesWritesInSameIteration;
+    begin
+      for each lLimit in [0, 1, 15, 16, 17, 31, 32, 33, 64] do begin
+        var lFirst := new Integer[lLimit + 2];
+        var lSecond := new Integer[lLimit];
+        var lRaised := false;
+        try
+          WriteTwoArrays(lFirst, lSecond, lLimit + 2);
+        except
+          on E: IndexOutOfRangeException do
+            lRaised := true;
+        end;
+        Assert.IsTrue(lRaised);
+        for i := 0 to lLimit do
+          Assert.AreEqual(i + 10, lFirst[i]);
+        for i := 0 to lLimit - 1 do
+          Assert.AreEqual(i + 20, lSecond[i]);
+        Assert.AreEqual(0, lFirst[lLimit + 1]);
+      end;
     end;
 
     method LengthsAndLoops;
