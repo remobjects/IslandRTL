@@ -83,15 +83,18 @@ type
     // Utility methods with implementations in this file
     class method Abs(i: Int64): Int64;
     class method Abs(i: Integer): Integer;
-    class method Max(a,b: Double): Double;
+    class method Max(a,b: Double): Double; inline;
+    class method Max(a,b: Single): Single; inline;
     class method Max(a,b: Integer): Integer;
     class method Max(a,b: Int64): Int64;
-    class method Min(a,b: Double): Double;
+    class method Min(a,b: Double): Double; inline;
+    class method Min(a,b: Single): Single; inline;
     class method Min(a,b: Integer): Integer;
     class method Min(a,b: Int64): Int64;
     class method IEEERemainder(x, y: Double): Double;
     class method IEEERemainder(x, y: Single): Single;
     class method Sign(d: Double): Integer;
+    class method Sign(d: Single): Integer; inline;
 
     // Math functions with SLEEF/LLVM implementations are declared in Math.LLVMVectorLib.pas
     // (or Math.PurePascal.pas for non-SLEEF platforms)
@@ -121,6 +124,12 @@ begin
   exit if a < b then b else a;
 end;
 
+// Reuse Double semantics; inlining exposes the comparison to the optimizer.
+class method Math.Max(a,b: Single): Single;
+begin
+  exit Single(Max(Double(a), Double(b)));
+end;
+
 class method Math.Max(a,b: Integer): Integer;
 begin
   exit if a < b then b else a;
@@ -134,6 +143,12 @@ end;
 class method Math.Min(a,b: Double): Double;
 begin
   exit if a > b then b else a;
+end;
+
+// Reuse Double semantics; inlining exposes the comparison to the optimizer.
+class method Math.Min(a,b: Single): Single;
+begin
+  exit Single(Min(Double(a), Double(b)));
 end;
 
 class method Math.Min(a,b: Integer): Integer;
@@ -210,6 +225,11 @@ begin
   result := Double(lRemainder) * ^Double(@lScaleBits)^;
   // Apply the dividend sign as bits so an exact zero keeps that sign too.
   ^UInt64(@result)^ := ^UInt64(@result)^ xor (lXBits and $8000000000000000);
+end;
+
+class method Math.Sign(d: Single): Integer;
+begin
+  exit Sign(Double(d));
 end;
 
 class method Math.IEEERemainder(x, y: Single): Single;
