@@ -35,7 +35,42 @@ type
           inc(result);
     end;
 
+    // Positive reduction guard: use the caller's bound so an overrun still throws.
+    [DisableInlining]
+    class method SumPrefix(aText: String; aCount: Integer): Int64;
+    begin
+      for i := 0 to aCount - 1 do
+        result := result + Integer(aText[i]);
+    end;
+
   public
+
+    // Cover every vector/tail boundary and retain exceptions when the loop bound
+    // exceeds Length; unsigned index checks must not hide a real overrun.
+    method BoundedSumsAndOverrun;
+    begin
+      var lZero := Char(0);
+      for lLength := 0 to 256 do begin
+        var lChars := new Char[lLength];
+        var lExpected: Int64 := 0;
+        for i := 0 to lLength - 1 do begin
+          lChars[i] := Char((i * 251) mod 65536);
+          lExpected := lExpected + Integer(lChars[i]);
+        end;
+        var lText := if lLength = 0 then new String(@lZero, 0) else new String(lChars);
+        Assert.AreEqual(lExpected, SumPrefix(lText, lLength));
+        if lLength > 0 then
+          Assert.AreEqual(lExpected - Integer(lChars[lLength - 1]), SumPrefix(lText, lLength - 1));
+        var lRaised := false;
+        try
+          SumPrefix(lText, lLength + 1);
+        except
+          on E: IndexOutOfRangeException do
+            lRaised := true;
+        end;
+        Assert.IsTrue(lRaised);
+      end;
+    end;
 
     method ValidCharacters;
     begin

@@ -23,6 +23,8 @@ type
     {$ENDIF}
     method TestChar(c: Char; Arr : array of Char): Boolean;
     class method RaiseError(aMessage: String);
+    // Expose the bounds comparison so LLVM can prove length-bounded loops safe.
+    // Keep the exception helper out of line so the normal character loop stays small.
     method CheckIndex(aIndex: Integer); inline;
     [NoReturn, DisableInlining]
     class method RaiseIndexError(aIndex, aLength: Integer);
@@ -778,7 +780,9 @@ end;
 
 method String.CheckIndex(aIndex: Integer);
 begin
-  if (aIndex < 0) or (aIndex >= fLength) then RaiseIndexError(aIndex, fLength);
+  // String lengths are nonnegative. One unsigned comparison also rejects
+  // negative indices and lets LLVM remove checks from length-bounded loops.
+  if UInt32(aIndex) >= UInt32(fLength) then RaiseIndexError(aIndex, fLength);
 end;
 
 // Keep the non-returning error path separate so bounded loops can lose their checks.
