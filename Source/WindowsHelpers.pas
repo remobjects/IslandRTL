@@ -54,6 +54,10 @@ type
     class var fCatchHandler: NativeInt;
     [ThreadLocal]
     class var fCatchFrame: NativeInt;
+    {$IF ARM64}
+    [ThreadLocal]
+    class var fCatchNonVolatileRegisters: array[0..18] of UInt64;
+    {$ENDIF}
     [ThreadLocal]
     class var fCatchEstablisherFrame: UInt64;
     [ThreadLocal]
@@ -749,9 +753,9 @@ type
     TryBlockMap: {$IFDEF _WIN64}Int32{$ELSE}^MSVCTryMap{$ENDIF};
     IPMapEntries: UInt32;
     IPMapEntry: {$IFDEF _WIN64}Int32{$ELSE}^MSVCIpToSate{$ENDIF};
-    {$IFDEF win64}
-    UnwindHelp: UInt32;
-    ESTypeList: ^Void;
+    {$IFDEF _WIN64}
+    UnwindHelp: Int32;
+    ESTypeList: Int32; // image-relative RVA, also on 64-bit Windows
     EHFlags: Int32;
     {$ENDIF}
     // From LLVM
@@ -1469,32 +1473,137 @@ begin
 end;
 
 {$IF ARM64}
-[InlineAsm("
+[SymbolName('__elements_call_cleanup_funclet'), InlineAsm("
+        .seh_proc __elements_call_cleanup_funclet
 
-        stp     x29, x30, [sp, #-16]!           // 16-byte Folded Spill
-        sub     x29, x1, #32
+        stp x19, x20, [sp, #-160]!
+        .seh_save_regp_x x19, 160
+        stp x21, x22, [sp, #16]
+        .seh_save_regp x21, 16
+        stp x23, x24, [sp, #32]
+        .seh_save_regp x23, 32
+        stp x25, x26, [sp, #48]
+        .seh_save_regp x25, 48
+        stp x27, x28, [sp, #64]
+        .seh_save_regp x27, 64
+        stp x29, x30, [sp, #80]
+        .seh_save_fplr 80
+        stp d8, d9, [sp, #96]
+        .seh_save_fregp d8, 96
+        stp d10, d11, [sp, #112]
+        .seh_save_fregp d10, 112
+        stp d12, d13, [sp, #128]
+        .seh_save_fregp d12, 128
+        stp d14, d15, [sp, #144]
+        .seh_save_fregp d14, 144
+        .seh_endprologue
+        // Funclets can address parent locals through x19 as well as x29.
+        ldp x19, x20, [x1]
+        ldp x21, x22, [x1, #16]
+        ldp x23, x24, [x1, #32]
+        ldp x25, x26, [x1, #48]
+        ldp x27, x28, [x1, #64]
+        ldr x29, [x1, #80]
+        ldp d8, d9, [x1, #88]
+        ldp d10, d11, [x1, #104]
+        ldp d12, d13, [x1, #120]
+        ldp d14, d15, [x1, #136]
         blr     x0
 
-        ldp     x29, x30, [sp], #16             // 16-byte Folded Reload
+        .seh_startepilogue
+        ldp d8, d9, [sp, #96]
+        .seh_save_fregp d8, 96
+        ldp d10, d11, [sp, #112]
+        .seh_save_fregp d10, 112
+        ldp d12, d13, [sp, #128]
+        .seh_save_fregp d12, 128
+        ldp d14, d15, [sp, #144]
+        .seh_save_fregp d14, 144
+        ldp x29, x30, [sp, #80]
+        .seh_save_fplr 80
+        ldp x27, x28, [sp, #64]
+        .seh_save_regp x27, 64
+        ldp x25, x26, [sp, #48]
+        .seh_save_regp x25, 48
+        ldp x23, x24, [sp, #32]
+        .seh_save_regp x23, 32
+        ldp x21, x22, [sp, #16]
+        .seh_save_regp x21, 16
+        ldp x19, x20, [sp], #160
+        .seh_save_regp_x x19, 160
+        .seh_endepilogue
         ret
-", "", true, false), DisableInlining, DisableOptimizations]
+        .seh_endproc
+", "", true, false), Naked, DisableInlining, DisableOptimizations]
 
-method CallCatch64(aCall: NativeInt; aEBP: NativeInt): NativeInt; external;
+method CallCatch64(aCall: NativeInt; aNonVolatileRegisters: NativeInt): NativeInt; external;
 
-[InlineAsm("
-        stp     x29, x30, [sp, #-16]!
-        // Island Windows ARM64 functions keep x29 32 bytes below the pre-allocation establisher.
-        sub     x29, x1, #32
+[SymbolName('__elements_call_catch_funclet'), InlineAsm("
+        .seh_proc __elements_call_catch_funclet
+        stp x19, x20, [sp, #-160]!
+        .seh_save_regp_x x19, 160
+        stp x21, x22, [sp, #16]
+        .seh_save_regp x21, 16
+        stp x23, x24, [sp, #32]
+        .seh_save_regp x23, 32
+        stp x25, x26, [sp, #48]
+        .seh_save_regp x25, 48
+        stp x27, x28, [sp, #64]
+        .seh_save_regp x27, 64
+        stp x29, x30, [sp, #80]
+        .seh_save_fplr 80
+        stp d8, d9, [sp, #96]
+        .seh_save_fregp d8, 96
+        stp d10, d11, [sp, #112]
+        .seh_save_fregp d10, 112
+        stp d12, d13, [sp, #128]
+        .seh_save_fregp d12, 128
+        stp d14, d15, [sp, #144]
+        .seh_save_fregp d14, 144
+        .seh_endprologue
+        // Funclets can address parent locals through x19 as well as x29.
+        ldp x19, x20, [x1]
+        ldp x21, x22, [x1, #16]
+        ldp x23, x24, [x1, #32]
+        ldp x25, x26, [x1, #48]
+        ldp x27, x28, [x1, #64]
+        ldr x29, [x1, #80]
+        ldp d8, d9, [x1, #88]
+        ldp d10, d11, [x1, #104]
+        ldp d12, d13, [x1, #120]
+        ldp d14, d15, [x1, #136]
         adr     x4, catch_return
         str     x4, [x2]
         mov     x5, sp
         str     x5, [x3]
         blr     x0
 catch_return:
-        ldp     x29, x30, [sp], #16
+        .seh_startepilogue
+        ldp d8, d9, [sp, #96]
+        .seh_save_fregp d8, 96
+        ldp d10, d11, [sp, #112]
+        .seh_save_fregp d10, 112
+        ldp d12, d13, [sp, #128]
+        .seh_save_fregp d12, 128
+        ldp d14, d15, [sp, #144]
+        .seh_save_fregp d14, 144
+        ldp x29, x30, [sp, #80]
+        .seh_save_fplr 80
+        ldp x27, x28, [sp, #64]
+        .seh_save_regp x27, 64
+        ldp x25, x26, [sp, #48]
+        .seh_save_regp x25, 48
+        ldp x23, x24, [sp, #32]
+        .seh_save_regp x23, 32
+        ldp x21, x22, [sp, #16]
+        .seh_save_regp x21, 16
+        ldp x19, x20, [sp], #160
+        .seh_save_regp_x x19, 160
+        .seh_endepilogue
         ret
-", "", true, false), DisableInlining, DisableOptimizations]
-method CallCatch64AfterUnwind(aCall: NativeInt; aEBP: NativeInt; var aReturnAddress: NativeInt; var aReturnStack: NativeInt): NativeInt; external;
+        .seh_endproc
+", "", true, false), Naked, DisableInlining, DisableOptimizations]
+method CallCatch64AfterUnwind(aCall: NativeInt; aNonVolatileRegisters: NativeInt; var aReturnAddress: NativeInt; var aReturnStack: NativeInt): NativeInt; external;
 
 [InlineAsm("
         mov     sp, x1
@@ -1754,11 +1863,26 @@ begin
 end;
 
 type CatchHelper = method (pExcept: ^rtl.EXCEPTION_RECORD): NativeInt;
+// ARM64 funclets need the parent's preserved registers, including its base and
+// frame pointers. ContextRecord has already been unwound to the caller.
+method FuncletContext(dispatcher: rtl.PDISPATCHER_CONTEXT): NativeInt;
+begin
+  {$IF ARM64}
+  exit NativeInt(dispatcher^.NonVolatileRegisters);
+  {$ELSE}
+  exit dispatcher^.EstablisherFrame;
+  {$ENDIF}
+end;
+
 method IntCallCatch(pExcept: ^rtl.EXCEPTION_RECORD): NativeInt;
 begin
   ExternalCalls.fSkipCatchFrame := 0;
   ExternalCalls.fCatchEstablisherFrame := pExcept^.ExceptionInformation[1];
+  {$IF ARM64}
+  ExternalCalls.fCatchFrame := pExcept^.ExceptionInformation[5];
+  {$ELSE}
   ExternalCalls.fCatchFrame := pExcept^.ExceptionInformation[1];
+  {$ENDIF}
   ExternalCalls.fCatchHandler := pExcept^.ExceptionInformation[2];
   ExternalCalls.fCatchException := InternalCalls.Cast<Object>(^Void(pExcept^.ExceptionInformation[4]));
   var lAfterUnwind: method := @AfterUnwindRunCatch;
@@ -1791,7 +1915,18 @@ begin
   eh.ExceptionInformation[2] := dispatcher^.ImageBase + aHandler^.Handler;
   eh.ExceptionInformation[3] := aCatch^.TryLow;
   eh.ExceptionInformation[4] := UInt64(InternalCalls.Cast(aException));
-  rtl.RtlUnwindEx(rtl.PVOID(EstFrame), rtl.PVOID(dispatcher^.ControlPc),  @eh, nil, context, dispatcher^.HistoryTable);
+  {$IF ARM64}
+  // Keep the register snapshot alive after the dispatcher's stack is unwound.
+  memcpy(@ExternalCalls.fCatchNonVolatileRegisters[0], dispatcher^.NonVolatileRegisters, 19 * sizeOf(UInt64));
+  eh.ExceptionInformation[5] := UInt64(@ExternalCalls.fCatchNonVolatileRegisters[0]);
+  // RtlUnwindEx writes its walking context. The original exception context is
+  // still needed to unwind through KiUserExceptionDispatch; overwriting it makes
+  // that frame unwind back to itself (STATUS_BAD_FUNCTION_TABLE).
+  var lUnwindContext := &default(rtl.CONTEXT);
+  rtl.RtlUnwindEx(rtl.PVOID(EstFrame), rtl.PVOID(dispatcher^.ControlPc), @eh, nil, @lUnwindContext, dispatcher^.HistoryTable);
+  {$ELSE}
+  rtl.RtlUnwindEx(rtl.PVOID(EstFrame), rtl.PVOID(dispatcher^.ControlPc), @eh, nil, context, dispatcher^.HistoryTable);
+  {$ENDIF}
 end;
 
 
@@ -1806,19 +1941,39 @@ begin
 
   if 0 <> (arec^.ExceptionFlags and ( rtl.EXCEPTION_UNWINDING or rtl.EXCEPTION_EXIT_UNWIND)) then begin
     var lMap := ^MSVCUnwindMap(dispatcher^.ImageBase + msvcinfo^.UnwindMap);
+    {$IF ARM64}
+    // LLVM initializes this slot to -2. Advance it before calling a cleanup so
+    // a replacement exception does not execute the same finally again.
+    var lUnwindState := ^Int32(NativeInt(EstablisherFrame) + msvcinfo^.UnwindHelp);
+    if lUnwindState^ <> -2 then
+      index := lUnwindState^;
+    {$ENDIF}
     if (arec^.ExceptionCode = rtl.STATUS_UNWIND_CONSOLIDATE) and (EstablisherFrame = arec^.ExceptionInformation[1]) then begin
       var lTargetState := arec^.ExceptionInformation[3];
       // special exception, we're unwinding to a specific stat
       while (index >= 0) and (index < msvcinfo^.NumUnwindMap) and (&index <> lTargetState) do begin
-        if lMap[index].Cleanup <> 0 then CallCatch64(dispatcher^.ImageBase + lMap[index].Cleanup, dispatcher^.EstablisherFrame);
-        index:= lMap[index].ToState;
+        var lCleanup := lMap[index].Cleanup;
+        index := lMap[index].ToState;
+        {$IF ARM64}
+        lUnwindState^ := index;
+        {$ENDIF}
+        if lCleanup <> 0 then
+          CallCatch64(dispatcher^.ImageBase + lCleanup, FuncletContext(dispatcher));
       end;
+      {$IF ARM64}
+      lUnwindState^ := -2;
+      {$ENDIF}
       exit;
     end;
     // unwinding, call finally, this is generally when unwinding completely.
     while (index >= 0) and (index < msvcinfo^.NumUnwindMap) do begin
-      if lMap[index].Cleanup <> 0 then CallCatch64(dispatcher^.ImageBase + lMap[index].Cleanup, dispatcher^.EstablisherFrame);
-      index:= lMap[index].ToState;
+      var lCleanup := lMap[index].Cleanup;
+      index := lMap[index].ToState;
+      {$IF ARM64}
+      lUnwindState^ := index;
+      {$ENDIF}
+      if lCleanup <> 0 then
+        CallCatch64(dispatcher^.ImageBase + lCleanup, FuncletContext(dispatcher));
     end;
   end else begin
     // we're not unwinding, we're looking for an exception handler that takes it
@@ -1851,7 +2006,8 @@ begin
               ^Exception(EstablisherFrame + lCatchOffset)^ := exo;
             var cond := htt^.Filter;
             {$IF ARM64} // workaround for 85424: Oxygene: bad error for {IFDEF}
-            if (cond = nil) or (cond(^Void(context^.Sp))) then begin
+            // localrecover offsets for a function with ARM64 funclets are relative to x29.
+            if (cond = nil) or (cond(^Void(^NativeUInt(dispatcher^.NonVolatileRegisters)[10]))) then begin
               result := 0;
               CallCatch(tb, ht, arec, EstablisherFrame, context, dispatcher, exo);
             end;

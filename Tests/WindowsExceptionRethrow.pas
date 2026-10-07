@@ -53,7 +53,35 @@ type
       end;
     end;
 
+    [DisableInlining]
+    method ReplaceExceptionDuringCleanup(var aFinallyCount: Integer);
+    begin
+      try
+        raise new Exception('original');
+      finally
+        inc(aFinallyCount);
+        raise new Exception('cleanup replacement');
+      end;
+    end;
+
   public
+    // Negative guard: unwinding an exception raised inside a finally must cross
+    // the runtime's cleanup-call frame and deliver the replacement exactly once.
+    method ExceptionFromCleanupReachesOuterHandler;
+    begin
+      var lCaught: Exception;
+      var lFinallyCount := 0;
+      try
+        ReplaceExceptionDuringCleanup(var lFinallyCount);
+      except
+        on e: Exception do
+          lCaught := e;
+      end;
+      Assert.IsTrue(assigned(lCaught));
+      Assert.AreEqual('cleanup replacement', lCaught.Message);
+      Assert.AreEqual(1, lFinallyCount);
+    end;
+
     method BareRethrowReachesOuterHandler;
     begin
       var lOriginal := new Exception('original');

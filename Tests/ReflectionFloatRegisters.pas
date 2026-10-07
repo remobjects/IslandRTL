@@ -70,7 +70,7 @@ type
     // Negative guard: one four-byte overflow argument still needs a 16-byte stack.
     method SingleStackBits;
     begin
-      {$IF ARM64 AND NOT WINDOWS}
+      {$IF ARM64}
       var lBits: array of UInt32 := [$80000000, $00000001, $3fa00000, $7fc12345];
       for each lExpected in lBits do begin
         var lValue := ^Single(@lExpected)^;
@@ -83,7 +83,7 @@ type
     // Negative guard: the hidden instance shifts integer arguments but not FP slots.
     method InstanceStackArguments;
     begin
-      {$IF ARM64 AND NOT WINDOWS}
+      {$IF ARM64}
       var lFound := false;
       for each lMethod in typeOf(ReflectionFloatRegisters).Methods do
         if lMethod.Name = 'InstanceArguments' then begin
@@ -107,7 +107,7 @@ type
     // Negative guards: Single registers contain 32-bit IEEE bits, not Doubles.
     method SingleArgumentAndResultBits;
     begin
-      {$IF ARM64 AND NOT WINDOWS}
+      {$IF ARM64}
       var lBits: array of UInt32 := [$00000000, $80000000, $00000001, $007fffff,
         $00800000, $3fa00000, $bf400000, $7f800000, $ff800000, $7fc12345];
       for each lExpected in lBits do begin
@@ -122,7 +122,7 @@ type
     // Positive guard: s and d arguments share eight FP registers, independently of x.
     method MixedArgumentRegisters;
     begin
-      {$IF ARM64 AND NOT WINDOWS}
+      {$IF ARM64}
       Assert.AreEqual(Double(Invoke('MixedRegisters', [Single(1), Double(2),
         Single(3), Double(4), Single(5), Double(6), Single(7), Double(8),
         Int64(9), Integer(10)])), Double(385));
@@ -132,7 +132,7 @@ type
     // Negative guards: ninth and tenth FP arguments use their ABI stack slots.
     method FloatingPointStackArguments;
     begin
-      {$IF ARM64 AND NOT WINDOWS}
+      {$IF ARM64}
       Assert.AreEqual(Single(Invoke('TenSingles', [Single(1), Single(2), Single(3),
         Single(4), Single(5), Single(6), Single(7), Single(8), Single(9), Single(10)])), Single(385));
       Assert.AreEqual(Double(Invoke('TenDoubles', [Double(1), Double(2), Double(3),
@@ -140,10 +140,10 @@ type
       {$ENDIF}
     end;
 
-    // Negative guard: packed Apple stack arguments retain natural alignment and order.
+    // Negative guard: mixed stack arguments retain their platform ABI offsets.
     method MixedStackArguments;
     begin
-      {$IF ARM64 AND NOT WINDOWS}
+      {$IF ARM64}
       var lExpected := MixedStack(1,2,3,4,5,6,7,8, 1,2,3,4,5,6,7,8,
         9, 10.5, -11, 12.25, -13, 14.5, 15);
       Assert.AreEqual(Double(Invoke('MixedStack', [Int64(1), Int64(2), Int64(3),
@@ -153,9 +153,10 @@ type
       {$ENDIF}
     end;
 
+    // Negative guard: d6 and d7 must not reuse the preceding register slots.
     method EightDoubleArguments;
     begin
-      {$IF ARM64 AND NOT WINDOWS}
+      {$IF ARM64}
       var lFound := false;
       for each lMethod in typeOf(ReflectionFloatRegisters).Methods do begin
         if lMethod.Name = 'Weighted' then begin
