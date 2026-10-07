@@ -43,8 +43,9 @@
 // On 32-bit x86 without SSE4.1, LLVM intrinsics like llvm.ceil.f64 are NOT real intrinsics -
 // they lower to library calls (e.g., llvm.ceil.f64 → call to 'ceil'). This creates infinite
 // recursion when our RTL exports 'ceil' that calls llvm.ceil.f64.
-// Solution: On i386, C RTL exports for simple functions (ceil, floor, trunc, round, sqrt, fabs)
-// call SLEEF scalar functions directly instead of using LLVM intrinsics.
+// On i386, ceil/floor/trunc/round exports call SLEEF scalar functions to avoid
+// libcall recursion. sqrt/sqrtf use LLVM intrinsics, which lower to SSE2;
+// forwarding those exports to scalar SLEEF would recurse through C sqrt/sqrtf.
 //
 // - SleefInternal: External declarations for SLEEF scalar functions and LLVM intrinsics
 // - Math class: Public API that forwards to SleefInternal
@@ -804,24 +805,16 @@ end;
 
 class method SleefInternal.sqrt(d: Double): Double;
 begin
-  {$IF i386}
-  // Win32: LLVM intrinsics lower to library calls causing recursion
-  // Call SLEEF directly instead
-  exit Sleef_sqrtd1_u05(d);
-  {$ELSE}
-  exit llvm_sqrt_f64(d);  // Forward to LLVM intrinsic for SLEEF library dependency
-  {$ENDIF}
+  // SSE2 lowers this intrinsic to sqrtsd on i386. SLEEF's scalar sqrt
+  // implementation calls the C sqrt export, so calling SLEEF here recurses.
+  exit llvm_sqrt_f64(d);
 end;
 
 class method SleefInternal.sqrtf(d: Single): Single;
 begin
-  {$IF i386}
-  // Win32: LLVM intrinsics lower to library calls causing recursion
-  // Call SLEEF directly instead
-  exit Sleef_sqrtf1(d);
-  {$ELSE}
-  exit llvm_sqrt_f32(d);  // Forward to LLVM intrinsic for SLEEF library dependency
-  {$ENDIF}
+  // SSE2 lowers this intrinsic to sqrtss on i386. SLEEF's scalar sqrtf
+  // implementation calls the C sqrtf export, so calling SLEEF here recurses.
+  exit llvm_sqrt_f32(d);
 end;
 
 class method SleefInternal.tan(d: Double): Double;
