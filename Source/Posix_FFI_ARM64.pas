@@ -24,6 +24,9 @@ type
 
 
 
+  // MethodInfo.Invoke uses this bridge to call native Island methods. Copy each
+  // value to the register or stack position expected by the target method;
+  // numerical conversion here would change the arguments supplied by the caller.
   FFI = public class
   private
     fStack: array of Byte;
