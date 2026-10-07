@@ -22,6 +22,7 @@
     <Compile Include="$(MSBuildThisFileDirectory)String_Substring.pas" />
     <Compile Include="$(MSBuildThisFileDirectory)Guid.pas" />
     <Compile Include="$(MSBuildThisFileDirectory)Math_IEEERemainder.pas" />
+    <Compile Include="$(MSBuildThisFileDirectory)Math_Rounding.pas" />
     <Compile Include="$(MSBuildThisFileDirectory)String_Equality.pas" />
     <Compile Include="$(MSBuildThisFileDirectory)String_Indexing.pas" />
     <Compile Include="$(MSBuildThisFileDirectory)String_Search.pas" />

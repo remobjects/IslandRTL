@@ -66,7 +66,9 @@
 
 // Check same conditions as Math.pas - must be kept in sync!
 {$IF WINDOWS OR (DARWIN AND MACOS)}
-  {$DEFINE USE_LLVM_MATH_VECTORLIB}
+  {$IFNDEF PUREPASCAL}
+    {$DEFINE USE_LLVM_MATH_VECTORLIB}
+  {$ENDIF}
 {$ENDIF}
 
 {$IFDEF USE_LLVM_MATH_VECTORLIB}

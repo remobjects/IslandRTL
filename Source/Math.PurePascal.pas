@@ -6,7 +6,9 @@
 
 // Check same conditions as Math.pas - must be kept in sync!
 {$IF WINDOWS OR (DARWIN AND MACOS)}
-  {$DEFINE USE_LLVM_MATH_VECTORLIB}
+  {$IFNDEF PUREPASCAL}
+    {$DEFINE USE_LLVM_MATH_VECTORLIB}
+  {$ENDIF}
 {$ENDIF}
 
 {$IFNDEF USE_LLVM_MATH_VECTORLIB}
@@ -339,14 +341,12 @@ end;
 
 class method Math.Ceiling(d: Single): Single;
 begin
-  var p := d mod 1;
-  if p = 0 then exit d;
-  if d < 0 then exit d-p else exit d-p+1;
+  exit Single(Ceiling(Double(d)));
 end;
 
 class method Math.Floor(d: Double): Double;
 begin
-  if (d = 0.0) then exit 0.0;
+  if (d = 0.0) then exit d; // Preserve the sign of zero.
   var res : Double := 0.0;
 
   var pIEEE_754_raw := ^UInt64(@d)^;
@@ -354,8 +354,12 @@ begin
   var signum := if (pIEEE_754_raw and Double.SignificantBitmask)=0 then 0 else 1;
   var tmp := pIEEE_754_raw and not Double.SignificantBitmask;
   var exponent: Integer := (tmp shr 52)-1023;
-  if exponent >= 52 then res := d
-  else if exponent > -1 then begin
+  // Integral values, infinities and NaNs need no rounding. In particular,
+  // the adjustment for negative fractions below must not turn -2 into -3.
+  if exponent >= 52 then exit d;
+  if exponent >= 0 then
+    if (tmp and ((UInt64(1) shl (52 - exponent)) - 1)) = 0 then exit d;
+  if exponent > -1 then begin
     var mantissa: UInt64 := Double.FractionBitmask and tmp;
     var denominator: UInt64 := UInt64(1) shl 52;
     var numerator : UInt64 := mantissa + denominator;
@@ -391,10 +395,7 @@ end;
 
 class method Math.Floor(d: Single): Single;
 begin
-  var xi := Integer(d);
-  if d < xi then
-    exit xi -1;
-  exit xi;
+  exit Single(Floor(Double(d)));
 end;
 
 class method Math.Round(a: Double): Double;
@@ -422,7 +423,7 @@ end;
 
 class method Math.Truncate(d: Single): Single;
 begin
-  exit if d < 0 then -Floor(-d) else Floor(d);
+  exit Single(Truncate(Double(d)));
 end;
 
 // Square root
@@ -455,7 +456,7 @@ end;
 
 class method Math.fmodf(x, y: Single): Single;
 begin
-  exit (Abs(x) - (Abs(y) *  (Floor(Abs(x) / Abs(y))))) * Sign(x);
+  exit Single(fmod(Double(x), Double(y)));
 end;
 
 // Single precision overloads

@@ -15,7 +15,9 @@ interface
 
 // Check same conditions as Math.pas - must be kept in sync!
 {$IF WINDOWS OR (DARWIN AND MACOS)}
-  {$DEFINE USE_LLVM_MATH_VECTORLIB}  // Uses SLEEF library with LLVM vectorization
+  {$IFNDEF PUREPASCAL}
+    {$DEFINE USE_LLVM_MATH_VECTORLIB}  // Uses SLEEF library with LLVM vectorization
+  {$ENDIF}
 {$ENDIF}
 
 type
