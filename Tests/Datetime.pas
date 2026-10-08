@@ -9,6 +9,24 @@ type
   DateTime_Tests = public class(Test)
   private
   public
+    {$IF DARWIN}
+    // Positive clock-conversion guard: UtcNow must fall between native samples,
+    // including their fractional seconds, rather than compressing them 1000-fold.
+    method UtcNowPreservesFractionalSeconds;
+    begin
+      for i := 1 to 4 do begin
+        var lBefore, lAfter: rtl.__struct_timespec;
+        Assert.AreEqual(0, rtl.clock_gettime(rtl.clockid_t._CLOCK_REALTIME, @lBefore));
+        var lActual := DateTime.UtcNow.Ticks;
+        Assert.AreEqual(0, rtl.clock_gettime(rtl.clockid_t._CLOCK_REALTIME, @lAfter));
+        var lLower := DateTime.UnixDateOffset + lBefore.tv_sec * DateTime.TicksPerSecond + lBefore.tv_nsec div 100;
+        var lUpper := DateTime.UnixDateOffset + lAfter.tv_sec * DateTime.TicksPerSecond + lAfter.tv_nsec div 100;
+        Assert.IsTrue(lActual >= lLower);
+        Assert.IsTrue(lActual <= lUpper);
+      end;
+    end;
+    {$ENDIF}
+
     method DateTime_Ctor;
     begin
       var date := new DateTime(1899,12,30);
