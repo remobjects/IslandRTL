@@ -23,8 +23,11 @@
     <Compile Include="$(MSBuildThisFileDirectory)Guid.pas" />
     <Compile Include="$(MSBuildThisFileDirectory)Math_IEEERemainder.pas" />
     <Compile Include="$(MSBuildThisFileDirectory)Math_Rounding.pas" />
+    <Compile Include="$(MSBuildThisFileDirectory)Math_RoundingExports.pas" />
+    <Compile Include="$(MSBuildThisFileDirectory)Math_Precision.pas" />
     <Compile Include="$(MSBuildThisFileDirectory)String_Equality.pas" />
     <Compile Include="$(MSBuildThisFileDirectory)Memory_Comparison.pas" />
+    <Compile Include="$(MSBuildThisFileDirectory)WindowsCatchAlignment.pas" />
     <Compile Include="$(MSBuildThisFileDirectory)CString_Helpers.pas" />
     <Compile Include="$(MSBuildThisFileDirectory)String_Indexing.pas" />
     <Compile Include="$(MSBuildThisFileDirectory)String_Search.pas" />

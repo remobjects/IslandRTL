@@ -686,9 +686,9 @@ end;
 
 class method SleefInternal.ceil(d: Double): Double;
 begin
-  {$IF i386}
-  // Win32: LLVM intrinsics lower to library calls causing recursion
-  // Call SLEEF directly instead
+  {$IF i386 OR X86_64}
+  // Without SSE4.1 the intrinsic lowers to this same C export.
+  // Call SLEEF directly so the x86/x64 fallback cannot recurse.
   exit Sleef_ceild1(d);
   {$ELSE}
   exit llvm_ceil_f64(d);  // Forward to LLVM intrinsic for SLEEF library dependency
@@ -697,9 +697,9 @@ end;
 
 class method SleefInternal.ceilf(d: Single): Single;
 begin
-  {$IF i386}
-  // Win32: LLVM intrinsics lower to library calls causing recursion
-  // Call SLEEF directly instead
+  {$IF i386 OR X86_64}
+  // Without SSE4.1 the intrinsic lowers to this same C export.
+  // Call SLEEF directly so the x86/x64 fallback cannot recurse.
   exit Sleef_ceilf1(d);
   {$ELSE}
   exit llvm_ceil_f32(d);  // Forward to LLVM intrinsic for SLEEF library dependency
@@ -739,9 +739,9 @@ end;
 
 class method SleefInternal.floor(d: Double): Double;
 begin
-  {$IF i386}
-  // Win32: LLVM intrinsics lower to library calls causing recursion
-  // Call SLEEF directly instead
+  {$IF i386 OR X86_64}
+  // Without SSE4.1 the intrinsic lowers to this same C export.
+  // Call SLEEF directly so the x86/x64 fallback cannot recurse.
   exit Sleef_floord1(d);
   {$ELSE}
   exit llvm_floor_f64(d);  // Forward to LLVM intrinsic for SLEEF library dependency
@@ -750,9 +750,9 @@ end;
 
 class method SleefInternal.floorf(d: Single): Single;
 begin
-  {$IF i386}
-  // Win32: LLVM intrinsics lower to library calls causing recursion
-  // Call SLEEF directly instead
+  {$IF i386 OR X86_64}
+  // Without SSE4.1 the intrinsic lowers to this same C export.
+  // Call SLEEF directly so the x86/x64 fallback cannot recurse.
   exit Sleef_floorf1(d);
   {$ELSE}
   exit llvm_floor_f32(d);  // Forward to LLVM intrinsic for SLEEF library dependency
@@ -786,9 +786,9 @@ end;
 
 class method SleefInternal.round(d: Double): Double;
 begin
-  {$IF i386}
-  // Win32: LLVM intrinsics lower to library calls causing recursion
-  // Call SLEEF directly instead
+  {$IF i386 OR X86_64}
+  // Without SSE4.1 the intrinsic lowers to this same C export.
+  // Call SLEEF directly so the x86/x64 fallback cannot recurse.
   exit Sleef_roundd1(d);
   {$ELSE}
   exit llvm_round_f64(d);  // Forward to LLVM intrinsic for SLEEF library dependency
@@ -831,9 +831,9 @@ end;
 
 class method SleefInternal.trunc(d: Double): Double;
 begin
-  {$IF i386}
-  // Win32: LLVM intrinsics lower to library calls causing recursion
-  // Call SLEEF directly instead
+  {$IF i386 OR X86_64}
+  // Without SSE4.1 the intrinsic lowers to this same C export.
+  // Call SLEEF directly so the x86/x64 fallback cannot recurse.
   exit Sleef_truncd1(d);
   {$ELSE}
   exit llvm_trunc_f64(d);  // Forward to LLVM intrinsic for SLEEF library dependency
@@ -842,9 +842,9 @@ end;
 
 class method SleefInternal.truncf(d: Single): Single;
 begin
-  {$IF i386}
-  // Win32: LLVM intrinsics lower to library calls causing recursion
-  // Call SLEEF directly instead
+  {$IF i386 OR X86_64}
+  // Without SSE4.1 the intrinsic lowers to this same C export.
+  // Call SLEEF directly so the x86/x64 fallback cannot recurse.
   exit Sleef_truncf1(d);
   {$ELSE}
   exit llvm_trunc_f32(d);  // Forward to LLVM intrinsic for SLEEF library dependency

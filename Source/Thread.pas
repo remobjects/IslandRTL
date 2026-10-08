@@ -586,7 +586,11 @@ end;
 
 constructor EventWaitHandle(aAutoReset: Boolean; aInitialValue: Boolean);
 begin
-  inherited constructor(rtl.CreateEvent(nil, not aAutoReset, aInitialValue, nil));
+  // The SDK currently imports Win32 BOOL as one-byte Boolean. CreateEventEx
+  // uses DWORD flags, preserving the native ABI without truncating BOOL.
+  inherited constructor(rtl.CreateEventEx(nil, nil,
+    (if aAutoReset then 0 else rtl.CREATE_EVENT_MANUAL_RESET) or
+    (if aInitialValue then rtl.CREATE_EVENT_INITIAL_SET else 0), rtl.EVENT_ALL_ACCESS));
 end;
 
 method EventWaitHandle.Set;

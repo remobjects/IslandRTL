@@ -1,10 +1,10 @@
-// Regression guards for Windows ARM64 memory helpers: preserve unsigned ordering,
+// Regression guards for Windows memory helpers: preserve unsigned ordering,
 // arbitrary alignment, overlap semantics, return values and exact buffer bounds.
 namespace Island.Tests.Shared;
 
 uses RemObjects.Elements.EUnit;
 
-{$IF WINDOWS AND ARM64}
+{$IF WINDOWS}
 type
   Memory_Comparison = public class(Test)
   public

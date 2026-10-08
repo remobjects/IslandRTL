@@ -52,6 +52,28 @@ type
     end;
 
   public
+    // Positive guard: localrecover must use this method's frame, not the throw
+    // site's exception context, for both the catch object and captured locals.
+    method AcceptedFilterReadsParentLocals;
+    begin
+      var lPrefix := 'network';
+      var lCount := 0;
+      for i := 0 to 15 do begin
+        var lExpected := i + 10;
+        var lCaught: Exception := nil;
+        try
+          RaiseWithNonMatchingWhereFilter('disk full');
+        except
+          on e: Exception where (lExpected = i + 10) and (lPrefix = 'network') and (e.Message = 'disk full') do begin
+            lCaught := e;
+            inc(lCount);
+          end;
+        end;
+        Assert.IsTrue(assigned(lCaught));
+      end;
+      Assert.AreEqual(16, lCount);
+    end;
+
     method RejectedFilterRunsFinallyBeforeOuterHandler;
     begin
       var lFinallyCount := 0;

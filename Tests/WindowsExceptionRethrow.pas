@@ -1,4 +1,6 @@
-﻿namespace RemObjects.Elements.Island.Tests;
+﻿// Negative regression guards: catch-body raises must preserve the exception,
+// runtime register state, and exactly-once cleanup while reaching the caller.
+namespace RemObjects.Elements.Island.Tests;
 
 uses
   RemObjects.Elements.EUnit;
@@ -64,7 +66,29 @@ type
       end;
     end;
 
+    [DisableInlining]
+    method FloatingPointAcrossRethrow(aA, aB, aC, aD, aE, aF, aG, aH: Double): Double;
+    begin
+      var lFinallyCount := 0;
+      try
+        BareRethrowFromHandler(new Exception('registers'), var lFinallyCount);
+      except
+        on E: Exception do begin
+          Assert.AreEqual('registers', E.Message);
+          Assert.AreEqual(1, lFinallyCount);
+        end;
+      end;
+      exit aA + aB * 2 + aC * 3 + aD * 4 + aE * 5 + aF * 6 + aG * 7 + aH * 8;
+    end;
+
   public
+    // Positive guard: floating-point parent locals survive a deferred raise.
+    method FloatingPointLocalsSurviveRethrow;
+    begin
+      for i := 1 to 16 do
+        Assert.AreEqual(Double(36 * i + 168), FloatingPointAcrossRethrow(i, i + 1, i + 2, i + 3, i + 4, i + 5, i + 6, i + 7));
+    end;
+
     // Negative guard: unwinding an exception raised inside a finally must cross
     // the runtime's cleanup-call frame and deliver the replacement exactly once.
     method ExceptionFromCleanupReachesOuterHandler;
