@@ -677,6 +677,7 @@ type
           if lTest^ = str1^ then exit str1;
           inc(lTest);
         end;
+        inc(str1);
       end;
       exit nil;
     end;
@@ -684,6 +685,7 @@ type
     [SymbolName('strncpy')]
     class method strncpy(aDest, aSrc: ^AnsiChar; n: Integer): ^AnsiChar;
     begin
+      result := aDest;
       while (n > 0) and (aSrc^ <> #0) do begin
         aDest^ := aSrc^;
         aDest := aDest + 1;
@@ -695,24 +697,28 @@ type
         aDest  := aDest + 1;
         dec(n);
       end;
-      result := aDest;
     end;
 
     [SymbolName('strchr')]
     class method strchr(str: ^AnsiChar; c: Integer): ^AnsiChar;
     begin
-      while str^ <> #0 do begin
-        if Integer(str^) = c then exit str;
+      var lChar := Byte(c and $FF);
+      loop begin
+        if Byte(str^) = lChar then exit str;
+        if str^ = #0 then exit nil;
+        inc(str);
       end;
-      exit nil;
     end;
 
     [SymbolName('strrchr')]
     class method strrchr(str: ^AnsiChar; c: Integer): ^AnsiChar;
     begin
       var lHit: ^AnsiChar := nil;
-      while str^ <> #0 do begin
-        if Integer(str^) = c then lHit := str;
+      var lChar := Byte(c and $FF);
+      loop begin
+        if Byte(str^) = lChar then lHit := str;
+        if str^ = #0 then break;
+        inc(str);
       end;
       exit lHit;
     end;

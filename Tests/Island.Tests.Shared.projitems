@@ -25,6 +25,7 @@
     <Compile Include="$(MSBuildThisFileDirectory)Math_Rounding.pas" />
     <Compile Include="$(MSBuildThisFileDirectory)String_Equality.pas" />
     <Compile Include="$(MSBuildThisFileDirectory)Memory_Comparison.pas" />
+    <Compile Include="$(MSBuildThisFileDirectory)CString_Helpers.pas" />
     <Compile Include="$(MSBuildThisFileDirectory)String_Indexing.pas" />
     <Compile Include="$(MSBuildThisFileDirectory)String_Search.pas" />
     <Compile Include="$(MSBuildThisFileDirectory)Optimization_Workloads.pas" />
