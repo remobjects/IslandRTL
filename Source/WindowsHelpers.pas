@@ -42,6 +42,15 @@ type
   end;
   {$ENDIF}
 
+  {$IFDEF ARM64}
+  // Memory helpers accept arbitrary byte alignment, including overlapping moves.
+  [Packed]
+  MemoryBlock = assembly record
+  public
+    First, Second: UInt64;
+  end;
+  {$ENDIF}
+
   ExternalCalls = public static class
   private
 
@@ -567,6 +576,22 @@ type
       if (a = nil) and (b = nil) then exit 0;
       if (a = nil) or (b = nil) then exit if a = nil then 1 else -1;
       if num = 0 then exit 0;
+      {$IFDEF ARM64}
+      // Read only complete blocks, including when a buffer ends at a guard page.
+      // A differing block falls through to byte order, not integer word order.
+      while num >= sizeOf(MemoryBlock) do begin
+        var lDifference: UInt32 := 0;
+        for i := 0 to sizeOf(MemoryBlock) - 1 do
+          lDifference := lDifference or UInt32(a[i] xor b[i]);
+        if lDifference <> 0 then
+          break;
+        inc(a, sizeOf(MemoryBlock));
+        inc(b, sizeOf(MemoryBlock));
+        dec(num, sizeOf(MemoryBlock));
+      end;
+      if num = 0 then
+        exit 0;
+      {$ENDIF}
       loop begin
         if a^ > b^ then exit 1;
         if a^ < b^ then exit -1;
@@ -1041,6 +1066,19 @@ begin
   if aNum < 0 then raise new Exception('aNum less than zero');
   if destination = source then exit;
 
+  {$IFDEF ARM64}
+  while aNum >= sizeOf(MemoryBlock) do begin
+    var lSource := ^MemoryBlock(source);
+    var lDestination := ^MemoryBlock(destination);
+    var lFirst := lSource^.First;
+    var lSecond := lSource^.Second;
+    lDestination^.First := lFirst;
+    lDestination^.Second := lSecond;
+    destination := ^Byte(destination) + sizeOf(MemoryBlock);
+    source := ^Byte(source) + sizeOf(MemoryBlock);
+    dec(aNum, sizeOf(MemoryBlock));
+  end;
+  {$ENDIF}
   // TODO: Optimize this
   while aNum >= 8 do begin
     ^Int64(destination)^ := ^Int64(source)^;
@@ -1067,9 +1105,19 @@ end;
 
 method ExternalCalls.memset(ptr: ^Void; value: Integer; aNum: NativeInt): ^Void;
 begin
+  result := ptr;
   value := value and $FF;
-  var vval: UInt64 := value or (value shl 8) or (value shl 16) or (value shl 24);
-  vval := vval or (vval shl 32);
+  // Replicate an unsigned value so bytes >= $80 cannot sign-extend the fill word.
+  var vval: UInt64 := UInt64(value) * $0101010101010101;
+  {$IFDEF ARM64}
+  while aNum >= sizeOf(MemoryBlock) do begin
+    var lDestination := ^MemoryBlock(ptr);
+    lDestination^.First := vval;
+    lDestination^.Second := vval;
+    ptr := ^Byte(ptr) + sizeOf(MemoryBlock);
+    dec(aNum, sizeOf(MemoryBlock));
+  end;
+  {$ENDIF}
   // TODO: Optimize this
   while aNum >= 8 do begin
     ^Int64(ptr)^ := vval;
@@ -1101,6 +1149,17 @@ begin
   if destination = source then exit;
 
   if (source < destination) and (^Void(^Byte(source)+aNum) >= destination) then begin
+    {$IFDEF ARM64}
+    while aNum >= sizeOf(MemoryBlock) do begin
+      dec(aNum, sizeOf(MemoryBlock));
+      var lSource := ^MemoryBlock(^Byte(source) + aNum);
+      var lDestination := ^MemoryBlock(^Byte(destination) + aNum);
+      var lFirst := lSource^.First;
+      var lSecond := lSource^.Second;
+      lDestination^.First := lFirst;
+      lDestination^.Second := lSecond;
+    end;
+    {$ENDIF}
     // TODO: Optimize this
     while aNum >= 8 do begin
       dec(aNum, 8);
