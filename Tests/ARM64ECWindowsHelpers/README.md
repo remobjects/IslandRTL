@@ -16,6 +16,8 @@ and pass the generated funclet frame as for AArch64.
 
 Validated October 9 with the branch compiler and existing Elements LLVM:
 helper compilation passed and native instructions/relocations were inspected.
-The full Island runtime passed source checking but crashed in LLVM frame
-finalization for `#fopen`; LLVM 22.1.8 reproduces that separate backend failure.
+The initial full-runtime build hit a separate LLVM frame-finalization failure
+for `#fopen`. With the subsequently patched branch toolchain, both normal
+Island project variants now build for EC. See `../ARM64ECCookie` for focused
+Windows runtime validation.
 These checks do not prove Windows exception unwinding at runtime.

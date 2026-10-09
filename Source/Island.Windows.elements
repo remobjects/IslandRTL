@@ -50,6 +50,7 @@
     <Compile Include="HString.pas" />
     <Compile Include="Registry.pas" />
     <Compile Include="WindowsHelpers.pas" />
+    <Compile Include="WindowsArm64EC.pas" />
     <Compile Include="Windows_FFI_x64.pas" />
     <Compile Include="Windows_FFI_x86.pas" />
     <Compile Include="OleVariant.pas" />

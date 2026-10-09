@@ -914,7 +914,12 @@ var
     {.$ERROR Unsupported Architecture}
   {$ENDIF}
 
+  {$IF ARM64EC}
+  // Windows initializes this 64-bit cookie through the load-config directory.
+  [SymbolName('__security_cookie'), StaticallyInitializedField] var __security_cookie: UIntPtr := $00002B992DDFA232;
+  {$ELSE}
   [SymbolName('__security_cookie'), StaticallyInitializedField] var __security_cookie: Integer := $12345678;
+  {$ENDIF}
   //[SymbolName('__guard_check_icall_fptr')] var __guard_check_icall_fptr: Integer; external;
   {$IFDEF _WIN64}
   //[SymbolName('__guard_dispatch_icall_fptr')] var __guard_dispatch_icall_fptr: Integer; external;
@@ -937,6 +942,11 @@ var
 method elements_tls_callback(aHandle: ^Void; aReason: rtl.DWORD; aReserved: ^Void); public;
 [SymbolName('main')]
 method main: Integer;
+
+{$IF ARM64EC}
+[SymbolName('#__security_init_cookie')]
+method InitializeSecurityCookie; external;
+{$ENDIF}
 
 [SymbolName('mainCRTStartup')]
 method mainCRTStartup: Integer;
@@ -1017,7 +1027,7 @@ end;
 method elements_tls_callback(aHandle: ^Void; aReason: rtl.DWORD; aReserved: ^Void);
 begin
   case aReason of
-    rtl.DLL_PROCESS_ATTACH: ;
+    rtl.DLL_PROCESS_ATTACH: {$IF ARM64EC}InitializeSecurityCookie{$ENDIF};
     rtl.DLL_THREAD_ATTACH:;
     rtl.DLL_THREAD_DETACH:;
 
@@ -2008,6 +2018,9 @@ end;
 
 method mainCRTStartup: Integer;
 begin
+  {$IF ARM64EC}
+  InitializeSecurityCookie;
+  {$ENDIF}
   ExternalCalls.fModuleHandle := rtl.GetModuleHandle(nil);
   ExternalCalls.fMainThreadID := rtl.GetCurrentThreadId;
   var lMain := main;
@@ -2017,6 +2030,9 @@ end;
 
 method WinMainCRTStartup: Integer;
 begin
+  {$IF ARM64EC}
+  InitializeSecurityCookie;
+  {$ENDIF}
   ExternalCalls.fModuleHandle := rtl.GetModuleHandle(nil);
   var lMain := main;
   BoehmGC.UnloadGC;
@@ -2028,6 +2044,10 @@ type
 
 method DllMainCRTStartup(aModule: rtl.HMODULE; aReason: rtl.DWORD; aReserved: ^Void): Boolean;
 begin
+  {$IF ARM64EC}
+  if aReason = rtl.DLL_PROCESS_ATTACH then
+    InitializeSecurityCookie;
+  {$ENDIF}
   var lMain: ^DllMainType := @_dllmain;
   ExternalCalls.fModuleHandle := aModule;
   ModuleIsLib := true;
