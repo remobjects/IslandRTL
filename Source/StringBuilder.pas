@@ -29,7 +29,7 @@ type
     method intCopy(Source: ^Char; Dest: ^Char; CharCount: Int32);
     begin
       if CharCount = 0 then exit;
-      memcpy(Dest, Source, CharCount*sizeOfChar);
+      memcpy(Dest, Source, NativeUInt(CharCount)*sizeOfChar);
     end;
 
     method IntMove(SourceIndex, DestIndex: Int32;  CharCount: Integer);
@@ -141,13 +141,12 @@ type
       if String.IsNullOrEmpty(Value) then RaiseError('Value is null') ;
       if (Count < 0) then RaiseError('Count less than zero') ;
       if (StartIndex < 0) then RaiseError('StartIndex less than zero') ;
-      if (StartIndex + Count > Value.Length) then RaiseError('StartIndex + Count is greater than the length of value.');
-      if (StartIndex + Count + self.Length > MaxCapacity) then RaiseError('Enlarging the value of this instance would exceed MaxCapacity');
+      if (StartIndex > Value.Length) or (Count > Value.Length - StartIndex) then RaiseError('StartIndex + Count is greater than the length of value.');
+      if (Count > MaxCapacity - self.Length) then RaiseError('Enlarging the value of this instance would exceed MaxCapacity');
       var old_Length:=Length;
       Length := Length + Count;
-      var c := Value.ToCharArray;
       if Count > 0 then
-        intCopy(@c[StartIndex], @fBuf[old_Length], Count);
+        intCopy(Value.FirstChar + StartIndex, @fBuf[old_Length], Count);
       exit self;
     end;
 
@@ -155,11 +154,14 @@ type
     begin
       if (RepeatCount = 0) then exit self;
       if (RepeatCount < 0) then RaiseError('RepeatCount less than zero') ;
-      if (RepeatCount + self.Length > MaxCapacity) then RaiseError('Enlarging the value of this instance would exceed MaxCapacity');
-      var arr := new array of Char(RepeatCount);
+      if (RepeatCount > MaxCapacity - self.Length) then RaiseError('Enlarging the value of this instance would exceed MaxCapacity');
+      var old_Length := Length;
+      Length := Length + RepeatCount;
+      // Length has validated and reserved the complete destination range.
+      var lDest := @fBuf[old_Length];
       for i: Integer := 0 to RepeatCount-1 do
-        arr[i] := Value;
-      exit Append(String.FromPChar(@arr[0],RepeatCount));
+        lDest[i] := Value;
+      exit self;
     end;
 
     method Append(Value: Char): not nullable StringBuilder;
