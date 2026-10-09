@@ -1,5 +1,5 @@
 ﻿namespace RemObjects.Elements.System;
-{$IFDEF ARM64}
+{$IF ARM64 or ARM64EC}
 type
   FFI = public class
   public
@@ -12,7 +12,7 @@ type
     aParameterTypes: array of &Type;
     aResultType: &Type): Object;
     begin
-      raise new NotImplementedException("FFI is not implemented yet for arm64.")
+      raise new NotImplementedException("FFI is not implemented yet for this ARM64 target.")
     end;
 
   end;

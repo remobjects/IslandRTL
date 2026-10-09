@@ -34,10 +34,10 @@ type
   end;
   {$ENDIF}
 
-  {$IFDEF ARM64}
+  {$IF ARM64 or ARM64EC}
   StackProbe = assembly static class
   public
-    [SymbolName('__chkstk'), Naked, DisableOptimizations, DisableInliningAttribute, Used]
+    [SymbolName({$IF ARM64EC}'__chkstk_arm64ec'{$ELSE}'__chkstk'{$ENDIF}), Naked, DisableOptimizations, DisableInliningAttribute, Used]
     class method _chkstk;
   end;
   {$ENDIF}
@@ -362,7 +362,7 @@ type
     [SymbolName('wcslen')]
     class method wcslen(c: ^Char): Integer;
 
-    {$IFNDEF ARM64}
+    {$IF not (ARM64 or ARM64EC)}
     {$IFDEF _WIN64}
     [SymbolName('__chkstk'), Naked, DisableOptimizations, DisableInliningAttribute, Used]
     {$ELSE}
@@ -413,6 +413,8 @@ type
     begin
       // Nothing needed on arm64 here.
     end;
+    {$ELSEIF ARM64EC}
+    // EC's collector uses __builtin_unwind_init, not the legacy GC-only setjmp.
     {$ELSEIF _WIN64}
     [SymbolName('_setjmp'), Naked, DisableOptimizations, DisableInliningAttribute]
     class method setjmp(var buf: rtl.jmp_buf);
@@ -868,11 +870,17 @@ var
     SizeOfZeroFill := 0
     ); readonly; public;
 
+  {$IF ARM64EC}
+  // The Windows loader uses this record to initialize the EC transition helpers.
+  [SymbolName('__chpe_metadata')] __chpe_metadata: Byte; external;
+  {$ENDIF}
+
   {$IFDEF _WIN64}
   [Used, SymbolName('_load_config_used'), StaticallyInitializedField]
   _load_config_used: rtl.IMAGE_LOAD_CONFIG_DIRECTORY :=
     new rtl.IMAGE_LOAD_CONFIG_DIRECTORY(
     Size := sizeOf(rtl.IMAGE_LOAD_CONFIG_DIRECTORY),
+    CHPEMetadataPointer := {$IF ARM64EC}UIntPtr(@__chpe_metadata){$ELSE}0{$ENDIF},
     SecurityCookie := UIntPtr(^UIntPtr(@__security_cookie)),
     //GuardCFCheckFunctionPointer := UIntPtr(^UIntPtr(@__guard_check_icall_fptr)),
     //GuardCFDispatchFunctionPointer := UIntPtr(^UIntPtr(@__guard_dispatch_icall_fptr)),
@@ -1338,6 +1346,7 @@ begin
   exit q;
 end;
 {$IFDEF ARM64}
+{$ELSEIF ARM64EC}
 {$ELSEIF _WIN64}
 class method ExternalCalls.setjmp(var buf: rtl.jmp_buf); // Odds are this has some mistakes
 begin
@@ -1387,7 +1396,7 @@ end;
   {$ERROR Unsupported Architecture}
 {$ENDIF}
 
-{$IFDEF ARM64}
+{$IF ARM64 or ARM64EC}
 class method StackProbe._chkstk;
 begin
   // This version is licensed under the Apache License v2.0 with LLVM Exceptions. See https://llvm.org/LICENSE.txt; from the LLVM compiler-rt project.
@@ -1466,7 +1475,8 @@ begin
   rtl.DebugBreak;
 end;
 
-{$IF ARM64}
+{$IF ARM64 or ARM64EC}
+// These internal funclets execute native AArch64 code on both Windows targets.
 [InlineAsm("
 
         stp     x29, x30, [sp, #-16]!           // 16-byte Folded Spill
@@ -1588,7 +1598,14 @@ begin
 end;
 {$ENDIF}
 
-{$IF ARM64}
+{$IF ARM64EC}
+[InlineAsm("
+        mov     sp, x1
+        mov     x29, x2
+        br      x0
+", "", true, false), Naked, DisableInlining, DisableOptimizations]
+method JumpToContinuation64(aAddress, aESP, aEBP: NativeInt); external;
+{$ELSEIF ARM64}
 [InlineAsm("
        stp     x29, x30, [sp, #-16]!           // 16-byte Folded Spill
         mov     x1, sp
@@ -1650,6 +1667,20 @@ jmpq *%rax
 ", "", true, false), Naked, DisableInlining, DisableOptimizations]
 method AfterUnwindRunCatch; external;
 
+{$ELSEIF ARM64EC}
+[SymbolName('__elements_after_unwind_run_catch'), InlineAsm("
+bl ""#__elements_run_catch_after_unwind""
+cbz x0, deferred_raise
+br x0
+deferred_raise:
+bl ""#__elements_get_deferred_caller_context""
+ldr x1, [x0]
+ldr x29, [x0, #8]
+ldr x30, [x0, #16]
+mov sp, x1
+b ""#__elements_raise_deferred_exception""
+", "", true, false), Naked, DisableInlining, DisableOptimizations]
+method AfterUnwindRunCatch; external;
 {$ELSEIF ARM64}
 [SymbolName('__elements_after_unwind_run_catch'), InlineAsm("
 bl __elements_run_catch_after_unwind
@@ -1774,6 +1805,11 @@ begin
   // Resume exception dispatch from the caller return address. Pc still identifies the
   // current protected region and can select its generated rethrow funclet again.
   ExternalCalls.fDeferredCallerContext.InstructionPointer := ^NativeUInt(NativeInt(@dispatcher^.ContextRecord^.Sp) - 8)^;
+  {$ELSEIF ARM64EC}
+  ExternalCalls.fDeferredCallerContext.StackPointer := dispatcher^.ContextRecord^.Rsp;
+  ExternalCalls.fDeferredCallerContext.FramePointer := dispatcher^.ContextRecord^.Rbp;
+  // EC's Lr is at CONTEXT+0x120 (x87 slot 0); the imported anonymous union is not exposed.
+  ExternalCalls.fDeferredCallerContext.InstructionPointer := ^NativeInt(NativeInt(dispatcher^.ContextRecord) + $120)^;
   {$ELSE}
   ExternalCalls.fDeferredCallerContext.StackPointer := dispatcher^.ContextRecord^.Rsp;
   ExternalCalls.fDeferredCallerContext.FramePointer := dispatcher^.ContextRecord^.Rbp;
