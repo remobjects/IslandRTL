@@ -35,6 +35,7 @@
     <Compile Include="$(MSBuildThisFileDirectory)String_Indexing.pas" />
     <Compile Include="$(MSBuildThisFileDirectory)String_Search.pas" />
     <Compile Include="$(MSBuildThisFileDirectory)Optimization_Workloads.pas" />
+    <Compile Include="$(MSBuildThisFileDirectory)Integer_Division.pas" />
     <Compile Include="$(MSBuildThisFileDirectory)Array_Iteration.pas" />
     <Compile Include="$(MSBuildThisFileDirectory)ReflectionFloatRegisters.pas" />
     <Compile Include="$(MSBuildThisFileDirectory)ReflectionWindowsARM64.pas" />

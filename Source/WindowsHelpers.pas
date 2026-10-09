@@ -1321,33 +1321,15 @@ end;
 
 class method ExternalCalls.int64remainder(dividend, divisor: Int64): Int64;
 begin
-  if divisor = dividend then exit 0;
-  if divisor = 0 then begin
-    {$HINT throw!}
-    exit 0;
-  end;
-  var rem: UInt64 := dividend;
-  if rem < 0 then rem := -rem;
-  if divisor < 0 then divisor := -divisor;
-
-  if divisor > rem then
-    exit rem;
-  var q: UInt64 := 0;
-  while rem >= divisor do begin
-    var td := divisor;
-    var shift := highbit(rem) - highbit(divisor);
-    td := td shl shift;
-    if (td > rem)  then begin
-      dec(shift);
-      td := td shr 1;
-    end;
-    rem := rem - td;
-
-    q := q or (UInt64(1) shl shift);
-  end;
-  if dividend < 0 then
-    exit -rem;
-  exit rem;
+  // Normalize using the signed operands, not an unsigned temporary. Unsigned
+  // subtraction also represents abs(MinValue) without signed overflow.
+  var lDividend := UInt64(dividend);
+  var lDivisor := UInt64(divisor);
+  if dividend < 0 then lDividend := UInt64(0) - lDividend;
+  if divisor < 0 then lDivisor := UInt64(0) - lDivisor;
+  var lRemainder := uint64remainder(lDividend, lDivisor);
+  if dividend < 0 then lRemainder := UInt64(0) - lRemainder;
+  exit Int64(lRemainder);
 end;
 
 class method ExternalCalls.uint64divide(dividend, divisor: UInt64): UInt64;
@@ -1379,34 +1361,15 @@ end;
 
 class method ExternalCalls.int64divide(dividend, divisor: Int64): Int64;
 begin
-  if divisor = dividend then exit 1;
-  if divisor = 0 then begin
-    {$HINT throw!}
-    exit 0;
-  end;
-  var rem: UInt64 := dividend;
-  var lneg := (dividend < 0) <> (divisor < 0);
-  if rem < 0 then rem := -rem;
-  if divisor < 0 then divisor := -divisor;
-
-  if divisor > rem then
-    exit 0;
-  var q: UInt64 := 0;
-  while rem >= divisor do begin
-    var td := divisor;
-    var shift := highbit(rem) - highbit(divisor);
-    td := td shl shift;
-    if (td > rem)  then begin
-      dec(shift);
-      td := td shr 1;
-    end;
-    rem := rem - td;
-
-    q := q or (UInt64(1) shl shift);
-  end;
-  if lneg then
-    exit -Int64(q);
-  exit q;
+  // Win32 lowers Int64 division to this helper, including negative divisors
+  // introduced by LLVM. Keep both magnitudes unsigned through long division.
+  var lDividend := UInt64(dividend);
+  var lDivisor := UInt64(divisor);
+  if dividend < 0 then lDividend := UInt64(0) - lDividend;
+  if divisor < 0 then lDivisor := UInt64(0) - lDivisor;
+  var lQuotient := uint64divide(lDividend, lDivisor);
+  if (dividend < 0) <> (divisor < 0) then lQuotient := UInt64(0) - lQuotient;
+  exit Int64(lQuotient);
 end;
 {$IFDEF ARM64}
 {$ELSEIF _WIN64}
