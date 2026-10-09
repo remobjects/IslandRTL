@@ -85,7 +85,7 @@ type
     begin
       if value = fCapacity then exit;
       if (value < fLength) or (value > MaxCapacity) then raise Utilities.CreateIndexOutOfRangeException(value, MaxCapacity);
-      Grow(fCapacity);
+      Grow(value);
     end;
 
     method RaiseError(aMessage: String);
@@ -315,7 +315,7 @@ type
     begin
       if (aCapacity < 0) then RaiseError('aCapacity less than zero') ;
       if (aCapacity > MaxCapacity) then RaiseError('Enlarging the value of this instance would exceed MaxCapacity.');
-      if aCapacity > Capacity then Capacity := fCapacity;
+      if aCapacity > Capacity then Capacity := aCapacity;
       exit fCapacity;
     end;
 
