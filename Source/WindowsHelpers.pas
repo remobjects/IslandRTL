@@ -1970,6 +1970,51 @@ begin
   result := NativeInt(@ExternalCalls.fDeferredCallerContext);
 end;
 
+// Elements: A cleanup can catch a nested exception and return to the original
+// unwind. Preserve its pending catch state, including ARM64's register snapshot.
+// Restore only after a normal return: an escaping replacement exception owns the
+// new state and unwinds this frame without restoring the abandoned exception.
+[DisableInlining]
+method CallCleanup64(aCall: NativeInt; aFrame: NativeInt);
+begin
+  var lCatchHandler: NativeInt := ExternalCalls.fCatchHandler;
+  var lCatchFrame: NativeInt := ExternalCalls.fCatchFrame;
+  var lCatchEstablisherFrame: UInt64 := ExternalCalls.fCatchEstablisherFrame;
+  var lCatchReturnAddress: NativeInt := ExternalCalls.fCatchReturnAddress;
+  var lCatchReturnStack: NativeInt := ExternalCalls.fCatchReturnStack;
+  var lCatchImageBase: NativeInt := ExternalCalls.fCatchImageBase;
+  var lCatchHandlerData: NativeInt := ExternalCalls.fCatchHandlerData;
+  var lCatchRaiseAddress: NativeInt := ExternalCalls.fCatchRaiseAddress;
+  var lCatchException: Object := ExternalCalls.fCatchException;
+  var lDeferredException: Object := ExternalCalls.fDeferredException;
+  var lCatchActive: Boolean := ExternalCalls.fCatchActive;
+  var lDeferredRaise: Boolean := ExternalCalls.fDeferredRaise;
+  var lDeferredCallerContext: DeferredCallerContext := ExternalCalls.fDeferredCallerContext;
+  var lSkipCatchFrame: UInt64 := ExternalCalls.fSkipCatchFrame;
+  {$IF ARM64}
+  var lNonVolatileRegisters: array[0..18] of UInt64;
+  memcpy(@lNonVolatileRegisters[0], @ExternalCalls.fCatchNonVolatileRegisters[0], sizeOf(lNonVolatileRegisters));
+  {$ENDIF}
+  CallCatch64(aCall, aFrame);
+  ExternalCalls.fCatchHandler := lCatchHandler;
+  ExternalCalls.fCatchFrame := lCatchFrame;
+  ExternalCalls.fCatchEstablisherFrame := lCatchEstablisherFrame;
+  ExternalCalls.fCatchReturnAddress := lCatchReturnAddress;
+  ExternalCalls.fCatchReturnStack := lCatchReturnStack;
+  ExternalCalls.fCatchImageBase := lCatchImageBase;
+  ExternalCalls.fCatchHandlerData := lCatchHandlerData;
+  ExternalCalls.fCatchRaiseAddress := lCatchRaiseAddress;
+  ExternalCalls.fCatchException := lCatchException;
+  ExternalCalls.fDeferredException := lDeferredException;
+  ExternalCalls.fCatchActive := lCatchActive;
+  ExternalCalls.fDeferredRaise := lDeferredRaise;
+  ExternalCalls.fDeferredCallerContext := lDeferredCallerContext;
+  ExternalCalls.fSkipCatchFrame := lSkipCatchFrame;
+  {$IF ARM64}
+  memcpy(@ExternalCalls.fCatchNonVolatileRegisters[0], @lNonVolatileRegisters[0], sizeOf(lNonVolatileRegisters));
+  {$ENDIF}
+end;
+
 method RunDeferredCatchCleanups;
 begin
   var msvcinfo := ^MSVCExceptionInfo(ExternalCalls.fCatchImageBase + ^Int32(ExternalCalls.fCatchHandlerData)^);
@@ -1986,7 +2031,7 @@ begin
   var lUnwindMap := ^MSVCUnwindMap(ExternalCalls.fCatchImageBase + msvcinfo^.UnwindMap);
   while (lIndex >= 0) and (lIndex < msvcinfo^.NumUnwindMap) do begin
     if lUnwindMap[lIndex].Cleanup <> 0 then
-      CallCatch64(ExternalCalls.fCatchImageBase + lUnwindMap[lIndex].Cleanup, ExternalCalls.fCatchFrame);
+      CallCleanup64(ExternalCalls.fCatchImageBase + lUnwindMap[lIndex].Cleanup, ExternalCalls.fCatchFrame);
     lIndex := lUnwindMap[lIndex].ToState;
   end;
 end;
@@ -2141,7 +2186,7 @@ begin
         index := lMap[index].ToState;
         lUnwindState^ := index;
         if lCleanup <> 0 then
-          CallCatch64(dispatcher^.ImageBase + lCleanup, FuncletContext(dispatcher));
+          CallCleanup64(dispatcher^.ImageBase + lCleanup, FuncletContext(dispatcher));
       end;
       lUnwindState^ := -2;
       exit;
@@ -2152,7 +2197,7 @@ begin
       index := lMap[index].ToState;
       lUnwindState^ := index;
       if lCleanup <> 0 then
-        CallCatch64(dispatcher^.ImageBase + lCleanup, FuncletContext(dispatcher));
+        CallCleanup64(dispatcher^.ImageBase + lCleanup, FuncletContext(dispatcher));
     end;
   end else begin
     // we're not unwinding, we're looking for an exception handler that takes it
