@@ -1,4 +1,6 @@
-﻿namespace RemObjects.Elements.Island.Tests;
+﻿// Elements: every platform and Wine CI entrypoint runs the full shared runtime
+// suite and returns its failure status; compiling alone is not a runtime pass.
+namespace RemObjects.Elements.Island.Tests;
 
 interface
 
