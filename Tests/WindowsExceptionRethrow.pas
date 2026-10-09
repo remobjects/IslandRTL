@@ -1,4 +1,5 @@
-﻿// Negative regression guards: catch-body raises must preserve the exception,
+﻿// Elements: portable catch/rethrow and cleanup guards, run on Windows and POSIX.
+// Negative regression guards: catch-body raises must preserve the exception,
 // runtime register state, and exactly-once cleanup while reaching the caller.
 namespace RemObjects.Elements.Island.Tests;
 
@@ -110,7 +111,146 @@ type
       end;
     end;
 
+    // Elements: multiple exits from a catch must select distinct continuation
+    // states, and every exit must run its enclosing cleanup exactly once.
+    [DisableInlining]
+    method CatchControlFlow(aReturnEarly: Boolean; var aCleanups: Integer): Integer;
+    begin
+      var lTotal := 0;
+      for i := 0 to 3 do begin
+        try
+          raise new Exception('control flow');
+        except
+          on e: Exception do begin
+            try
+              if i = 0 then
+                continue;
+              if aReturnEarly then
+                exit 17;
+              if i = 2 then
+                break;
+              inc(lTotal, 100);
+            finally
+              inc(aCleanups);
+              inc(lTotal);
+            end;
+          end;
+        end;
+      end;
+      exit lTotal;
+    end;
+
   public
+    // Elements: a replacement from a handler must reach an enclosing handler
+    // in this same method, rather than skip the entire frame.
+    method ReplacementReachesSameMethodHandler;
+    begin
+      var lReplacement := new Exception('replacement');
+      var lCaught: Exception := nil;
+      var lCleanups := 0;
+      try
+        try
+          raise new Exception('original');
+        except
+          on e: Exception do begin
+            try
+              raise lReplacement;
+            finally
+              inc(lCleanups);
+            end;
+          end;
+        end;
+      except
+        on e: Exception do
+          lCaught := e;
+      end;
+      Assert.IsTrue(lCaught = lReplacement);
+      Assert.AreEqual(1, lCleanups);
+    end;
+
+    // Elements: calls made by a handler use its lexical enclosing handler too.
+    method HelperThrowReachesSameMethodHandler;
+    begin
+      var lOriginal := new Exception('helper rethrow');
+      var lCaught: Exception := nil;
+      var lCleanups := 0;
+      try
+        try
+          raise new Exception('enter catch');
+        except
+          on e: Exception do
+            BareRethrowFromHandler(lOriginal, var lCleanups);
+        end;
+      except
+        on e: Exception do
+          lCaught := e;
+      end;
+      Assert.IsTrue(lCaught = lOriginal);
+      Assert.AreEqual(1, lCleanups);
+    end;
+
+    // Elements: break, continue and return must survive the catchret boundary.
+    method HandlerControlFlowRunsCleanupOnce;
+    begin
+      var lCleanups := 0;
+      Assert.AreEqual(103, CatchControlFlow(false, var lCleanups));
+      Assert.AreEqual(3, lCleanups);
+      lCleanups := 0;
+      Assert.AreEqual(17, CatchControlFlow(true, var lCleanups));
+      Assert.AreEqual(2, lCleanups);
+    end;
+
+    // Elements: an unnamed Win32 handler still needs the original catch object.
+    method UnnamedHandlerPreservesRethrow;
+    begin
+      var lOriginal := new Exception('unnamed rethrow');
+      var lCaught: Exception := nil;
+      try
+        try
+          raise lOriginal;
+        except
+          raise;
+        end;
+      except
+        on e: Exception do
+          lCaught := e;
+      end;
+      Assert.IsTrue(lCaught = lOriginal);
+    end;
+
+    // Elements: a catch inside an outlined finally must not replace the outer
+    // catch object used by a bare raise after the cleanup returns.
+    method FinallyPreservesEnclosingRethrow;
+    begin
+      var lOriginal := new Exception('outer catch');
+      var lCaught: Exception := nil;
+      var lCount := 0;
+      try
+        try
+          raise lOriginal;
+        except
+          on e: Exception do begin
+            try
+              inc(lCount);
+            finally
+              try
+                raise new Exception('inner catch');
+              except
+                on inner: Exception do
+                  inc(lCount);
+              end;
+            end;
+            raise;
+          end;
+        end;
+      except
+        on e: Exception do
+          lCaught := e;
+      end;
+      Assert.IsTrue(lCaught = lOriginal);
+      Assert.AreEqual(2, lCount);
+    end;
+
     // Elements: a nested cleanup catch must preserve the outer handler's
     // original exception and metadata for a subsequent bare rethrow.
     method RethrowAfterLocallyHandledCleanup;
@@ -202,6 +342,39 @@ type
         end;
       except
         on e: Exception do
+          lOuterCaught := e;
+      end;
+      Assert.IsTrue(lInnerCaught = lInner);
+      Assert.IsTrue(lOuterCaught = lOriginal);
+      Assert.AreEqual(2, lCleanupCount);
+    end;
+
+    // Elements: cleanup must preserve the outer type selector as well as its
+    // exception pointer when a different exception type is handled locally.
+    method LocalCleanupPreservesTypedHandler;
+    begin
+      var lOriginal := new NotSupportedException('outer typed cleanup');
+      var lInner := new NotImplementedException('inner typed cleanup');
+      var lInnerCaught: Exception := nil;
+      var lOuterCaught: Exception := nil;
+      var lCleanupCount := 0;
+      try
+        try
+          raise lOriginal;
+        finally
+          inc(lCleanupCount);
+          try
+            raise lInner;
+          except
+            on e: NotImplementedException do
+              lInnerCaught := e;
+          end;
+          inc(lCleanupCount);
+        end;
+      except
+        on e: NotImplementedException do
+          Assert.Fail('Cleanup must not replace the pending exception or its type selector.');
+        on e: NotSupportedException do
           lOuterCaught := e;
       end;
       Assert.IsTrue(lInnerCaught = lInner);

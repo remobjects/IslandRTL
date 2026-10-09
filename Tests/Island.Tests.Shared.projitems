@@ -8,6 +8,9 @@
     <ProjectGuid>{8BC0E3A8-C6B3-4FCC-AC6B-D80EE04F2628}</ProjectGuid>
   </PropertyGroup>
   <ItemGroup>
+    <!-- Elements: portable EH semantics must be checked by every platform suite. -->
+    <Compile Include="$(MSBuildThisFileDirectory)WindowsExceptionRethrow.pas" />
+    <Compile Include="$(MSBuildThisFileDirectory)ExceptionFilterTests.pas" />
     <Compile Include="$(MSBuildThisFileDirectory)BitConverterTest.pas" />
     <Compile Include="$(MSBuildThisFileDirectory)EventWaitHandleTests.pas" />
     <Compile Include="$(MSBuildThisFileDirectory)Datetime.pas" />

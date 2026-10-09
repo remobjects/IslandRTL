@@ -1,4 +1,6 @@
-﻿// Positive guard: a rejected where filter must propagate to an outer handler instead of looping in the unwinder.
+﻿// Elements: Win32 filters must recover the parent frame from the registration
+// end before reading the caught exception or captured locals; test at both opt levels.
+// Positive guard: a rejected where filter must propagate to an outer handler instead of looping in the unwinder.
 // Positive guard: an incompatible interface catch must propagate the original exception.
 // Positive guard: propagation through an enclosing finally block must run that block exactly once.
 namespace RemObjects.Elements.Island.Tests;

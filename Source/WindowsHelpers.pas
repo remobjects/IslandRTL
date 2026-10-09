@@ -1824,14 +1824,25 @@ jmpq *%rcx
 ", "", false, false), Naked, DisableInlining, DisableOptimizations]
 method ExitCatchFunclet(aReturnAddress: NativeInt; aReturnStack: NativeInt); external;
 {$ELSEIF i386}
-[DisableInlining]
-method CallCatch32(aCall: NativeInt; aEBP: NativeInt): NativeInt;
-begin
-  exit InternalCalls.Asm("
-movl $2, %ebp
-calll *$1
-", "=A,r,r,~{esi},~{ebx},~{edi}~{ebp},~{dirflag},~{fpsr},~{flags}", false, false, aCall, aEBP);
-end;
+// Elements: a funclet call changes EBP and clobbers all volatile registers.
+// Use a complete cdecl bridge: the old inline-asm constraints let LLVM keep
+// the helper's SEH chain link in EDX across the call, corrupting FS:[0] on return.
+// Preserve the bridge caller's nonvolatile registers and leave the result in EAX.
+[InlineAsm("
+pushl %ebp
+pushl %ebx
+pushl %esi
+pushl %edi
+movl 20(%esp), %eax
+movl 24(%esp), %ebp
+calll *%eax
+popl %edi
+popl %esi
+popl %ebx
+popl %ebp
+retl
+", "", true, false), Naked, DisableInlining, DisableOptimizations]
+method CallCatch32(aCall: NativeInt; aEBP: NativeInt): NativeInt; external;
 {$ELSE}
   {$ERROR Unsupported Architecture}
 {$ENDIF}
@@ -2269,8 +2280,12 @@ begin
   if 0 <> (arec^.ExceptionFlags and ( rtl.EXCEPTION_UNWINDING or rtl.EXCEPTION_EXIT_UNWIND)) then begin
     // unwinding, call finally
     while (regFrame^.TryLevel <> $FFFFFFFF) and (regFrame^.TryLevel < msvcinfo^.NumUnwindMap)  do begin
-      if msvcinfo^.UnwindMap[regFrame^.TryLevel].Cleanup <> nil then CallCatch32(NativeInt(^Void(msvcinfo^.UnwindMap[regFrame^.TryLevel].Cleanup)), lBaseAddress);
+      // Elements: advance before cleanup, as on Win64. A replacement exception
+      // must continue unwinding without entering this same finally again.
+      var lCleanup := msvcinfo^.UnwindMap[regFrame^.TryLevel].Cleanup;
       regFrame^.TryLevel := msvcinfo^.UnwindMap[regFrame^.TryLevel].ToState;
+      if lCleanup <> nil then
+        CallCatch32(NativeInt(^Void(lCleanup)), lBaseAddress);
     end;
   end else begin
     // we're not unwinding, we're looking for an exception handler that takes it
@@ -2297,17 +2312,24 @@ begin
             if (lCatchOffset <> 0) then
               ^Exception(lBaseAddress + lCatchOffset)^ := exo;
             var cond := tb^.HandlerType^.Type^.Filter;
-            if (cond = nil) or (cond(regFrame^.ESP)) then begin
+            // Elements: pass the registration end used by catch funclets.
+            // The generated filter uses llvm.eh.recoverfp to recover the parent
+            // local frame; saved ESP is below locals and cannot identify it.
+            if (cond = nil) or (cond(^Void(lBaseAddress))) then begin
               result := 0;
               MyRtlUnwind(IntPtr(aOrgregFrame), nil, IntPtr(arec), nil);
               // now unwind locally
               while (regFrame^.TryLevel <> $FFFFFFFF) and (regFrame^.TryLevel < tb^.CatchHigh) and (regFrame^.TryLevel >= tb^.TryLow) do begin
-                if msvcinfo^.UnwindMap[regFrame^.TryLevel].Cleanup <> nil then begin
-                  CallCatch32(NativeInt(^Void(msvcinfo^.UnwindMap[regFrame^.TryLevel].Cleanup)), lBaseAddress);
-                end;
+                // Elements: a throwing cleanup must not be unwound twice.
+                var lCleanup := msvcinfo^.UnwindMap[regFrame^.TryLevel].Cleanup;
                 regFrame^.TryLevel := msvcinfo^.UnwindMap[regFrame^.TryLevel].ToState;
+                if lCleanup <> nil then
+                  CallCatch32(NativeInt(^Void(lCleanup)), lBaseAddress);
               end;
               var lCont := CallCatch32(NativeInt(^Void(tb^.HandlerType^.Handler)), lBaseAddress);
+              // Elements: port the managed-review fix (3df7949c1d8). Catch funclets
+              // overwrite saved ESP; restore it before this frame catches again.
+              regFrame^.ESP := ^Void(lESP);
               JumpToContinuation32(lCont, lESP, lBaseAddress);
             end;
           end;
