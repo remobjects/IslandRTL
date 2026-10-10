@@ -7,8 +7,95 @@ uses
   RemObjects.Elements.EUnit;
 
 type
+  GCExceptionPayload = class(Exception)
+  public
+    Values: array of Integer;
+    constructor(aSeed: Integer);
+    begin
+      inherited constructor(new String(Char(1000 + aSeed), 79));
+      Values := [aSeed, aSeed + 1, -aSeed];
+    end;
+  end;
+
   WindowsExceptionRethrow = public class(Test)
   private
+    // No caller retains the exception before the unwinder reaches its catch.
+    [DisableInlining]
+    method RaiseFreshGCException(aSeed: Integer);
+    begin
+      raise new GCExceptionPayload(aSeed);
+    end;
+
+    [DisableInlining]
+    method AllocateGCPressure(aSize: Integer): Integer;
+    begin
+      var lBytes := new Byte[aSize];
+      lBytes[0] := 17;
+      exit lBytes.Length + lBytes[0];
+    end;
+
+    [DisableInlining]
+    method CollectDuringUnwind(aSeed: Integer);
+    begin
+      for i := 0 to 255 do
+        Assert.IsTrue(AllocateGCPressure(1024 + i * 7) > 0);
+      BoehmGC.Collect(2);
+      // Handling an inner exception must not displace the pending outer root.
+      try
+        RaiseFreshGCException(aSeed + 100);
+      except
+        on e: GCExceptionPayload do begin
+          BoehmGC.Collect(2);
+          Assert.AreEqual(aSeed + 100, e.Values[0]);
+        end;
+      end;
+      BoehmGC.Collect(2);
+    end;
+
+    [DisableInlining]
+    method RaiseThroughCollectingFinally(aSeed: Integer);
+    begin
+      try
+        try
+          RaiseFreshGCException(aSeed);
+        except
+          on e: GCExceptionPayload do begin
+            BoehmGC.Collect(2);
+            Assert.AreEqual(aSeed, e.Values[0]);
+            raise;
+          end;
+        end;
+      finally
+        CollectDuringUnwind(aSeed);
+      end;
+    end;
+
+    method CheckGCException(aSeed: Integer; aRethrow: Boolean);
+    begin
+      var lCaught := false;
+      try
+        if aRethrow then
+          RaiseThroughCollectingFinally(aSeed)
+        else begin
+          try
+            RaiseFreshGCException(aSeed);
+          finally
+            CollectDuringUnwind(aSeed);
+          end;
+        end;
+      except
+        on e: GCExceptionPayload do begin
+          BoehmGC.Collect(2);
+          Assert.AreEqual(79, e.Message.Length);
+          Assert.IsTrue(e.Message[78] = Char(1000 + aSeed));
+          Assert.AreEqual(aSeed, e.Values[0]);
+          Assert.AreEqual(-aSeed, e.Values[2]);
+          lCaught := true;
+        end;
+      end;
+      Assert.IsTrue(lCaught);
+    end;
+
     [DisableInlining]
     method BareRethrowFromHandler(aOriginal: Exception; var aFinallyCount: Integer);
     begin
@@ -141,6 +228,19 @@ type
     end;
 
   public
+    // Regression: malloc-backed POSIX unwind records hid their exception root.
+    method ExceptionSurvivesCollectionBeforeCatch;
+    begin
+      for i := 1 to 32 do
+        CheckGCException(i, false);
+    end;
+
+    method RethrownExceptionSurvivesCollectingFinally;
+    begin
+      for i := 1 to 32 do
+        CheckGCException(i, true);
+    end;
+
     // Elements: a replacement from a handler must reach an enclosing handler
     // in this same method, rather than skip the entire frame.
     method ReplacementReachesSameMethodHandler;

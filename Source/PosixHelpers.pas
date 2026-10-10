@@ -441,6 +441,13 @@ type
     Object: Object;
   end;
 
+  // The unwinder retains an interior pointer to Value. Its Object field must
+  // remain visible to the GC while finally blocks run before a catch begins.
+  ElementsExceptionStorage = assembly class
+  public
+    Value: ElementsException;
+  end;
+
   CocoaExceptionRecord = public record
   public
     Unwind: rtl.__struct__Unwind_Exception;
@@ -529,8 +536,8 @@ end;
 
 method ExternalCalls.RaiseException(aRaiseAddress: ^Void; aRaiseFrame: ^Void; aRaiseObject: Object);
 begin
-  var lRecord := ^ElementsException(malloc(sizeOf(ElementsException))); // we use gc memory for this
-  rtl.memset(lRecord, 0, sizeOf(ElementsException));
+  var lStorage := new ElementsExceptionStorage;
+  var lRecord := @lStorage.Value;
   var lExp := Exception(aRaiseObject);
   if lExp <> nil then
     lExp.ExceptionAddress := aRaiseAddress;
@@ -993,12 +1000,6 @@ begin
 
   if 0 <> (aState and {$IFDEF FUCHSIA OR DARWIN OR ANDROID}rtl._Unwind_Action._UA_SEARCH_PHASE{$ELSE}rtl._UA_SEARCH_PHASE{$ENDIF})  then begin
     if Parselsda(aState, lMine, lObjc, lForeign, aEx, aCtx, out lTypeInfo, out lLandingPad) then begin
-      if lMine then begin
-        var lRecord := ^ElementsException(aEx);
-        lRecord := ^ElementsException(@^Byte(lRecord)[-Int32((^Byte(@lRecord^.Unwind) - ^Byte(lRecord)))]);
-        ExternalCalls.HandlerSwitch := lTypeInfo;
-        ExternalCalls.Target := lLandingPad;
-      end;
       exit rtl._Unwind_Reason_Code._URC_HANDLER_FOUND;
     end;
     exit rtl._Unwind_Reason_Code._URC_CONTINUE_UNWIND;
@@ -1036,14 +1037,17 @@ begin
       // we can't parse the LSDA table and the exception isn't ours, touble.
       exit  {$IFNDEF ARM and not arm64 and not DARWIN}rtl._Unwind_Reason_Code._URC_FATAL_PHASE1_ERROR{$ELSE}rtl._Unwind_Reason_Code._URC_FAILURE{$ENDIF};
     end;
-    var lRecord := ^ElementsException(aEx);
-    lRecord := ^ElementsException(@^Byte(lRecord)[-Int32((^Byte(@lRecord^.Unwind) - ^Byte(lRecord)))]);
+    // A finally may throw and catch another exception between the search and
+    // handler phases. Resolve this frame again instead of using thread-wide
+    // cached state which the inner exception can overwrite.
+    if not Parselsda({$IFDEF FUCHSIA OR DARWIN OR ANDROID}rtl._Unwind_Action._UA_SEARCH_PHASE{$ELSE}rtl._UA_SEARCH_PHASE{$ENDIF}, lMine, lObjc, lForeign, aEx, aCtx, out lTypeInfo, out lLandingPad) then
+      exit rtl._Unwind_Reason_Code._URC_FATAL_PHASE2_ERROR;
     rtl._Unwind_SetGR(aCtx, 0, rtl.uintptr_t(aEx));
-    rtl._Unwind_SetGR(aCtx, 1, rtl.uintptr_t(ExternalCalls.HandlerSwitch));
+    rtl._Unwind_SetGR(aCtx, 1, rtl.uintptr_t(lTypeInfo));
     {$IFDEF ARM and not arm64}
     rtl._Unwind_SetGR(aCtx, 15, lLandingPad or (rtl._Unwind_GetGR(aCtx, 15)and 1));
     {$ELSE}
-    rtl._Unwind_SetIP(aCtx, ExternalCalls.Target);
+    rtl._Unwind_SetIP(aCtx, lLandingPad);
     {$ENDIF}
     if lForeign then begin
       ForeignExceptionImplementation.Free(aClass, aEx);
