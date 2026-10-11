@@ -1,12 +1,37 @@
 ﻿namespace RemObjects.Elements.System;
 
 type
-  Entry<T, U> = unit record
+  Entry<T, U> = private record
   public
     HashCode: Integer; // current hashcode
     Next: Integer; // contains reference to next item with the same hashcode
     Key : T;
     Value: U;
+
+    // The entry owns its values. Preserve nested record ownership when the
+    // table is copied, cleared, or eventually reclaimed by the GC.
+    constructor Copy(var aSource: Entry<T, U>);
+    begin
+      HashCode := aSource.HashCode;
+      Next := aSource.Next;
+      Key := aSource.Key;
+      Value := aSource.Value;
+    end;
+
+    class operator Assign(var aDest: Entry<T, U>; var aSource: Entry<T, U>);
+    begin
+      if (@aDest) = (@aSource) then exit;
+      aDest.HashCode := aSource.HashCode;
+      aDest.Next := aSource.Next;
+      aDest.Key := aSource.Key;
+      aDest.Value := aSource.Value;
+    end;
+
+    finalizer;
+    begin
+      Key := default(T);
+      Value := default(U);
+    end;
   end;
 
   ImmutableDictionary<T,U> = public class(sequence of KeyValuePair<T,U>)

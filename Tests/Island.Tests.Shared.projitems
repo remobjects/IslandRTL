@@ -41,6 +41,7 @@
     <Compile Include="$(MSBuildThisFileDirectory)RuntimeRegression\Set_Boundaries.pas" />
     <Compile Include="$(MSBuildThisFileDirectory)RuntimeRegression\IO_Number_Boundaries.pas" />
     <Compile Include="$(MSBuildThisFileDirectory)RuntimeRegression\Collections_GCRoots.pas" />
+    <Compile Include="$(MSBuildThisFileDirectory)RuntimeRegression\Collections_CopyHooks.pas" />
     <Compile Include="$(MSBuildThisFileDirectory)RuntimeRegression\StringBuilder_Edit.pas" />
     <Compile Include="$(MSBuildThisFileDirectory)StringBuilder_Append.pas" />
     <Compile Include="$(MSBuildThisFileDirectory)StringBuilder_Capacity.pas" />

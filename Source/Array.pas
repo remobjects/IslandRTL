@@ -26,19 +26,26 @@ type
          (aCount > length(aDest) - aDestOffset) then raise new ArgumentOutOfRangeException('Array.Copy ranges');
       if aCount = 0 then exit;
       if aSource = nil then raise new ArgumentOutOfRangeException('Array.Copy ranges');
-      memmove(@aDest[aDestOffset], aSource, NativeInt(aCount) * sizeOf(T));
+      // Assign elements so managed records retain/release their resources.
+      // Copy backwards when the destination overlaps later source elements.
+      var lDest := @aDest[aDestOffset];
+      if lDest = aSource then exit;
+      if (UIntPtr(lDest) > UIntPtr(aSource)) and
+         (UIntPtr(lDest) - UIntPtr(aSource) < UIntPtr(aCount) * UIntPtr(sizeOf(T))) then
+        for i := aCount - 1 downto 0 do lDest[i] := aSource[i]
+      else
+        for i := 0 to aCount - 1 do lDest[i] := aSource[i];
     end;
 
     class method Copy<T>(aSource: array of T; aSourceOffset: Integer; aDest: Array of T; aDestOffset: Integer; aCount: Integer);
     begin
-      // Validate without adding potentially overflowing offsets. memmove
-      // preserves overlapping copies in either direction.
+      // Validate without adding potentially overflowing offsets.
       if (aCount < 0) or (aSourceOffset < 0) or (aDestOffset < 0) or
          (aSourceOffset > length(aSource)) or (aDestOffset > length(aDest)) or
          (aCount > length(aSource) - aSourceOffset) or
          (aCount > length(aDest) - aDestOffset) then raise new ArgumentOutOfRangeException('Array.Copy ranges');
       if aCount = 0 then exit;
-      memmove(@aDest[aDestOffset], @aSource[aSourceOffset], NativeInt(aCount) * sizeOf(T));
+      &Copy(@aSource[aSourceOffset], aDest, aDestOffset, aCount);
     end;
 
     class method Copy<T>(aSource: array of T; aDest: Array of T; aCount: Integer);

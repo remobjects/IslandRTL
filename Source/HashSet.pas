@@ -6,6 +6,28 @@ type
     HashCode: Integer; // current hashcode
     Next: Integer; // contains reference to next item with the same hashcode
     Item : T;
+
+    // The entry owns its values. Preserve nested record ownership when the
+    // table is copied, cleared, or eventually reclaimed by the GC.
+    constructor Copy(var aSource: HashEntry<T>);
+    begin
+      HashCode := aSource.HashCode;
+      Next := aSource.Next;
+      Item := aSource.Item;
+    end;
+
+    class operator Assign(var aDest: HashEntry<T>; var aSource: HashEntry<T>);
+    begin
+      if (@aDest) = (@aSource) then exit;
+      aDest.HashCode := aSource.HashCode;
+      aDest.Next := aSource.Next;
+      aDest.Item := aSource.Item;
+    end;
+
+    finalizer;
+    begin
+      Item := default(T);
+    end;
   end;
 
   HashSet<T> = public class
