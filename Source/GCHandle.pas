@@ -12,7 +12,9 @@ type
 
     method Dispose;
     begin
-      GCHandles.Free(fHandle);
+      // Clear this owning record before releasing its shared handle slot.
+      var lHandle := InternalCalls.Exchange(var fHandle, 0);
+      if lHandle <> 0 then GCHandles.Free(lHandle);
     end;
     constructor(aHandle: NativeInt);
     begin
@@ -34,7 +36,7 @@ type
 
       Handle is an NativeInt, 0 isn't valid, 1 is entry [0], 2 is entry[1] etc.
       Intially if fCount < lengtH(fSlots) we put it there, else we check the firstfree list, else we allocate a new array.
-      since pointers can't have bit 0 set, if they have it set it's a "free" slot, the value contains the signed index of the next free slot shifted 1, or -1 for "eof"
+      since pointers can't have bit 0 set, if they have it set it's a "free" slot, the value contains (next free index + 1) shifted left 1, then bit 0 set; 1 ends the list
 
     *)
   public
@@ -57,7 +59,7 @@ type
           result := fFirstFree;
           var lFirstFree := NativeInt(InternalCalls.Cast(fSlots[result]));
           assert((lFirstFree and 1) <> 0);
-          fFirstFree := lFirstFree shr 1;
+          fFirstFree := (lFirstFree shr 1) - 1;
           fSlots[result] := aValue;
           inc(result);
           exit;
@@ -68,24 +70,28 @@ type
     [SymbolName('__elements_gchandle_get')]
     class method Get(aValue: NativeInt): Object;
     begin
-      if aValue = 0 then raise new ArgumentException('Invalid GC Handle'); // not valid
+      if aValue <= 0 then raise new ArgumentException('Invalid GC Handle');
       dec(aValue);
-      if aValue >= length(fSlots) then raise new ArgumentException('Invalid GC Handle');
-      // we shouldn't need a lock as the value can't *update* underneath us
-      result := fSlots[aValue];
-      if (NativeInt(InternalCalls.Cast(result)) = 0) or ((NativeInt(InternalCalls.Cast(result)) and 1) <> 0) then raise new ArgumentException('Invalid GC Handle'); // not valid
+      // Pair reads with allocation/free, including publication of a grown table.
+      locking fLock do begin
+        if aValue >= length(fSlots) then raise new ArgumentException('Invalid GC Handle');
+        result := fSlots[aValue];
+        if (NativeInt(InternalCalls.Cast(result)) = 0) or ((NativeInt(InternalCalls.Cast(result)) and 1) <> 0) then raise new ArgumentException('Invalid GC Handle');
+      end;
     end;
 
     [SymbolName('__elements_gchandle_free')]
     class method Free(aValue: NativeInt);
     begin
-      if aValue = 0 then raise new ArgumentException('Invalid GC Handle'); // not valid
+      if aValue <= 0 then raise new ArgumentException('Invalid GC Handle'); // not valid
       dec(aValue);
       if aValue >= length(fSlots) then raise new ArgumentException('Invalid GC Handle');
       locking fLock do begin
         var lValue := fSlots[aValue];
         if (NativeInt(InternalCalls.Cast(lValue)) = 0) or ((NativeInt(InternalCalls.Cast(lValue)) and 1) <> 0) then raise new ArgumentException('Invalid GC Handle');
-        fSlots[aValue] := InternalCalls.Cast<Object>(^Void((fFirstFree shl 1) or 1));
+        // Bias the index so the end marker is positive on either pointer width.
+        // Casting a 32-bit -1 to a 64-bit pointer could lose its sign bits.
+        fSlots[aValue] := InternalCalls.Cast<Object>(^Void((NativeInt(fFirstFree + 1) shl 1) or 1));
         fFirstFree := aValue;
       end;
     end;
