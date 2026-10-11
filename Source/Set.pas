@@ -50,7 +50,7 @@ type
   public
     property NGCurrent: Object read Current;
     property Current: T;
-    property NCurrent: Object read Current; implements IEnumerator;
+    property NCurrent: Object read Current; implements IEnumerator.Current;
     method Dispose;
     method MoveNext: Boolean;
     method Reset;
@@ -182,6 +182,7 @@ end;
 
 method &Set<T>.Get(i: Integer): Boolean;
 begin
+  if Object.ReferenceEquals(self, nil) then exit false;
   var lRes: Integer;
   if i < 0 then begin
     lRes := 1;
@@ -246,7 +247,7 @@ begin
       inc(num3);
     until not (num3 <> num2);
   end;
-  var lset: &Set<T> := new &Set<T>(num);
+  var lset: &Set<T> := new &Set<T>(num + 1);
   num2 := (if aData = nil then (0) else (aData.Length)) - 1;
   num3 := 0;
   if num3 <= num2 then begin
@@ -261,32 +262,11 @@ end;
 
 class operator &Set<T>.Multiply(a: &Set<T>; b: &Set<T>): &Set<T>;
 begin
-  if Object.ReferenceEquals(a, nil) and Object.ReferenceEquals(b, nil) then begin
-    exit nil;
-  end;
-  if Object.ReferenceEquals(a, nil) then begin
-  end;
-  if Object.ReferenceEquals(b, nil) then begin
-  end;
-  var lset: &Set<T> := new &Set<T>(new Byte[Math.Max(a.fValue.Length, b.fValue.Length)]);
-  var num: Integer := a.fValue.Length - 1;
-  var num2: Integer := 0;
-  if num2 <= num then begin
-    inc(num);
-    repeat
-      lset.fValue[num2] := a.fValue[num2];
-      inc(num2);
-    until not (num2 <> num);
-  end;
-  num := b.fValue.Length - 1;
-  num2 := 0;
-  if num2 <= num then begin
-    inc(num);
-    repeat
-      lset.fValue[num2] := lset.fValue[num2] and b.fValue[num2];
-      inc(num2);
-    until not (num2 <> num);
-  end;
+  if Object.ReferenceEquals(a, nil) or Object.ReferenceEquals(b, nil) then exit nil;
+  // An intersection has no bits beyond the shorter operand.
+  var count := Math.Min(a.fValue.Length, b.fValue.Length);
+  var lset := new &Set<T>(count * 8);
+  for i := 0 to count - 1 do lset.fValue[i] := a.fValue[i] and b.fValue[i];
   exit lset;
 end;
 
@@ -302,24 +282,12 @@ end;
 
 class operator &Set<T>.GreaterOrEqual(a: &Set<T>; b: &Set<T>): Boolean;
 begin
-  if Object.ReferenceEquals(a, nil) and Object.ReferenceEquals(b, nil) then begin
-    exit true;
-  end;
-  if Object.ReferenceEquals(a, nil) then begin
-  end;
-  if Object.ReferenceEquals(b, nil) then begin
-  end;
-  var num: Integer := a.fValue.Length - 1;
-  var num2: Integer := 0;
-  if num2 <= num then begin
-    inc(num);
-    while ((if num2 >= a.fValue.Length then (0) else (UInt32(a.fValue[num2]))) and (if num2 >= b.fValue.Length then (0) else (UInt32(b.fValue[num2])))) = (if num2 >= a.fValue.Length then (0) else (UInt32(a.fValue[num2]))) do begin
-      inc(num2);
-      if num2 = num then begin
-        exit true;
-      end;
-    end;
-    exit false;
+  if Object.ReferenceEquals(b, nil) then exit true;
+  var count := if Object.ReferenceEquals(a, nil) then 0 else a.fValue.Length;
+  // Every bit in b must occur in a; missing storage represents zero bits.
+  for i := 0 to b.fValue.Length - 1 do begin
+    var bits := if i < count then a.fValue[i] else Byte(0);
+    if (bits and b.fValue[i]) <> b.fValue[i] then exit false;
   end;
   exit true;
 end;
@@ -526,13 +494,14 @@ end;
 
 method &Set<T>.SetIterator.MoveNext: Boolean;
 begin
-  repeat
-    if fIndex >= ((length(fOwner:fValue)) * 8) then begin
-      exit false;
-    end;
+  while fIndex < length(fOwner:fValue) * 8 - 1 do begin
     inc(fIndex);
-  until fOwner.Get(fIndex);
-  exit true;
+    if fOwner.Get(fIndex) then begin
+      Current := T(fIndex);
+      exit true;
+    end;
+  end;
+  exit false;
 end;
 
 method &Set<T>.SetIterator.Reset;
