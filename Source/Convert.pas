@@ -12,19 +12,21 @@ type
       var len:= s.Length;
       var start:=0;
       aSign := False;
-      while s[start] = ' ' do begin
+      while (len > 0) and (s[start] = ' ') do begin
         inc(start);
         dec(len);
       end;
-      while s[start+len-1] = ' ' do
+      while (len > 0) and (s[start+len-1] = ' ') do
         dec(len);
 
 
+      if len = 0 then exit false;
       if (s[start] = '-') or (s[start] = '+') then begin
         aSign := (s[start] = '-');
         dec(len);
         inc(start);
       end;
+      if len = 0 then exit false;
       arr := new array of Byte(len);
       for i: Integer := 0 to len-1 do begin
         var b:= Integer(s[i+start]);
@@ -36,27 +38,64 @@ type
     method ParseHex(s:String; out arr: array of Byte): Boolean;
     begin
       if String.IsNullOrEmpty(s) then exit False;
-      var si := s.ToLower(True);
+      var si := s;
       var len:= si.Length;
       var start:=0;
-      while si[start] = ' ' do begin
+      while (len > 0) and (si[start] = ' ') do begin
         inc(start);
         dec(len);
       end;
 
-      while si[start+len-1] = ' ' do
+      while (len > 0) and (si[start+len-1] = ' ') do
         dec(len);
 
+      if len = 0 then exit false;
       arr := new array of Byte(len);
       for i: Integer := 0 to len-1 do begin
         var b:= Integer(si[i+start]);
         case b of
           48..57  {0..9}: arr[i] := b-48;
           97..102 {a..f}: arr[i] := b-87;
+          65..70 {A..F}: arr[i] := b-55;
         else
           exit false;
         end;
       end;
+      exit true;
+    end;
+
+    method TryParseInteger(s: String; aSigned: Boolean; out aNegative: Boolean; out aValue: UInt64; aRaiseOverflowException: Boolean): Boolean;
+    begin
+      var count := length(s);
+      if count = 0 then exit false;
+      var chars := s.FirstChar;
+      var start := 0;
+      while (start < count) and (chars[start] = ' ') do inc(start);
+      while (count > start) and (chars[count - 1] = ' ') do dec(count);
+      if start = count then exit false;
+      aNegative := chars[start] = '-';
+      if aNegative and not aSigned then exit false;
+      if aNegative or (chars[start] = '+') then inc(start);
+      if start = count then exit false;
+      var limit := if not aSigned then UInt64.MaxValue else
+        if aNegative then UInt64($8000000000000000) else UInt64(Int64.MaxValue);
+      var quotient := limit / 10;
+      var remainder := limit mod 10;
+      var value: UInt64 := 0;
+      var overflow := false;
+      // Validate the whole input even after overflow, so malformed text remains
+      // a format failure. Accumulate directly; no temporary digit array.
+      for i := start to count - 1 do begin
+        var digit := Integer(chars[i]) - Integer('0');
+        if (digit < 0) or (digit > 9) then exit false;
+        if (value > quotient) or ((value = quotient) and (UInt64(digit) > remainder)) then overflow := true;
+        if not overflow then value := value * 10 + UInt64(digit);
+      end;
+      if overflow then begin
+        if aRaiseOverflowException then RaiseOverflowException;
+        exit false;
+      end;
+      aValue := value;
       exit true;
     end;
 
@@ -79,46 +118,21 @@ type
   public
     method TryParseInt64(s: String; out Value: Int64; aRaiseOverflowException: Boolean):Boolean;
     begin
-      var lSign: Boolean;
-      var arr: array of Byte;
-      if not ParseString(s, out lSign, out arr) then exit false;
-      var sValue:UInt64 := arr[0];
-      var aMaxValue: UInt64 := iif(lSign, - Int64.MinValue, Int64.MaxValue);
-      var aMaxValue1: UInt64 := (UInt64(iif(lSign, - Int64.MinValue, Int64.MaxValue)) / 10)+1;
-
-      for i:Integer := 1 to arr.Length-1 do begin
-        if (sValue> aMaxValue1) or (sValue*10 > (aMaxValue- arr[i])) then begin
-          if aRaiseOverflowException then
-            RaiseOverflowException
-          else
-            exit False;
-        end;
-        sValue := sValue*10+arr[i];
-      end;
-      Value := sValue;
-      if lSign then Value := -Value;
+      var negative: Boolean;
+      var magnitude: UInt64;
+      if not TryParseInteger(s, true, out negative, out magnitude, aRaiseOverflowException) then exit false;
+      if negative then begin
+        if magnitude = UInt64($8000000000000000) then Value := Int64.MinValue
+        else Value := -Int64(magnitude);
+      end
+      else Value := Int64(magnitude);
       exit true;
     end;
 
     method TryParseUInt64(s: String; out Value: UInt64; aRaiseOverflowException: Boolean): Boolean;
     begin
-      var lSign: Boolean;
-      var arr: array of Byte;
-      if not ParseString(s, out lSign, out arr) then exit false;
-      if lSign then exit False;
-      var sValue : UInt64 := arr[0];
-
-      for i: Integer := 1 to arr.Length-1 do begin
-        if (sValue > UInt64.MaxValue / 10) or (sValue*10 > UInt64.MaxValue - arr[i]) then begin
-          if aRaiseOverflowException then
-            RaiseOverflowException
-          else
-            exit False;
-        end;
-        sValue := sValue*10+arr[i];
-      end;
-      Value := sValue;
-      exit true;
+      var negative: Boolean;
+      exit TryParseInteger(s, false, out negative, out Value, aRaiseOverflowException);
     end;
 
     method HexStringToUInt64(s: String): UInt64;

@@ -39,6 +39,7 @@
     <Compile Include="$(MSBuildThisFileDirectory)Algorithms_Boundaries.pas" />
     <Compile Include="$(MSBuildThisFileDirectory)Equality_Boundaries.pas" />
     <Compile Include="$(MSBuildThisFileDirectory)Set_Boundaries.pas" />
+    <Compile Include="$(MSBuildThisFileDirectory)IO_Number_Boundaries.pas" />
     <Compile Include="$(MSBuildThisFileDirectory)StringBuilder_Edit.pas" />
     <Compile Include="$(MSBuildThisFileDirectory)StringBuilder_Append.pas" />
     <Compile Include="$(MSBuildThisFileDirectory)StringBuilder_Capacity.pas" />

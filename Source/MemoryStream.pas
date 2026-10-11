@@ -139,28 +139,41 @@ method MemoryStream.WriteTo(Destination: Stream);
 begin
   if Destination = nil then raise new Exception('Destination is null');
   if not Destination.CanWrite then raise new NotSupportedException;
-  Destination.Write(new Span<Byte>(fbuf, 0, fLength));
+  var written := 0;
+  while written < fLength do begin
+    var count := Destination.Write(new ImmutableSpan<Byte>(fbuf, written, Int32(fLength - written)));
+    if (count <= 0) or (count > fLength - written) then raise new Exception('Invalid stream write count');
+    inc(written, count);
+  end;
 end;
 
 {$IFNDEF NOFILES}
 method MemoryStream.LoadFromFile(FileName: String);
 begin
   var fs := new FileStream(FileName, FileMode.Open,FileAccess.Read, FileShare.Read);
-  SetLength(0);
-  self.Capacity := fs.Length;
-  fs.Position := 0;
-  fLength := fs.Read(new Span<Byte>(fbuf, 0, fs.Length));
-  fs.Close;
+  try
+    SetLength(0);
+    var expected := fs.Length;
+    if expected > Int32.MaxValue then raise new ArgumentOutOfRangeException('File exceeds MemoryStream maximum length');
+    self.Capacity := Int32(expected);
+    while fLength < expected do begin
+      var count := fs.Read(new Span<Byte>(fbuf, Int32(fLength), Int32(expected - fLength)));
+      if count = 0 then break;
+      inc(fLength, count);
+    end;
+  finally
+    fs.Close;
+  end;
 end;
 
 method MemoryStream.SaveToFile(FileName: String);
 begin
   var fs := new FileStream(FileName, FileMode.Create,FileAccess.Write, FileShare.None);
-  SetLength(fLength);
-  fs.Position := 0;
-  if fLength > 0 then
-    fs.Write(new Span<Byte>(@fbuf[0], fLength));
-  fs.Close;
+  try
+    WriteTo(fs);
+  finally
+    fs.Close;
+  end;
 end;
 {$ENDIF}
 end.
