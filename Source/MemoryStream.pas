@@ -45,7 +45,8 @@ end;
 
 method MemoryStream.SetCapacity(value: Int32);
 begin
-  if value < fLength then raise new Exception('Capacity cannot be less than the current length of the stream.');
+  if (value < 0) or (value < fLength) then raise new Exception('Capacity cannot be less than the current length of the stream.');
+  if value = fCapacity then exit;
   var temp := new array of Byte(value);
   if fLength >0 then
     memcpy(@temp[0], @fbuf[0], fLength);
@@ -55,20 +56,28 @@ end;
 
 method MemoryStream.SetLength(value: Int64);
 begin
+  if (value < 0) or (value > Int32.MaxValue) then
+    raise new ArgumentOutOfRangeException('MemoryStream length');
   var curpos := Position;
-  //fLength := value;
-  CheckCapacity(value);
+  CheckCapacity(Int32(value));
+  // Shrink then grow must not reveal bytes from the old contents.
+  if value > fLength then memset(@fbuf[fLength], 0, NativeInt(value - fLength));
   fLength := value;
   if curpos > fLength then Seek(0, SeekOrigin.End);
 end;
 
 method MemoryStream.Seek(Offset: Int64; Origin: SeekOrigin): Int64;
 begin
+  var base: Int64;
   case Origin of
-    SeekOrigin.Begin: fPosition := Offset;
-    SeekOrigin.Current: fPosition :=fPosition + Offset;
-    SeekOrigin.End: fPosition := fLength + Offset;
+    SeekOrigin.Begin: base := 0;
+    SeekOrigin.Current: base := fPosition;
+    SeekOrigin.End: base := fLength;
+    else raise new ArgumentOutOfRangeException('Invalid seek origin');
   end;
+  if (Offset < -base) or (Offset > Int64.MaxValue - base) then
+    raise new ArgumentOutOfRangeException('MemoryStream position');
+  fPosition := base + Offset;
   exit fPosition;
 end;
 
@@ -88,8 +97,11 @@ method MemoryStream.Write(aSpan: ImmutableSpan<Byte>): Int32;
 begin
   if not CanWrite then raise new NotSupportedException;
   if aSpan.Length = 0 then exit 0;
-  CheckCapacity(fPosition + aSpan.Length);
-  memcpy(@fbuf[fPosition], aSpan.Pointer, aSpan.Length);
+  if (fPosition > Int32.MaxValue) or (aSpan.Length > Int32.MaxValue - fPosition) then
+    raise new ArgumentOutOfRangeException('MemoryStream write exceeds maximum length');
+  CheckCapacity(Int32(fPosition + aSpan.Length));
+  if fPosition > fLength then memset(@fbuf[fLength], 0, NativeInt(fPosition - fLength));
+  memmove(@fbuf[fPosition], aSpan.Pointer, aSpan.Length);
   fPosition := fPosition + aSpan.Length;
   if fPosition > fLength then fLength := fPosition;
   exit aSpan.Length;
@@ -114,6 +126,7 @@ begin
   if aNewCapacity > 64 then lDelta := aNewCapacity / 4
   else if aNewCapacity > 8 then lDelta := 16
   else lDelta := 4;
+  if lDelta > Int32.MaxValue - aNewCapacity then exit aNewCapacity;
   exit aNewCapacity + lDelta;
 end;
 

@@ -23,7 +23,10 @@ type
       result := 0;
     end;
 
-    method &Write(aSpan: ImmutableSpan<Byte>): Int32; override; empty;
+    method &Write(aSpan: ImmutableSpan<Byte>): Int32; override;
+    begin
+      exit aSpan.Length;
+    end;
 
     method ToArray: array of Byte;
     begin

@@ -158,13 +158,9 @@ type
 
     constructor(aSequence: ISequence<T>);
     begin
-      if aSequence.Any then begin
-        for each s in aSequence do
-          PrivateAdd(s);
-      end
-      else begin
-        Clear();
-      end;
+      // Enumerate once: an Any preflight consumes one-shot sources and runs
+      // side effects twice for ordinary lazy sequences.
+      for each s in aSequence do PrivateAdd(s);
     end;
 
     constructor(aCapacity: Integer);

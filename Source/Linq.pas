@@ -171,7 +171,7 @@ begin
   for each el in aSecond do
     list.Add(el);
   for each el in self do
-    if list.Contains(el) then yield el;
+    if list.Remove(el) then yield el;
 end;
 
 extension method ISequence<T>.Except(aSecond: not nullable ISequence<T>; aComparator: block(a, b: T): Integer := nil): /*not nullable*/ ISequence<T>; public; iterator;
@@ -185,7 +185,7 @@ begin
   for each el in aSecond do
     list.Add(el);
   for each el in self do
-    if not list.Contains(el) then yield el;
+    if list.Add(el) then yield el;
 end;
 
 extension method ISequence<T>.First: T; public;
@@ -218,33 +218,53 @@ end;
 
 extension method ISequence<T>.Min: nullable T; public;
 begin
+  // A value-type result starts at zero, which is not an element of the source.
+  var lHasValue := false;
   for each i in self do
-    if not assigned(result) or (assigned(i) and ((result as IComparable).CompareTo(i) < 0)) then
+    if not lHasValue or (assigned(i) and ((result as IComparable).CompareTo(i) > 0)) then
+    begin
       result := i;
+      lHasValue := assigned(i);
+    end;
 end;
 
 extension method ISequence<T>.Min<T,U>(aBlock: not nullable block(aItem: not nullable T): U): nullable U; public;
 begin
+  // A value-type result starts at zero, which is not an element of the source.
+  var lHasValue := false;
   for each i in self do begin
     var i2 := aBlock(i);
-    if not assigned(result) or (assigned(i2) and ((i2 as IComparable).CompareTo(i) < 0)) then
+    if not lHasValue or (assigned(i2) and ((i2 as IComparable).CompareTo(result) < 0)) then
+    begin
       result := i2;
+      lHasValue := assigned(i2);
+    end;
   end;
 end;
 
 extension method ISequence<T>.Max: nullable T; public;
 begin
+  // A value-type result starts at zero, which is not an element of the source.
+  var lHasValue := false;
   for each i in self do
-    if not assigned(result) or (assigned(i) and ((result as IComparable).CompareTo(i) > 0)) then
+    if not lHasValue or (assigned(i) and ((result as IComparable).CompareTo(i) < 0)) then
+    begin
       result := i;
+      lHasValue := assigned(i);
+    end;
 end;
 
 extension method ISequence<T>.Max<T,U>(aBlock: not nullable block(aItem: not nullable T): U): nullable U; public;
 begin
+  // A value-type result starts at zero, which is not an element of the source.
+  var lHasValue := false;
   for each i in self do begin
     var i2 := aBlock(i);
-    if not assigned(result) or (assigned(i2) and ((i2 as IComparable).CompareTo(i) > 0)) then
+    if not lHasValue or (assigned(i2) and ((i2 as IComparable).CompareTo(result) > 0)) then
+    begin
       result := i2;
+      lHasValue := assigned(i2);
+    end;
   end;
 end;
 
@@ -310,7 +330,8 @@ type
 
     method GetEnumerator: IEnumerator<T>;
     begin
-      var lSeq := Original.ToList;
+      // OrderBy must not sort the caller's mutable list in place.
+      var lSeq := new List<T>(Original);
       lSeq.Sort(Comparison);
       exit lSeq.GetEnumerator;
     end;

@@ -82,8 +82,15 @@ begin
   var buf: array [bufsize] of Byte := InternalCalls.Undefined<array [bufsize] of Byte>();
   loop begin
     var rest := &Read(new Span<Byte>(@buf[0], bufsize));
-    if rest > 0 then rest := Destination.Write(new Span<Byte>(@buf[0], rest));
-    if rest <> bufsize then break;
+    if rest = 0 then break;
+    if (rest < 0) or (rest > bufsize) then raise new Exception('Invalid stream read count');
+    var written := 0;
+    while written < rest do begin
+      var count := Destination.Write(new ImmutableSpan<Byte>(@buf[written], rest - written));
+      if (count <= 0) or (count > rest - written) then raise new Exception('Invalid stream write count');
+      inc(written, count);
+    end;
+    // A short read is not necessarily EOF (pipes and network streams).
   end;
 end;
 
