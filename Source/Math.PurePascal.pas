@@ -5,7 +5,7 @@
 // (WebAssembly, Android, mobile Darwin platforms, unsupported architectures)
 
 // Check same conditions as Math.pas - must be kept in sync!
-{$IF WINDOWS OR (DARWIN AND MACOS)}
+{$IF WINDOWS OR (DARWIN AND MACOS) OR (LINUX AND (X86_64 OR ARM64))}
   {$IFNDEF PUREPASCAL}
     {$DEFINE USE_LLVM_MATH_VECTORLIB}
   {$ENDIF}

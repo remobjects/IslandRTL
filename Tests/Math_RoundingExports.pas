@@ -1,10 +1,11 @@
-// Regression guards: the linked Windows rounding exports must return rather
-// than recurse through their own LLVM libcalls on x64-v1 and x86 SSE2 targets.
+// Negative regression guards: Windows/Linux rounding exports must link and
+// return rather than recurse through their own LLVM libcalls on x64-v1 and
+// x86 SSE2 targets. In particular, Linux must provide the Single roundf export.
 namespace Island.Tests.Shared;
 
 uses RemObjects.Elements.EUnit;
 
-{$IF WINDOWS}
+{$IF WINDOWS OR (LINUX AND X86_64)}
 type
   Math_RoundingExports = public class(Test)
   private
@@ -77,6 +78,18 @@ type
         var lZero := CallDouble(lOperation, ^Double(@lBits)^);
         Assert.AreEqual(lBits, ^UInt64(@lZero)^);
       end;
+    end;
+
+    method SingleRoundPrecisionBoundary;
+    begin
+      Assert.AreEqual(Single(8388608.0), CallSingle(3, Single(8388607.5)));
+      Assert.AreEqual(Single(8388609.0), CallSingle(3, Single(8388609.0)));
+      Assert.AreEqual(Single(-8388609.0), CallSingle(3, Single(-8388609.0)));
+      var lTinyBits: UInt32 := $80000001;
+      var lRounded := CallSingle(3, ^Single(@lTinyBits)^);
+      Assert.AreEqual(UInt32($80000000), ^UInt32(@lRounded)^);
+      lRounded := CallSingle(3, Single(-0.25));
+      Assert.AreEqual(UInt32($80000000), ^UInt32(@lRounded)^);
     end;
 
     method SingleExports;

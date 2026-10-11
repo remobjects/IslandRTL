@@ -39,11 +39,11 @@
 // - Any other code expecting C RTL names gets them
 // Simple function exports (sqrt) forward to LLVM intrinsics; complex ones forward to SLEEF.
 //
-// Win32 (i386) Special Handling:
-// On 32-bit x86 without SSE4.1, LLVM intrinsics like llvm.ceil.f64 are NOT real intrinsics -
+// Baseline x86 (i386/x64) Special Handling:
+// On x86 without SSE4.1, LLVM intrinsics like llvm.ceil.f64 are NOT real intrinsics -
 // they lower to library calls (e.g., llvm.ceil.f64 → call to 'ceil'). This creates infinite
 // recursion when our RTL exports 'ceil' that calls llvm.ceil.f64.
-// On i386, ceil/floor/trunc/round exports call SLEEF scalar functions to avoid
+// On i386/x64, ceil/floor/trunc/round exports call SLEEF scalar functions to avoid
 // libcall recursion. sqrt/sqrtf use LLVM intrinsics, which lower to SSE2;
 // forwarding those exports to scalar SLEEF would recurse through C sqrt/sqrtf.
 //
@@ -61,11 +61,11 @@
 // (For intrinsics, LLVM already knows this, but the attributes don't hurt.)
 
 // Check same conditions as Math.pas - must be kept in sync!
-// SLEEF supported: Windows (all arch), macOS (all arch)
-// NOT supported: Linux, iOS, tvOS, watchOS, visionOS, Android, WebAssembly
+// SLEEF supported: Windows, macOS, Linux (x86_64 and ARM64)
+// NOT supported: 32-bit Linux, iOS, tvOS, watchOS, visionOS, Android, WebAssembly
 
 // Check same conditions as Math.pas - must be kept in sync!
-{$IF WINDOWS OR (DARWIN AND MACOS)}
+{$IF WINDOWS OR (DARWIN AND MACOS) OR (LINUX AND (X86_64 OR ARM64))}
   {$IFNDEF PUREPASCAL}
     {$DEFINE USE_LLVM_MATH_VECTORLIB}
   {$ENDIF}
@@ -237,6 +237,11 @@ type
     class method truncf(d: Single): Single; inline;
     [SymbolName('round'), Used]
     class method round(d: Double): Double; inline;
+    {$IF i386 OR X86_64}
+    // Baseline x86 LLVM rounding lowers to the Single C libcall too.
+    [SymbolName('roundf'), Used]
+    class method roundf(d: Single): Single; inline;
+    {$ENDIF}
     [SymbolName('fabs'), Used]
     class method fabs(d: Double): Double; inline;
 
@@ -794,6 +799,14 @@ begin
   exit llvm_round_f64(d);  // Forward to LLVM intrinsic for SLEEF library dependency
   {$ENDIF}
 end;
+
+{$IF i386 OR X86_64}
+class method SleefInternal.roundf(d: Single): Single;
+begin
+  // Calling llvm.round.f32 here would recurse on x86 without SSE4.1.
+  exit Sleef_roundf1(d);
+end;
+{$ENDIF}
 
 class method SleefInternal.sin(d: Double): Double;
 begin
