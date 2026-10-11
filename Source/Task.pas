@@ -525,8 +525,7 @@ type
 
     method Wait; override;
     begin
-      if fState in [TaskState.Failed, TaskState.Completed] then exit;
-
+      // Acquire completion's lock before observing the result of another worker.
       Utilities.SpinLockEnter(var fLock);
       if fState in [TaskState.Failed, TaskState.Completed] then begin
         Utilities.SpinLockExit(var fLock);
@@ -560,8 +559,7 @@ type
 
     method Wait; override;
     begin
-      if fState in [TaskState.Failed, TaskState.Completed] then exit;
-
+      // Acquire completion's lock before observing the result of another worker.
       Utilities.SpinLockEnter(var fLock);
       if fState in [TaskState.Failed, TaskState.Completed] then begin
         Utilities.SpinLockExit(var fLock);
