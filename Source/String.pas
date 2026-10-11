@@ -416,7 +416,14 @@ end;
 
 method String.&Equals(aOther: String): Boolean;
 begin
-  exit &Equals(Object(aOther));
+  // The typed overload already knows the object model: do not round-trip
+  // through Object and its virtual/cast path for ordinary string equality.
+  if not assigned(aOther) then exit false;
+  if Object.ReferenceEquals(self, aOther) then exit true;
+  if fLength <> aOther.fLength then exit false;
+  if fLength = 0 then exit true;
+  if fFirstChar <> aOther.fFirstChar then exit false;
+  exit memcmp(@fFirstChar, @aOther.fFirstChar, NativeInt(fLength) * sizeOf(Char)) = 0;
 end;
 
 method String.Equals(aOther: Object): Boolean;
@@ -424,18 +431,7 @@ begin
   var lOther := String(aOther);
   if defined("DARWIN") and not assigned(lOther) then
     lOther := String(Foundation.NSString(IslandWrappedCocoaObject(aOther):Value));
-
-  if assigned(lOther) then begin
-    if self.Length <> lOther.Length then
-      exit false;
-    if Object.ReferenceEquals(self, lOther) or (fLength = 0) then
-      exit true;
-    if fFirstChar <> lOther.fFirstChar then
-      exit false;
-    // Equal lengths make a bounded byte comparison safe, including embedded
-    // NULs and unpaired UTF-16 surrogates. No per-character bounds checks.
-    exit memcmp(@fFirstChar, @lOther.fFirstChar, NativeInt(fLength) * sizeOf(Char)) = 0;
-  end;
+  exit &Equals(lOther);
 end;
 
 method String.EqualsIgnoreCase(aOther: String): Boolean;
@@ -499,19 +495,62 @@ end;
 
 method String.IndexOf(Value: String; aStartFromIndex: Integer): Integer;
 begin
-  var Value_Length := Value.Length;
-  if Value_Length > Self.Length then exit -1;
-  if Value_Length = 0 then exit 0;
-
-  for i: Integer := aStartFromIndex to Self.Length-Value_Length do begin
-    var lfound:= true;
-    for j: Integer :=0 to Value_Length-1 do begin
-      lfound:=lfound and (self.Item[i+j] = Value.Item[j]);
-      if not lfound then break;
+  var lLength := Value.Length;
+  if lLength > fLength then exit -1;
+  if lLength = 0 then exit 0;
+  var lLastStart := fLength - lLength;
+  if aStartFromIndex > lLastStart then exit -1;
+  if aStartFromIndex < 0 then
+    raise Utilities.CreateIndexOutOfRangeException(aStartFromIndex, fLength - 1);
+  // Bounds are established once. Never read past either UTF-16 string, and
+  // compare code units rather than treating embedded NUL as a terminator.
+  var lText := @fFirstChar;
+  var lNeedle := @Value.fFirstChar;
+  var lFirst := lNeedle[0];
+  var lLast := lNeedle[lLength - 1];
+  var i := aStartFromIndex;
+  if lLength <= 8 then begin
+    // Avoid table setup for short needles. Endpoint filtering rejects most
+    // candidates before the bounded comparison; this path allocates nothing.
+    while i <= lLastStart do begin
+      {$IF DARWIN OR LINUX}
+      // Let the platform's vectorized byte finder reject long runs. A match
+      // in the other byte of a UTF-16 code unit is only a false candidate;
+      // round forward to the next aligned code unit, never accept it directly.
+      if lLastStart - i >= 16 then begin
+        var lByteIndex := if ^Byte(lNeedle)^ = 0 then 1 else 0;
+        var lStart := ^Byte(@lText[i]) + lByteIndex;
+        var lFound := ^Byte(rtl.memchr(lStart, (^Byte(lNeedle))[lByteIndex], NativeUInt(lLastStart - i) * 2 + 1));
+        if lFound = nil then exit -1;
+        var lDistance := NativeInt(lFound) - NativeInt(lStart);
+        inc(i, (lDistance + 1) shr 1);
+        if (lDistance and 1) <> 0 then continue;
+      end;
+      {$ENDIF}
+      if (lText[i] = lFirst) and (lText[i + lLength - 1] = lLast) then
+        if memcmp(@lText[i], lNeedle, NativeInt(lLength) * sizeOf(Char)) = 0 then
+          exit i;
+      inc(i);
     end;
-    if lfound then exit i;
+  end else begin
+    // Horspool skips candidates using the last code unit. Hashing UTF-16
+    // into 256 stack entries can only shorten a skip (the rightmost colliding
+    // code unit wins), never skip a possible match. No GC allocation is needed.
+    var lSkip: array[0..255] of Integer;
+    for j := 0 to 255 do lSkip[j] := lLength;
+    for j := 0 to lLength - 2 do
+      lSkip[Integer(lNeedle[j]) and 255] := lLength - 1 - j;
+    while i <= lLastStart do begin
+      var lTail := lText[i + lLength - 1];
+      if (lTail = lLast) and (lText[i] = lFirst) then
+        if memcmp(@lText[i], lNeedle, NativeInt(lLength) * sizeOf(Char)) = 0 then
+          exit i;
+      var lStep := lSkip[Integer(lTail) and 255];
+      // Avoid signed overflow when strings approach the maximum length.
+      if lStep > lLastStart - i then break;
+      inc(i, lStep);
+    end;
   end;
-
   exit -1;
 end;
 
@@ -569,15 +608,19 @@ end;
 
 class method String.Compare(aLeft, aRight: String): Integer;
 begin
-  if (Object(aLeft) = nil) and (Object(aRight) = nil) then exit 0;
-  if (Object(aLeft) = nil) then exit -1;
-  if (Object(aRight) = nil) then exit 1;
-  var min_length := iif(aLeft.Length > aRight.Length, aRight.Length, aLeft.Length);
-  for i: Integer :=0 to min_length-1 do begin
-    if aLeft.Item[i] > aRight.Item[i] then exit 1;
-    if aLeft.Item[i] < aRight.Item[i] then exit -1;
+  if Object.ReferenceEquals(aLeft, aRight) then exit 0;
+  if not assigned(aLeft) then exit -1;
+  if not assigned(aRight) then exit 1;
+  var lLength := iif(aLeft.fLength > aRight.fLength, aRight.fLength, aLeft.fLength);
+  var lLeft := @aLeft.fFirstChar;
+  var lRight := @aRight.fFirstChar;
+  // Ordinal order is UTF-16 code-unit order, not byte order (memcmp would
+  // order non-ASCII values incorrectly on little-endian platforms).
+  for i := 0 to lLength - 1 do begin
+    if lLeft[i] > lRight[i] then exit 1;
+    if lLeft[i] < lRight[i] then exit -1;
   end;
-  exit aLeft.Length - aRight.Length;
+  exit aLeft.fLength - aRight.fLength;
 end;
 
 
