@@ -46,6 +46,7 @@
     <Compile Include="$(MSBuildThisFileDirectory)RuntimeRegression\Parallel_Boundaries.pas" />
     <Compile Include="$(MSBuildThisFileDirectory)RuntimeRegression\Thread_Condition.pas" />
     <Compile Include="$(MSBuildThisFileDirectory)RuntimeRegression\GCHandle_Boundaries.pas" />
+    <Compile Include="$(MSBuildThisFileDirectory)RuntimeRegression\ForeignGC_Lifetime.pas" />
     <Compile Include="$(MSBuildThisFileDirectory)RuntimeRegression\NumericMetadata_Boundaries.pas" />
     <Compile Include="$(MSBuildThisFileDirectory)RuntimeRegression\Sequence_Lifetime.pas" />
     <Compile Include="$(MSBuildThisFileDirectory)RuntimeRegression\StringBuilder_Edit.pas" />

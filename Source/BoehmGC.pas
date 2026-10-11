@@ -14,6 +14,8 @@ type
   ForeignBoehmGC = public record(ILifetimeStrategy<ForeignBoehmGC>)
   private
     {$HIDE H6} // DO NOT REMOVE!!
+    // This stores an object pointer. Root-table calls must reinterpret it as
+    // that object, not box its numeric address into a fresh NativeInt object.
     fInst: IntPtr;
     {$SHOW H6} // DO NOT REMOVE!!
 
@@ -23,7 +25,7 @@ type
     class method Release(var Dest: ForeignBoehmGC);
     begin
       var lValue := InternalCalls.Exchange(var Dest.fInst, 0);
-      Release(lValue);
+      Release(InternalCalls.Cast<Object>(^Void(lValue)));
     end;
 
     class method Init(var Dest: ForeignBoehmGC);
@@ -34,7 +36,7 @@ type
     class method Copy(var aDest: ForeignBoehmGC; var aSource: ForeignBoehmGC);
     begin
       aDest.fInst := aSource.fInst;
-      AddRef(aDest.fInst);
+      AddRef(InternalCalls.Cast<Object>(^Void(aDest.fInst)));
     end;
 
     class method Assign(var aDest: ForeignBoehmGC; var aSource: ForeignBoehmGC);
@@ -43,8 +45,8 @@ type
       var lSrc := aSource.fInst;
       var lOld := InternalCalls.Exchange(var aDest.fInst, lSrc);
       if lSrc = lOld then exit;
-      AddRef(lSrc);
-      Release(lOld);
+      AddRef(InternalCalls.Cast<Object>(^Void(lSrc)));
+      Release(InternalCalls.Cast<Object>(^Void(lOld)));
     end;
 
     constructor;
@@ -61,7 +63,7 @@ type
     constructor Copy(var aValue: ForeignBoehmGC);
     begin
       fInst := aValue.fInst;
-      AddRef(fInst);
+      AddRef(InternalCalls.Cast<Object>(^Void(fInst)));
     end;
 
     [GCSkipIfOnStack]
@@ -71,15 +73,15 @@ type
       var lSrc := aSource.fInst;
       var lOld := InternalCalls.Exchange(var aDest.fInst, lSrc);
       if lSrc = lOld then exit;
-      AddRef(lSrc);
-      Release(lOld);
+      AddRef(InternalCalls.Cast<Object>(^Void(lSrc)));
+      Release(InternalCalls.Cast<Object>(^Void(lOld)));
     end;
 
     [GCSkipIfOnStack]
     finalizer;
     begin
       var lValue := InternalCalls.Exchange(var fInst, 0);
-      Release(lValue);
+      Release(InternalCalls.Cast<Object>(^Void(lValue)));
     end;
 
     [DllExport('__island_force_addref')]
