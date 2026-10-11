@@ -200,7 +200,8 @@ type
       exit new __ElementsBoxedStruct(aValue, aDtor);
     end;
 
-    class method valueForStruct(aStruct: Object; aDtor: __ElementsBoxedStructDestructor): ^Void;
+    // The compiler passes the Cocoa box itself, not an Island Object wrapper.
+    class method valueForStruct(aStruct: id; aDtor: __ElementsBoxedStructDestructor): ^Void;
     begin
       var lSelf := __ElementsBoxedStruct(aStruct);
       if lSelf.Dtor <> aDtor then
