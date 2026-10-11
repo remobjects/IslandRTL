@@ -166,6 +166,8 @@ end;
 
 method Double.GetHashCode: Integer;
 begin
+  // Signed zeros compare equal, so they must also have the same hash.
+  if ^UInt64(@self)^ = $8000000000000000 then exit 0;
   exit ^Integer(@self)[0] xor ^Integer(@self)[1];
 end;
 
@@ -285,6 +287,8 @@ end;
 
 method Single.GetHashCode: Integer;
 begin
+  // Signed zeros compare equal, so they must also have the same hash.
+  if ^UInt32(@self)^ = $80000000 then exit 0;
   exit ^Integer(@self)[0];
 end;
 
