@@ -383,6 +383,7 @@ end;
 method String.Substring(StartIndex: Integer): not nullable String;
 begin
   if StartIndex = 0 then exit self;
+  if StartIndex = Length then exit '';
   CheckIndex(StartIndex);
   exit Substring(StartIndex, self.Length - StartIndex)
 end;
