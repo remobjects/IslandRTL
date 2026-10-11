@@ -29,9 +29,12 @@ end;
 
 extension method ISequence<T>.Take(aCount: Integer): /*not nullable*/ ISequence<T>; public; iterator;
 begin
-  for each el in self index n do begin
-    if n >= aCount then break;
+  if aCount <= 0 then exit;
+  for each el in self do begin
     yield el;
+    dec(aCount);
+    // Stop before asking the source for another item (which may have side effects).
+    if aCount = 0 then break;
   end;
 end;
 
@@ -270,14 +273,9 @@ end;
 
 extension method ISequence<T>.Contains(aItem: T): Boolean; public;
 begin
-  for each el in self do begin
-    if not assigned(el) then begin
-      if not assigned(aItem) then
-        exit true;
-    end
-    else if (el as IComparable).CompareTo(aItem) = 0 then
-      exit true;
-  end;
+  var lComparer := DefaultEqualityComparer<T>.Instance;
+  for each el in self do
+    if lComparer.Equals(el, aItem) then exit true;
 end;
 
 extension method ISequence<T>.Any(): Boolean; public;
@@ -483,12 +481,21 @@ end;
 extension method ISequence<T>.EqualsTo(const collection: ISequence<T>): Boolean; public;
 begin
   var e1 := self.GetEnumerator;
-  var e2 := collection.GetEnumerator;
-
-  while e1.MoveNext do
-    if not (e2.MoveNext and e1.Current.Equals(e2.Current)) then
-      Exit False;
-  Result := not e2.MoveNext;
+  try
+    var e2 := collection.GetEnumerator;
+    try
+      var lComparer := DefaultEqualityComparer<T>.Instance;
+      while e1.MoveNext do
+        if not (e2.MoveNext and lComparer.Equals(e1.Current, e2.Current)) then
+          exit false;
+      exit not e2.MoveNext;
+    finally
+      e2.Dispose;
+    end;
+  finally
+    // Also release the first enumerator if acquiring the second one failed.
+    e1.Dispose;
+  end;
 end;
 
 
