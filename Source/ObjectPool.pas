@@ -21,7 +21,7 @@ implementation
 
 constructor ObjectPool<T>(aCapacity: Integer; aCreator: Func<T>; aCleanup: Action<T>);
 begin
-  fLeft := aCapacity;
+  fLeft := 0;
   fSpare := new T[aCapacity];
   fCreator := aCreator;
   fCleanup := aCleanup;
@@ -32,8 +32,10 @@ begin
   Utilities.SpinLockEnter(var fLock);
   try
     if fLeft > 0 then begin
-      result := fSpare[fLeft];
       dec(fLeft);
+      result := fSpare[fLeft];
+      // An acquired object must not remain rooted by an unused pool slot.
+      fSpare[fLeft] := default(T);
     end;
   finally
     Utilities.SpinLockExit(var fLock);

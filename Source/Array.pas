@@ -22,16 +22,23 @@ type
 
     class method Copy<T>(aSource: ^T; aDest: Array of T; aDestOffset: Integer; aCount: Integer);
     begin
+      if (aCount < 0) or (aDestOffset < 0) or (aDestOffset > length(aDest)) or
+         (aCount > length(aDest) - aDestOffset) then raise new ArgumentOutOfRangeException('Array.Copy ranges');
       if aCount = 0 then exit;
-      if (aSource = nil) or (aDestOffset < 0) or (aDestOffset + aCount > length(aDest)) then raise new ArgumentOutOfRangeException('Array.Copy ranges');
-      memcpy(@aDest[aDestOffset], aSource, aCount * sizeOf(T));
+      if aSource = nil then raise new ArgumentOutOfRangeException('Array.Copy ranges');
+      memmove(@aDest[aDestOffset], aSource, NativeInt(aCount) * sizeOf(T));
     end;
 
     class method Copy<T>(aSource: array of T; aSourceOffset: Integer; aDest: Array of T; aDestOffset: Integer; aCount: Integer);
     begin
+      // Validate without adding potentially overflowing offsets. memmove
+      // preserves overlapping copies in either direction.
+      if (aCount < 0) or (aSourceOffset < 0) or (aDestOffset < 0) or
+         (aSourceOffset > length(aSource)) or (aDestOffset > length(aDest)) or
+         (aCount > length(aSource) - aSourceOffset) or
+         (aCount > length(aDest) - aDestOffset) then raise new ArgumentOutOfRangeException('Array.Copy ranges');
       if aCount = 0 then exit;
-      if (aSourceOffset < 0) or (aDestOffset < 0) or (aSourceOffset + aCount > length(aSource)) or (aDestOffset + aCount > length(aDest)) then raise new ArgumentOutOfRangeException('Array.Copy ranges');
-      memcpy(@aDest[aDestOffset], @aSource[aSourceOffset], aCount * sizeOf(T));
+      memmove(@aDest[aDestOffset], @aSource[aSourceOffset], NativeInt(aCount) * sizeOf(T));
     end;
 
     class method Copy<T>(aSource: array of T; aDest: Array of T; aCount: Integer);
@@ -79,11 +86,11 @@ type
       var I, J: Integer;
       var P: T;
       var temp: T;
-      //if aCount < 2 then Exit;
+      if L >= R then exit;
       repeat
         I := L;
         J := R;
-        P := aVal[(L + R) shr 1];
+        P := aVal[L + ((R - L) shr 1)];
         repeat
           while Comparison(aVal[I], P) < 0 do inc(I);
           while Comparison(aVal[J], P) > 0 do dec(J);
@@ -105,8 +112,9 @@ type
 
     class method Clear<T>(aVal: array of T; Index, Length : Integer);
     begin
-      var L: Integer := Index + (Length);
-      if (L > aVal.Length) or (Index < 0) or (Length < 0) then raise new ArgumentOutOfRangeException('Array.Clear ranges');
+      if (Index < 0) or (Length < 0) or (Index > aVal.Length) or
+         (Length > aVal.Length - Index) then raise new ArgumentOutOfRangeException('Array.Clear ranges');
+      var L: Integer := Index + Length;
       for i: Integer := Index to L-1 do
         aVal[i] := &default(T);
     end;

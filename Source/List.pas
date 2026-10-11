@@ -12,7 +12,7 @@ type
 
     method SetItem(&Index: Integer; Value: T);
     begin
-      CheckCapacity(&Index);
+      CheckIndex(&Index);
       fItems[&Index] := Value;
     end;
 
@@ -236,13 +236,14 @@ type
 
     method FindIndex(StartIndex: Integer; Match: Predicate<T>): Integer;
     begin
-      exit FindIndex(StartIndex, fCount, Match);
+      exit FindIndex(StartIndex, fCount - StartIndex, Match);
     end;
 
     method FindIndex(StartIndex: Integer; aCount: Integer; Match: Predicate<T>): Integer;
     begin
-      CheckIndex(StartIndex);
-      for i : Integer := StartIndex to aCount-1 do
+      if (StartIndex < 0) or (StartIndex > fCount) or (aCount < 0) or
+         (aCount > fCount - StartIndex) then RaiseError('Invalid search range');
+      for i : Integer := StartIndex to StartIndex + aCount - 1 do
         if Match(Item[i]) then exit i;
 
       exit -1;
@@ -301,30 +302,26 @@ type
 
     method CopyTo(&array: not nullable array of T);
     begin
-      if length(&array)< fCount then new ArgumentException('The number of elements in the source List<T> is greater than the number of elements that the destination array can contain.');
       CopyTo(0, &array, 0, fCount);
     end;
 
     method CopyTo(&array: not nullable array of T; arrayIndex: Integer);
     begin
-      if arrayIndex <0 then new ArgumentOutOfRangeException('arrayIndex is less than 0.');
-      if length(&array)< fCount+arrayIndex then new ArgumentException('The number of elements in the source List<T> is greater than the available space from arrayIndex to the end of the destination array.');
       CopyTo(0, &array, arrayIndex, fCount);
     end;
 
     {$HIDE W27}
     method CopyTo(&index: Integer; &array: not nullable array of T; arrayIndex: Integer; &count: Integer);
     begin
-      if not assigned(&array) then new ArgumentNullException('array is nil.');
-      if &index <0 then new ArgumentOutOfRangeException('index is less than 0.');
-      if arrayIndex <0 then new ArgumentOutOfRangeException('arrayIndex is less than 0.');
-      if &count <0 then new ArgumentOutOfRangeException('count is less than 0.');
-      if &index >= fCount then new ArgumentException('index is equal to or greater than the Count of the source List<T>.');
-      if &index+&count > fCount then new ArgumentException('index plus count is greater than the Count of the source List<T>.');
-      if arrayIndex+&count > length(&array) then new ArgumentException('count is greater than the available space from arrayIndex to the end of the destination array.');
-
-      for i:Integer := 0 to &count -1 do
-        &array[arrayIndex+i] := fItems[&index+i];
+      if not assigned(&array) then raise new ArgumentNullException('array is nil.');
+      if (&index < 0) or (arrayIndex < 0) or (&count < 0) then
+        raise new ArgumentOutOfRangeException('Negative copy range.');
+      // Validate the entire operation before modifying the destination.
+      if (&index > fCount) or (&count > fCount - &index) or
+         (arrayIndex > length(&array)) or (&count > length(&array) - arrayIndex) then
+        raise new ArgumentException('Copy range exceeds source or destination.');
+      for i: Integer := 0 to &count - 1 do
+        &array[arrayIndex + i] := fItems[&index + i];
     end;
 
     {$SHOW W27}
@@ -407,12 +404,17 @@ type
 
     method Insert(&Index: Integer; anItem: T);
     begin
-      InsertRange(&Index, [anItem]);
+      if (&Index < 0) or (&Index > fCount) then RaiseError('Index was out of range.');
+      if fCount = Capacity then Grow(fCount + 1);
+      for i := fCount - 1 downto &Index do fItems[i + 1] := fItems[i];
+      fItems[&Index] := anItem;
+      inc(fCount);
     end;
 
     method InsertRange(&Index: Integer; Items: not nullable ImmutableList<T>);
     begin
-      InsertRange(&Index, Items.fItems);
+      // Snapshot only live elements; also makes inserting self well-defined.
+      InsertRange(&Index, Items.ToArray);
     end;
 
     method InsertRange(&Index: Integer; Items: not nullable array of T);
@@ -441,11 +443,11 @@ type
         // insert into existing array
         //move existing part
         for i:Integer := fCount-1 downto &Index do
-          self[i+it_len] := self[i];
+          fItems[i+it_len] := fItems[i];
 
         // insert new range
         for i:Integer := 0 to it_len-1 do
-          self[i+&Index] := Items[i];
+          fItems[i+&Index] := Items[i];
         inc(fCount, it_len);
       end;
     end;
@@ -466,13 +468,13 @@ type
 
     method RemoveRange(&Index: Integer; aCount: Integer);
     begin
-      CheckIndex(&Index);
+      if (&Index < 0) or (&Index > fCount) or (aCount < 0) or
+         (aCount > fCount - &Index) then RaiseError('aCount does not denote a valid range of elements');
       if aCount = 0 then exit;
-      if (aCount < 0) or (&Index + aCount > fCount) then RaiseError('aCount does not denote a valid range of elements');
-
-      var newlength := fCount-aCount;
-      memmove(@fItems[&Index], @fItems[&Index+aCount], (newlength-&Index) * sizeOf(T));
-      memset(@fItems[newlength], 0, (fCount - newlength) * sizeOf(T));
+      var newlength := fCount - aCount;
+      // Typed assignments preserve managed-record ownership and release roots.
+      for i := &Index to newlength - 1 do fItems[i] := fItems[i + aCount];
+      for i := newlength to fCount - 1 do fItems[i] := default(T);
       fCount := newlength;
     end;
 
