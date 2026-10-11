@@ -167,6 +167,7 @@ type
     fCond: rtl.CONDITION_VARIABLE;
   {$ELSEIF POSIX_LIGHT}
     fCond: rtl.pthread_cond_t;
+    fDisposed: Boolean;
   {$ELSE}
   {$ERROR NOT IMPLEMENTED}
   {$ENDIF}
@@ -182,17 +183,17 @@ type
 
     finalizer;
     begin
-      {$IFDEF WINDOWS}
-      {$ELSEIF POSIX}
-      rtl.pthread_cond_destroy(@fCond);
-      {$ENDIF}
+      Dispose;
     end;
 
     method Dispose;
     begin
       {$IFDEF WINDOWS}
       {$ELSEIF POSIX}
-      rtl.pthread_cond_destroy(@fCond);
+      if not fDisposed then begin
+        fDisposed := true;
+        rtl.pthread_cond_destroy(@fCond);
+      end;
       {$ENDIF}
     end;
 
@@ -225,13 +226,20 @@ type
 
     method Wait(cs: Monitor; aTimeMS: Integer): Boolean;
     begin
+      if aTimeMS < -1 then raise new ArgumentOutOfRangeException('aTimeMS');
       {$IFDEF WINDOWS}
       exit rtl.SleepConditionVariableCS(@fCond, @cs.fCS, aTimeMS);
       {$ELSEIF POSIX}
+      if aTimeMS = -1 then begin
+        Wait(cs);
+        exit true;
+      end;
       var ts: rtl.__struct_timespec;
       rtl.clock_gettime({$IFDEF DARWIN}rtl.clockid_t._CLOCK_REALTIME{$ELSE}rtl.CLOCK_REALTIME{$ENDIF}, @ts);
-      ts.tv_nsec := ts.tv_nsec + ((aTimeMS mod 1000)  *1000);
-      ts.tv_sec := ts.tv_sec + (aTimeMS /1000);
+      // pthread uses an absolute deadline with normalized nanoseconds.
+      ts.tv_nsec := ts.tv_nsec + ((aTimeMS mod 1000) * 1000000);
+      ts.tv_sec := ts.tv_sec + (aTimeMS div 1000) + (ts.tv_nsec div 1000000000);
+      ts.tv_nsec := ts.tv_nsec mod 1000000000;
       exit rtl.pthread_cond_timedwait(@fCond, @cs.fCS, @ts) = 0;
       {$ENDIF}
     end;
