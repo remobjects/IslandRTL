@@ -28,6 +28,7 @@
     <Compile Include="$(MSBuildThisFileDirectory)Math_Rounding.pas" />
     <Compile Include="$(MSBuildThisFileDirectory)Math_RoundingExports.pas" />
     <Compile Include="$(MSBuildThisFileDirectory)Math_Precision.pas" />
+    <Compile Include="$(MSBuildThisFileDirectory)Linux_Startup.pas" />
     <Compile Include="$(MSBuildThisFileDirectory)String_Equality.pas" />
     <Compile Include="$(MSBuildThisFileDirectory)Memory_Comparison.pas" />
     <Compile Include="$(MSBuildThisFileDirectory)WindowsCatchAlignment.pas" />

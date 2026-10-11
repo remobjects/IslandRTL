@@ -1,6 +1,8 @@
 ﻿namespace RemObjects.Elements.System;
 {$HIDE H7}
-{$IFDEF cpu64 and not arm}
+// This bridge uses x64 registers and the System V x64 calling convention.
+// ARM64 Linux defines CPU64 without ARM; exclude it by selecting x64 directly.
+{$IFDEF X86_64}
 type
   X64CallData = record
     _RDI,               //  0

@@ -239,8 +239,10 @@ type
     class var args: ^^AnsiChar;
     class var envp: ^^AnsiChar;
     {$IFNDEF DARWIN}
-    [SymbolName('__init_array_start')] class var __init_array_start: Integer; external;
-    [SymbolName('__init_array_end')] class var __init_array_end: Integer; external;
+    // Linker boundaries delimit function pointers, not four-byte integers.
+    // Pointer subtraction must count one entry per native pointer on 32/64-bit.
+    [SymbolName('__init_array_start')] class var __init_array_start: LibCEntryHelper; external;
+    [SymbolName('__init_array_end')] class var __init_array_end: LibCEntryHelper; external;
     {$ENDIF}
 
 {$IF ANDROID OR DARWIN OR FUCHSIA}
