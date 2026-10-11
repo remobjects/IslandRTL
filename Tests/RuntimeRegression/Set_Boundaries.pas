@@ -1,5 +1,6 @@
 // Regression guards for Pascal bit sets. Exercise byte boundaries, unequal
 // storage lengths, nil/empty operands, enumeration and source immutability.
+// Membership must accept the nil empty-set representation in checked builds too.
 namespace Island.Tests.Shared;
 uses RemObjects.Elements.EUnit;
 type
@@ -89,7 +90,9 @@ type
       Assert.IsFalse(empty >= a);
       Assert.IsTrue(a * empty = empty);
       Assert.IsTrue(empty * a = empty);
-      Assert.IsFalse(empty.Get(0));
+      Assert.IsFalse(RemObjects.Elements.System.Set<Byte>.op_In(0, empty));
+      Assert.IsTrue(RemObjects.Elements.System.Set<Byte>.op_In(2, a));
+      Assert.IsFalse(RemObjects.Elements.System.Set<Byte>.op_In(0, a));
       var other := new RemObjects.Elements.System.Set<Byte>;
       Assert.IsTrue(other = empty);
     end;
