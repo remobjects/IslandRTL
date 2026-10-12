@@ -1,6 +1,8 @@
 ﻿namespace RemObjects.Elements.System;
 {$IFDEF ARM64}
 type
+  WindowsARM64ValueCopy = procedure(aDestination, aSource: ^Void);
+
   WindowsARM64CallData = record
     X0, X1, X2, X3, X4, X5, X6, X7: UInt64;
     D0, D1, D2, D3, D4, D5, D6, D7: UInt64;
@@ -18,6 +20,10 @@ type
     fStack: array of Byte := [];
     fIntegerRegister, fFloatRegister: Integer;
     fCopies: array of Object;
+
+    // Optional MemberInfoData tag; keep in sync with IslandObjectModel. The field value
+    // indexes the (destination, source) semantic-copy adapter in MemberInfoList.
+    const ReflectionValueCopyMetadataTag = 16;
 
     [DisableInlining, DisableOptimizations]
     class method DoCall(var aData: WindowsARM64CallData; aStack: array of Byte);
@@ -91,6 +97,34 @@ type
         aType.SizeOfType + aType.BoxedDataOffset));
     end;
 
+    // Byte-copying an owned record duplicates ownership without its copy/assign
+    // hooks. The compiler knows those hooks and exports a semantic-copy adapter;
+    // locate it through optional metadata so the fixed RTTI layout stays intact.
+    // Primitive values have no ownership hooks and can still be copied directly.
+    class method CopyValue(aType: &Type; aDestination, aSource: ^Void);
+    begin
+      if aType.IsStruct and not aType.IsEnum and
+         (aType.Code in [TypeCodes.None, TypeCodes.Object]) then begin
+        var lInfo := aType.RTTI^.Ext;
+        var lPointer := lInfo^.MemberInfoData;
+        var lKey: Integer;
+        var lKind: ProtoReadType;
+        while (lPointer <> nil) and ProtoReadHeader(var lPointer, out lKey, out lKind) do begin
+          if (lKey = ReflectionValueCopyMetadataTag) and (lKind = ProtoReadType.varint) then begin
+            var lCopy := WindowsARM64ValueCopy(lInfo^.MemberInfoList[ProtoReadVarInt(var lPointer)]);
+            lCopy(aDestination, aSource);
+            exit;
+          end;
+          ProtoSkipValue(var lPointer, lKind);
+        end;
+        // This bridge is new: old record metadata cannot tell us whether a byte
+        // copy acquires ownership. Require recompilation instead of risking two
+        // finalizers for one resource (copy-only hooks also need this guard).
+        raise new NotSupportedException('Windows ARM64 reflection record arguments require copy metadata; recompile the declaring record');
+      end;
+      memcpy(aDestination, aSource, aType.SizeOfType);
+    end;
+
     // An HFA has one to four contiguous fields of the same floating-point type.
     // Check offsets and total size as well as types; padding is not an FP field.
     class method FloatAggregate(aType: &Type; out aCode: TypeCodes): Integer;
@@ -144,7 +178,7 @@ type
         if aType.IsValueType then begin
           fCopies[aIndex] := NewValue(aType);
           if (aMode <> ArgumentMode.Out) and assigned(aValue) then
-            memcpy(DataPointer(fCopies[aIndex], aType), DataPointer(aValue, aType), aType.SizeOfType);
+            CopyValue(aType, DataPointer(fCopies[aIndex], aType), DataPointer(aValue, aType));
           IntegerArgument(UInt64(DataPointer(fCopies[aIndex], aType)));
         end
         else begin
@@ -186,7 +220,7 @@ type
       if lSize > 16 then begin
         // Large value arguments are passed through a caller-owned copy.
         fCopies[aIndex] := NewValue(aType);
-        memcpy(DataPointer(fCopies[aIndex], aType), lPointer, lSize);
+        CopyValue(aType, DataPointer(fCopies[aIndex], aType), lPointer);
         IntegerArgument(UInt64(DataPointer(fCopies[aIndex], aType)));
         exit;
       end;
@@ -212,6 +246,36 @@ type
       var aParams: array of Object; aParameterFlags: array of ArgumentMode;
       aParameterTypes: array of &Type; aResultType: &Type): Object;
     begin
+      exit CallCore(aAddress, aCallingConv, var aParams, aParameterFlags,
+        aParameterTypes, aResultType, false);
+    end;
+
+  assembly
+
+    // An instance receiver identifies an existing box, unlike an ordinary var
+    // argument whose independent copy is published after successful Invoke.
+    // Borrow the receiver payload so mutations survive both success and throw;
+    // the shared call path roots its owning box for the duration of the call.
+    class method CallWithBoxedReceiver(aAddress: ^Void; aCallingConv: CallingConvention;
+      var aParams: array of Object; aParameterFlags: array of ArgumentMode;
+      aParameterTypes: array of &Type; aResultType: &Type): Object;
+    begin
+      exit CallCore(aAddress, aCallingConv, var aParams, aParameterFlags,
+        aParameterTypes, aResultType, true);
+    end;
+
+  private
+
+    class method CallCore(aAddress: ^Void; aCallingConv: CallingConvention;
+      var aParams: array of Object; aParameterFlags: array of ArgumentMode;
+      aParameterTypes: array of &Type; aResultType: &Type; aBoxedReceiver: Boolean): Object;
+    begin
+      if aBoxedReceiver and ((length(aParams) = 0) or (length(aParameterFlags) = 0) or
+         (length(aParameterTypes) = 0) or (aParameterFlags[0] <> ArgumentMode.Var) or
+         not assigned(aParameterTypes[0]) or not aParameterTypes[0].IsValueType or
+         not assigned(aParams[0]) or
+         (Utilities.IsInstance(aParams[0], aParameterTypes[0].RTTI) = nil)) then
+        raise new ArgumentException('Boxed receiver must match its value type');
       if aAddress = nil then
         raise new ArgumentException('Address');
       var lCall := new FFI;
@@ -230,8 +294,16 @@ type
             lCall.fData.IndirectResult := DataPointer(result, aResultType);
         end;
       end;
-      for i := 0 to length(aParams) - 1 do
-        lCall.Argument(i, aParams[i], aParameterFlags[i], aParameterTypes[i]);
+      for i := 0 to length(aParams) - 1 do begin
+        if aBoxedReceiver and (i = 0) then begin
+          // Keep the original owner reachable while native code holds its payload
+          // pointer. Copying the receiver would lose mutations and duplicate hooks.
+          lCall.fCopies[0] := aParams[0];
+          lCall.IntegerArgument(UInt64(DataPointer(aParams[0], aParameterTypes[0])));
+        end
+        else
+          lCall.Argument(i, aParams[i], aParameterFlags[i], aParameterTypes[i]);
+      end;
       // Windows stack arguments use eight-byte slots; the total is 16-byte aligned.
       if length(lCall.fStack) mod 16 <> 0 then begin
         var lZero: UInt64 := 0;
@@ -241,7 +313,8 @@ type
         DoCall(var lCall.fData, lCall.fStack);
       finally
         for i := 0 to length(aParams) - 1 do
-          if aParameterFlags[i] in [ArgumentMode.Var, ArgumentMode.Out] then
+          if (aParameterFlags[i] in [ArgumentMode.Var, ArgumentMode.Out]) and
+             not (aBoxedReceiver and (i = 0)) then
             aParams[i] := lCall.fCopies[i];
       end;
       if not assigned(aResultType) or (aResultType.Code = TypeCodes.Void) then
