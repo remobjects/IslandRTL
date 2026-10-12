@@ -203,6 +203,10 @@ type
     class method llvm_round_f64(d: Double): Double; external;
     [SymbolName('llvm.round.f32')]
     class method llvm_round_f32(d: Single): Single; external;
+    [SymbolName('llvm.roundeven.f64')]
+    class method llvm_roundeven_f64(d: Double): Double; external;
+    [SymbolName('llvm.roundeven.f32')]
+    class method llvm_roundeven_f32(d: Single): Single; external;
 
     [SymbolName('llvm.fabs.f64')]
     class method llvm_fabs_f64(d: Double): Double; external;
@@ -237,11 +241,18 @@ type
     class method truncf(d: Single): Single; inline;
     [SymbolName('round'), Used]
     class method round(d: Double): Double; inline;
-    {$IF i386 OR X86_64}
-    // Baseline x86 LLVM rounding lowers to the Single C libcall too.
+    {$IF i386 OR X86_64 OR LINUX}
+    // Supply the Single C contract too, including on Linux ARM64 where an
+    // external roundf reference need not bring in the system math library.
     [SymbolName('roundf'), Used]
     class method roundf(d: Single): Single; inline;
     {$ENDIF}
+    // LLVM lowers roundeven to these names when the target has no rounding
+    // instruction. Do not forward them to the intrinsic: that would recurse.
+    [SymbolName('roundeven'), Used]
+    class method roundeven(d: Double): Double;
+    [SymbolName('roundevenf'), Used]
+    class method roundevenf(d: Single): Single;
     [SymbolName('fabs'), Used]
     class method fabs(d: Double): Double; inline;
 
@@ -533,7 +544,9 @@ end;
 
 class method Math.Round(a: Double): Double;
 begin
-  exit SleefInternal.llvm_round_f64(a);
+  // Public Round follows .NET/IEEE nearest-even; C round below remains ties-away.
+  // The dedicated intrinsic keeps scalar and vector rounding visible to LLVM.
+  exit SleefInternal.llvm_roundeven_f64(a);
 end;
 
 class method Math.Sin(x: Double): Double;
@@ -660,7 +673,7 @@ end;
 
 class method Math.Round(a: Single): Single;
 begin
-  exit SleefInternal.llvm_round_f32(a);
+  exit SleefInternal.llvm_roundeven_f32(a);
 end;
 
 class method Math.Abs(i: Single): Single;
@@ -800,13 +813,28 @@ begin
   {$ENDIF}
 end;
 
-{$IF i386 OR X86_64}
+{$IF i386 OR X86_64 OR LINUX}
 class method SleefInternal.roundf(d: Single): Single;
 begin
+  {$IF i386 OR X86_64}
   // Calling llvm.round.f32 here would recurse on x86 without SSE4.1.
   exit Sleef_roundf1(d);
+  {$ELSE}
+  exit llvm_round_f32(d);
+  {$ENDIF}
 end;
 {$ENDIF}
+
+class method SleefInternal.roundeven(d: Double): Double;
+begin
+  exit MathRounding.RoundToIntegral(d, true);
+end;
+
+class method SleefInternal.roundevenf(d: Single): Single;
+begin
+  // Promotion is exact; the rounded integer is representable in Single too.
+  exit Single(MathRounding.RoundToIntegral(Double(d), true));
+end;
 
 class method SleefInternal.sin(d: Double): Double;
 begin

@@ -108,7 +108,36 @@ type
     const E:  Double = 2.718281828459045235360287471352662497757247093699959574966967627724076630353547594571382178525166427427466391932;
   end;
 
+  // Software fallback shared by PUREPASCAL math and baseline x86 libcalls.
+  // Keep C round's ties-away contract separate from public Math.Round's ties-even.
+  MathRounding = assembly static class
+  private
+    // At 2^52 and above every finite Double is already an integer.
+    const DoubleIntegralLimit: Double = 4503599627370496.0;
+  assembly
+    class method RoundToIntegral(aValue: Double; aTiesToEven: Boolean): Double;
+  end;
+
 implementation
+
+class method MathRounding.RoundToIntegral(aValue: Double; aTiesToEven: Boolean): Double;
+begin
+  var lMagnitude := Math.Abs(aValue);
+  // Preserve infinities, NaNs, large integers and the sign of an input zero.
+  // The unordered comparison also avoids converting NaN to an integer below.
+  if not (lMagnitude < DoubleIntegralLimit) or (aValue = 0) then
+    exit aValue;
+
+  var lIntegral := Math.Floor(lMagnitude);
+  var lFraction := lMagnitude - lIntegral;
+  // Subtract before testing the midpoint: adding 0.5 first can round a value
+  // just below a midpoint up to it, or change an already integral large value.
+  if (lFraction > 0.5) or ((lFraction = 0.5) and
+     (not aTiesToEven or ((Int64(lIntegral) and 1) <> 0))) then
+    lIntegral := lIntegral + 1;
+  // Negating a zero result preserves -0 for negative fractions and -0.5 ties.
+  exit if aValue < 0 then -lIntegral else lIntegral;
+end;
 
 // Simple utility methods - always use these implementations
 class method Math.Abs(i: Int64): Int64;

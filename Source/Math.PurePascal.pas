@@ -400,20 +400,7 @@ end;
 
 class method Math.Round(a: Double): Double;
 begin
-  var p := a mod 1;
-  if p = 0 then exit Double(a);
-  var p1 := Abs(p);
-  if p1 < 0.5 then exit Double(a - p);
-  if p1 > 0.5 then exit Double(a - p) + if a<0 then -1 else 1;
-  //special case, p1 = 0.5
-  //12.5 => 12 and 11.5 => 12
-  //-12.5 => -12 and -11.5 => -12
-  var d1 := a + if a<0 then -0.5 else 0.5;
-  if d1 mod 2 <> 0 then begin
-    exit Double(d1) - if a<0 then -1 else 1
-  end
-  else
-    exit Double(d1);
+  exit MathRounding.RoundToIntegral(a, true);
 end;
 
 class method Math.Truncate(d: Double): Double;
@@ -595,7 +582,8 @@ end;
 
 class method CRTLMathExports.round(d: Double): Double;
 begin
-  exit Math.Round(d);
+  // The C ABI specifies ties-away even though public Math.Round uses ties-even.
+  exit MathRounding.RoundToIntegral(d, false);
 end;
 
 class method CRTLMathExports.fabs(d: Double): Double;

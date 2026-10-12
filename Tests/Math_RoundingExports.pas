@@ -5,7 +5,7 @@ namespace Island.Tests.Shared;
 
 uses RemObjects.Elements.EUnit;
 
-{$IF WINDOWS OR (LINUX AND X86_64)}
+{$IF not PUREPASCAL AND (WINDOWS OR (DARWIN AND MACOS) OR (LINUX AND (X86_64 OR ARM64)))}
 type
   Math_RoundingExports = public class(Test)
   private
@@ -19,6 +19,9 @@ type
     [SymbolName('trunc')]
     class method NativeTruncDouble(aValue: Double): Double; external;
 
+    [SymbolName('roundeven')]
+    class method NativeRoundEvenDouble(aValue: Double): Double; external;
+
     [SymbolName('round')]
     class method NativeRoundDouble(aValue: Double): Double; external;
 
@@ -30,6 +33,7 @@ type
         1: exit NativeCeilDouble(aValue);
         2: exit NativeTruncDouble(aValue);
         3: exit NativeRoundDouble(aValue);
+        4: exit NativeRoundEvenDouble(aValue);
       end;
       exit Double(0);
     end;
@@ -43,6 +47,9 @@ type
     [SymbolName('truncf')]
     class method NativeTruncSingle(aValue: Single): Single; external;
 
+    [SymbolName('roundevenf')]
+    class method NativeRoundEvenSingle(aValue: Single): Single; external;
+
     [SymbolName('roundf')]
     class method NativeRoundSingle(aValue: Single): Single; external;
 
@@ -54,20 +61,24 @@ type
         1: exit NativeCeilSingle(aValue);
         2: exit NativeTruncSingle(aValue);
         3: exit NativeRoundSingle(aValue);
+        4: exit NativeRoundEvenSingle(aValue);
       end;
       exit Single(0);
     end;
 
   public
 
+    // The public ties-even change must not change C round/roundf (operation 3).
+    // Baseline x86 roundeven/f (operation 4) must terminate without libcall recursion.
     method DoubleExports;
     begin
       var lInput: array of Double := [Double(-2.0), Double(-1.5), Double(-0.5), Double(-0.25), Double(0.25), Double(0.5), Double(1.5), Double(2.0)];
       var lExpected: array of Double := [-2, -2, -1, -1, 0, 0, 1, 2,
         -2, -1, 0, 0, 1, 1, 2, 2,
         -2, -1, 0, 0, 0, 0, 1, 2,
-        -2, -2, -1, 0, 0, 1, 2, 2];
-      for lOperation := 0 to 3 do begin
+        -2, -2, -1, 0, 0, 1, 2, 2,
+        -2, -2, 0, 0, 0, 0, 2, 2];
+      for lOperation := 0 to 4 do begin
         for i := 0 to length(lInput) - 1 do
           Assert.AreEqual(lExpected[lOperation * length(lInput) + i], CallDouble(lOperation, lInput[i]));
         for each lValue in [Double(-9223372036854775808.0), Double(9223372036854775808.0), Double.PositiveInfinity, Double.NegativeInfinity] do
@@ -98,8 +109,9 @@ type
       var lExpected: array of Single := [-2, -2, -1, -1, 0, 0, 1, 2,
         -2, -1, 0, 0, 1, 1, 2, 2,
         -2, -1, 0, 0, 0, 0, 1, 2,
-        -2, -2, -1, 0, 0, 1, 2, 2];
-      for lOperation := 0 to 3 do begin
+        -2, -2, -1, 0, 0, 1, 2, 2,
+        -2, -2, 0, 0, 0, 0, 2, 2];
+      for lOperation := 0 to 4 do begin
         for i := 0 to length(lInput) - 1 do
           Assert.AreEqual(lExpected[lOperation * length(lInput) + i], CallSingle(lOperation, lInput[i]));
         for each lValue in [Single(-9223372036854775808.0), Single(9223372036854775808.0), Single.PositiveInfinity, Single.NegativeInfinity] do
