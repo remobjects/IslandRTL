@@ -1,12 +1,104 @@
 // Search regression guards: the public UTF-16 IndexOf overloads must find the
 // first complete match from the requested offset, including NULs and surrogates.
+// Plain character loops also guard vectorization at tails/protected pages; a raw
+// pointer early-exit control must not inherit the String storage guarantee.
 namespace Island.Tests.Shared;
 
 uses RemObjects.Elements.EUnit;
 
 type
   String_Search = public class(Test)
+  private
+
+    [DisableInlining]
+    class method FindFirst(aText: String; aChar: Char): Integer;
+    begin
+      for i := 0 to aText.Length - 1 do
+        if aText[i] = aChar then exit i;
+      exit -1;
+    end;
+
+    // Negative guard: a generic pointer/count is not a String storage proof.
+    // An early match may make accesses after the first code unit unnecessary.
+    [DisableInlining]
+    class method FindPointer(aChars: ^Char; aCount: Integer; aChar: Char): Integer;
+    begin
+      for i := 0 to aCount - 1 do
+        if aChars[i] = aChar then exit i;
+      exit -1;
+    end;
+
+    [DisableInlining]
+    class method CountChar(aText: String; aChar: Char): Integer;
+    begin
+      result := 0;
+      for i := 0 to aText.Length - 1 do
+        if aText[i] = aChar then inc(result);
+    end;
+
   public
+
+    // Plain loops must preserve the first matching UTF-16 code unit and count
+    // every match, including NULs and surrogates around vector/tail boundaries.
+    method BoundedCharacterLoops;
+    begin
+      for each lSize in [0, 1, 2, 3, 7, 8, 9, 15, 16, 17, 31, 32, 33, 127, 128, 129] do begin
+        var lChars := new Char[lSize];
+        for i := 0 to lSize - 1 do lChars[i] := Char(i mod 5);
+        if lSize > 0 then lChars[lSize - 1] := Char($d800);
+        var lText := if lSize = 0 then '' else new String(lChars);
+        for each lChar in [Char(0), Char(1), Char(4), Char($d800), Char($dfff)] do begin
+          var lFirst := -1;
+          var lCount := 0;
+          for i := 0 to lSize - 1 do
+            if lChars[i] = lChar then begin
+              if lFirst = -1 then lFirst := i;
+              inc(lCount);
+            end;
+          Assert.AreEqual(lFirst, FindFirst(lText, lChar));
+          Assert.AreEqual(lCount, CountChar(lText, lChar));
+        end;
+      end;
+    end;
+
+    {$IF WINDOWS}
+    // A valid, naturally aligned String image ends exactly at a protected page.
+    // No terminator or allocation padding may be included in a vector load.
+    method CharacterLoopsAtGuardPage;
+    begin
+      var lInfo: rtl.SYSTEM_INFO;
+      rtl.GetSystemInfo(@lInfo);
+      var lPage := NativeUInt(lInfo.dwPageSize);
+      var lAllocation := ^Byte(rtl.VirtualAlloc(nil, lPage * 2, rtl.MEM_RESERVE or rtl.MEM_COMMIT, rtl.PAGE_READWRITE));
+      Assert.IsTrue(lAllocation <> nil);
+      try
+        var lPrevious: rtl.DWORD;
+        Assert.IsTrue(rtl.VirtualProtect(lAllocation + lPage, lPage, rtl.PAGE_NOACCESS, @lPrevious));
+        var lOne := ^Char(lAllocation + lPage - sizeOf(Char));
+        lOne^ := 'a';
+        Assert.AreEqual(0, FindPointer(lOne, 64, 'a'));
+        // These sizes keep the object header aligned on both 32- and 64-bit
+        // Windows while leaving a partial UTF-16 vector at the page boundary.
+        for each lSize in [2, 6, 10, 14, 18, 30, 34, 126, 130] do begin
+          var lChars := new Char[lSize];
+          for i := 0 to lSize - 2 do lChars[i] := 'a';
+          lChars[lSize - 1] := Char($d800);
+          var lSource := new String(lChars);
+          var lBytes := sizeOf(Object) + sizeOf(Integer) + lSize * sizeOf(Char);
+          var lBase := lAllocation + lPage - lBytes;
+          memcpy(lBase, InternalCalls.Cast(lSource), lBytes);
+          var lText := InternalCalls.Cast<String>(lBase);
+          Assert.AreEqual(0, FindFirst(lText, 'a'));
+          Assert.AreEqual(lSize - 1, FindFirst(lText, Char($d800)));
+          Assert.AreEqual(-1, FindFirst(lText, 'z'));
+          Assert.AreEqual(lSize - 1, CountChar(lText, 'a'));
+          lText := nil;
+        end;
+      finally
+        rtl.VirtualFree(lAllocation, 0, rtl.MEM_RELEASE);
+      end;
+    end;
+    {$ENDIF}
 
     method MatchPositionsAndOffsets;
     begin
