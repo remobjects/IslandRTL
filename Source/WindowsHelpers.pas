@@ -78,6 +78,18 @@ type
     class var fDeferredCallerContext: DeferredCallerContext;
     [ThreadLocal]
     class var fSkipCatchFrame: UInt64;
+    {$IF ARM64EC}
+    [ThreadLocal]
+    class var fForeignCatchRecord: rtl.EXCEPTION_RECORD;
+    [ThreadLocal]
+    class var fCatchBasePointer: NativeInt;
+    [ThreadLocal]
+    class var fForeignCatchCode: UInt64;
+    [ThreadLocal]
+    class var fForeignCatchData: ^Void;
+    [ThreadLocal]
+    class var fForeignUnwindException: ^Void;
+    {$ENDIF}
     {$ENDIF}
     class method getModuleHandle: rtl.HMODULE;
     begin
@@ -1485,7 +1497,43 @@ begin
   rtl.DebugBreak;
 end;
 
-{$IF ARM64 or ARM64EC}
+{$IF ARM64EC}
+// LLVM funclets can address the parent locals through x19 as well as x29.
+[InlineAsm("
+        stp     x29, x30, [sp, #-32]!
+        str     x19, [sp, #16]
+        mov     x29, x1
+        mov     x19, x2
+        blr     x0
+        ldr     x19, [sp, #16]
+        ldp     x29, x30, [sp], #32
+        ret
+", "", true, false), DisableInlining, DisableOptimizations]
+method CallCatch64(aCall: NativeInt; aEBP: NativeInt; aBase: NativeInt): NativeInt; external;
+
+[InlineAsm("
+        stp     x29, x30, [sp, #-32]!
+        str     x19, [sp, #16]
+        mov     x29, x1
+        mov     x19, x4
+        adr     x4, catch_return
+        str     x4, [x2]
+        mov     x5, sp
+        str     x5, [x3]
+        blr     x0
+catch_return:
+        ldr     x19, [sp, #16]
+        ldp     x29, x30, [sp], #32
+        ret
+", "", true, false), DisableInlining, DisableOptimizations]
+method CallCatch64AfterUnwind(aCall: NativeInt; aEBP: NativeInt; var aReturnAddress: NativeInt; var aReturnStack: NativeInt; aBase: NativeInt): NativeInt; external;
+
+[InlineAsm("
+        mov     sp, x1
+        br      x0
+", "", true, false), Naked, DisableInlining, DisableOptimizations]
+method ExitCatchFunclet(aReturnAddress: NativeInt; aReturnStack: NativeInt); external;
+{$ELSEIF ARM64}
 // These internal funclets execute native AArch64 code on both Windows targets.
 [InlineAsm("
 
@@ -1729,7 +1777,11 @@ begin
   var lUnwindMap := ^MSVCUnwindMap(ExternalCalls.fCatchImageBase + msvcinfo^.UnwindMap);
   while (lIndex >= 0) and (lIndex < msvcinfo^.NumUnwindMap) do begin
     if lUnwindMap[lIndex].Cleanup <> 0 then
+      {$IF ARM64EC}
+      CallCatch64(ExternalCalls.fCatchImageBase + lUnwindMap[lIndex].Cleanup, ExternalCalls.fCatchFrame, ExternalCalls.fCatchBasePointer);
+      {$ELSE}
       CallCatch64(ExternalCalls.fCatchImageBase + lUnwindMap[lIndex].Cleanup, ExternalCalls.fCatchFrame);
+      {$ENDIF}
     lIndex := lUnwindMap[lIndex].ToState;
   end;
 end;
@@ -1737,9 +1789,21 @@ end;
 [SymbolName('__elements_run_catch_after_unwind'), DisableInlining, DisableOptimizations]
 method RunCatchAfterUnwind: NativeInt;
 begin
+  {$IF ARM64EC}
+  if ExternalCalls.fForeignCatchData <> nil then begin
+    var lData := ExternalCalls.fForeignCatchData;
+    var lCode := ExternalCalls.fForeignCatchCode;
+    ExternalCalls.fForeignCatchData := nil;
+    ForeignExceptionImplementation.Caught(lCode, lData, Exception(ExternalCalls.fCatchException));
+  end;
+  {$ENDIF}
   ExternalCalls.fDeferredRaise := false;
   ExternalCalls.fCatchActive := true;
+  {$IF ARM64EC}
+  result := CallCatch64AfterUnwind(ExternalCalls.fCatchHandler, ExternalCalls.fCatchFrame, var ExternalCalls.fCatchReturnAddress, var ExternalCalls.fCatchReturnStack, ExternalCalls.fCatchBasePointer);
+  {$ELSE}
   result := CallCatch64AfterUnwind(ExternalCalls.fCatchHandler, ExternalCalls.fCatchFrame, var ExternalCalls.fCatchReturnAddress, var ExternalCalls.fCatchReturnStack);
+  {$ENDIF}
   ExternalCalls.fCatchActive := false;
   if ExternalCalls.fDeferredRaise then begin
     RunDeferredCatchCleanups;
@@ -1800,12 +1864,20 @@ begin
   ExternalCalls.fCatchFrame := pExcept^.ExceptionInformation[1];
   ExternalCalls.fCatchHandler := pExcept^.ExceptionInformation[2];
   ExternalCalls.fCatchException := InternalCalls.Cast<Object>(^Void(pExcept^.ExceptionInformation[4]));
+  {$IF ARM64EC}
+  ExternalCalls.fCatchFrame := pExcept^.ExceptionInformation[7];
+  ExternalCalls.fForeignCatchCode := pExcept^.ExceptionInformation[5];
+  ExternalCalls.fForeignCatchData := ^Void(pExcept^.ExceptionInformation[6]);
+  {$ENDIF}
   var lAfterUnwind: method := @AfterUnwindRunCatch;
   exit NativeInt(^Void(lAfterUnwind));
 end;
 
 method CallCatch(aCatch: ^MSVCTryMap; aHandler: ^MSVCHandlerType; arec: ^rtl.EXCEPTION_RECORD; EstFrame: UInt64; context: rtl.PCONTEXT; dispatcher: rtl.PDISPATCHER_CONTEXT; aException: Exception);
 begin
+  {$IF ARM64EC}
+  ExternalCalls.fCatchBasePointer := ^NativeInt(rtl.PDISPATCHER_CONTEXT_ARM64EC(dispatcher)^.NonVolatileRegisters)^;
+  {$ENDIF}
   ExternalCalls.fCatchImageBase := dispatcher^.ImageBase;
   ExternalCalls.fCatchHandlerData := NativeInt(dispatcher^.HandlerData);
   {$IF ARM64}
@@ -1835,6 +1907,29 @@ begin
   eh.ExceptionInformation[2] := dispatcher^.ImageBase + aHandler^.Handler;
   eh.ExceptionInformation[3] := aCatch^.TryLow;
   eh.ExceptionInformation[4] := UInt64(InternalCalls.Cast(aException));
+  {$IF ARM64EC}
+  eh.ExceptionInformation[7] := ^NativeUInt(rtl.PDISPATCHER_CONTEXT_ARM64EC(dispatcher)^.NonVolatileRegisters)[10];
+  if (arec^.ExceptionCode = $20474343) and (arec^.NumberParameters >= 1) and
+     (arec^.ExceptionInformation[0] <> 0) then begin
+    // libunwind cleanup frames must see their original GCC exception. Delphi
+    // translates STATUS_UNWIND_CONSOLIDATE into another exception recursively.
+    ExternalCalls.fForeignUnwindException := ^Void(arec^.ExceptionInformation[0]);
+    var lClass := ^UInt64(ExternalCalls.fForeignUnwindException)^;
+    if ForeignExceptionImplementation.CanHandle(lClass) then begin
+      eh.ExceptionInformation[5] := lClass;
+      eh.ExceptionInformation[6] := NativeUInt(ExternalCalls.fForeignUnwindException);
+    end;
+    ExternalCalls.fForeignCatchRecord := eh;
+    eh := arec^;
+    eh.NumberParameters := 4;
+    eh.ExceptionInformation[1] := EstFrame;
+    var lUnwind := ^NativeUInt(ExternalCalls.fForeignUnwindException);
+    lUnwind[3] := EstFrame; // _Unwind_Exception.private_[1]: target for _Unwind_Resume.
+    rtl.RtlUnwindEx(rtl.PVOID(EstFrame), rtl.PVOID(dispatcher^.ControlPc), @eh,
+      ExternalCalls.fForeignUnwindException, context, dispatcher^.HistoryTable);
+    exit;
+  end;
+  {$ENDIF}
   rtl.RtlUnwindEx(rtl.PVOID(EstFrame), rtl.PVOID(dispatcher^.ControlPc),  @eh, nil, context, dispatcher^.HistoryTable);
 end;
 
@@ -1850,18 +1945,39 @@ begin
 
   if 0 <> (arec^.ExceptionFlags and ( rtl.EXCEPTION_UNWINDING or rtl.EXCEPTION_EXIT_UNWIND)) then begin
     var lMap := ^MSVCUnwindMap(dispatcher^.ImageBase + msvcinfo^.UnwindMap);
+    {$IF ARM64EC}
+    if (arec^.ExceptionCode in [$20474343, $21474343]) and
+       (ExternalCalls.fForeignUnwindException <> nil) and
+       (arec^.ExceptionInformation[0] = NativeUInt(ExternalCalls.fForeignUnwindException)) and
+       (EstablisherFrame = ExternalCalls.fForeignCatchRecord.ExceptionInformation[1]) then begin
+      // Foreign frames are gone. Only now switch to Island's catch continuation.
+      var lFlags := arec^.ExceptionFlags;
+      arec^ := ExternalCalls.fForeignCatchRecord;
+      arec^.ExceptionFlags := lFlags;
+      ExternalCalls.fForeignCatchRecord := &default(rtl.EXCEPTION_RECORD);
+      ExternalCalls.fForeignUnwindException := nil;
+    end;
+    {$ENDIF}
     if (arec^.ExceptionCode = rtl.STATUS_UNWIND_CONSOLIDATE) and (EstablisherFrame = arec^.ExceptionInformation[1]) then begin
       var lTargetState := arec^.ExceptionInformation[3];
       // special exception, we're unwinding to a specific stat
       while (index >= 0) and (index < msvcinfo^.NumUnwindMap) and (&index <> lTargetState) do begin
+        {$IF ARM64EC}
+        if lMap[index].Cleanup <> 0 then CallCatch64(dispatcher^.ImageBase + lMap[index].Cleanup, ^NativeInt(rtl.PDISPATCHER_CONTEXT_ARM64EC(dispatcher)^.NonVolatileRegisters)[10], ^NativeInt(rtl.PDISPATCHER_CONTEXT_ARM64EC(dispatcher)^.NonVolatileRegisters)^);
+        {$ELSE}
         if lMap[index].Cleanup <> 0 then CallCatch64(dispatcher^.ImageBase + lMap[index].Cleanup, dispatcher^.EstablisherFrame);
+        {$ENDIF}
         index:= lMap[index].ToState;
       end;
       exit;
     end;
     // unwinding, call finally, this is generally when unwinding completely.
     while (index >= 0) and (index < msvcinfo^.NumUnwindMap) do begin
+      {$IF ARM64EC}
+      if lMap[index].Cleanup <> 0 then CallCatch64(dispatcher^.ImageBase + lMap[index].Cleanup, ^NativeInt(rtl.PDISPATCHER_CONTEXT_ARM64EC(dispatcher)^.NonVolatileRegisters)[10], ^NativeInt(rtl.PDISPATCHER_CONTEXT_ARM64EC(dispatcher)^.NonVolatileRegisters)^);
+      {$ELSE}
       if lMap[index].Cleanup <> 0 then CallCatch64(dispatcher^.ImageBase + lMap[index].Cleanup, dispatcher^.EstablisherFrame);
+      {$ENDIF}
       index:= lMap[index].ToState;
     end;
   end else begin
@@ -1872,10 +1988,19 @@ begin
     end;
     var exo: Exception;
     if msvcinfo^.NumTryBlocks <> 0 then begin
+      var lForeignCode: UInt64 := arec^.ExceptionCode;
+      var lForeignData: ^Void := arec;
+      {$IF ARM64EC}
+      if (arec^.ExceptionCode = $20474343) and (arec^.NumberParameters >= 1) and
+         (arec^.ExceptionInformation[0] <> 0) then begin
+        lForeignCode := ^UInt64(arec^.ExceptionInformation[0])^;
+        lForeignData := ^Void(arec^.ExceptionInformation[0]);
+      end;
+      {$ENDIF}
       if arec^.ExceptionCode = ElementsExceptionCode then begin
         exo := InternalCalls.Cast<Exception>(^^Void(@arec^.ExceptionInformation)[0]);
-      end else if ForeignExceptionImplementation.CanHandle(arec^.ExceptionCode) then begin
-        exo := ForeignExceptionImplementation.Handle(arec^.ExceptionCode, arec);
+      end else if ForeignExceptionImplementation.CanHandle(lForeignCode) then begin
+        exo := ForeignExceptionImplementation.Handle(lForeignCode, lForeignData);
       end else if arec^.ExceptionCode = $C0000005 then
         exo := new AccessViolationException
       else
