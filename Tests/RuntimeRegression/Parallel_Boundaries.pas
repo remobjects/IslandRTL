@@ -662,6 +662,7 @@ type
         var lCount := Integer(ThreadPool.MaxThreads);
         if lCount < 1 then lCount := 1;
         var lEntered := 0;
+        var lChecked := 0;
         var lDone := 0;
         var lFailed := 0;
         using lStart := new EventWaitHandle(false, false) do
@@ -702,8 +703,19 @@ type
                   Assert.IsTrue(lProbe.fEnumerated <= Environment.ProcessorCount + 1);
                   if lSeen <> 12 then InternalCalls.Increment(var lFailed);
                 except
-                  on e: Exception do InternalCalls.Increment(var lFailed);
+                  on e: Exception do begin
+                    writeLn('Saturated pool worker failed: ' + e.Message);
+                    InternalCalls.Increment(var lFailed);
+                  end;
                 end;
+                // Keep every pool slot occupied until all nested checks finish.
+                // Otherwise a faster callback frees a consumer for a slower one,
+                // invalidating the caller-only enumeration bound above.
+                InternalCalls.Increment(var lChecked);
+                while InternalCalls.VolatileRead(var lChecked) < lCount do
+                  Thread.Sleep(1);
+                // Notify the owner only after all callbacks leave that barrier;
+                // it can then dispose the events without an active waiter.
                 if InternalCalls.Increment(var lDone) + 1 = lCount then lFinished.Set;
               end, nil);
             var lWaited := 0;
