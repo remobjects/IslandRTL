@@ -139,10 +139,14 @@ method MemoryStream.WriteTo(Destination: Stream);
 begin
   if Destination = nil then raise new Exception('Destination is null');
   if not Destination.CanWrite then raise new NotSupportedException;
+  // Write the original contents only: self-copy can grow Length. Snapshot its
+  // bytes too, since an overlapping partial write could overwrite later input.
+  var length := Int32(fLength);
+  var source := if Destination = self then ToArray else fbuf;
   var written := 0;
-  while written < fLength do begin
-    var count := Destination.Write(new ImmutableSpan<Byte>(fbuf, written, Int32(fLength - written)));
-    if (count <= 0) or (count > fLength - written) then raise new Exception('Invalid stream write count');
+  while written < length do begin
+    var count := Destination.Write(new ImmutableSpan<Byte>(source, written, length - written));
+    if (count <= 0) or (count > length - written) then raise new Exception('Invalid stream write count');
     inc(written, count);
   end;
 end;

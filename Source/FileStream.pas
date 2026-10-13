@@ -182,16 +182,26 @@ end;
 method FileStream.Close;
 begin
   if IsValid then begin
-    if CanWrite then Flush;
-    {$IFDEF WINDOWS}
-    rtl.CloseHandle(fHandle);
-    fHandle := rtl.INVALID_HANDLE_VALUE;
-    {$ELSEIF POSIX_LIGHT}
-    CheckForIOError(rtl.fclose(fHandle));
-    fHandle := nil;
-    {$ELSE}
-    {$ERROR Unsupported platform}
-    {$ENDIF}
+    var flushed := false;
+    try
+      if CanWrite then Flush;
+      flushed := true;
+    finally
+      // A failed flush still consumes this stream's handle. Invalidate before
+      // closing: fclose releases its FILE even when it reports a write error.
+      // Preserve the original flush failure if close reports another error.
+      var handle := fHandle;
+      {$IFDEF WINDOWS}
+      fHandle := rtl.INVALID_HANDLE_VALUE;
+      var closed := rtl.CloseHandle(handle);
+      {$ELSEIF POSIX_LIGHT}
+      fHandle := nil;
+      var closed := rtl.fclose(handle);
+      {$ELSE}
+      {$ERROR Unsupported platform}
+      {$ENDIF}
+      if flushed then CheckForIOError(closed);
+    end;
   end;
 end;
 

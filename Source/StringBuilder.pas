@@ -262,6 +262,14 @@ type
         var delta := newLen - oldLen;
         if matches > (MaxCapacity - fLength) / delta then RaiseError('Enlarging the value of this instance would exceed MaxCapacity');
         var newLength := fLength + matches * delta;
+        if (matches = 1) and (newLength <= fCapacity) then begin
+          // One edit needs at most one overlapping tail move. Reuse reserved
+          // space instead of allocating and copying the unchanged prefix too.
+          IntMove(idx + oldLen, idx + newLen, fLength - idx - oldLen);
+          intCopy(NewValue.FirstChar, @fBuf[idx], newLen);
+          fLength := newLength;
+          exit self;
+        end;
         var newCapacity := if newLength > fCapacity then CalcCapacity(newLength) else fCapacity;
         var newbuf := new Char[newCapacity];
         var readPos := 0;

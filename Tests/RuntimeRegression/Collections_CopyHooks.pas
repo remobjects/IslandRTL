@@ -4,6 +4,28 @@
 namespace Island.Tests.Shared;
 uses RemObjects.Elements.EUnit;
 type
+  QueueClearCounts = static class
+  public
+    class var FailCopy: Boolean;
+    class var Copies, Cleanups: Integer;
+  end;
+  QueueClearValue = public record
+  public
+    Value: Integer;
+    constructor Copy(var aSource: QueueClearValue);
+    begin
+      if aSource.Value <> 0 then begin
+        inc(QueueClearCounts.Copies);
+        if QueueClearCounts.FailCopy then raise new Exception('discard copied a live value');
+      end;
+      Value := aSource.Value;
+    end;
+    finalizer;
+    begin
+      if Value <> 0 then inc(QueueClearCounts.Cleanups);
+      Value := 0;
+    end;
+  end;
   CopyHookCounts = public static class
   public
     class var Copies, Assignments, Cleanups: Integer;
@@ -38,7 +60,121 @@ type
       exit Value;
     end;
   end;
+  {$IFNDEF NOTHREADS}
+  // Tokens remain rooted by the audit list, but do not point back to any owning
+  // record/array/container. Real malloc storage distinguishes ownership cleanup
+  // from merely keeping GC references alive. Count bad releases without a crash.
+  ContainerResource = public class
+  public
+    Pointer: ^Void;
+    Releases: Integer;
+    constructor;
+    begin
+      Pointer := malloc(16);
+      if Pointer = nil then raise new Exception('resource allocation failed');
+    end;
+    method Release;
+    begin
+      inc(Releases);
+      if Releases = 1 then free(Pointer);
+    end;
+  end;
+  ContainerCleanupMode = enum(LocalValue, UnreachableArray, UnreachableDictionary, ClearDictionary, RemoveDictionary);
+  ContainerResourceAudit = static class
+  public
+    class var Tokens: List<ContainerResource>;
+    class var Failure: String;
+    class var Mode: ContainerCleanupMode;
+    class method Acquire: ContainerResource;
+    begin
+      result := new ContainerResource;
+      Tokens.Add(result);
+    end;
+  end;
+  ContainerOwnedValue = public record
+  public
+    Resource: ContainerResource;
+    constructor Copy(var aSource: ContainerOwnedValue);
+    begin
+      if aSource.Resource <> nil then Resource := ContainerResourceAudit.Acquire;
+    end;
+    class operator Assign(var aDest: ContainerOwnedValue; var aSource: ContainerOwnedValue);
+    begin
+      if (@aDest) = (@aSource) then exit;
+      if aDest.Resource <> nil then aDest.Resource.Release;
+      aDest.Resource := if aSource.Resource = nil then nil else ContainerResourceAudit.Acquire;
+    end;
+    finalizer;
+    begin
+      if Resource <> nil then begin
+        Resource.Release;
+        Resource := nil;
+      end;
+    end;
+  end;
+  {$ENDIF}
   Collections_CopyHooks = public class(Test)
+  private
+    {$IFNDEF NOTHREADS}
+    [DisableInlining]
+    class method ResourceWorker;
+    begin
+      try
+        case ContainerResourceAudit.Mode of
+          ContainerCleanupMode.LocalValue: begin
+            var value: ContainerOwnedValue;
+            value.Resource := ContainerResourceAudit.Acquire;
+          end;
+          ContainerCleanupMode.UnreachableArray: begin
+            var values := new ContainerOwnedValue[3];
+            for i := 0 to 2 do values[i].Resource := ContainerResourceAudit.Acquire;
+          end;
+          ContainerCleanupMode.UnreachableDictionary, ContainerCleanupMode.ClearDictionary, ContainerCleanupMode.RemoveDictionary: begin
+            var values := new Dictionary<Integer, ContainerOwnedValue>;
+            for i := 0 to 2 do begin
+              var value: ContainerOwnedValue;
+              value.Resource := ContainerResourceAudit.Acquire;
+              values.Add(i, value);
+            end;
+            if ContainerResourceAudit.Mode = ContainerCleanupMode.ClearDictionary then values.Clear;
+            if ContainerResourceAudit.Mode = ContainerCleanupMode.RemoveDictionary then
+              for i := 0 to 2 do Assert.IsTrue(values.Remove(i));
+          end;
+        end;
+      except
+        on e: Exception do ContainerResourceAudit.Failure := e.Message;
+      end;
+    end;
+
+    method CheckResourceCleanup(aMode: ContainerCleanupMode);
+    begin
+      // The worker unregisters its stack from the GC before IsAlive becomes
+      // false. This avoids stale stack words retaining otherwise dead arrays.
+      // Compare direct arrays and dictionaries with explicit Clear/Remove:
+      // all acquired resources must be released once after ownership disappears.
+      ContainerResourceAudit.Tokens := new List<ContainerResource>;
+      ContainerResourceAudit.Failure := nil;
+      ContainerResourceAudit.Mode := aMode;
+      try
+        var worker := new Thread(aState -> ResourceWorker);
+        worker.Start;
+        var waited := 0;
+        while worker.IsAlive and (waited < 10000) do begin
+          Thread.Sleep(1);
+          inc(waited);
+        end;
+        Assert.IsFalse(worker.IsAlive);
+        Assert.IsTrue(ContainerResourceAudit.Failure = nil);
+        BoehmGC.Collect(3);
+        Assert.IsTrue(ContainerResourceAudit.Tokens.Count > 0);
+        for each token in ContainerResourceAudit.Tokens do Assert.AreEqual(1, token.Releases);
+      finally
+        // A failing regression must not leave real native allocations behind.
+        for each token in ContainerResourceAudit.Tokens do
+          if token.Releases = 0 then token.Release;
+      end;
+    end;
+    {$ENDIF}
   public
     method ArrayCopyHonorsHooks;
     begin
@@ -64,6 +200,56 @@ type
       Array.Copy(@a[1], a, 0, 5);
       Assert.IsTrue(CopyHookCounts.Copies + CopyHookCounts.Assignments >= 5);
       for i := 0 to 4 do Assert.AreEqual(i + 1, a[i].Value);
+    end;
+
+    method QueueClearDiscardsWithoutCopying;
+    begin
+      // A wrapped ring exercises both sides of the buffer. A deliberately
+      // throwing Copy of a live value detects unused Dequeue return copies.
+      // Assigning default may still invoke Copy(default), as language semantics
+      // require; nonthrowing finalizers count every live slot exactly once.
+      var queue := new Queue<QueueClearValue>;
+      for i := 1 to 4 do queue.Enqueue(new QueueClearValue(Value := i));
+      queue.Dequeue; queue.Dequeue;
+      queue.Enqueue(new QueueClearValue(Value := 5));
+      queue.Enqueue(new QueueClearValue(Value := 6));
+      QueueClearCounts.Copies := 0;
+      QueueClearCounts.Cleanups := 0;
+      QueueClearCounts.FailCopy := true;
+      try
+        queue.Clear;
+        queue.Clear;
+      finally
+        QueueClearCounts.FailCopy := false;
+      end;
+      Assert.AreEqual(0, queue.Count);
+      Assert.AreEqual(0, QueueClearCounts.Copies);
+      Assert.AreEqual(4, QueueClearCounts.Cleanups);
+      queue.Enqueue(new QueueClearValue(Value := 7));
+      QueueClearCounts.Copies := 0;
+      QueueClearCounts.Cleanups := 0;
+      QueueClearCounts.FailCopy := true;
+      try queue.Clear; finally QueueClearCounts.FailCopy := false; end;
+      Assert.AreEqual(0, queue.Count);
+      Assert.AreEqual(0, QueueClearCounts.Copies);
+      Assert.AreEqual(1, QueueClearCounts.Cleanups);
+
+      // A reserved buffer must not add growth copies while filling exactly to
+      // capacity. Compare each enqueue with its first call, avoiding dependence
+      // on a particular compiler's parameter-copy count.
+      var reserved := new Queue<QueueClearValue>(17);
+      var source := new QueueClearValue(Value := 1);
+      QueueClearCounts.Copies := 0;
+      reserved.Enqueue(source);
+      var copiesPerEnqueue := QueueClearCounts.Copies;
+      for i := 1 to 16 do begin
+        QueueClearCounts.Copies := 0;
+        reserved.Enqueue(source);
+        Assert.AreEqual(copiesPerEnqueue, QueueClearCounts.Copies);
+      end;
+      QueueClearCounts.Cleanups := 0;
+      reserved.Clear;
+      Assert.AreEqual(17, QueueClearCounts.Cleanups);
     end;
 
     method DictionaryResizeAndClearHonorHooks;
@@ -175,5 +361,27 @@ type
       d.Clear;
       Assert.IsTrue(CopyHookCounts.Assignments + CopyHookCounts.Cleanups >= 20);
     end;
+    {$IFNDEF NOTHREADS}
+    method LocalOwnedResourceIsReleased;
+    begin
+      CheckResourceCleanup(ContainerCleanupMode.LocalValue);
+    end;
+    method UnreachableManagedArrayReleasesResources;
+    begin
+      CheckResourceCleanup(ContainerCleanupMode.UnreachableArray);
+    end;
+    method UnreachableDictionaryReleasesResources;
+    begin
+      CheckResourceCleanup(ContainerCleanupMode.UnreachableDictionary);
+    end;
+    method DictionaryClearReleasesResources;
+    begin
+      CheckResourceCleanup(ContainerCleanupMode.ClearDictionary);
+    end;
+    method DictionaryRemoveReleasesResources;
+    begin
+      CheckResourceCleanup(ContainerCleanupMode.RemoveDictionary);
+    end;
+    {$ENDIF}
   end;
 end.

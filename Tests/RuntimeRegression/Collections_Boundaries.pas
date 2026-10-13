@@ -6,6 +6,30 @@ uses RemObjects.Elements.EUnit;
 type
   Collections_Boundaries = public class(Test)
   public
+    method QueueInitialCapacityAndReuse;
+    begin
+      // Capacity reserves storage, not elements. Zero must grow normally; all
+      // starting capacities preserve FIFO order through wrapping and reuse.
+      for each capacity in [0, 1, 4, 17] do begin
+        var queue := new Queue<Integer>(capacity);
+        Assert.AreEqual(0, queue.Count);
+        for i := 0 to 31 do queue.Enqueue(i);
+        for i := 0 to 15 do Assert.AreEqual(i, queue.Dequeue);
+        for i := 32 to 63 do queue.Enqueue(i);
+        for i := 16 to 63 do Assert.AreEqual(i, queue.Dequeue);
+        queue.Clear;
+        queue.Enqueue(42);
+        Assert.AreEqual(42, queue.Dequeue);
+      end;
+      var caught := false;
+      try
+        var queue := new Queue<Integer>(-1);
+      except
+        on e: ArgumentOutOfRangeException do caught := true;
+      end;
+      Assert.IsTrue(caught);
+    end;
+
     method QueueEmptyAndWrap;
     begin
       var q := new Queue<Integer>;

@@ -25,11 +25,12 @@ type
     method Grow(aCapacity: Integer);
     method IsEmpty: Boolean; inline;
     method CalcCapacity(aNewCapacity: Integer): Integer;
-    method Init;
+    method Init(aCapacity: Integer);
     method GetNonGenericEnumerator: IEnumerator; implements IEnumerable.GetEnumerator;
     method IsEqual(Item1: T; Item2: T): Boolean;
   public
     constructor;
+    constructor(aCapacity: Integer);
 
     method GetEnumerator: IEnumerator<T>;
     method Contains(aItem: T): Boolean;
@@ -47,12 +48,20 @@ implementation
 
 constructor Queue<T>;
 begin
-  Init;
+  Init(4);
 end;
 
-method Queue<T>.Init;
+constructor Queue<T>(aCapacity: Integer);
 begin
-  fItems := new array of T(4);
+  // Bounded producers can reserve their complete buffer once. Growing later
+  // copies owned values and keeps old-buffer copies alive until GC finalization.
+  Init(aCapacity);
+end;
+
+method Queue<T>.Init(aCapacity: Integer);
+begin
+  if aCapacity < 0 then raise new ArgumentOutOfRangeException('aCapacity');
+  fItems := new array of T(aCapacity);
   fHead := 0;
   fTail := 0;
   fCount := 0;
@@ -72,7 +81,15 @@ end;
 
 method Queue<T>.Clear;
 begin
-  while fCount > 0 do Dequeue;
+  // Discarding an owned value needs cleanup, not a return-value copy. Calling
+  // Dequeue here invoked user Copy hooks (which may throw) for unused results.
+  // Advance only after clearing succeeds, just as Dequeue does for its slot.
+  while fCount > 0 do begin
+    fItems[fTail] := nil;
+    inc(fTail);
+    dec(fCount);
+    if fTail = length(fItems) then fTail := 0;
+  end;
   fHead := 0;
   fTail := 0;
 end;

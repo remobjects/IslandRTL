@@ -1,6 +1,10 @@
 ﻿namespace RemObjects.Elements.System;
 
 type
+  // A handle has one owner. Record copies and constructor(Handle) borrow the
+  // same slot; they do not retain it. Only the owner calls Dispose, and borrowers
+  // must stop using it first. Released slot numbers may be reused, so HasValue
+  // describes this record, not the lifetime of a separately disposed copy.
   GCHandle = public record(IDisposable)
   private
     fHandle: NativeInt;

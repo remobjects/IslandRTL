@@ -5,6 +5,15 @@ namespace Island.Tests.Shared;
 uses RemObjects.Elements.EUnit;
 type
   StringBuilder_Edit = public class(Test)
+  private
+    method BuilderBuffer(aBuilder: StringBuilder): Object;
+    begin
+      // Check allocation behavior directly; unchanged Capacity alone does not
+      // prove that Replace kept its already reserved character array.
+      for each field in typeOf(StringBuilder).Fields do
+        if field.Name = 'fBuf' then exit field.GetValue(aBuilder);
+      raise new Exception('StringBuilder buffer missing');
+    end;
   public
     method LengthGrowthClearsCharacters;
     begin
@@ -52,6 +61,27 @@ type
         b.Replace('?', 'tail');
         Assert.AreEqual('!longer-longertail', b.ToString);
       end;
+    end;
+
+    method SingleGrowingReplaceReusesReservedBuffer;
+    begin
+      // The replacement contains the needle: it must not be searched again.
+      // Move an overlapping tail safely, including matches at either boundary.
+      for each text in ['axyz', 'xyaz', 'xyza'] do begin
+        var b := new StringBuilder(64);
+        b.Append(text);
+        var buffer := BuilderBuffer(b);
+        b.Replace('a', 'aaaa');
+        Assert.IsTrue(Object.ReferenceEquals(buffer, BuilderBuffer(b)));
+        Assert.AreEqual(64, b.Capacity);
+        Assert.AreEqual(text.Replace('a', 'aaaa'), b.ToString);
+      end;
+      var ranged := new StringBuilder(64);
+      ranged.Append('a-a-a');
+      var buffer := BuilderBuffer(ranged);
+      ranged.Replace('a', 'long', 2, 1);
+      Assert.AreEqual('a-long-a', ranged.ToString);
+      Assert.IsTrue(Object.ReferenceEquals(buffer, BuilderBuffer(ranged)));
     end;
 
     method ReplacementMatchesSimpleModel;

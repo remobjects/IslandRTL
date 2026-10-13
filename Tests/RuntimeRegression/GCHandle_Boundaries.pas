@@ -41,6 +41,27 @@ type
       empty.Dispose;
     end;
 
+    method BorrowedCopiesShareTheOwnersRoot;
+    begin
+      // Copies borrow an existing root; the owner alone releases it. Do not
+      // dereference stale copies after release: a later allocation may reuse it.
+      var owner := GCHandle.Allocate(new HandlePayload(Value := 123));
+      var borrowed := owner;
+      var fromHandle := new GCHandle(owner.Handle);
+      try
+        Assert.IsTrue(Pressure > 0);
+        Assert.AreEqual(owner.Handle, borrowed.Handle);
+        Assert.AreEqual(123, (borrowed.Target as HandlePayload).Value);
+        Assert.IsTrue(Object.ReferenceEquals(owner.Target, fromHandle.Target));
+      finally
+        borrowed := default(GCHandle);
+        fromHandle := default(GCHandle);
+        owner.Dispose;
+      end;
+      owner.Dispose;
+      Assert.IsFalse(owner.HasValue);
+    end;
+
     method InvalidHandlesAreRejected;
     begin
       for each value in [NativeInt(0), NativeInt(-1), NativeInt.MinValue, NativeInt.MaxValue] do begin
