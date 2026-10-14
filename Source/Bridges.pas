@@ -1,9 +1,9 @@
 ﻿namespace RemObjects.Elements.System;
 
 type
-  IslandObject = public System.Object;
-  IslandString = public System.String;
-  IslandException = public System.Exception;
+  IslandObject = public RemObjects.Elements.System.Object;
+  IslandString = public RemObjects.Elements.System.String;
+  IslandException = public RemObjects.Elements.System.Exception;
 
   RemObjects.Elements.System.Island.Object = public IslandObject;
   RemObjects.Elements.System.Island.String = public IslandString;

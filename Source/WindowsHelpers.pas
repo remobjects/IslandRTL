@@ -24,6 +24,7 @@ type
   public
     func: atexitfunc;
     next: ^atexitrec;
+    moduleHandle: rtl.HMODULE;
   end;
 
   {$IFDEF _WIN64}
@@ -46,6 +47,7 @@ type
   private
 
     class var atexitlist: ^atexitrec; assembly;
+    class var fAtexitLock: Integer; private;
     class var processheap: rtl.HANDLE;
     class var fModuleHandle: rtl.HMODULE; assembly;
     class var fMainThreadID: rtl.DWORD; assembly;
@@ -361,6 +363,7 @@ type
     class method _endthreadex(aval: Cardinal);
     [SymbolName('atexit')]
     class method atexit(func: atexitfunc);
+    class method FinalizeModule(aModule: rtl.HMODULE);
     [SymbolName('exit')]
     class method &exit(ex: Integer);
     [SymbolName('memcpy')]
@@ -824,16 +827,21 @@ type
     raise new ArgumentException('HResult error: '+aVal);
   end;
 
+  {$IFNDEF ISLAND_PACKAGE_RUNTIME}
   [SymbolName('__elements_entry_point'), &Weak]
   method UserEntryPoint(args: array of String): Integer; external;
 
   [SymbolName('__elements_dll_main'), &Weak]
   method DllMain(aModule: rtl.HMODULE; aReason: rtl.DWORD; aReserved: ^Void): Boolean; external;
 
+  {$ENDIF}
+
 // This is needed by anything msvc compiled; it's the offset in fs for the tls array
 var
+  {$IFNDEF ISLAND_PACKAGE_RUNTIME}
   [Used, StaticallyInitializedField]
   _dllmain: DllMainType := @DllMain; public;
+  {$ENDIF}
   [SymbolName('_tls_index'), Used, StaticallyInitializedField]
   _tls_index: Cardinal; public;
 
@@ -952,14 +960,17 @@ var
 
 [SymbolName('__elements_tls_callback_method'), Used, CallingConvention(CallingConvention.Stdcall)]
 method elements_tls_callback(aHandle: ^Void; aReason: rtl.DWORD; aReserved: ^Void); public;
+{$IFNDEF ISLAND_PACKAGE_RUNTIME}
 [SymbolName('main')]
 method main: Integer;
+{$ENDIF}
 
 {$IF ARM64EC}
 [SymbolName('#__security_init_cookie')]
 method InitializeSecurityCookie; external;
 {$ENDIF}
 
+{$IFNDEF ISLAND_PACKAGE_RUNTIME}
 [SymbolName('mainCRTStartup')]
 method mainCRTStartup: Integer;
 
@@ -968,6 +979,7 @@ method WinMainCRTStartup: Integer;
 
 [SymbolName('_DllMainCRTStartup'), CallingConvention(CallingConvention.Stdcall), DisableOptimizations, DisableInlining]
 method DllMainCRTStartup(aModule: rtl.HMODULE; aReason: rtl.DWORD; aReserved: ^Void): Boolean;
+{$ENDIF}
 
 method ElementsThreadHelper(aParam: ^Void): rtl.DWORD;
 
@@ -1160,10 +1172,46 @@ end;
 method ExternalCalls.atexit(func: atexitfunc);
 begin
   var rec := ^atexitrec(malloc(sizeOf(atexitrec)));
-  // TODO: make atomic
   rec^.func := func;
-  rec^.next := atexitlist;
-  atexitlist := rec;
+  var lInfo: rtl.MEMORY_BASIC_INFORMATION;
+  rec^.moduleHandle := nil;
+  if rtl.VirtualQuery(^Void(func), @lInfo, sizeOf(lInfo)) <> 0 then
+    rec^.moduleHandle := rtl.HMODULE(lInfo.AllocationBase);
+  Utilities.SpinLockEnter(var fAtexitLock);
+  try
+    rec^.next := atexitlist;
+    atexitlist := rec;
+  finally
+    Utilities.SpinLockExit(var fAtexitLock);
+  end;
+end;
+
+// Run only callbacks owned by the departing module while its code is mapped.
+method ExternalCalls.FinalizeModule(aModule: rtl.HMODULE);
+begin
+  loop begin
+    var lRecord: ^atexitrec := nil;
+    Utilities.SpinLockEnter(var fAtexitLock);
+    try
+      var lLink := @atexitlist;
+      while lLink^ <> nil do begin
+        if lLink^^.moduleHandle = aModule then begin
+          lRecord := lLink^;
+          lLink^ := lRecord^.next;
+          break;
+        end;
+        lLink := @lLink^^.next;
+      end;
+    finally
+      Utilities.SpinLockExit(var fAtexitLock);
+    end;
+    if lRecord = nil then exit;
+    // The callback can register another exit callback. Never hold the list
+    // lock across user code, and detach its record before invoking it.
+    var lCallback := lRecord^.func;
+    free(lRecord);
+    lCallback();
+  end;
 end;
 
 method ElementsThreadHelper(aParam: ^Void): rtl.DWORD;
@@ -1580,17 +1628,53 @@ retq
 ", "", false, false), DisableInlining, DisableOptimizations]
 method CallCatch64(aCall: NativeInt; aEBP: NativeInt): NativeInt; external;
 
+// A re-raise leaves the funclet through ExitCatchFunclet, bypassing its
+// epilogue. Preserve every Win64 nonvolatile register for that return path.
 [InlineAsm("
 pushq %rbp
+pushq %rbx
+pushq %rsi
+pushq %rdi
+pushq %r12
+pushq %r13
+pushq %r14
+pushq %r15
 movq %rdx, %rbp
-subq $$32, %rsp
+subq $$200, %rsp
+movdqu %xmm6, 32(%rsp)
+movdqu %xmm7, 48(%rsp)
+movdqu %xmm8, 64(%rsp)
+movdqu %xmm9, 80(%rsp)
+movdqu %xmm10, 96(%rsp)
+movdqu %xmm11, 112(%rsp)
+movdqu %xmm12, 128(%rsp)
+movdqu %xmm13, 144(%rsp)
+movdqu %xmm14, 160(%rsp)
+movdqu %xmm15, 176(%rsp)
 movq %rdx, 8(%rsp)
 leaq catch_return(%rip), %rax
 movq %rax, (%r8)
 movq %rsp, (%r9)
 callq *%rcx
 catch_return:
-addq $$32, %rsp
+movdqu 32(%rsp), %xmm6
+movdqu 48(%rsp), %xmm7
+movdqu 64(%rsp), %xmm8
+movdqu 80(%rsp), %xmm9
+movdqu 96(%rsp), %xmm10
+movdqu 112(%rsp), %xmm11
+movdqu 128(%rsp), %xmm12
+movdqu 144(%rsp), %xmm13
+movdqu 160(%rsp), %xmm14
+movdqu 176(%rsp), %xmm15
+addq $$200, %rsp
+popq %r15
+popq %r14
+popq %r13
+popq %r12
+popq %rdi
+popq %rsi
+popq %rbx
 popq %rbp
 retq
 ", "", false, false), DisableInlining, DisableOptimizations]
@@ -2113,6 +2197,7 @@ begin
 end;
 
 
+{$IFNDEF ISLAND_PACKAGE_RUNTIME}
 method main: Integer;
 begin
   Utilities.Initialize;
@@ -2193,5 +2278,7 @@ begin
     end;
   end;
 end;
+
+{$ENDIF}
 
 end.
