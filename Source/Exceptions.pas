@@ -1,6 +1,11 @@
 ﻿namespace RemObjects.Elements.System;
 
 type
+  // Implemented by foreign exception wrappers that can preserve native identity.
+  IForeignException = public interface
+    method RaiseNative(aRaiseAddress: ^Void);
+  end;
+
   ForeignExceptionImplementation = public class
   public
     constructor(aCode: UInt64; aHandler: Func<^Void, Exception>; aFree: Action<^Void>);

@@ -1708,6 +1708,11 @@ begin
     ExitCatchFunclet(fCatchReturnAddress, fCatchReturnStack);
   end;
   {$ENDIF}
+  // Catch funclets must finish their deferred cleanups before a native rethrow.
+  {$IF _WIN64 AND NOT ARM64EC}
+  if aRaiseObject is IForeignException then
+    IForeignException(aRaiseObject).RaiseNative(if aRaiseAddress = nil then Utilities.GetReturnAddress(0) else aRaiseAddress);
+  {$ENDIF}
   var lData: array[0..2] of NativeUInt;
   lData[1] := NativeUInt(if aRaiseAddress = nil then Utilities.GetReturnAddress(0) else aRaiseAddress);
   lData[2] := NativeUInt(aRaiseFrame);
