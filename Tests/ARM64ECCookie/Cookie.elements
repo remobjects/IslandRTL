@@ -1,0 +1,17 @@
+<Project xmlns="http://schemas.microsoft.com/developer/msbuild/2003" DefaultTargets="Build">
+  <PropertyGroup>
+    <OutputType>Executable</OutputType>
+    <AssemblyName>Arm64EcCookie</AssemblyName>
+    <Architecture>arm64ec</Architecture>
+    <AllowGlobals>True</AllowGlobals>
+    <GenerateDebugInfo>False</GenerateDebugInfo>
+    <EnableAsserts>False</EnableAsserts>
+  </PropertyGroup>
+  <ItemGroup>
+    <Reference Include="Island"><HintPath>$(IslandReference)</HintPath></Reference>
+    <Reference Include="rtl" />
+    <Reference Include="gc" />
+    <Compile Include="Cookie.pas" />
+  </ItemGroup>
+  <Import Project="$(MSBuildExtensionsPath)\RemObjects Software\Elements\RemObjects.Elements.Island.Windows.targets" />
+</Project>

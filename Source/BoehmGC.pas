@@ -136,6 +136,11 @@ type
       {$IF DARWIN}
       GC_set_pages_executable(0);
       {$ENDIF}
+      {$IF ISLAND_PACKAGE_RUNTIME AND WINDOWS}
+      // BDWGC's detached parallel markers cannot be joined before unloading a
+      // package. Keep marking on the collecting thread; user threads remain supported.
+      SetPackageMarkers(1);
+      {$ENDIF}
       GC_init;
       {$IFNDEF WEBASSEMBLY}
       GC_allow_register_threads();
@@ -152,6 +157,11 @@ type
       fSharedMemory.unsetfinalizer := @UnsetFinalizer;
     end;
 
+    {$IF ISLAND_PACKAGE_RUNTIME AND WINDOWS}
+    [SymbolName('GC_set_markers_count')]
+    class method SetPackageMarkers(aCount: Cardinal); private; external;
+    {$ENDIF}
+
     {$IFDEF WINDOWS}class var fMapping: rtl.HANDLE;{$ENDIF}
     {$IFDEF LINUX AND NOT ANDROID}class var fMapping: Integer;{$ENDIF}
 
@@ -163,6 +173,9 @@ type
         if InternalCalls.CompareExchange(var fLoaded, 1, 0 ) = 1 then begin
           exit;
         end;
+        // A package can be finalized and initialized again while still mapped.
+        // The new lifetime must be eligible for its own balanced shutdown.
+        fWasFinalized := false;
         //Utilities.RegisterThreadHandlers(@RegisterThread, @UnregisterThread);
         {$IFDEF WINDOWS}
         var FN: array[0..29] of Char;

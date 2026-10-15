@@ -24,6 +24,7 @@ type
   public
     func: atexitfunc;
     next: ^atexitrec;
+    moduleHandle: rtl.HMODULE;
   end;
 
   {$IFDEF _WIN64}
@@ -34,10 +35,10 @@ type
   end;
   {$ENDIF}
 
-  {$IFDEF ARM64}
+  {$IF ARM64 or ARM64EC}
   StackProbe = assembly static class
   public
-    [SymbolName('__chkstk'), Naked, DisableOptimizations, DisableInliningAttribute, Used]
+    [SymbolName({$IF ARM64EC}'__chkstk_arm64ec'{$ELSE}'__chkstk'{$ENDIF}), Naked, DisableOptimizations, DisableInliningAttribute, Used]
     class method _chkstk;
   end;
   {$ENDIF}
@@ -55,6 +56,7 @@ type
   private
 
     class var atexitlist: ^atexitrec; assembly;
+    class var fAtexitLock: Integer; private;
     class var processheap: rtl.HANDLE;
     class var fModuleHandle: rtl.HMODULE; assembly;
     class var fMainThreadID: rtl.DWORD; assembly;
@@ -91,6 +93,18 @@ type
     class var fDeferredCallerContext: DeferredCallerContext;
     [ThreadLocal]
     class var fSkipCatchFrame: UInt64;
+    {$IF ARM64EC}
+    [ThreadLocal]
+    class var fForeignCatchRecord: rtl.EXCEPTION_RECORD;
+    [ThreadLocal]
+    class var fCatchBasePointer: NativeInt;
+    [ThreadLocal]
+    class var fForeignCatchCode: UInt64;
+    [ThreadLocal]
+    class var fForeignCatchData: ^Void;
+    [ThreadLocal]
+    class var fForeignUnwindException: ^Void;
+    {$ENDIF}
     {$ENDIF}
     class method getModuleHandle: rtl.HMODULE;
     begin
@@ -362,6 +376,7 @@ type
     class method _endthreadex(aval: Cardinal);
     [SymbolName('atexit')]
     class method atexit(func: atexitfunc);
+    class method FinalizeModule(aModule: rtl.HMODULE);
     [SymbolName('exit')]
     class method &exit(ex: Integer);
     [SymbolName('memcpy')]
@@ -375,7 +390,7 @@ type
     [SymbolName('wcslen')]
     class method wcslen(c: ^Char): Integer;
 
-    {$IFNDEF ARM64}
+    {$IF not (ARM64 or ARM64EC)}
     {$IFDEF _WIN64}
     [SymbolName('__chkstk'), Naked, DisableOptimizations, DisableInliningAttribute, Used]
     {$ELSE}
@@ -426,6 +441,8 @@ type
     begin
       // Nothing needed on arm64 here.
     end;
+    {$ELSEIF ARM64EC}
+    // EC's collector uses __builtin_unwind_init, not the legacy GC-only setjmp.
     {$ELSEIF _WIN64}
     [SymbolName('_setjmp'), Naked, DisableOptimizations, DisableInliningAttribute]
     class method setjmp(var buf: rtl.jmp_buf);
@@ -847,16 +864,21 @@ type
     raise new ArgumentException('HResult error: '+aVal);
   end;
 
+  {$IFNDEF ISLAND_PACKAGE_RUNTIME}
   [SymbolName('__elements_entry_point'), &Weak]
   method UserEntryPoint(args: array of String): Integer; external;
 
   [SymbolName('__elements_dll_main'), &Weak]
   method DllMain(aModule: rtl.HMODULE; aReason: rtl.DWORD; aReserved: ^Void): Boolean; external;
 
+  {$ENDIF}
+
 // This is needed by anything msvc compiled; it's the offset in fs for the tls array
 var
+  {$IFNDEF ISLAND_PACKAGE_RUNTIME}
   [Used, StaticallyInitializedField]
   _dllmain: DllMainType := @DllMain; public;
+  {$ENDIF}
   [SymbolName('_tls_index'), Used, StaticallyInitializedField]
   _tls_index: Cardinal; public;
 
@@ -905,11 +927,17 @@ var
     SizeOfZeroFill := 0
     ); readonly; public;
 
+  {$IF ARM64EC}
+  // The Windows loader uses this record to initialize the EC transition helpers.
+  [SymbolName('__chpe_metadata')] __chpe_metadata: Byte; external;
+  {$ENDIF}
+
   {$IFDEF _WIN64}
   [Used, SymbolName('_load_config_used'), StaticallyInitializedField]
   _load_config_used: rtl.IMAGE_LOAD_CONFIG_DIRECTORY :=
     new rtl.IMAGE_LOAD_CONFIG_DIRECTORY(
     Size := sizeOf(rtl.IMAGE_LOAD_CONFIG_DIRECTORY),
+    CHPEMetadataPointer := {$IF ARM64EC}UIntPtr(@__chpe_metadata){$ELSE}0{$ENDIF},
     SecurityCookie := UIntPtr(^UIntPtr(@__security_cookie)),
     //GuardCFCheckFunctionPointer := UIntPtr(^UIntPtr(@__guard_check_icall_fptr)),
     //GuardCFDispatchFunctionPointer := UIntPtr(^UIntPtr(@__guard_dispatch_icall_fptr)),
@@ -943,7 +971,12 @@ var
     {.$ERROR Unsupported Architecture}
   {$ENDIF}
 
+  {$IF ARM64EC}
+  // Windows initializes this 64-bit cookie through the load-config directory.
+  [SymbolName('__security_cookie'), StaticallyInitializedField] var __security_cookie: UIntPtr := $00002B992DDFA232;
+  {$ELSE}
   [SymbolName('__security_cookie'), StaticallyInitializedField] var __security_cookie: Integer := $12345678;
+  {$ENDIF}
   //[SymbolName('__guard_check_icall_fptr')] var __guard_check_icall_fptr: Integer; external;
   {$IFDEF _WIN64}
   //[SymbolName('__guard_dispatch_icall_fptr')] var __guard_dispatch_icall_fptr: Integer; external;
@@ -964,9 +997,17 @@ var
 
 [SymbolName('__elements_tls_callback_method'), Used, CallingConvention(CallingConvention.Stdcall)]
 method elements_tls_callback(aHandle: ^Void; aReason: rtl.DWORD; aReserved: ^Void); public;
+{$IFNDEF ISLAND_PACKAGE_RUNTIME}
 [SymbolName('main')]
 method main: Integer;
+{$ENDIF}
 
+{$IF ARM64EC}
+[SymbolName('#__security_init_cookie')]
+method InitializeSecurityCookie; external;
+{$ENDIF}
+
+{$IFNDEF ISLAND_PACKAGE_RUNTIME}
 [SymbolName('mainCRTStartup')]
 method mainCRTStartup: Integer;
 
@@ -975,6 +1016,7 @@ method WinMainCRTStartup: Integer;
 
 [SymbolName('_DllMainCRTStartup'), CallingConvention(CallingConvention.Stdcall), DisableOptimizations, DisableInlining]
 method DllMainCRTStartup(aModule: rtl.HMODULE; aReason: rtl.DWORD; aReserved: ^Void): Boolean;
+{$ENDIF}
 
 method ElementsThreadHelper(aParam: ^Void): rtl.DWORD;
 
@@ -1046,7 +1088,7 @@ end;
 method elements_tls_callback(aHandle: ^Void; aReason: rtl.DWORD; aReserved: ^Void);
 begin
   case aReason of
-    rtl.DLL_PROCESS_ATTACH: ;
+    rtl.DLL_PROCESS_ATTACH: {$IF ARM64EC}InitializeSecurityCookie{$ENDIF};
     rtl.DLL_THREAD_ATTACH:;
     rtl.DLL_THREAD_DETACH:;
 
@@ -1201,10 +1243,46 @@ end;
 method ExternalCalls.atexit(func: atexitfunc);
 begin
   var rec := ^atexitrec(malloc(sizeOf(atexitrec)));
-  // TODO: make atomic
   rec^.func := func;
-  rec^.next := atexitlist;
-  atexitlist := rec;
+  var lInfo: rtl.MEMORY_BASIC_INFORMATION;
+  rec^.moduleHandle := nil;
+  if rtl.VirtualQuery(^Void(func), @lInfo, sizeOf(lInfo)) <> 0 then
+    rec^.moduleHandle := rtl.HMODULE(lInfo.AllocationBase);
+  Utilities.SpinLockEnter(var fAtexitLock);
+  try
+    rec^.next := atexitlist;
+    atexitlist := rec;
+  finally
+    Utilities.SpinLockExit(var fAtexitLock);
+  end;
+end;
+
+// Run only callbacks owned by the departing module while its code is mapped.
+method ExternalCalls.FinalizeModule(aModule: rtl.HMODULE);
+begin
+  loop begin
+    var lRecord: ^atexitrec := nil;
+    Utilities.SpinLockEnter(var fAtexitLock);
+    try
+      var lLink := @atexitlist;
+      while lLink^ <> nil do begin
+        if lLink^^.moduleHandle = aModule then begin
+          lRecord := lLink^;
+          lLink^ := lRecord^.next;
+          break;
+        end;
+        lLink := @lLink^^.next;
+      end;
+    finally
+      Utilities.SpinLockExit(var fAtexitLock);
+    end;
+    if lRecord = nil then exit;
+    // The callback can register another exit callback. Never hold the list
+    // lock across user code, and detach its record before invoking it.
+    var lCallback := lRecord^.func;
+    free(lRecord);
+    lCallback();
+  end;
 end;
 
 method ElementsThreadHelper(aParam: ^Void): rtl.DWORD;
@@ -1372,6 +1450,7 @@ begin
   exit Int64(lQuotient);
 end;
 {$IFDEF ARM64}
+{$ELSEIF ARM64EC}
 {$ELSEIF _WIN64}
 class method ExternalCalls.setjmp(var buf: rtl.jmp_buf); // Odds are this has some mistakes
 begin
@@ -1421,7 +1500,7 @@ end;
   {$ERROR Unsupported Architecture}
 {$ENDIF}
 
-{$IFDEF ARM64}
+{$IF ARM64 or ARM64EC}
 class method StackProbe._chkstk;
 begin
   // This version is licensed under the Apache License v2.0 with LLVM Exceptions. See https://llvm.org/LICENSE.txt; from the LLVM compiler-rt project.
@@ -1500,7 +1579,43 @@ begin
   rtl.DebugBreak;
 end;
 
-{$IF ARM64}
+{$IF ARM64EC}
+// LLVM funclets can address the parent locals through x19 as well as x29.
+[InlineAsm("
+        stp     x29, x30, [sp, #-32]!
+        str     x19, [sp, #16]
+        mov     x29, x1
+        mov     x19, x2
+        blr     x0
+        ldr     x19, [sp, #16]
+        ldp     x29, x30, [sp], #32
+        ret
+", "", true, false), DisableInlining, DisableOptimizations]
+method CallCatch64(aCall: NativeInt; aEBP: NativeInt; aBase: NativeInt): NativeInt; external;
+
+[InlineAsm("
+        stp     x29, x30, [sp, #-32]!
+        str     x19, [sp, #16]
+        mov     x29, x1
+        mov     x19, x4
+        adr     x4, catch_return
+        str     x4, [x2]
+        mov     x5, sp
+        str     x5, [x3]
+        blr     x0
+catch_return:
+        ldr     x19, [sp, #16]
+        ldp     x29, x30, [sp], #32
+        ret
+", "", true, false), DisableInlining, DisableOptimizations]
+method CallCatch64AfterUnwind(aCall: NativeInt; aEBP: NativeInt; var aReturnAddress: NativeInt; var aReturnStack: NativeInt; aBase: NativeInt): NativeInt; external;
+
+[InlineAsm("
+        mov     sp, x1
+        br      x0
+", "", true, false), Naked, DisableInlining, DisableOptimizations]
+method ExitCatchFunclet(aReturnAddress: NativeInt; aReturnStack: NativeInt); external;
+{$ELSEIF ARM64}
 [SymbolName('__elements_call_cleanup_funclet'), InlineAsm("
         .seh_proc __elements_call_cleanup_funclet
 
@@ -1709,6 +1824,8 @@ retq
 ", "", true, false), Naked, DisableInlining, DisableOptimizations]
 method CallCatch64(aCall: NativeInt; aEBP: NativeInt): NativeInt; external;
 
+// A re-raise leaves the funclet through ExitCatchFunclet, bypassing its
+// epilogue. Preserve every Win64 nonvolatile register for that return path.
 [SymbolName('__elements_call_catch_funclet'), InlineAsm("
 .seh_proc __elements_call_catch_funclet
 pushq %rbp
@@ -1852,7 +1969,14 @@ begin
 end;
 {$ENDIF}
 
-{$IF ARM64}
+{$IF ARM64EC}
+[InlineAsm("
+        mov     sp, x1
+        mov     x29, x2
+        br      x0
+", "", true, false), Naked, DisableInlining, DisableOptimizations]
+method JumpToContinuation64(aAddress, aESP, aEBP: NativeInt); external;
+{$ELSEIF ARM64}
 [InlineAsm("
        stp     x29, x30, [sp, #-16]!           // 16-byte Folded Spill
         mov     x1, sp
@@ -1922,6 +2046,20 @@ jmpq *%rax
 ", "", true, false), Naked, DisableInlining, DisableOptimizations]
 method AfterUnwindRunCatch; external;
 
+{$ELSEIF ARM64EC}
+[SymbolName('__elements_after_unwind_run_catch'), InlineAsm("
+bl ""#__elements_run_catch_after_unwind""
+cbz x0, deferred_raise
+br x0
+deferred_raise:
+bl ""#__elements_get_deferred_caller_context""
+ldr x1, [x0]
+ldr x29, [x0, #8]
+ldr x30, [x0, #16]
+mov sp, x1
+b ""#__elements_raise_deferred_exception""
+", "", true, false), Naked, DisableInlining, DisableOptimizations]
+method AfterUnwindRunCatch; external;
 {$ELSEIF ARM64}
 [SymbolName('__elements_after_unwind_run_catch'), InlineAsm("
 bl __elements_run_catch_after_unwind
@@ -1948,6 +2086,7 @@ end;
 // unwind. Preserve its pending catch state, including ARM64's register snapshot.
 // Restore only after a normal return: an escaping replacement exception owns the
 // new state and unwinds this frame without restoring the abandoned exception.
+{$IF NOT ARM64EC}
 [DisableInlining]
 method CallCleanup64(aCall: NativeInt; aFrame: NativeInt);
 begin
@@ -1989,6 +2128,8 @@ begin
   {$ENDIF}
 end;
 
+{$ENDIF}
+
 method RunDeferredCatchCleanups;
 begin
   var msvcinfo := ^MSVCExceptionInfo(ExternalCalls.fCatchImageBase + ^Int32(ExternalCalls.fCatchHandlerData)^);
@@ -2005,7 +2146,11 @@ begin
   var lUnwindMap := ^MSVCUnwindMap(ExternalCalls.fCatchImageBase + msvcinfo^.UnwindMap);
   while (lIndex >= 0) and (lIndex < msvcinfo^.NumUnwindMap) do begin
     if lUnwindMap[lIndex].Cleanup <> 0 then
+      {$IF ARM64EC}
+      CallCatch64(ExternalCalls.fCatchImageBase + lUnwindMap[lIndex].Cleanup, ExternalCalls.fCatchFrame, ExternalCalls.fCatchBasePointer);
+      {$ELSE}
       CallCleanup64(ExternalCalls.fCatchImageBase + lUnwindMap[lIndex].Cleanup, ExternalCalls.fCatchFrame);
+      {$ENDIF}
     lIndex := lUnwindMap[lIndex].ToState;
   end;
 end;
@@ -2013,9 +2158,21 @@ end;
 [SymbolName('__elements_run_catch_after_unwind'), DisableInlining, DisableOptimizations]
 method RunCatchAfterUnwind: NativeInt;
 begin
+  {$IF ARM64EC}
+  if ExternalCalls.fForeignCatchData <> nil then begin
+    var lData := ExternalCalls.fForeignCatchData;
+    var lCode := ExternalCalls.fForeignCatchCode;
+    ExternalCalls.fForeignCatchData := nil;
+    ForeignExceptionImplementation.Caught(lCode, lData, Exception(ExternalCalls.fCatchException));
+  end;
+  {$ENDIF}
   ExternalCalls.fDeferredRaise := false;
   ExternalCalls.fCatchActive := true;
+  {$IF ARM64EC}
+  result := CallCatch64AfterUnwind(ExternalCalls.fCatchHandler, ExternalCalls.fCatchFrame, var ExternalCalls.fCatchReturnAddress, var ExternalCalls.fCatchReturnStack, ExternalCalls.fCatchBasePointer);
+  {$ELSE}
   result := CallCatch64AfterUnwind(ExternalCalls.fCatchHandler, ExternalCalls.fCatchFrame, var ExternalCalls.fCatchReturnAddress, var ExternalCalls.fCatchReturnStack);
+  {$ENDIF}
   ExternalCalls.fCatchActive := false;
   if ExternalCalls.fDeferredRaise then begin
     RunDeferredCatchCleanups;
@@ -2091,12 +2248,20 @@ begin
   {$ENDIF}
   ExternalCalls.fCatchHandler := pExcept^.ExceptionInformation[2];
   ExternalCalls.fCatchException := InternalCalls.Cast<Object>(^Void(pExcept^.ExceptionInformation[4]));
+  {$IF ARM64EC}
+  ExternalCalls.fCatchFrame := pExcept^.ExceptionInformation[7];
+  ExternalCalls.fForeignCatchCode := pExcept^.ExceptionInformation[5];
+  ExternalCalls.fForeignCatchData := ^Void(pExcept^.ExceptionInformation[6]);
+  {$ENDIF}
   var lAfterUnwind: method := @AfterUnwindRunCatch;
   exit NativeInt(^Void(lAfterUnwind));
 end;
 
 method CallCatch(aCatch: ^MSVCTryMap; aHandler: ^MSVCHandlerType; arec: ^rtl.EXCEPTION_RECORD; EstFrame: UInt64; context: rtl.PCONTEXT; dispatcher: rtl.PDISPATCHER_CONTEXT; aException: Exception);
 begin
+  {$IF ARM64EC}
+  ExternalCalls.fCatchBasePointer := ^NativeInt(rtl.PDISPATCHER_CONTEXT_ARM64EC(dispatcher)^.NonVolatileRegisters)^;
+  {$ENDIF}
   ExternalCalls.fCatchImageBase := dispatcher^.ImageBase;
   ExternalCalls.fCatchHandlerData := NativeInt(dispatcher^.HandlerData);
   {$IF ARM64}
@@ -2106,6 +2271,11 @@ begin
   // Resume exception dispatch from the caller return address. Pc still identifies the
   // current protected region and can select its generated rethrow funclet again.
   ExternalCalls.fDeferredCallerContext.InstructionPointer := ^NativeUInt(NativeInt(@dispatcher^.ContextRecord^.Sp) - 8)^;
+  {$ELSEIF ARM64EC}
+  ExternalCalls.fDeferredCallerContext.StackPointer := dispatcher^.ContextRecord^.Rsp;
+  ExternalCalls.fDeferredCallerContext.FramePointer := dispatcher^.ContextRecord^.Rbp;
+  // EC's Lr is at CONTEXT+0x120 (x87 slot 0); the imported anonymous union is not exposed.
+  ExternalCalls.fDeferredCallerContext.InstructionPointer := ^NativeInt(NativeInt(dispatcher^.ContextRecord) + $120)^;
   {$ELSE}
   ExternalCalls.fDeferredCallerContext.StackPointer := dispatcher^.ContextRecord^.Rsp;
   ExternalCalls.fDeferredCallerContext.FramePointer := dispatcher^.ContextRecord^.Rbp;
@@ -2121,6 +2291,29 @@ begin
   eh.ExceptionInformation[2] := dispatcher^.ImageBase + aHandler^.Handler;
   eh.ExceptionInformation[3] := aCatch^.TryLow;
   eh.ExceptionInformation[4] := UInt64(InternalCalls.Cast(aException));
+  {$IF ARM64EC}
+  eh.ExceptionInformation[7] := ^NativeUInt(rtl.PDISPATCHER_CONTEXT_ARM64EC(dispatcher)^.NonVolatileRegisters)[10];
+  if (arec^.ExceptionCode = $20474343) and (arec^.NumberParameters >= 1) and
+     (arec^.ExceptionInformation[0] <> 0) then begin
+    // libunwind cleanup frames must see their original GCC exception. Delphi
+    // translates STATUS_UNWIND_CONSOLIDATE into another exception recursively.
+    ExternalCalls.fForeignUnwindException := ^Void(arec^.ExceptionInformation[0]);
+    var lClass := ^UInt64(ExternalCalls.fForeignUnwindException)^;
+    if ForeignExceptionImplementation.CanHandle(lClass) then begin
+      eh.ExceptionInformation[5] := lClass;
+      eh.ExceptionInformation[6] := NativeUInt(ExternalCalls.fForeignUnwindException);
+    end;
+    ExternalCalls.fForeignCatchRecord := eh;
+    eh := arec^;
+    eh.NumberParameters := 4;
+    eh.ExceptionInformation[1] := EstFrame;
+    var lUnwind := ^NativeUInt(ExternalCalls.fForeignUnwindException);
+    lUnwind[3] := EstFrame; // _Unwind_Exception.private_[1]: target for _Unwind_Resume.
+    rtl.RtlUnwindEx(rtl.PVOID(EstFrame), rtl.PVOID(dispatcher^.ControlPc), @eh,
+      ExternalCalls.fForeignUnwindException, context, dispatcher^.HistoryTable);
+    exit;
+  end;
+  {$ENDIF}
   {$IF ARM64}
   // Keep the register snapshot alive after the dispatcher's stack is unwound.
   memcpy(@ExternalCalls.fCatchNonVolatileRegisters[0], dispatcher^.NonVolatileRegisters, 19 * sizeOf(UInt64));
@@ -2147,31 +2340,58 @@ begin
 
   if 0 <> (arec^.ExceptionFlags and ( rtl.EXCEPTION_UNWINDING or rtl.EXCEPTION_EXIT_UNWIND)) then begin
     var lMap := ^MSVCUnwindMap(dispatcher^.ImageBase + msvcinfo^.UnwindMap);
+    {$IF ARM64EC}
+    if (arec^.ExceptionCode in [$20474343, $21474343]) and
+       (ExternalCalls.fForeignUnwindException <> nil) and
+       (arec^.ExceptionInformation[0] = NativeUInt(ExternalCalls.fForeignUnwindException)) and
+       (EstablisherFrame = ExternalCalls.fForeignCatchRecord.ExceptionInformation[1]) then begin
+      // Foreign frames are gone. Only now switch to Island's catch continuation.
+      var lFlags := arec^.ExceptionFlags;
+      arec^ := ExternalCalls.fForeignCatchRecord;
+      arec^.ExceptionFlags := lFlags;
+      ExternalCalls.fForeignCatchRecord := &default(rtl.EXCEPTION_RECORD);
+      ExternalCalls.fForeignUnwindException := nil;
+    end;
+    {$ENDIF}
+    {$IF NOT ARM64EC}
     // LLVM initializes this slot to -2. Advance it before calling a cleanup so
     // a replacement exception does not execute the same finally again.
     var lUnwindState := ^Int32(NativeInt(EstablisherFrame) + msvcinfo^.UnwindHelp);
     if lUnwindState^ <> -2 then
       index := lUnwindState^;
+    {$ENDIF}
     if (arec^.ExceptionCode = rtl.STATUS_UNWIND_CONSOLIDATE) and (EstablisherFrame = arec^.ExceptionInformation[1]) then begin
       var lTargetState := arec^.ExceptionInformation[3];
       // special exception, we're unwinding to a specific stat
       while (index >= 0) and (index < msvcinfo^.NumUnwindMap) and (&index <> lTargetState) do begin
+        {$IF ARM64EC}
+        if lMap[index].Cleanup <> 0 then CallCatch64(dispatcher^.ImageBase + lMap[index].Cleanup, ^NativeInt(rtl.PDISPATCHER_CONTEXT_ARM64EC(dispatcher)^.NonVolatileRegisters)[10], ^NativeInt(rtl.PDISPATCHER_CONTEXT_ARM64EC(dispatcher)^.NonVolatileRegisters)^);
+        index := lMap[index].ToState;
+        {$ELSE}
         var lCleanup := lMap[index].Cleanup;
         index := lMap[index].ToState;
         lUnwindState^ := index;
         if lCleanup <> 0 then
           CallCleanup64(dispatcher^.ImageBase + lCleanup, FuncletContext(dispatcher));
+        {$ENDIF}
       end;
+      {$IF NOT ARM64EC}
       lUnwindState^ := -2;
+      {$ENDIF}
       exit;
     end;
     // unwinding, call finally, this is generally when unwinding completely.
     while (index >= 0) and (index < msvcinfo^.NumUnwindMap) do begin
+      {$IF ARM64EC}
+      if lMap[index].Cleanup <> 0 then CallCatch64(dispatcher^.ImageBase + lMap[index].Cleanup, ^NativeInt(rtl.PDISPATCHER_CONTEXT_ARM64EC(dispatcher)^.NonVolatileRegisters)[10], ^NativeInt(rtl.PDISPATCHER_CONTEXT_ARM64EC(dispatcher)^.NonVolatileRegisters)^);
+      index := lMap[index].ToState;
+      {$ELSE}
       var lCleanup := lMap[index].Cleanup;
       index := lMap[index].ToState;
       lUnwindState^ := index;
       if lCleanup <> 0 then
         CallCleanup64(dispatcher^.ImageBase + lCleanup, FuncletContext(dispatcher));
+      {$ENDIF}
     end;
   end else begin
     // we're not unwinding, we're looking for an exception handler that takes it
@@ -2181,10 +2401,19 @@ begin
     end;
     var exo: Exception;
     if msvcinfo^.NumTryBlocks <> 0 then begin
+      var lForeignCode: UInt64 := arec^.ExceptionCode;
+      var lForeignData: ^Void := arec;
+      {$IF ARM64EC}
+      if (arec^.ExceptionCode = $20474343) and (arec^.NumberParameters >= 1) and
+         (arec^.ExceptionInformation[0] <> 0) then begin
+        lForeignCode := ^UInt64(arec^.ExceptionInformation[0])^;
+        lForeignData := ^Void(arec^.ExceptionInformation[0]);
+      end;
+      {$ENDIF}
       if arec^.ExceptionCode = ElementsExceptionCode then begin
         exo := InternalCalls.Cast<Exception>(^^Void(@arec^.ExceptionInformation)[0]);
-      end else if ForeignExceptionImplementation.CanHandle(arec^.ExceptionCode) then begin
-        exo := ForeignExceptionImplementation.Handle(arec^.ExceptionCode, arec);
+      end else if ForeignExceptionImplementation.CanHandle(lForeignCode) then begin
+        exo := ForeignExceptionImplementation.Handle(lForeignCode, lForeignData);
       end else if arec^.ExceptionCode = $C0000005 then
         exo := new AccessViolationException
       else
@@ -2316,6 +2545,7 @@ begin
 end;
 
 
+{$IFNDEF ISLAND_PACKAGE_RUNTIME}
 method main: Integer;
 begin
   Utilities.Initialize;
@@ -2346,6 +2576,9 @@ end;
 
 method mainCRTStartup: Integer;
 begin
+  {$IF ARM64EC}
+  InitializeSecurityCookie;
+  {$ENDIF}
   ExternalCalls.fModuleHandle := rtl.GetModuleHandle(nil);
   ExternalCalls.fMainThreadID := rtl.GetCurrentThreadId;
   var lMain := main;
@@ -2355,6 +2588,9 @@ end;
 
 method WinMainCRTStartup: Integer;
 begin
+  {$IF ARM64EC}
+  InitializeSecurityCookie;
+  {$ENDIF}
   ExternalCalls.fModuleHandle := rtl.GetModuleHandle(nil);
   var lMain := main;
   BoehmGC.UnloadGC;
@@ -2366,6 +2602,10 @@ type
 
 method DllMainCRTStartup(aModule: rtl.HMODULE; aReason: rtl.DWORD; aReserved: ^Void): Boolean;
 begin
+  {$IF ARM64EC}
+  if aReason = rtl.DLL_PROCESS_ATTACH then
+    InitializeSecurityCookie;
+  {$ENDIF}
   var lMain: ^DllMainType := @_dllmain;
   ExternalCalls.fModuleHandle := aModule;
   ModuleIsLib := true;
@@ -2386,5 +2626,7 @@ begin
     end;
   end;
 end;
+
+{$ENDIF}
 
 end.

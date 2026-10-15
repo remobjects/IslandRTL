@@ -17,7 +17,7 @@
     <DefineConstants>WINDOWS</DefineConstants>
     <Optimize>False</Optimize>
     <DefaultGlobalsToPublic>True</DefaultGlobalsToPublic>
-    <Architecture>x86_64;arm64</Architecture>
+    <Architecture>arm64ec;arm64;x86_64;i386</Architecture>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)' == 'Debug'">
     <OutputPath>Bin\Debug</OutputPath>
@@ -50,6 +50,7 @@
     <Compile Include="HString.pas" />
     <Compile Include="Registry.pas" />
     <Compile Include="WindowsHelpers.pas" />
+    <Compile Include="WindowsArm64EC.pas" />
     <Compile Include="Windows_FFI_x64.pas" />
     <Compile Include="Windows_FFI_x86.pas" />
     <Compile Include="OleVariant.pas" />

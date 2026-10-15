@@ -1,0 +1,217 @@
+﻿<?xml version="1.0" encoding="utf-8" standalone="yes"?>
+<Project xmlns="http://schemas.microsoft.com/developer/msbuild/2003" DefaultTargets="Build" ToolsVersion="4.0">
+  <PropertyGroup>
+    <ProductVersion>3.5</ProductVersion>
+    <RootNamespace>RemObjects.Elements.System</RootNamespace>
+    <OutputType>StaticLibrary</OutputType>
+    <AssemblyName>Island</AssemblyName>
+    <AllowGlobals>True</AllowGlobals>
+    <Configuration Condition="'$(Configuration)' == ''">Release</Configuration>
+    <TargetFrameworkVersion>v4.0</TargetFrameworkVersion>
+    <Mode>Island</Mode>
+    <NoIsland>True</NoIsland>
+    <Platform Condition="'$(Platform)' == ''">AnyCPU</Platform>
+    <GenerateDebugInfo>True</GenerateDebugInfo>
+    <DefaultGlobalsToPublic>True</DefaultGlobalsToPublic>
+    <Name>Island</Name>
+    <ProjectGuid>{973E8C88-0E78-44BB-8231-1F23FA05047E}</ProjectGuid>
+    <OutputPathUsesModes>True</OutputPathUsesModes>
+    <OutputPathUsesSDKNames>True</OutputPathUsesSDKNames>
+    <XmlDocWarningLevel>WarningOnPublicMembers</XmlDocWarningLevel>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Target)' == 'Island.Android'">
+    <SubMode>Android</SubMode>
+    <WarnOnCaseMismatch>True</WarnOnCaseMismatch>
+    <DefineConstants>ANDROID;POSIX_LIGHT</DefineConstants>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Target)' == 'Island.Darwin.iOS'">
+    <SubMode>Darwin</SubMode>
+    <WarnOnCaseMismatch>True</WarnOnCaseMismatch>
+    <DefineConstants>POSIX;POSIX_LIGHT</DefineConstants>
+    <SDK>iOS</SDK>
+    <SupportUIKitForMac>True</SupportUIKitForMac>
+    <DeploymentTargetVersion>9.0</DeploymentTargetVersion>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Target)' == 'Island.Darwin.macOS'">
+    <SubMode>Darwin</SubMode>
+    <WarnOnCaseMismatch>True</WarnOnCaseMismatch>
+    <DefineConstants>POSIX;POSIX_LIGHT</DefineConstants>
+    <SDK>macOS</SDK>
+    <DeploymentTargetVersion>10.12</DeploymentTargetVersion>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Target)' == 'Island.Darwin.tvOS'">
+    <SubMode>Darwin</SubMode>
+    <WarnOnCaseMismatch>True</WarnOnCaseMismatch>
+    <DefineConstants>POSIX;POSIX_LIGHT</DefineConstants>
+    <SDK>tvOS</SDK>
+    <DeploymentTargetVersion>9.0</DeploymentTargetVersion>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Target)' == 'Island.Darwin.visionOS'">
+    <SubMode>Darwin</SubMode>
+    <WarnOnCaseMismatch>True</WarnOnCaseMismatch>
+    <DefineConstants>POSIX;POSIX_LIGHT</DefineConstants>
+    <SDK>visionOS</SDK>
+    <DeploymentTargetVersion>1.0</DeploymentTargetVersion>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Target)' == 'Island.Fuchsia'">
+    <SubMode>Fuchsia</SubMode>
+    <WarnOnCaseMismatch>True</WarnOnCaseMismatch>
+    <KnownConditionalDefines>POSIX_LIGHT</KnownConditionalDefines>
+    <Architecture>x86_64;arm64</Architecture>
+    <ConditionalDefines>POSIX_LIGHT</ConditionalDefines>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Target)' == 'Island.Linux'">
+    <SubMode>Linux</SubMode>
+    <WarnOnCaseMismatch>True</WarnOnCaseMismatch>
+    <DefineConstants>POSIX;POSIX_LIGHT;LINUX</DefineConstants>
+    <Architecture>aarch64</Architecture>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Target)' == 'Island.WebAssembly'">
+    <SubMode>WebAssembly</SubMode>
+    <DefineConstants>WEBASSEMBLY;WASM;CPU32;NOTHREADS;NOFILES;ENABLE_UNLIMITED_CACHE</DefineConstants>
+    <DefaultUses>RemObjects.Elements.WebAssembly.DOM</DefaultUses>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Target)' == 'Island.Windows'">
+    <SubMode>Windows</SubMode>
+    <DefineConstants>WINDOWS</DefineConstants>
+    <Optimize>False</Optimize>
+    <Architecture>arm64ec;arm64;x86_64;i386</Architecture>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)' == 'Debug'">
+    <OutputPath>Bin\Debug</OutputPath>
+    <EnableAsserts>True</EnableAsserts>
+    <Optimize>False</Optimize>
+    <CaptureConsoleOutput>False</CaptureConsoleOutput>
+    <RuntimeVersion>v25</RuntimeVersion>
+    <XmlDoc>False</XmlDoc>
+    <EnableUnmanagedDebugging>False</EnableUnmanagedDebugging>
+    <GenerateDebugInfo>True</GenerateDebugInfo>
+    <ExtraConditionalDefines>DEBUG</ExtraConditionalDefines>
+    <GeneratePDB>True</GeneratePDB>
+    <GenerateMDB>False</GenerateMDB>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)' == 'Release'">
+    <OutputPath>Bin\Release</OutputPath>
+    <EnableAsserts>False</EnableAsserts>
+    <CaptureConsoleOutput>False</CaptureConsoleOutput>
+    <StartMode>Project</StartMode>
+    <CpuType>x86</CpuType>
+    <RuntimeVersion>v25</RuntimeVersion>
+    <XmlDoc>False</XmlDoc>
+    <EnableUnmanagedDebugging>False</EnableUnmanagedDebugging>
+    <GenerateDebugInfo>False</GenerateDebugInfo>
+    <Optimize>True</Optimize>
+  </PropertyGroup>
+  <ItemGroup>
+    <Compile Include="BoehmGC.pas" />
+    <Reference Include="gc" />
+  </ItemGroup>
+  <ItemGroup Condition="'$(Target)' == 'Island.Android'">
+    <Compile Include="ManagedThreadPool.pas" />
+    <Compile Include="PosixHelpers.pas" />
+    <Reference Include="rtl" />
+  </ItemGroup>
+  <ItemGroup Condition="'$(Target)' == 'Island.Darwin.iOS'">
+    <Compile Include="ManagedThreadPool.pas" />
+    <Compile Include="PosixHelpers.pas" />
+    <Reference Include="rtl" />
+    <Compile Include="Posix_FFI_x64.pas" />
+    <Compile Include="Posix_FFI_ARM64.pas" />
+    <Compile Include="DarwinNumbers.pas" />
+    <Compile Include="Swift.pas" />
+    <Compile Include="SwiftObject.pas" />
+    <Compile Include="SwiftAny.pas" />
+    <Compile Include="SwiftArray.pas" />
+    <Compile Include="SwiftString.pas" />
+    <Reference Include="Foundation" />
+    <Reference Include="CoreFoundation" />
+    <Compile Include="DarwinNumbers.inc" />
+  </ItemGroup>
+  <ItemGroup Condition="'$(Target)' == 'Island.Darwin.macOS'">
+    <Compile Include="ManagedThreadPool.pas" />
+    <Compile Include="PosixHelpers.pas" />
+    <Reference Include="rtl" />
+    <Compile Include="Posix_FFI_x64.pas" />
+    <Compile Include="Posix_FFI_ARM64.pas" />
+    <Compile Include="DarwinNumbers.pas" />
+    <Compile Include="Swift.pas" />
+    <Compile Include="SwiftObject.pas" />
+    <Compile Include="SwiftAny.pas" />
+    <Compile Include="SwiftArray.pas" />
+    <Compile Include="SwiftString.pas" />
+    <Reference Include="Foundation" />
+    <Reference Include="CoreFoundation" />
+  </ItemGroup>
+  <ItemGroup Condition="'$(Target)' == 'Island.Darwin.tvOS'">
+    <Compile Include="ManagedThreadPool.pas" />
+    <Compile Include="PosixHelpers.pas" />
+    <Reference Include="rtl" />
+    <Compile Include="Posix_FFI_x64.pas" />
+    <Compile Include="Posix_FFI_ARM64.pas" />
+    <Compile Include="DarwinNumbers.pas" />
+    <Compile Include="Swift.pas" />
+    <Compile Include="SwiftObject.pas" />
+    <Compile Include="SwiftAny.pas" />
+    <Compile Include="SwiftArray.pas" />
+    <Compile Include="SwiftString.pas" />
+    <Reference Include="Foundation" />
+    <Reference Include="CoreFoundation" />
+  </ItemGroup>
+  <ItemGroup Condition="'$(Target)' == 'Island.Darwin.visionOS'">
+    <Compile Include="ManagedThreadPool.pas" />
+    <Compile Include="PosixHelpers.pas" />
+    <Reference Include="rtl" />
+    <Compile Include="Posix_FFI_x64.pas" />
+    <Compile Include="Posix_FFI_ARM64.pas" />
+    <Compile Include="DarwinNumbers.pas" />
+    <Compile Include="Swift.pas" />
+    <Compile Include="SwiftObject.pas" />
+    <Compile Include="SwiftAny.pas" />
+    <Compile Include="SwiftArray.pas" />
+    <Compile Include="SwiftString.pas" />
+    <Reference Include="Foundation" />
+    <Reference Include="CoreFoundation" />
+  </ItemGroup>
+  <ItemGroup Condition="'$(Target)' == 'Island.Fuchsia'">
+    <Compile Include="ManagedThreadPool.pas" />
+    <Compile Include="PosixHelpers.pas" />
+    <Reference Include="rtl" />
+    <Compile Include="FuchsiaFidl.pas" />
+  </ItemGroup>
+  <ItemGroup Condition="'$(Target)' == 'Island.Linux'">
+    <Compile Include="ManagedThreadPool.pas" />
+    <Compile Include="PosixHelpers.pas" />
+    <Reference Include="rtl" />
+    <Compile Include="Posix_FFI_x64.pas" />
+    <Compile Include="Posix_FFI_ARM64.pas" />
+  </ItemGroup>
+  <ItemGroup Condition="'$(Target)' == 'Island.Windows'">
+    <Reference Include="rtl" />
+    <Compile Include="HString.pas" />
+    <Compile Include="Registry.pas" />
+    <Compile Include="WindowsHelpers.pas" />
+    <Compile Include="WindowsArm64EC.pas" />
+    <Compile Include="Windows_FFI_x64.pas" />
+    <Compile Include="Windows_FFI_x86.pas" />
+    <Compile Include="OleVariant.pas" />
+    <Compile Include="ComSupport.pas" />
+    <Compile Include="WinRTHelpers.pas" />
+    <Compile Include="Windows_FFI_arm64.pas" />
+    <Reference Include="winrt" />
+  </ItemGroup>
+  <ItemGroup Condition="'$(Target)' == 'Island.WebAssembly'">
+    <Compile Include="rpmalloc.pas" />
+    <None Include="SimpleGC.pas" />
+    <Compile Include="WebAssembly.pas" />
+    <Compile Include="Brower.pas" />
+    <Compile Include="NodeJS.pas" />
+    <None Include="WebAssembly\RemObjectsElements.js" />
+    <Compile Include="WasmEvents.DOM.vb" />
+    <Compile Include="WasmEvents.vb" />
+    <Compile Include="DOM\*.vb">
+      <RootNamespace>RemObjects.Elements.WebAssembly.DOM</RootNamespace>
+    </Compile>
+  </ItemGroup>
+  <Import Project="$(MSBuildExtensionsPath)\RemObjects Software\Elements\RemObjects.Elements.targets" />
+  <Import Project="Island.Shared.projitems" Label="Shared" />
+</Project>

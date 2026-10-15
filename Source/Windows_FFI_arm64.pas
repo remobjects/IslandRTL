@@ -1,5 +1,5 @@
 ﻿namespace RemObjects.Elements.System;
-{$IFDEF ARM64}
+{$IF ARM64}
 type
   WindowsARM64ValueCopy = procedure(aDestination, aSource: ^Void);
 
@@ -331,6 +331,24 @@ type
       end
       else if lResultSize <= 16 then
         memcpy(lDestination, @lCall.fData.ResultX0, lResultSize);
+    end;
+
+  end;
+{$ELSEIF ARM64EC}
+// ARM64EC has a separate ABI; retain its existing unsupported reflection path.
+type
+  FFI = public class
+  public
+
+    class method Call(
+    aAddress: ^Void;
+    aCallingConv: CallingConvention;
+    var aParams: array of Object;
+    aParameterFlags: array of ArgumentMode;
+    aParameterTypes: array of &Type;
+    aResultType: &Type): Object;
+    begin
+      raise new NotImplementedException("FFI is not implemented yet for this ARM64 target.")
     end;
 
   end;

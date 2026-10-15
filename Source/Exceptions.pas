@@ -13,6 +13,9 @@ type
     property Code: UInt64; readonly;
     property Handler: Func<^Void, Exception>; readonly;
     property Free: Action<^Void>; readonly;
+    // Called only after a handler is selected and the foreign frames are unwound.
+    // A search-phase wrapper must not take ownership while foreign code can catch it.
+    property Acquire: Action<^Void, Exception>;
 
     class method Register(aRecord: ForeignExceptionImplementation);
     begin
@@ -32,6 +35,12 @@ type
     class method Handle(aCode: UInt64; aVal: ^Void): Exception;
     begin
       exit fLookup[aCode].Handler(aVal);
+    end;
+
+    class method Caught(aCode: UInt64; aVal: ^Void; aException: Exception);
+    begin
+      fLookup[aCode].Acquire:Invoke(aVal, aException);
+      fLookup[aCode].Free:Invoke(aVal);
     end;
 
     class method Free(aCode: UInt64; aVal: ^Void);
