@@ -1773,14 +1773,16 @@ method JumpToContinuation64(aAddress, aESP, aEBP: NativeInt); external;
     jmpl *%eax
 ", "", false, false), DisableInlining, DisableOptimizations]*)
 [DisableInlining, DisableOptimizations]
-method JumpToContinuation32(aAddress, aESP, aEBP: NativeInt);
+method JumpToContinuation32(aAddress, aESP, aEBP, aRegistrationFrame: NativeInt);
 begin
+  // We bypass the OS dispatcher when resuming the parent. Its temporary
+  // registration records must not remain at the head of the SEH chain.
   InternalCalls.VoidAsm("
+    movl $3, %fs:0
     movl $2, %ebp
-    movl $0, %eax
     movl $1, %esp
-    jmpl *%eax
-  ", "r,r,r,~{ebp},~{esp},~{esp},~{dirflag},~{fpsr},~{flags}", false, false, aAddress, aESP, aEBP);
+    jmpl *$0
+  ", "r,r,r,r,~{ebp},~{esp},~{dirflag},~{fpsr},~{flags},~{memory}", true, false, aAddress, aESP, aEBP, aRegistrationFrame);
 end;
 {$ELSE}
   {$ERROR Unsupported Architecture}
@@ -2174,7 +2176,10 @@ begin
                 regFrame^.TryLevel := msvcinfo^.UnwindMap[regFrame^.TryLevel].ToState;
               end;
               var lCont := CallCatch32(NativeInt(^Void(tb^.HandlerType^.Handler)), lBaseAddress);
-              JumpToContinuation32(lCont, lESP, lBaseAddress);
+              // LLVM catch funclets replace the parent frame's saved ESP. Restore
+              // it so a later catch resumes on the original function stack.
+              regFrame^.ESP := ^Void(lESP);
+              JumpToContinuation32(lCont, lESP, lBaseAddress, NativeInt(aOrgregFrame));
             end;
           end;
         end;
