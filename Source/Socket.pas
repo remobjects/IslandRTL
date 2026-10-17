@@ -1,11 +1,29 @@
 ﻿namespace RemObjects.Elements.System;
 
-{$IF NOT WEBASSEMBLY AND NOT FUCHSIA}
+{$IF NOT WEBASSEMBLY}
 
 interface
 
 type
-  PlatformSocketHandle = Integer;
+  PlatformSocketHandle = {$IF WINDOWS}rtl.SOCKET{$ELSE}Integer{$ENDIF};
+
+  SocketException = public class(Exception)
+  public
+    constructor(aOperation: String; aErrorCode: Integer);
+    property ErrorCode: Integer; readonly;
+  end;
+
+  SocketAcceptInterruptedException = public class(Exception)
+  public
+    constructor;
+  end;
+
+  LingerOption = public class
+  public
+    constructor(aEnabled: Boolean; aLingerTime: Integer);
+    property Enabled: Boolean;
+    property LingerTime: Integer;
+  end;
 
   AddressFamily = public enum(Unknown = -1, Unspecified = 0, Unix = 1, InterNetwork = 2, ImpLink = 3, Pup = 4, Chaos = 5, NS = 6,
     Ipx = 6, Iso = 7, Osi = 7, Ecma = 8, DataKit = 9, Ccitt = 10, Sna = 11, DecNet = 12, DataLink = 13, Lat = 14, HyperChannel = 15,
@@ -101,6 +119,7 @@ type
   Socket = public class(IDisposable)
   private
     fHandle: PlatformSocketHandle;
+    fIsClosing: Int32; volatile;
     fLocalEndPoint: EndPoint;
     fRemoteEndPoint: EndPoint;
     constructor(aHandle: PlatformSocketHandle);
@@ -170,9 +189,14 @@ type
 
     method Close; override;
     begin
-      if fSocket.Connected then
-        fSocket:Shutdown(SocketShutdown.Both);
-      disposeAndNil(fSocket);
+      if fSocket = nil then
+        exit;
+      try
+        if fSocket.Connected then
+          fSocket.Shutdown(SocketShutdown.Both);
+      finally
+        disposeAndNil(fSocket);
+      end;
     end;
 
     method Seek(Offset: Int64; Origin: SeekOrigin): Int64; override;
@@ -203,17 +227,139 @@ type
 
  implementation
 
+{$IF WINDOWS}
+const NativeAF_INET = 2;
+const NativeAF_INET6 = 23;
+const NativeAF_UNSPEC = 0;
+{$ELSE}
+const NativeAF_INET = rtl.AF_INET;
+const NativeAF_INET6 = rtl.AF_INET6;
+const NativeAF_UNSPEC = rtl.AF_UNSPEC;
+{$ENDIF}
+
+// Older Linux imports omit asm-generic/socket.h and asm-generic/ioctls.h.
+// The supported Linux x86/x86_64 and ARM targets use this ABI.
+{$IF LINUX AND NOT ANDROID}
+const Native_SOL_SOCKET = 1;
+const Native_SO_DEBUG = 1;
+const Native_SO_REUSEADDR = 2;
+const Native_SO_TYPE = 3;
+const Native_SO_ERROR = 4;
+const Native_SO_DONTROUTE = 5;
+const Native_SO_BROADCAST = 6;
+const Native_SO_SNDBUF = 7;
+const Native_SO_RCVBUF = 8;
+const Native_SO_KEEPALIVE = 9;
+const Native_SO_OOBINLINE = 10;
+const Native_SO_LINGER = 13;
+const Native_SO_RCVLOWAT = 18;
+const Native_SO_SNDLOWAT = 19;
+const Native_SO_RCVTIMEO = 20;
+const Native_SO_SNDTIMEO = 21;
+const Native_SO_ACCEPTCONN = 30;
+const Native_FIONREAD = 21531;
+{$ELSE}
+const Native_SOL_SOCKET = rtl.SOL_SOCKET;
+const Native_SO_DEBUG = rtl.SO_DEBUG;
+const Native_SO_REUSEADDR = rtl.SO_REUSEADDR;
+const Native_SO_TYPE = rtl.SO_TYPE;
+const Native_SO_ERROR = rtl.SO_ERROR;
+const Native_SO_DONTROUTE = rtl.SO_DONTROUTE;
+const Native_SO_BROADCAST = rtl.SO_BROADCAST;
+const Native_SO_SNDBUF = rtl.SO_SNDBUF;
+const Native_SO_RCVBUF = rtl.SO_RCVBUF;
+const Native_SO_KEEPALIVE = rtl.SO_KEEPALIVE;
+const Native_SO_OOBINLINE = rtl.SO_OOBINLINE;
+const Native_SO_LINGER = rtl.SO_LINGER;
+const Native_SO_RCVLOWAT = rtl.SO_RCVLOWAT;
+const Native_SO_SNDLOWAT = rtl.SO_SNDLOWAT;
+const Native_SO_RCVTIMEO = rtl.SO_RCVTIMEO;
+const Native_SO_SNDTIMEO = rtl.SO_SNDTIMEO;
+const Native_SO_ACCEPTCONN = rtl.SO_ACCEPTCONN;
+const Native_FIONREAD = rtl.FIONREAD;
+{$ENDIF}
+
+method CopySocketBytes(aDestination, aSource: ^Void; aLength: Integer);
+begin
+  for i := 0 to aLength - 1 do
+    ^Byte(aDestination)[i] := ^Byte(aSource)[i];
+end;
+
+constructor SocketException(aOperation: String; aErrorCode: Integer);
+begin
+  inherited constructor(String.Format('{0} failed (native error {1})', aOperation, aErrorCode));
+  ErrorCode := aErrorCode;
+end;
+
+constructor SocketAcceptInterruptedException;
+begin
+  inherited constructor('Socket accept was interrupted because the listening socket was closed.');
+end;
+
+constructor LingerOption(aEnabled: Boolean; aLingerTime: Integer);
+begin
+  Enabled := aEnabled;
+  LingerTime := aLingerTime;
+end;
+
+method LastSocketError: Integer;
+begin
+  {$IF WINDOWS}
+  result := rtl.WSAGetLastError;
+  {$ELSE}
+  result := rtl.errno;
+  {$ENDIF}
+end;
+
+method NativeAddressFamily(aFamily: AddressFamily): Integer;
+begin
+  case aFamily of
+    AddressFamily.InterNetwork: exit NativeAF_INET;
+    AddressFamily.InterNetworkV6: exit NativeAF_INET6;
+    AddressFamily.Unspecified: exit NativeAF_UNSPEC;
+    {$IF POSIX}AddressFamily.Unix: exit rtl.AF_UNIX;{$ENDIF}
+    else raise new NotSupportedException('Unsupported address family');
+  end;
+end;
+
+method NativeSocketFlags(aFlags: SocketFlags): Integer;
+begin
+  result := 0;
+  if (Integer(aFlags) and not (Integer(SocketFlags.OutOfBand) or Integer(SocketFlags.Peek) or Integer(SocketFlags.DontRoute))) <> 0 then
+    raise new NotSupportedException('Unsupported socket flags');
+  if (Integer(aFlags) and Integer(SocketFlags.OutOfBand)) <> 0 then
+    result := result or rtl.MSG_OOB;
+  if (Integer(aFlags) and Integer(SocketFlags.Peek)) <> 0 then
+    result := result or rtl.MSG_PEEK;
+  if (Integer(aFlags) and Integer(SocketFlags.DontRoute)) <> 0 then
+    result := result or rtl.MSG_DONTROUTE;
+end;
+
+method CheckSocketBuffer(aBuffer: array of Byte; aOffset, aSize: Integer);
+begin
+  if aBuffer = nil then
+    raise new ArgumentNullException('aBuffer');
+  if (aOffset < 0) or (aSize < 0) or (aOffset > length(aBuffer)) or (aSize > length(aBuffer) - aOffset) then
+    raise new ArgumentOutOfRangeException('aOffset/aSize');
+end;
+
  constructor IPEndPoint(anAddress: IPAddress; aPort: Int32);
  begin
    Address := anAddress;
+   if (aPort < 0) or (aPort > 65535) then
+     raise new ArgumentOutOfRangeException("aPort");
    Port := aPort;
+   if anAddress <> nil then
+     AddressFamily := anAddress.AddressFamily;
  end;
 
 constructor IPAddress(anAddress: array of Byte; aScopeId: Int64);
 begin
+  if length(anAddress) <> IPv6Length then
+    raise new ArgumentException("IPv6 addresses require 16 bytes");
   fFamily := AddressFamily.InterNetworkV6;
   for i: Integer := 0 to (IPv6Length / 2) - 1 do
-    fNumbers[i] := Byte(anAddress[i * 2] * 256 + anAddress[i * 2 + 1]);
+    fNumbers[i] := UInt16(anAddress[i * 2] * 256 + anAddress[i * 2 + 1]);
   fScopeId := aScopeId;
 end;
 
@@ -224,9 +370,11 @@ begin
     fAddress := ((anAddress[3] shl 24 or anAddress[2] shl 16 or anAddress[1] shl 8 or anAddress[0]) and $0FFFFFFFF);
   end
   else begin
+    if length(anAddress) <> IPv6Length then
+      raise new ArgumentException("IP addresses require 4 or 16 bytes");
     fFamily := AddressFamily.InterNetworkV6;
     for i: Integer := 0 to (IPv6Length / 2) - 1 do
-      fNumbers[i] := Byte(anAddress[i * 2] * 256 + anAddress[i * 2 + 1]);
+      fNumbers[i] := UInt16(anAddress[i * 2] * 256 + anAddress[i * 2 + 1]);
   end;
 end;
 
@@ -277,7 +425,7 @@ begin
 
   if lNumbers.Count = IPv4Length then begin
     for i: Integer := 0 to IPv4Length - 1 do
-      if Convert.TryParseInt64(lNumbers[i], out lNumber, false) then
+      if Convert.TryParseInt64(lNumbers[i], out lNumber, false) and (lNumber >= 0) and (lNumber <= 255) then
         lBytes[i] := lNumber
       else
         exit false;
@@ -301,46 +449,49 @@ type
 
 class method IPAddress.TryParseIPV6(ipString: String; out address: IPAddress): Boolean;
 begin
+  address := nil;
   var lString := ipString;
+  if lString.StartsWith('[') and lString.EndsWith(']') then
+    lString := lString.Substring(1, lString.Length - 2);
   var lBytes := new Byte[16];
-
   {$IF POSIX}
+  var lHints: rtl.__struct_addrinfo;
+  lHints.ai_family := NativeAF_INET6;
+  lHints.ai_flags := rtl.AI_NUMERICHOST;
   var lAddrInfo: ^rtl.__struct_addrinfo;
-  var lSockAddr: ^rtl.__struct_sockaddr_in6;
-  var lRes := 0;
-  lRes := rtl.getaddrinfo(@lString.ToAnsiChars(true)[0], nil, nil, @lAddrInfo);
-  if lRes <> 0 then
+  if rtl.getaddrinfo(@lString.ToAnsiChars(true)[0], nil, @lHints, @lAddrInfo) <> 0 then
     exit false;
-  lSockAddr := ^rtl.__struct_sockaddr_in6(lAddrInfo^.ai_addr);
+  try
+    var lSockAddr := ^rtl.__struct_sockaddr_in6(lAddrInfo^.ai_addr);
+    CopySocketBytes(@lBytes[0], @lSockAddr^.sin6_addr, 16);
+    address := new IPAddress(lBytes, lSockAddr^.sin6_scope_id);
+  finally
+    rtl.freeaddrinfo(lAddrInfo);
+  end;
   {$ELSE}
+  Dns.InitSockets;
+  var lHints: rtl.ADDRINFOW;
+  lHints.ai_family := NativeAF_INET6;
+  lHints.ai_flags := 4 {WinSock AI_NUMERICHOST};
   var lAddrInfo: rtl.PADDRINFOW;
-  var lSockAddr: ^sockaddr_in6;
-
-  if rtl.GetAddrInfo(lString.ToLPCWSTR, nil, nil, @lAddrInfo) <> 0 then
+  if rtl.GetAddrInfoW(lString.ToLPCWSTR, nil, @lHints, @lAddrInfo) <> 0 then
     exit false;
-
-  lSockAddr := ^sockaddr_in6(lAddrInfo^.ai_addr);
+  try
+    var lSockAddr := ^sockaddr_in6(lAddrInfo^.ai_addr);
+    CopySocketBytes(@lBytes[0], @lSockAddr^.sin6_addr, 16);
+    address := new IPAddress(lBytes, lSockAddr^.sin6_scope_id);
+  finally
+    rtl.FreeAddrInfoW(lAddrInfo);
+  end;
   {$ENDIF}
-
-  for i: Integer := 0  to IPv6Length - 1 do
-    {$IF ANDROID}
-    lBytes[i] := lSockAddr^.sin6_addr.in6_u.u6_addr8[i];
-    {$ELSEIF DARWIN}
-    lBytes[i] := lSockAddr^.sin6_addr.__u6_addr.__u6_addr8[i];
-    {$ELSEIF FUCHSIA}
-    {$WARNING Not Implememnted for Fuchsia yet}
-    {$ELSEIF POSIX}
-    lBytes[i] := lSockAddr^.sin6_addr.__in6_u.__u6_addr8[i];
-    {$ELSE}
-    lBytes[i] := lSockAddr^.sin6_addr.u.Byte[i];
-    {$ENDIF}
-
-  address := new IPAddress(lBytes, lSockAddr^.sin6_scope_id);
   result := true;
 end;
 
 class method IPAddress.TryParse(ipString: String; out address: IPAddress): Boolean;
 begin
+  address := nil;
+  if length(ipString) = 0 then
+    exit false;
   if ipString.Contains(':') then
     result := TryParseIPV6(ipString, out address)
   else
@@ -394,8 +545,6 @@ begin
   IPEndPointToNative(lEndPoint, out lSockAddr4, out lSockAddr6, out lPointer, out lSize);
   if rtl.getnameinfo(^rtl.SOCKADDR(lPointer), lSize, @lName[0], 255, @lService[0], 255, 0) = 0 then
     lHostName := String.FromPChar(@lName[0])
-  {$ELSEIF FUCHSIA}
-  {$WARNING Not Implememnted for Fuchsia yet}
   {$ELSEIF POSIX}
   var lSockAddr4: rtl.__struct_sockaddr_in;
   var lSockAddr6: rtl.__struct_sockaddr_in6;
@@ -416,76 +565,41 @@ end;
 method Dns.InternalGetHostByName(aHost: String): IPHostEntry;
 begin
   result := new IPHostEntry;
-  var lIPList := new List<IPAddress>();
-  var lBytes := new Byte[16];
+  result.HostName := aHost;
+  result.Aliases := [];
+  var lIPList := new List<IPAddress>;
   {$IF WINDOWS}
-  var lAddrInfo: rtl.PADDRINFOW;
-  var lSockAddr4: ^rtl.SOCKADDR_IN;
-  var lSockAddr6: ^sockaddr_in6;
-  var lPtr: rtl.PADDRINFOW := nil;
-
   InitSockets;
-  if rtl.GetAddrInfo(aHost.ToLPCWSTR, nil, nil, @lAddrInfo) <> 0 then
-    exit;
-
-  result.HostName := String.FromPChar(lAddrInfo^.ai_canonname);
-  lPtr := lAddrInfo;
-  while lPtr <> nil do begin
-    case AddressFamily(lPtr^.ai_family) of
-      AddressFamily.InterNetwork: begin
-        lSockAddr4 := ^rtl.SOCKADDR_IN(lPtr^.ai_addr);
-        lIPList.Add(new IPAddress(lSockAddr4^.sin_addr.S_un.S_addr));
-      end;
-
-      AddressFamily.InterNetworkV6: begin
-        lSockAddr6 := ^sockaddr_in6(lPtr^.ai_addr);
-        for i: Integer := 0  to IPAddress.IPv6Length - 1 do
-          lBytes[i] := lSockAddr6^.sin6_addr.u.Byte[i];
-
-        lIPList.Add(new IPAddress(lBytes, lSockAddr6^.sin6_scope_id));
-      end;
-    end;
-    lPtr := rtl.PADDRINFOW(lPtr^.ai_next);
-  end;
-  {$ELSEIF FUCHSIA}
-  {$WARNING Not Implememnted for Fuchsia yet}
-  {$ELSEIF POSIX}
+  var lAddrInfo: rtl.PADDRINFOW;
+  var lError := rtl.GetAddrInfoW(aHost.ToLPCWSTR, nil, nil, @lAddrInfo);
+  {$ELSE}
   var lAddrInfo: ^rtl.__struct_addrinfo;
-  var lSockAddr4: ^rtl.__struct_sockaddr_in;
-  var lSockAddr6: ^rtl.__struct_sockaddr_in6;
-  var lPtr: ^rtl.__struct_addrinfo := nil;
-  var lRes := 0;
-  lRes := rtl.getaddrinfo(@aHost.ToAnsiChars(true)[0], nil, nil, @lAddrInfo);
-  if lRes <> 0 then
-    exit;
-
-  result.HostName := String.FromPAnsiChar(lAddrInfo^.ai_canonname);
-  lPtr := lAddrInfo;
-  while lPtr <> nil do begin
-    case AddressFamily(lPtr^.ai_family) of
-      AddressFamily.InterNetwork: begin
-        lSockAddr4 := ^rtl.__struct_sockaddr_in(lPtr^.ai_addr);
-        lIPList.Add(new IPAddress(lSockAddr4^.sin_addr.s_addr));
-      end;
-
-      AddressFamily.InterNetworkV6: begin
-        lSockAddr6 := ^rtl.__struct_sockaddr_in6(lPtr^.ai_addr);
-        for i: Integer := 0 to IPAddress.IPv6Length - 1 do
-          {$IF ANDROID}
-          lBytes[i] := lSockAddr6^.sin6_addr.in6_u.u6_addr8[i];
-          {$ELSEIF DARWIN}
-          lBytes[i] := lSockAddr6^.sin6_addr.__u6_addr.__u6_addr8[i];
-          {$ELSE}
-          lBytes[i] := lSockAddr6^.sin6_addr.__in6_u.__u6_addr8[i];
-          {$ENDIF}
-
-        lIPList.Add(new IPAddress(lBytes, lSockAddr6^.sin6_scope_id));
-      end;
-    end;
-    lPtr := ^rtl.__struct_addrinfo(lPtr^.ai_next);
-  end;
+  var lError := rtl.getaddrinfo(@aHost.ToAnsiChars(true)[0], nil, nil, @lAddrInfo);
   {$ENDIF}
-  result.AddressList := lIPList.ToArray();
+  if lError <> 0 then
+    raise new SocketException('getaddrinfo', lError);
+  try
+    var lPtr := lAddrInfo;
+    while lPtr <> nil do begin
+      if (lPtr^.ai_family = NativeAF_INET) or (lPtr^.ai_family = NativeAF_INET6) then begin
+        var lEndPoint := new IPEndPoint(nil, 0);
+        IPNativeToEndPoint(lPtr^.ai_addr, var lEndPoint);
+        lIPList.Add(lEndPoint.Address);
+      end;
+      {$IF WINDOWS}
+      lPtr := rtl.PADDRINFOW(lPtr^.ai_next);
+      {$ELSE}
+      lPtr := ^rtl.__struct_addrinfo(lPtr^.ai_next);
+      {$ENDIF}
+    end;
+  finally
+    {$IF WINDOWS}
+    rtl.FreeAddrInfoW(lAddrInfo);
+    {$ELSE}
+    rtl.freeaddrinfo(lAddrInfo);
+    {$ENDIF}
+  end;
+  result.AddressList := lIPList.ToArray;
 end;
 
 method Dns.GetHostEntry(aHostOrAddress: String): IPHostEntry;
@@ -539,7 +653,7 @@ begin
 end;
 
 {$IF DARWIN OR ANDROID}
-method htons(port: Integer): Integer;
+method NetworkPort(port: Integer): Integer;
 begin
   result := rtl.uint16_t(((rtl.uint16_t(port) and $ff00) shr 8) or ((rtl.uint16_t(port) and $00ff) shl 8));
 end;
@@ -550,32 +664,31 @@ method IPEndPointToNative(endPoint: IPEndPoint; out lIPv4: rtl.__struct_sockaddr
 begin
   case endPoint.AddressFamily of
     AddressFamily.InterNetworkV6: begin
-      lIPv6.sin6_family := AddressFamily.InterNetworkV6;
+      lIPv6 := default;
+      {$IF DARWIN}
+      lIPv6.sin6_len := sizeOf(lIPv6);
+      {$ENDIF}
+      lIPv6.sin6_family := NativeAF_INET6;
       {$IF DARWIN OR ANDROID}
-      lIPv6.sin6_port := htons(endPoint.Port);
+      lIPv6.sin6_port := NetworkPort(endPoint.Port);
       {$ELSE}
       lIPv6.sin6_port := rtl.htons(endPoint.Port);
       {$ENDIF}
       lIPv6.sin6_scope_id := endPoint.Address.ScopeId;
       var lBytes := endPoint.Address.GetAddressBytes();
-      for i: Integer := 0 to 15 do
-        {$IF DARWIN}
-        lIPv6.sin6_addr.__u6_addr.__u6_addr8[i] := lBytes[i];
-        {$ELSEIF ANDROID}
-        lIPv6.sin6_addr.in6_u.u6_addr8[i] := lBytes[i];
-        {$ELSEIF FUCHSIA}
-        {$WARNING Not Implememnted for Fuchsia yet}
-        {$ELSEIF POSIX}
-        lIPv6.sin6_addr.__in6_u.__u6_addr8[i] := lBytes[i];
-        {$ENDIF}
+      CopySocketBytes(@lIPv6.sin6_addr, @lBytes[0], 16);
       ipPointer := @lIPv6;
       ipSize := sizeOf(rtl.__struct_sockaddr_in6);
     end;
 
     else begin
-      lIPv4.sin_family := AddressFamily.InterNetwork;
+      lIPv4 := default;
+      {$IF DARWIN}
+      lIPv4.sin_len := sizeOf(lIPv4);
+      {$ENDIF}
+      lIPv4.sin_family := NativeAF_INET;
       {$IF DARWIN OR ANDROID}
-      lIPv4.sin_port := htons(endPoint.Port);
+      lIPv4.sin_port := NetworkPort(endPoint.Port);
       {$ELSE}
       lIPv4.sin_port := rtl.htons(endPoint.Port);
       {$ENDIF}
@@ -591,7 +704,8 @@ method IPEndPointToNative(endPoint: IPEndPoint; out lIPv4: rtl.SOCKADDR_IN; out 
 begin
   case endPoint.AddressFamily of
     AddressFamily.InterNetworkV6: begin
-      lIPv6.sin6_family := AddressFamily.InterNetworkV6;
+      lIPv6 := default;
+      lIPv6.sin6_family := NativeAF_INET6;
       lIPv6.sin6_port := rtl.htons(endPoint.Port);
       lIPv6.sin6_scope_id := endPoint.Address.ScopeId;
       var lBytes := endPoint.Address.GetAddressBytes();
@@ -602,7 +716,8 @@ begin
     end;
 
     else begin
-      lIPv4.sin_family := AddressFamily.InterNetwork;
+      lIPv4 := default;
+      lIPv4.sin_family := NativeAF_INET;
       lIPv4.sin_port := rtl.htons(endPoint.Port);
       lIPv4.sin_addr.S_un.S_addr := endPoint.Address.Address;
       ipSize := sizeOf(rtl.SOCKADDR_IN);
@@ -614,12 +729,87 @@ end;
 
 method Socket.InternalSetSocketOption(aOptionLevel: SocketOptionLevel; aOptionName: SocketOptionName; aOptionValue: ^Void; aOptionValueLength: Int32): Boolean;
 begin
-  result := rtl.setsockopt(fHandle, Integer(aOptionLevel), Integer(aOptionName), ^AnsiChar(aOptionValue), aOptionValueLength) <> 0;
+  {$IF WINDOWS}
+  var lLevel := Integer(aOptionLevel);
+  var lName := Integer(aOptionName);
+  {$ELSE}
+  var lLevel: Integer;
+  var lName: Integer;
+  case aOptionLevel of
+    SocketOptionLevel.Socket: begin
+      lLevel := Native_SOL_SOCKET;
+      case aOptionName of
+        SocketOptionName.Debug: lName := Native_SO_DEBUG;
+        SocketOptionName.AcceptConnection: lName := Native_SO_ACCEPTCONN;
+        SocketOptionName.ReuseAddress: lName := Native_SO_REUSEADDR;
+        SocketOptionName.KeepAlive: lName := Native_SO_KEEPALIVE;
+        SocketOptionName.DontRoute: lName := Native_SO_DONTROUTE;
+        SocketOptionName.Broadcast: lName := Native_SO_BROADCAST;
+        SocketOptionName.Linger: lName := Native_SO_LINGER;
+        SocketOptionName.OutOfBandInline: lName := Native_SO_OOBINLINE;
+        SocketOptionName.SendBuffer: lName := Native_SO_SNDBUF;
+        SocketOptionName.ReceiveBuffer: lName := Native_SO_RCVBUF;
+        SocketOptionName.SendLowWater: lName := Native_SO_SNDLOWAT;
+        SocketOptionName.ReceiveLowWater: lName := Native_SO_RCVLOWAT;
+        SocketOptionName.SendTimeout: lName := Native_SO_SNDTIMEO;
+        SocketOptionName.ReceiveTimeout: lName := Native_SO_RCVTIMEO;
+        SocketOptionName.Error: lName := Native_SO_ERROR;
+        SocketOptionName.Type: lName := Native_SO_TYPE;
+        else raise new NotSupportedException('Unsupported socket option');
+      end;
+    end;
+    SocketOptionLevel.Tcp: begin
+      lLevel := rtl.IPPROTO_TCP;
+      if aOptionName <> SocketOptionName.NoDelay then
+        raise new NotSupportedException('Unsupported TCP option');
+      lName := rtl.TCP_NODELAY;
+    end;
+    SocketOptionLevel.IP: begin
+      lLevel := rtl.IPPROTO_IP;
+      case aOptionName of
+        SocketOptionName.IPOptions: lName := rtl.IP_OPTIONS;
+        SocketOptionName.HeaderIncluded: lName := rtl.IP_HDRINCL;
+        SocketOptionName.TypeOfService: lName := rtl.IP_TOS;
+        SocketOptionName.IpTimeToLive: lName := rtl.IP_TTL;
+        SocketOptionName.MulticastInterface: lName := rtl.IP_MULTICAST_IF;
+        SocketOptionName.MulticastTimeToLive: lName := rtl.IP_MULTICAST_TTL;
+        SocketOptionName.MulticastLoopback: lName := rtl.IP_MULTICAST_LOOP;
+        SocketOptionName.AddMembership: lName := rtl.IP_ADD_MEMBERSHIP;
+        SocketOptionName.DropMembership: lName := rtl.IP_DROP_MEMBERSHIP;
+        else raise new NotSupportedException('Unsupported IP option');
+      end;
+    end;
+    SocketOptionLevel.IPv6: begin
+      lLevel := rtl.IPPROTO_IPV6;
+      case aOptionName of
+        SocketOptionName.HopLimit: lName := rtl.IPV6_UNICAST_HOPS;
+        SocketOptionName.MulticastInterface: lName := rtl.IPV6_MULTICAST_IF;
+        SocketOptionName.MulticastTimeToLive: lName := rtl.IPV6_MULTICAST_HOPS;
+        SocketOptionName.MulticastLoopback: lName := rtl.IPV6_MULTICAST_LOOP;
+        SocketOptionName.AddMembership: lName := rtl.IPV6_JOIN_GROUP;
+        SocketOptionName.DropMembership: lName := rtl.IPV6_LEAVE_GROUP;
+        else raise new NotSupportedException('Unsupported IPv6 option');
+      end;
+    end;
+    else raise new NotSupportedException('Unsupported socket option level');
+  end;
+  {$ENDIF}
+  if rtl.setsockopt(fHandle, lLevel, lName, ^AnsiChar(aOptionValue), aOptionValueLength) <> 0 then
+    raise new SocketException('setsockopt', LastSocketError);
+  result := true;
 end;
 
 constructor Socket(aHandle: PlatformSocketHandle);
 begin
   fHandle := aHandle;
+  {$IF DARWIN}
+  var lNoSigPipe: Integer := 1;
+  if rtl.setsockopt(fHandle, Native_SOL_SOCKET, rtl.SO_NOSIGPIPE, ^AnsiChar(@lNoSigPipe), sizeOf(lNoSigPipe)) <> 0 then begin
+    var lError := LastSocketError;
+    rtl.close(fHandle);
+    raise new SocketException('setsockopt(SO_NOSIGPIPE)', lError);
+  end;
+  {$ENDIF}
 end;
 
 class constructor Socket;
@@ -631,36 +821,90 @@ end;
 
 constructor Socket(anAddressFamily: AddressFamily; aSocketType: SocketType; aProtocol: ProtocolType);
 begin
+  var lType: Integer;
+  case aSocketType of
+    SocketType.Stream: lType := rtl.SOCK_STREAM;
+    SocketType.Dgram: lType := rtl.SOCK_DGRAM;
+    SocketType.Raw: lType := rtl.SOCK_RAW;
+    else raise new NotSupportedException('Unsupported socket type');
+  end;
   AddressFamily := anAddressFamily;
   SocketType := aSocketType;
   ProtocolType := aProtocol;
   {$IF POSIX_LIGHT}
-  fHandle := rtl.socket(rtl.int32_t(anAddressFamily), rtl.int32_t(aSocketType), rtl.int32_t(aProtocol));
+  fHandle := rtl.socket(rtl.int32_t(NativeAddressFamily(anAddressFamily)), rtl.int32_t(lType), rtl.int32_t(aProtocol));
   {$ELSEIF WINDOWS}
-  fHandle := rtl.socket(rtl.INT(anAddressFamily), rtl.INT(aSocketType), rtl.INT(aProtocol));
+  fHandle := rtl.socket(rtl.INT(NativeAddressFamily(anAddressFamily)), rtl.INT(lType), rtl.INT(aProtocol));
   {$ELSE}
   {$ERROR Unsupported platform}
   {$ENDIF}
 
-  if fHandle < 0 then
-    raise new Exception("Error creating socket");
+  if {$IF WINDOWS}fHandle = rtl.INVALID_SOCKET{$ELSE}fHandle < 0{$ENDIF} then
+    raise new SocketException("socket", LastSocketError);
+  {$IF DARWIN}
+  var lNoSigPipe: Integer := 1;
+  if rtl.setsockopt(fHandle, Native_SOL_SOCKET, rtl.SO_NOSIGPIPE, ^AnsiChar(@lNoSigPipe), sizeOf(lNoSigPipe)) <> 0 then begin
+    var lError := LastSocketError;
+    rtl.close(fHandle);
+    raise new SocketException('setsockopt(SO_NOSIGPIPE)', lError);
+  end;
+  {$ENDIF}
 end;
 
 method Socket.Accept: Socket;
 begin
-  {$IF POSIX AND (NOT (ANDROID OR DARWIN))}
+  if fIsClosing <> 0 then
+    raise new SocketAcceptInterruptedException;
+  {$IF FUCHSIA}
+  var lSocket: Integer;
+  loop begin
+    if fIsClosing <> 0 then
+      raise new SocketAcceptInterruptedException;
+    lSocket := rtl.accept(fHandle, nil, nil);
+    if lSocket >= 0 then
+      break;
+    var lError := LastSocketError;
+    if fIsClosing <> 0 then
+      raise new SocketAcceptInterruptedException;
+    if (lError <> rtl.EAGAIN) and (lError <> rtl.EINTR) then
+      raise new SocketException('accept', lError);
+    var lPoll: rtl.__struct_pollfd;
+    lPoll.fd := fHandle;
+    lPoll.events := rtl.POLLIN;
+    // fdio shutdown/close does not interrupt a blocking accept on a listener.
+    // Poll in bounded intervals so Close can always cancel the operation.
+    if rtl.poll(@lPoll, 1, 50) < 0 then begin
+      lError := LastSocketError;
+      if fIsClosing <> 0 then
+        raise new SocketAcceptInterruptedException;
+      if lError <> rtl.EINTR then
+        raise new SocketException('poll(accept)', lError);
+    end;
+  end;
+  if fIsClosing <> 0 then begin
+    rtl.close(lSocket);
+    raise new SocketAcceptInterruptedException;
+  end;
+  {$ELSEIF POSIX AND (NOT (ANDROID OR DARWIN OR FUCHSIA))}
   var lSockAddr: rtl.__SOCKADDR_ARG;
   lSockAddr.__sockaddr__ := nil;
   var lSocket := rtl.accept(fHandle, lSockAddr, nil);
-  if lSocket = -1 then
-    raise new Exception("Error calling accept function");
+
   {$ELSE}
   var lSocket := rtl.accept(fHandle, nil, nil);
-  if lSocket < 0 then
-    raise new Exception("Error calling accept function");
+
   {$ENDIF}
 
+  if {$IF WINDOWS}lSocket = rtl.INVALID_SOCKET{$ELSE}lSocket < 0{$ENDIF} then begin
+    var lError := LastSocketError;
+    if fIsClosing <> 0 then
+      raise new SocketAcceptInterruptedException;
+    raise new SocketException('accept', lError);
+  end;
   result := new Socket(lSocket);
+  result.AddressFamily := AddressFamily;
+  result.SocketType := SocketType;
+  result.ProtocolType := ProtocolType;
   result.Connected := true;
 end;
 
@@ -674,7 +918,7 @@ begin
   {$IF POSIX}
   var lIPv4: rtl.__struct_sockaddr_in;
   var lIPv6: rtl.__struct_sockaddr_in6;
-  {$IF POSIX AND (NOT (ANDROID OR DARWIN))}
+  {$IF POSIX AND (NOT (ANDROID OR DARWIN OR FUCHSIA))}
   var lSockAddr: rtl.__CONST_SOCKADDR_ARG;
   {$ENDIF}
   {$ELSE}
@@ -683,19 +927,19 @@ begin
   {$ENDIF}
 
   IPEndPointToNative(lEndPoint, out lIPv4, out lIPv6, out lPointer, out lSize);
-  {$IF POSIX AND (NOT (ANDROID OR DARWIN))}
+  {$IF POSIX AND (NOT (ANDROID OR DARWIN OR FUCHSIA))}
   lSockAddr.__sockaddr__ := ^rtl.__struct_sockaddr(lPointer);
   lSockAddr.__sockaddr_in__ := ^rtl.__struct_sockaddr_in(lPointer);
   if rtl.bind(fHandle, lSockAddr, lSize) <> 0 then
-    raise new Exception("Error calling bind function");
-  {$ELSEIF DARWIN OR ANDROID}
+    raise new SocketException("bind", LastSocketError);
+  {$ELSEIF DARWIN OR ANDROID OR FUCHSIA}
   if rtl.bind(fHandle, ^rtl.__struct_sockaddr(lPointer), lSize) <> 0 then
-    raise new Exception("Error calling bind function");
+    raise new SocketException("bind", LastSocketError);
   {$ELSEIF WINDOWS}
   if rtl.bind(fHandle, lPointer, lSize) <> 0 then
-    raise new Exception("Error calling bind function");
+    raise new SocketException("bind", LastSocketError);
   {$ENDIF}
-  fLocalEndPoint := lEndPoint;
+  fLocalEndPoint := nil;
 end;
 
 method Socket.Connect(aEndPoint: EndPoint);
@@ -707,7 +951,7 @@ begin
   {$IF POSIX}
   var lIPv4: rtl.__struct_sockaddr_in;
   var lIPv6: rtl.__struct_sockaddr_in6;
-  {$IF POSIX AND (NOT (ANDROID OR DARWIN))}
+  {$IF POSIX AND (NOT (ANDROID OR DARWIN OR FUCHSIA))}
   var lSockAddr: rtl.__CONST_SOCKADDR_ARG;
   {$ENDIF}
   {$ELSE}
@@ -717,18 +961,19 @@ begin
 
   IPEndPointToNative(lEndPoint, out lIPv4, out lIPv6, out lPointer, out lSize);
   var lRes := 0;
-  {$IF POSIX AND (NOT (ANDROID OR DARWIN))}
+  {$IF POSIX AND (NOT (ANDROID OR DARWIN OR FUCHSIA))}
   lSockAddr.__sockaddr__ := ^rtl.__struct_sockaddr(lPointer);
   lRes := rtl.connect(fHandle, lSockAddr, lSize);
-  {$ELSEIF DARWIN OR ANDROID}
+  {$ELSEIF DARWIN OR ANDROID OR FUCHSIA}
   lRes := rtl.connect(fHandle, ^rtl.__struct_sockaddr(lPointer), lSize);
   {$ELSE}
   lRes := rtl.connect(fHandle, lPointer, lSize);
   {$ENDIF}
   if lRes <> 0 then
-    raise new Exception("Error connecting socket");
+    raise new SocketException("connect", LastSocketError);
 
   fRemoteEndPoint := aEndPoint;
+  fLocalEndPoint := nil;
   Connected := true;
 end;
 
@@ -757,21 +1002,27 @@ end;
 
 method Socket.Listen(aBackLog: Integer);
 begin
+  {$IF FUCHSIA}
+  var lFlags := rtl.fcntl(fHandle, rtl.F_GETFL);
+  if (lFlags < 0) or (rtl.fcntl(fHandle, rtl.F_SETFL, lFlags or rtl.O_NONBLOCK) < 0) then
+    raise new SocketException('fcntl(O_NONBLOCK)', LastSocketError);
+  {$ENDIF}
   if rtl.listen(fHandle, aBackLog) <> 0 then
-    raise new Exception("Error calling to listen function");
+    raise new SocketException("listen", LastSocketError);
 end;
 
 
 method Socket.Receive(aBuffer: Span<Byte>; aFlags: SocketFlags): Integer;
 begin
-  result := rtl.recv(fHandle, ^AnsiChar(aBuffer.Pointer), aBuffer.Length, Integer(aFlags));
+  result := rtl.recv(fHandle, ^AnsiChar(aBuffer.Pointer), aBuffer.Length, NativeSocketFlags(aFlags));
+  if result < 0 then
+    raise new SocketException("recv", LastSocketError);
 end;
 
 method Socket.Receive(aBuffer: array of Byte; aOffset: Integer; aSize: Integer; aFlags: SocketFlags): Integer;
 begin
-  var lPointer: ^Void;
-  lPointer := @aBuffer[aOffset];
-  result := rtl.recv(fHandle, ^AnsiChar(lPointer), aSize, Integer(aFlags));
+  CheckSocketBuffer(aBuffer, aOffset, aSize);
+  result := Receive(new Span<Byte>(aBuffer, aOffset, aSize), aFlags);
 end;
 
 method Socket.Receive(aBuffer: array of Byte; aSize: Integer; aFlags: SocketFlags): Integer;
@@ -786,14 +1037,19 @@ end;
 
 method Socket.Send(aBuffer:ImmutableSpan<Byte>; aFlags: SocketFlags): Integer;
 begin
-  result := rtl.send(fHandle, ^AnsiChar(aBuffer.Pointer), aBuffer.Length, Integer(aFlags));
+  var lFlags := NativeSocketFlags(aFlags);
+  {$IF LINUX OR ANDROID OR FUCHSIA}
+  lFlags := lFlags or rtl.MSG_NOSIGNAL;
+  {$ENDIF}
+  result := rtl.send(fHandle, ^AnsiChar(aBuffer.Pointer), aBuffer.Length, lFlags);
+  if result < 0 then
+    raise new SocketException("send", LastSocketError);
 end;
 
 method Socket.Send(aBuffer: array of Byte; aOffset: Integer; aSize: Integer; aFlags: SocketFlags): Integer;
 begin
-  var lPointer: ^Void;
-  lPointer := @aBuffer[aOffset];
-  result := rtl.send(fHandle, ^AnsiChar(lPointer), aSize, Integer(aFlags));
+  CheckSocketBuffer(aBuffer, aOffset, aSize);
+  result := Send(new ImmutableSpan<Byte>(aBuffer, aOffset, aSize), aFlags);
 end;
 
 method Socket.Send(aBuffer: array of Byte; aSize: Integer; aFlags: SocketFlags): Integer;
@@ -808,91 +1064,77 @@ end;
 
 method IPNativeToEndPoint(aBuffer: ^Void; var aIPEndPoint: IPEndPoint);
 begin
-  {$IF ANDROID OR DARWIN}
-  var lSockAddrIn: ^rtl.__struct_sockaddr_in := ^rtl.__struct_sockaddr_in(aBuffer);
-  {$IF ANDROID}
-  var lToCompare := rtl.__kernel_sa_family_t(AddressFamily.InterNetwork);
+  {$IF WINDOWS}
+  var lIPv4 := ^rtl.SOCKADDR_IN(aBuffer);
+  var lIPv6 := ^sockaddr_in6(aBuffer);
   {$ELSE}
-  var lToCompare := Byte(AddressFamily.InterNetwork);
+  var lIPv4 := ^rtl.__struct_sockaddr_in(aBuffer);
+  var lIPv6 := ^rtl.__struct_sockaddr_in6(aBuffer);
   {$ENDIF}
-  if lSockAddrIn^.sin_family = lToCompare then begin
+  if Integer(lIPv4^.sin_family) = NativeAF_INET then begin
     aIPEndPoint.AddressFamily := AddressFamily.InterNetwork;
-    aIPEndPoint.Address := new IPAddress(lSockAddrIn^.sin_addr.s_addr);
+    var lBytes := new Byte[4];
+    CopySocketBytes(@lBytes[0], @lIPv4^.sin_addr, 4);
+    aIPEndPoint.Address := new IPAddress(lBytes);
+    {$IF DARWIN OR ANDROID}
+    aIPEndPoint.Port := NetworkPort(lIPv4^.sin_port);
+    {$ELSE}
+    aIPEndPoint.Port := rtl.ntohs(lIPv4^.sin_port);
+    {$ENDIF}
   end
-  else begin
-    var lSockAddrIn6 := ^rtl.__struct_sockaddr_in6(aBuffer);
-    var lBytes := new Byte[IPAddress.IPv6Length];
+  else if Integer(lIPv6^.sin6_family) = NativeAF_INET6 then begin
     aIPEndPoint.AddressFamily := AddressFamily.InterNetworkV6;
-    for i: Integer := 0  to IPAddress.IPv6Length - 1 do
-      {$IF ANDROID}
-      lBytes[i] := lSockAddrIn6^.sin6_addr.in6_u.u6_addr8[i];
-      {$ELSE}
-      lBytes[i] := lSockAddrIn6^.sin6_addr.__u6_addr.__u6_addr8[i];
-      {$ENDIF}
-    aIPEndPoint.Address := new IPAddress(lBytes, lSockAddrIn6^.sin6_scope_id);
-  end;
-  {$ELSEIF FUCHSIA}
-  {$WARNING Not Implememnted for Fuchsia yet}
-  {$ELSEIF POSIX AND NOT DARWIN}
-  var lSockAddrIn: ^rtl.__struct_sockaddr_in := ^rtl.__SOCKADDR_ARG(aBuffer)^.__sockaddr_in__;
-  if lSockAddrIn^.sin_family = rtl.USHORT(AddressFamily.InterNetwork) then begin
-    aIPEndPoint.AddressFamily := AddressFamily.InterNetwork;
-    aIPEndPoint.Address := new IPAddress(lSockAddrIn^.sin_addr.s_addr);
+    var lBytes := new Byte[16];
+    CopySocketBytes(@lBytes[0], @lIPv6^.sin6_addr, 16);
+    aIPEndPoint.Address := new IPAddress(lBytes, lIPv6^.sin6_scope_id);
+    {$IF DARWIN OR ANDROID}
+    aIPEndPoint.Port := NetworkPort(lIPv6^.sin6_port);
+    {$ELSE}
+    aIPEndPoint.Port := rtl.ntohs(lIPv6^.sin6_port);
+    {$ENDIF}
   end
-  else begin
-    var lSockAddrIn6: ^rtl.__struct_sockaddr_in6 := ^rtl.__SOCKADDR_ARG(aBuffer)^.__sockaddr_in6__;
-    var lBytes := new Byte[IPAddress.IPv6Length];
-    aIPEndPoint.AddressFamily := AddressFamily.InterNetworkV6;
-    for i: Integer := 0  to IPAddress.IPv6Length - 1 do
-      lBytes[i] := lSockAddrIn6^.sin6_addr.__in6_u.__u6_addr8[i];
-    aIPEndPoint.Address := new IPAddress(lBytes, lSockAddrIn6^.sin6_scope_id);
-  end;
-  {$ELSEIF WINDOWS}
-  var lSockAddrIn: ^rtl.SOCKADDR_IN;
-  var lSockAddrIn6: ^sockaddr_in6;
-  lSockAddrIn := ^rtl.SOCKADDR_IN(aBuffer);
-  if lSockAddrIn^.sin_family = rtl.USHORT(AddressFamily.InterNetwork) then begin
-    aIPEndPoint.AddressFamily := AddressFamily.InterNetwork;
-    aIPEndPoint.Address := new IPAddress(lSockAddrIn^.sin_addr.S_un.S_addr);
-  end
-  else begin
-    lSockAddrIn6 := ^sockaddr_in6(aBuffer);
-    var lBytes := new Byte[IPAddress.IPv6Length];
-    aIPEndPoint.AddressFamily := AddressFamily.InterNetworkV6;
-    for i: Integer := 0  to IPAddress.IPv6Length - 1 do
-      lBytes[i] := lSockAddrIn6^.sin6_addr.u.Byte[i];
-    aIPEndPoint.Address := new IPAddress(lBytes, lSockAddrIn6^.sin6_scope_id);
-  end;
-  {$ENDIF}
+  else
+    raise new NotSupportedException('Unsupported native address family');
 end;
 
 method Socket.ReceiveFrom(aBuffer: array of Byte; aOffset: Integer; aSize: Integer; aFlags: SocketFlags; var remoteEP: EndPoint): Integer;
 begin
-  var lIPEndPoint := IPEndPoint(remoteEP);
-  {$IF ANDROID OR DARWIN}
-  var lFrom := new Byte[sizeOf(rtl.__struct_sockaddr_in6)];
-  var lSize: rtl.socklen_t := sizeOf(lFrom);
-  result := rtl.recvfrom(fHandle, @aBuffer[aOffset], aSize, Int32(aFlags), ^rtl.__struct_sockaddr(@lFrom[0]), @lSize);
-  {$ELSEIF POSIX}
-  var lFrom: rtl.__SOCKADDR_ARG;
-  var lSize: rtl.socklen_t := sizeOf(lFrom);
-  result := rtl.recvfrom(fHandle, @aBuffer[aOffset], aSize, Int32(aFlags), lFrom, @lSize);
-  {$ELSEIF WINDOWS}
-  var lFrom := new Byte[sizeOf(sockaddr_in6)];
-  var lSize := sizeOf(lFrom);
-  result := rtl.recvfrom(fHandle, ^AnsiChar(@aBuffer[aOffset]), aSize, Int32(aFlags), @lFrom[0], @lSize);
+  CheckSocketBuffer(aBuffer, aOffset, aSize);
+  if aSize = 0 then
+    exit 0;
+  var lEmpty: Byte;
+  var lData: ^Byte := @lEmpty;
+  if aSize > 0 then
+    lData := @aBuffer[aOffset];
+  var lEndPoint := new IPEndPoint(nil, 0);
+  {$IF WINDOWS}
+  var lAddr: sockaddr_in6;
+  var lSize: Integer := sizeOf(lAddr);
+  result := rtl.recvfrom(fHandle, ^AnsiChar(lData), aSize, NativeSocketFlags(aFlags), @lAddr, @lSize);
+  {$ELSE}
+  var lAddr: rtl.__struct_sockaddr_in6;
+  var lSize: rtl.socklen_t := sizeOf(lAddr);
+  {$IF LINUX AND NOT ANDROID}
+  var lArg: rtl.__SOCKADDR_ARG;
+  lArg.__sockaddr__ := ^rtl.__struct_sockaddr(@lAddr);
+  result := rtl.recvfrom(fHandle, lData, aSize, NativeSocketFlags(aFlags), lArg, @lSize);
+  {$ELSE}
+  result := rtl.recvfrom(fHandle, lData, aSize, NativeSocketFlags(aFlags), ^rtl.__struct_sockaddr(@lAddr), @lSize);
+  {$ENDIF}
   {$ENDIF}
   if result < 0 then
-    raise new Exception('Error in recvfrom');
-  {$IF ANDROID OR DARWIN OR WINDOWS}
-  IPNativeToEndPoint(@lFrom[0], var lIPEndPoint);
-  {$ELSE}
-  IPNativeToEndPoint(@lFrom, var lIPEndPoint);
-  {$ENDIF}
+    raise new SocketException('recvfrom', LastSocketError);
+  IPNativeToEndPoint(@lAddr, var lEndPoint);
+  remoteEP := lEndPoint;
 end;
 
 method Socket.SendTo(aBuffer: array of Byte; aOffset: Integer; aSize: Integer; aFlags: SocketFlags; remoteEP: EndPoint): Integer;
 begin
+  CheckSocketBuffer(aBuffer, aOffset, aSize);
+  var lEmpty: Byte;
+  var lData: ^Byte := @lEmpty;
+  if aSize > 0 then
+    lData := @aBuffer[aOffset];
   var lEndPoint := IPEndPoint(remoteEP);
   var lPointer: ^Void;
   var lSize: Integer;
@@ -900,87 +1142,108 @@ begin
   var lSockAddr4: rtl.__struct_sockaddr_in;
   var lSockAddr6: rtl.__struct_sockaddr_in6;
   IPEndPointToNative(lEndPoint, out lSockAddr4, out lSockAddr6, out lPointer, out lSize);
-  {$IF ANDROID OR DARWIN}
-  result := rtl.sendto(fHandle, @aBuffer[0], aSize, Int32(aFlags), ^rtl.__struct_sockaddr(lPointer), lSize);
+  {$IF ANDROID OR DARWIN OR FUCHSIA}
+  result := rtl.sendto(fHandle, lData, aSize, NativeSocketFlags(aFlags), ^rtl.__struct_sockaddr(lPointer), lSize);
   {$ELSE}
   var lAddr: rtl.__CONST_SOCKADDR_ARG;
-  if lSize = IPAddress.IPv6Length then
+  if lEndPoint.AddressFamily = AddressFamily.InterNetworkV6 then
     lAddr.__sockaddr_in6__ := ^rtl.__struct_sockaddr_in6(lPointer)
   else
     lAddr.__sockaddr_in__ := ^rtl.__struct_sockaddr_in(lPointer);
-  result := rtl.sendto(fHandle, @aBuffer[0], aSize, Int32(aFlags), lAddr, lSize);
+  result := rtl.sendto(fHandle, lData, aSize, NativeSocketFlags(aFlags), lAddr, lSize);
   {$ENDIF}
   {$ELSEIF WINDOWS}
   var lSockAddr4: rtl.SOCKADDR_IN;
   var lSockAddr6: sockaddr_in6;
   IPEndPointToNative(lEndPoint, out lSockAddr4, out lSockAddr6, out lPointer, out lSize);
-  result := rtl.sendto(fHandle, ^AnsiChar(@aBuffer[0]), aSize, Int32(aFlags), lPointer, lSize);
+  result := rtl.sendto(fHandle, ^AnsiChar(lData), aSize, NativeSocketFlags(aFlags), lPointer, lSize);
   {$ENDIF}
   if result < 0 then
-    raise new Exception('Error in SendTo');
+    raise new SocketException('sendto', LastSocketError);
 end;
 
 method Socket.DataAvailable: Integer;
 begin
-  var lData: rtl.u_long := 0;
-  var lError := false;
   {$IF POSIX}
-  const FIONREAD: Int32 = 1074004095;
-  lError := rtl.ioctl(fHandle, FIONREAD, @lData) < 0;
+  var lData: Integer := 0;
+  if rtl.ioctl(fHandle, Native_FIONREAD, @lData) < 0 then
+    raise new SocketException('ioctl(FIONREAD)', LastSocketError);
   {$ELSE}
-  var lRes := 0;
-  if rtl.ioctlsocket(fHandle, rtl.FIONREAD, @lData) <> 0 then
-      lRes := rtl.WSAGetLastError();
-
-  lError := (lRes <> 0) and (lRes <> rtl.WSAEOPNOTSUPP);
+  var lData: rtl.u_long := 0;
+  if rtl.ioctlsocket(fHandle, Native_FIONREAD, @lData) <> 0 then
+    raise new SocketException('ioctlsocket(FIONREAD)', LastSocketError);
   {$ENDIF}
-  if lError then
-    lData := 0;
-
   result := lData;
 end;
 
 method Socket.SetSocketOption(aOptionLevel: SocketOptionLevel; aOptionName: SocketOptionName; aOptionValue: Int32);
 begin
-  var lValue: ^Void := @aOptionValue;
-  InternalSetSocketOption(aOptionLevel, aOptionName, lValue, sizeOf(Int32));
+  if (aOptionLevel = SocketOptionLevel.Socket) and (aOptionName = SocketOptionName.DontLinger) then begin
+    SetSocketOption(aOptionLevel, SocketOptionName.Linger, new LingerOption(aOptionValue = 0, 0));
+    exit;
+  end;
+  {$IF POSIX}
+  if (aOptionLevel = SocketOptionLevel.Socket) and
+     ((aOptionName = SocketOptionName.SendTimeout) or (aOptionName = SocketOptionName.ReceiveTimeout)) then begin
+    if aOptionValue < 0 then
+      raise new ArgumentOutOfRangeException('aOptionValue');
+    var lTimeout: rtl.__struct_timeval;
+    lTimeout.tv_sec := aOptionValue / 1000;
+    lTimeout.tv_usec := (aOptionValue mod 1000) * 1000;
+    InternalSetSocketOption(aOptionLevel, aOptionName, @lTimeout, sizeOf(lTimeout));
+    exit;
+  end;
+  {$ENDIF}
+  InternalSetSocketOption(aOptionLevel, aOptionName, @aOptionValue, sizeOf(aOptionValue));
 end;
 
 method Socket.SetSocketOption(aOptionLevel: SocketOptionLevel; aOptionName: SocketOptionName; aOptionValue: Boolean);
 begin
-  var lValue: ^Void := @aOptionValue;
-  InternalSetSocketOption(aOptionLevel, aOptionName, lValue, sizeOf(Boolean));
+  SetSocketOption(aOptionLevel, aOptionName, Int32(aOptionValue));
 end;
 
 method Socket.SetSocketOption(aOptionLevel: SocketOptionLevel; aOptionName: SocketOptionName; aOptionValue: Object);
 begin
-  var lValue: ^Void := @aOptionValue;
-  InternalSetSocketOption(aOptionLevel, aOptionName, lValue, sizeOf(Object));
+  if (aOptionLevel <> SocketOptionLevel.Socket) or (aOptionName <> SocketOptionName.Linger) or not (aOptionValue is LingerOption) then
+    raise new NotSupportedException('Object socket options require a LingerOption');
+  var lValue := LingerOption(aOptionValue);
+  if (lValue.LingerTime < 0) or (lValue.LingerTime > 65535) then
+    raise new ArgumentOutOfRangeException('LingerTime');
+  var lLinger: {$IF WINDOWS}rtl.linger{$ELSE}rtl.__struct_linger{$ENDIF};
+  lLinger.l_onoff := Int32(lValue.Enabled);
+  lLinger.l_linger := lValue.LingerTime;
+  InternalSetSocketOption(aOptionLevel, aOptionName, @lLinger, sizeOf(lLinger));
 end;
 
 method Socket.SetSocketOption(aOptionLevel: SocketOptionLevel; aOptionName: SocketOptionName; aOptionValue: array of Byte);
 begin
-  var lValue: ^Void := @aOptionValue[0];
-  InternalSetSocketOption(aOptionLevel, aOptionName, lValue, length(aOptionValue));
+  if length(aOptionValue) = 0 then
+    raise new ArgumentException('Socket option buffer is empty');
+  InternalSetSocketOption(aOptionLevel, aOptionName, @aOptionValue[0], length(aOptionValue));
 end;
 
 method Socket.Shutdown(aMode: SocketShutdown);
 begin
   if rtl.shutdown(fHandle, Integer(aMode)) <> 0 then
-    raise new Exception("Error closing socket");
+    raise new SocketException('shutdown', LastSocketError);
 end;
 
 method Socket.Close;
 begin
-  {$IF POSIX}
-  if rtl.close(fHandle) <> 0 then
-    raise new Exception("Error closing socket");
-  {$ELSE}
-  if rtl.closesocket(fHandle) <> 0 then
-    raise new Exception("Error closing socket");
-  {$ENDIF}
-
+  if InternalCalls.Exchange(var fIsClosing, 1) <> 0 then
+    exit;
+  var lHandle := fHandle;
+  fHandle := {$IF WINDOWS}rtl.INVALID_SOCKET{$ELSE}-1{$ENDIF};
   Connected := false;
+  // Closing a descriptor alone need not wake a concurrent blocking operation.
+  rtl.shutdown(lHandle, Integer(SocketShutdown.Both));
+  {$IF POSIX}
+  var lResult := rtl.close(lHandle);
+  {$ELSE}
+  var lResult := rtl.closesocket(lHandle);
+  {$ENDIF}
+  if lResult <> 0 then
+    raise new SocketException('close', LastSocketError);
 end;
 
 method Socket.Dispose;
@@ -991,73 +1254,52 @@ end;
 method Socket.GetRemoteEndPoint: EndPoint;
 begin
   if fRemoteEndPoint = nil then begin
-    var lIPEndPoint := new IPEndPoint(IPAddress.Parse('0.0.0.0'), 0);
-    var lRes := 0;
-    {$IF ANDROID OR DARWIN}
-    var lAddr := new Byte[sizeOf(rtl.__struct_sockaddr_in6)];
+    var lEndPoint := new IPEndPoint(nil, 0);
+    {$IF WINDOWS}
+    var lAddr: sockaddr_in6;
+    var lSize: Integer := sizeOf(lAddr);
+    var lRes := rtl.getpeername(fHandle, @lAddr, @lSize);
+    {$ELSE}
+    var lAddr: rtl.__struct_sockaddr_in6;
     var lSize: rtl.socklen_t := sizeOf(lAddr);
-    lRes := rtl.getpeername(fHandle, ^rtl.__struct_sockaddr(@lAddr[0]), @lSize);
-    {$ELSEIF POSIX}
-    var lAddr: rtl.__SOCKADDR_ARG;
-    var sock_addr: rtl.__struct_sockaddr;
-    var sockaddr_in: rtl.__struct_sockaddr_in;
-    var sockaddr_in6: rtl.__struct_sockaddr_in6;
-    lAddr.__sockaddr_in__ := @sockaddr_in;
-    lAddr.__sockaddr_in6__ := @sockaddr_in6;
-    lAddr.__sockaddr__ := @sock_addr;
-    var lSize: rtl.socklen_t := sizeOf(lAddr);
-    lRes := rtl.getpeername(fHandle, lAddr, @lSize);
-    {$ELSEIF WINDOWS}
-    var lSize := sizeOf(sockaddr_in6);
-    var lAddr := new Byte[lSize];
-    lRes := rtl.getpeername(fHandle, @lAddr[0], @lSize);
+    {$IF LINUX AND NOT ANDROID}
+    var lArg: rtl.__SOCKADDR_ARG;
+    lArg.__sockaddr__ := ^rtl.__struct_sockaddr(@lAddr);
+    var lRes := rtl.getpeername(fHandle, lArg, @lSize);
+    {$ELSE}
+    var lRes := rtl.getpeername(fHandle, ^rtl.__struct_sockaddr(@lAddr), @lSize);
+    {$ENDIF}
     {$ENDIF}
     if lRes < 0 then
-      raise new Exception('Error in getpeername');
-
-    {$IF ANDROID OR DARWIN OR WINDOWS}
-    IPNativeToEndPoint(@lAddr[0], var lIPEndPoint);
-    {$ELSE}
-    IPNativeToEndPoint(@lAddr, var lIPEndPoint);
-    {$ENDIF}
-    fRemoteEndPoint := lIPEndPoint;
+      raise new SocketException('getpeername', LastSocketError);
+    IPNativeToEndPoint(@lAddr, var lEndPoint);
+    fRemoteEndPoint := lEndPoint;
   end;
   result := fRemoteEndPoint;
 end;
-
 method Socket.GetLocalEndPoint: EndPoint;
 begin
   if fLocalEndPoint = nil then begin
-    var lIPEndPoint := new IPEndPoint(IPAddress.Parse('0.0.0.0'), 0);
-    var lRes := 0;
-    {$IF ANDROID OR DARWIN}
-    var lAddr := new Byte[sizeOf(rtl.__struct_sockaddr_in6)];
+    var lEndPoint := new IPEndPoint(nil, 0);
+    {$IF WINDOWS}
+    var lAddr: sockaddr_in6;
+    var lSize: Integer := sizeOf(lAddr);
+    var lRes := rtl.getsockname(fHandle, @lAddr, @lSize);
+    {$ELSE}
+    var lAddr: rtl.__struct_sockaddr_in6;
     var lSize: rtl.socklen_t := sizeOf(lAddr);
-    lRes := rtl.getsockname(fHandle, ^rtl.__struct_sockaddr(@lAddr[0]), @lSize);
-    {$ELSEIF POSIX}
-    var lAddr: rtl.__SOCKADDR_ARG;
-    var sock_addr: rtl.__struct_sockaddr;
-    var sockaddr_in: rtl.__struct_sockaddr_in;
-    var sockaddr_in6: rtl.__struct_sockaddr_in6;
-    lAddr.__sockaddr_in__ := @sockaddr_in;
-    lAddr.__sockaddr_in6__ := @sockaddr_in6;
-    lAddr.__sockaddr__ := @sock_addr;
-    var lSize: rtl.socklen_t := sizeOf(lAddr);
-    lRes := rtl.getsockname(fHandle, lAddr, @lSize);
-    {$ELSEIF WINDOWS}
-    var lSize := sizeOf(sockaddr_in6);
-    var lAddr := new Byte[lSize];
-    lRes := rtl.getsockname(fHandle, @lAddr[0], @lSize);
+    {$IF LINUX AND NOT ANDROID}
+    var lArg: rtl.__SOCKADDR_ARG;
+    lArg.__sockaddr__ := ^rtl.__struct_sockaddr(@lAddr);
+    var lRes := rtl.getsockname(fHandle, lArg, @lSize);
+    {$ELSE}
+    var lRes := rtl.getsockname(fHandle, ^rtl.__struct_sockaddr(@lAddr), @lSize);
+    {$ENDIF}
     {$ENDIF}
     if lRes < 0 then
-      raise new Exception('Error in getsockname');
-
-    {$IF ANDROID OR DARWIN OR WINDOWS}
-    IPNativeToEndPoint(@lAddr[0], var lIPEndPoint);
-    {$ELSE}
-    IPNativeToEndPoint(@lAddr, var lIPEndPoint);
-    {$ENDIF}
-    fLocalEndPoint := lIPEndPoint;
+      raise new SocketException('getsockname', LastSocketError);
+    IPNativeToEndPoint(@lAddr, var lEndPoint);
+    fLocalEndPoint := lEndPoint;
   end;
   result := fLocalEndPoint;
 end;
