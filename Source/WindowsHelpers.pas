@@ -1937,6 +1937,11 @@ begin
     ExitCatchFunclet(fCatchReturnAddress, fCatchReturnStack);
   end;
   {$ENDIF}
+  // Catch funclets must finish their deferred cleanups before a native rethrow.
+  {$IF _WIN64 AND NOT ARM64EC}
+  if aRaiseObject is IForeignException then
+    IForeignException(aRaiseObject).RaiseNative(if aRaiseAddress = nil then Utilities.GetReturnAddress(0) else aRaiseAddress);
+  {$ENDIF}
   var lData: array[0..2] of NativeUInt;
   lData[1] := NativeUInt(if aRaiseAddress = nil then Utilities.GetReturnAddress(0) else aRaiseAddress);
   lData[2] := NativeUInt(aRaiseFrame);
@@ -2002,14 +2007,16 @@ method JumpToContinuation64(aAddress, aESP, aEBP: NativeInt); external;
     jmpl *%eax
 ", "", false, false), DisableInlining, DisableOptimizations]*)
 [DisableInlining, DisableOptimizations]
-method JumpToContinuation32(aAddress, aESP, aEBP: NativeInt);
+method JumpToContinuation32(aAddress, aESP, aEBP, aRegistrationFrame: NativeInt);
 begin
+  // We bypass the OS dispatcher when resuming the parent. Its temporary
+  // registration records must not remain at the head of the SEH chain.
   InternalCalls.VoidAsm("
+    movl $3, %fs:0
     movl $2, %ebp
-    movl $0, %eax
     movl $1, %esp
-    jmpl *%eax
-  ", "r,r,r,~{ebp},~{esp},~{esp},~{dirflag},~{fpsr},~{flags}", false, false, aAddress, aESP, aEBP);
+    jmpl *$0
+  ", "r,r,r,r,~{ebp},~{esp},~{dirflag},~{fpsr},~{flags},~{memory}", true, false, aAddress, aESP, aEBP, aRegistrationFrame);
 end;
 {$ELSE}
   {$ERROR Unsupported Architecture}
@@ -2519,10 +2526,10 @@ begin
                   CallCatch32(NativeInt(^Void(lCleanup)), lBaseAddress);
               end;
               var lCont := CallCatch32(NativeInt(^Void(tb^.HandlerType^.Handler)), lBaseAddress);
-              // Elements: port the managed-review fix (3df7949c1d8). Catch funclets
-              // overwrite saved ESP; restore it before this frame catches again.
+              // LLVM catch funclets replace the parent frame's saved ESP. Restore
+              // it so a later catch resumes on the original function stack.
               regFrame^.ESP := ^Void(lESP);
-              JumpToContinuation32(lCont, lESP, lBaseAddress);
+              JumpToContinuation32(lCont, lESP, lBaseAddress, NativeInt(aOrgregFrame));
             end;
           end;
         end;
