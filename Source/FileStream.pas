@@ -12,8 +12,6 @@ type
   FileShare = public enum(None, &Read, &Write, ReadWrite, Delete);
   {$IF WINDOWS}
   PlatformHandle = rtl.HANDLE;
-  {$ELSEIF FUCHSIA}
-  PlatformHandle = ^rtl.zx_handle_t;
   {$ELSEIF POSIX}
   PlatformHandle = ^rtl.FILE;
   {$ENDIF}
@@ -75,6 +73,31 @@ begin
                         end;
   fHandle := rtl.CreateFileW(lName, lAccess, lShare, nil, lmode, rtl.FILE_ATTRIBUTE_NORMAL, nil);
   CheckForIOError(fHandle <> rtl.INVALID_HANDLE_VALUE);
+  {$ELSEIF FUCHSIA OR DARWIN}
+  var lFlags: Integer := case Access of
+    FileAccess.Read: rtl.O_RDONLY;
+    FileAccess.Write: rtl.O_WRONLY;
+    FileAccess.ReadWrite: rtl.O_RDWR;
+  end;
+  case Mode of
+    FileMode.CreateNew: lFlags := lFlags or rtl.O_CREAT or rtl.O_EXCL;
+    FileMode.Create: lFlags := lFlags or rtl.O_CREAT or rtl.O_TRUNC;
+    FileMode.OpenOrCreate: lFlags := lFlags or rtl.O_CREAT;
+    FileMode.Truncate: lFlags := lFlags or rtl.O_TRUNC;
+  end;
+  var lDescriptor := rtl.open(FileName.ToFileName, lFlags, 438 {0666, filtered by umask});
+  if lDescriptor < 0 then
+    CheckForIOError(1);
+  var lMode := (case Access of
+    FileAccess.Read: 'r';
+    FileAccess.Write: 'w';
+    FileAccess.ReadWrite: 'r+';
+  end).ToAnsiChars(true);
+  fHandle := rtl.fdopen(lDescriptor, @lMode[0]);
+  if fHandle = nil then begin
+    rtl.close(lDescriptor);
+    CheckForIOError(1);
+  end;
   {$ELSEIF POSIX_LIGHT}
   var s: AnsiChar := AnsiChar(case Mode of
                                 FileMode.CreateNew: 'w';
@@ -118,7 +141,6 @@ begin
   {$ENDIF}
 end;
 
-{$IFDEF FUCHSIA}[Warning("FileStream.Seek is not implemented for Fuchsia, yet.")]{$ENDIF}
 method FileStream.Seek(Offset: Int64; Origin: SeekOrigin): Int64;
 begin
   if not CanSeek then raise new NotSupportedException();
@@ -150,11 +172,9 @@ begin
   result := rtl.ftell(fHandle);
   {$ELSEIF FUCHSIA}
   CheckForIOError(rtl.fseeko(fHandle, Offset, lOrigin));
-  var pos: rtl.fpos_t;
-  CheckForIOError(rtl.fgetpos(fHandle, @pos));
-  raise new NotImplementedException("FileStream.Seek is not implemented for Fuchsia, yet.");
-  {$WARNING FileStream.Seek is not implemented for Fuchsia, yet.}
-  //exit pos.__pos;
+  result := rtl.ftello(fHandle);
+  if result < 0 then
+    CheckForIOError(1);
   {$ELSE}
   CheckForIOError(rtl.fseeko64(fHandle, Offset, lOrigin));
   var pos: rtl.__fpos64_t;
@@ -185,6 +205,15 @@ end;
 method FileStream.SetLength(value: Int64);
 begin
   if not (CanWrite and CanSeek) then raise new NotSupportedException;
+  {$IF FUCHSIA}
+  if value < 0 then
+    raise new ArgumentOutOfRangeException('value');
+  var lPosition := Seek(0, SeekOrigin.Current);
+  Flush;
+  CheckForIOError(rtl.ftruncate(rtl.fileno(fHandle), value));
+  Seek(lPosition, SeekOrigin.Begin);
+  exit;
+  {$ENDIF}
   Seek(value, SeekOrigin.Begin);
   {$IFDEF WINDOWS}
   CheckForIOError(rtl.SetEndOfFile(fHandle));
@@ -236,6 +265,10 @@ begin
   if not CanWrite then raise new NotSupportedException;
   {$IFDEF WINDOWS}
   rtl.FlushFileBuffers(fHandle);
+  {$ELSEIF FUCHSIA OR DARWIN}
+  CheckForIOError(rtl.fflush(fHandle));
+  var fd := rtl.fileno(fHandle);
+  CheckForIOError(rtl.fsync(fd));
   {$ELSEIF POSIX_LIGHT}
   var fd := rtl.fileno(fHandle);
   CheckForIOError(rtl.fsync(fd));

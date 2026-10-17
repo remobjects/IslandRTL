@@ -1,6 +1,6 @@
 ﻿namespace RemObjects.Elements.System;
 {$HIDE H7}
-{$IFDEF cpu64 and arm}
+{$IFDEF cpu64 and (arm or ARM64)}
 type
   ARM64CallData = record
     _X0,               //  0
@@ -56,18 +56,13 @@ type
       stp x1, x3, [sp, #-16]!
       stp x4, x5, [sp, #-16]!
 
-      cbz x4, .done
-      mov x10, #8
-      mul x9, x4, x10
-      str x9, [sp, #-16]!
     .loop:
 
       ldp x0, x1, [x3]
       stp x0, x1, [sp, #-16]!
       sub x3, x3, #16
       sub x4, x4, #2
-      cbnz x4, .loop:
-    .done:
+      cbnz x4, .loop
 
       ldp x0, x1, [x16] // load x0-x7 registers
       ldp x2, x3, [x16, #16]
@@ -77,7 +72,7 @@ type
       ldp d0, d1, [x16, #64] // load d0-d7 registers (64 bits)
       ldp d2, d3, [x16, #80]
       ldp d4, d5, [x16, #96]
-      ldp d6, d7, [x16, #104]
+      ldp d6, d7, [x16, #112]
 
       blr x17
 
@@ -87,14 +82,8 @@ type
       ldr x5, [fp, #-24] // _V0
       str d0, [x5]
 
-      ldr x9, [fp, #-32]
-      cbz x9, .nostack
-      ldr x9, [fp, #-48]
-      add sp, sp, #16 // stored #bytes
-      add sp, sp, x9
-
-    .nostack:
-      add sp, sp, #32
+      // Restore the original stack directly, including any copied arguments.
+      mov sp, fp
 
       ldp  fp, lr, [sp], #16
       ret
@@ -145,19 +134,9 @@ type
 
     procedure StoreRegSingle(data: Single);
     begin
-      case fRegUsageFloat of
-        0: begin inc(fRegUsageFloat); fCallData.SingleBits := fCallData.SingleBits or 1;   fCallData._V0:=data; end;
-        1: begin inc(fRegUsageFloat); fCallData.SingleBits := fCallData.SingleBits or 2;   fCallData._V1:=data; end;
-        2: begin inc(fRegUsageFloat); fCallData.SingleBits := fCallData.SingleBits or 4;   fCallData._V2:=data; end;
-        3: begin inc(fRegUsageFloat); fCallData.SingleBits := fCallData.SingleBits or 8;   fCallData._V3:=data; end;
-        4: begin inc(fRegUsageFloat); fCallData.SingleBits := fCallData.SingleBits or 16;  fCallData._V4:=data; end;
-        5: begin inc(fRegUsageFloat); fCallData.SingleBits := fCallData.SingleBits or 32;  fCallData._V5:=data; end;
-        6: begin inc(fRegUsageFloat); fCallData.SingleBits := fCallData.SingleBits or 64;  fCallData._V6:=data; end;
-        7: begin inc(fRegUsageFloat); fCallData.SingleBits := fCallData.SingleBits or 128; fCallData._V7:=data; end;
-      else
-        var temp: Double := Double(data);
-        PushBefore(@temp,8);
-      end;
+      var lBits: UInt64 := 0;
+      ^Single(@lBits)^ := data;
+      StoreRegDouble(^Double(@lBits)^);
     end;
 
     method GetPtr64(aParamIndex: Integer; aParam: Object; aParamMode: ArgumentMode;aParamType: &Type);
@@ -166,7 +145,10 @@ type
         //StoreReg(NativeUInt(@aParam));
         if aParamType.IsValueType then begin
           var lAlloc := DefaultGC.New(aParamType.RTTI, aParamType.SizeOfType + sizeOf(^Void)); // header
-          memcpy(@(^^Void(lAlloc)[1]),@(^^Void(InternalCalls.Cast(aParam))[1]), aParamType.SizeOfType);
+          if aParamMode = ArgumentMode.Out then
+            memset(@(^^Void(lAlloc)[1]), 0, aParamType.SizeOfType)
+          else
+            memcpy(@(^^Void(lAlloc)[1]),@(^^Void(InternalCalls.Cast(aParam))[1]), aParamType.SizeOfType);
           StoreReg(UInt64(@(^^Void(lAlloc)[1])));
           fVarData[aParamIndex] := InternalCalls.Cast<Object>(lAlloc);
         end else begin
@@ -227,17 +209,18 @@ type
         lInst.f_X0 := 0;
         lInst.fRegUsage :=0;
         lInst.fRegUsageFloat := 0;
-        if assigned(aResultType) and (TypeCodes(aResultType.Code) = (TypeCodes.Single)) then begin
-          lInst.fCallData.SingleBits  := lInst.fCallData.SingleBits or 256;
-        end;
         for I:Integer := 0 to length(aParams) - 1 do begin
           if (lInst.fVarData = nil) and (aParameterFlags[I] in [ArgumentMode.Var, ArgumentMode.Out]) then lInst.fVarData := new Object[length(aParams)];
           lInst.GetPtr64(I, aParams[I], aParameterFlags[I],  aParameterTypes[I]);
         end;
+        // The trampoline always copies at least one aligned pair. Extra stack
+        // slots are ignored by callees whose arguments fit in registers.
+        if length(lInst.fStack) = 0 then
+          lInst.PushBefore(nil, 16);
         var pp: ^Byte;
         if (length(lInst.fStack) > 0) and ((length(lInst.fStack) mod 16 ≠ 0)) then
           lInst.PushBefore(nil, 8); // stack should be aligned to 16
-        if length(lInst.fStack) = 0 then pp := nil else pp := @lInst.fStack[length(lInst.fStack)-16]; // -16: move two 64bits data back, since in asm code we move in pairs
+        pp := @lInst.fStack[length(lInst.fStack)-16]; // -16: move two 64bits data back, since in asm code we move in pairs
         DoCall(aAddress,out lInst.f_X0,var lInst.fCallData, pp, length(lInst.fStack) div 8, var lInst.f_V0);
         if lInst.fVarData <> nil then begin
           for I: Integer := 0 to length(aParams) - 1 do begin
@@ -249,7 +232,7 @@ type
 
         if assigned(aResultType) then begin
           case (aResultType.Code) of
-            TypeCodes.Single:   exit Single(lInst.f_V0);
+            TypeCodes.Single:   exit ^Single(@lInst.f_V0)^;
             TypeCodes.Double:   exit Double(lInst.f_V0);
             TypeCodes.Byte:     exit Byte(lInst.f_X0);
             TypeCodes.Boolean:  exit Boolean(lInst.f_X0);

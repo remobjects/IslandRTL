@@ -1,6 +1,6 @@
 ﻿namespace RemObjects.Elements.System;
 {$HIDE H7}
-{$IFDEF cpu64 and not arm}
+{$IFDEF cpu64 and not (arm or ARM64)}
 type
   X64CallData = record
     _RDI,               //  0
@@ -240,7 +240,10 @@ type
         //StoreReg(NativeUInt(@aParam));
         if aParamType.IsValueType then begin
           var lAlloc := DefaultGC.New(aParamType.RTTI, aParamType.SizeOfType + sizeOf(^Void)); // header
-          memcpy(@(^^Void(lAlloc)[1]),@(^^Void(InternalCalls.Cast(aParam))[1]), aParamType.SizeOfType);
+          if aParamMode = ArgumentMode.Out then
+            memset(@(^^Void(lAlloc)[1]), 0, aParamType.SizeOfType)
+          else
+            memcpy(@(^^Void(lAlloc)[1]),@(^^Void(InternalCalls.Cast(aParam))[1]), aParamType.SizeOfType);
           StoreReg(UInt64(@(^^Void(lAlloc)[1])));
           fVarData[aParamIndex] := InternalCalls.Cast<Object>(lAlloc);
         end else begin

@@ -662,8 +662,7 @@ type
       {$ELSEIF ANDROID}
       raise new NotImplementedException($"MethodInfo.Invoke is not implemented for Island/Android yet.");
       {$ELSEIF FUCHSIA}
-      {$WARNING Not Implememnted for Fuchsia yet}
-      raise new NotImplementedException($"MethodInfo.Invoke is not implemented for Island/Fuchsia yet.");
+      result := FFI.Call(Pointer, cc, var lParams, lModes, lTypes, &Type);
       {$ELSEIF POSIX}
         //{$IFDEF cpu64 and not ARM}
         {$IFDEF cpu64 OR (ARM AND CPU64)}

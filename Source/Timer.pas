@@ -5,12 +5,19 @@ interface
 {$GLOBALS ON}
 
 type
+  {$IF FUCHSIA}
+  FuchsiaTimerState = class;
+  {$ENDIF}
+
   TimerElapsedBlock = public block (aData: Object);
   Timer = public class(IDisposable)
   private
     {$IF WINDOWS}
     fTimerQueue: rtl.HANDLE;
     fTimer: rtl.HANDLE := rtl.INVALID_HANDLE_VALUE;
+    {$ELSEIF FUCHSIA}
+    fTimerLock := new Monitor;
+    fTimerState: FuchsiaTimerState;
     {$ELSEIF LINUX OR ANDROID}
     fTimer: rtl.timer_t;
     {$ELSEIF ISLAND AND DARWIN}
@@ -41,7 +48,48 @@ type
     property Data: Object;
   end;
 
+{$IF FUCHSIA}
+type
+  FuchsiaTimerState = class
+  public
+    Owner: Timer;
+    Cancelled := new EventWaitHandle(false, false);
+    Finished := new EventWaitHandle(false, false);
+    WorkerID: ThreadID;
+    Interval: Integer;
+    RepeatTimer: Boolean;
+    method Run;
+    finalizer;
+  end;
+{$ENDIF}
+
 implementation
+
+{$IF FUCHSIA}
+method FuchsiaTimerState.Run;
+begin
+  WorkerID := Thread.CurrentThreadID;
+  try
+    loop begin
+      if Cancelled.Wait(Interval) then
+        exit;
+      var lCallback := Owner.Elapsed;
+      if lCallback <> nil then
+        lCallback(Owner.Data);
+      if not RepeatTimer then
+        exit;
+    end;
+  finally
+    Finished.Set;
+  end;
+end;
+
+finalizer FuchsiaTimerState;
+begin
+  Cancelled.Dispose;
+  Finished.Dispose;
+end;
+{$ENDIF}
 
 {$IFDEF WINDOWS}
 [CallingConvention(CallingConvention.Stdcall)]
@@ -77,7 +125,7 @@ end;
 method Timer.SetEnabled(value: Boolean);
 begin
   if value <> fEnabled then begin
-    if fEnabled then Start
+    if value then Start
     else Stop;
   end;
 end;
@@ -116,7 +164,27 @@ begin
     if not rtl.CreateTimerQueueTimer(@fTimer, fTimerQueue, @TimerCallback, InternalCalls.Cast(self), fInterval, lRepeat, 0) then
     raise new Exception('Can not create new timer');
   {$ELSEIF FUCHSIA}
-  {$WARNING Not Implememnted for Fuchsia yet}
+  locking fTimerLock do begin
+    if fEnabled then
+      exit;
+    if fInterval <= 0 then
+      raise new ArgumentOutOfRangeException('Timer interval must be positive');
+    var lState := new FuchsiaTimerState;
+    lState.Owner := self;
+    lState.Interval := fInterval;
+    lState.RepeatTimer := fRepeat;
+    fTimerState := lState;
+    fEnabled := true;
+    var lThread := new Thread(->lState.Run);
+    try
+      lThread.Start;
+    except
+      fTimerState := nil;
+      fEnabled := false;
+      raise;
+    end;
+  end;
+  exit;
   {$ELSEIF LINUX OR ANDROID}
   var lSigEv: rtl.sigevent_t;
   lSigEv.sigev_notify := rtl.SIGEV_THREAD;
@@ -154,6 +222,21 @@ end;
 
 method Timer.Stop;
 begin
+  {$IF FUCHSIA}
+  var lState: FuchsiaTimerState;
+  locking fTimerLock do begin
+    if not fEnabled then
+      exit;
+    lState := fTimerState;
+    fTimerState := nil;
+    fEnabled := false;
+    lState.Cancelled.Set;
+  end;
+  // A callback can stop its own timer; waiting there would deadlock.
+  if lState.WorkerID <> Thread.CurrentThreadID then
+    lState.Finished.Wait;
+  exit;
+  {$ENDIF}
   if not fEnabled then exit;
   {$IFDEF WINDOWS}
   if not rtl.DeleteTimerQueueTimer(fTimerQueue, fTimer, rtl.INVALID_HANDLE_VALUE) then
@@ -176,7 +259,7 @@ method Timer.Dispose;
 begin
   {$IFDEF WINDOWS}
   rtl.DeleteTimerQueueEx(fTimerQueue, rtl.INVALID_HANDLE_VALUE);
-  {$ELSEIF (LINUX OR ANDROID) OR (ISLAND AND DARWIN)}
+  {$ELSEIF FUCHSIA OR (LINUX OR ANDROID) OR (ISLAND AND DARWIN)}
   if fEnabled then Stop;
   {$ENDIF}
 end;
