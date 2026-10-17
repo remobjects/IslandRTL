@@ -175,6 +175,8 @@
   <ItemGroup Condition="'$(Target)' == 'Island.Fuchsia'">
     <Compile Include="ManagedThreadPool.pas" />
     <Compile Include="PosixHelpers.pas" />
+    <Compile Include="Posix_FFI_x64.pas" />
+    <Compile Include="Posix_FFI_ARM64.pas" />
     <Reference Include="rtl" />
     <Compile Include="FuchsiaFidl.pas" />
   </ItemGroup>
