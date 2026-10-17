@@ -521,11 +521,15 @@ begin
 end;
 
 {$IFDEF DARWIN}[Warning("Thread.Name cannot be set on Darwin")]{$ENDIF}
-{$IFDEF FUCHSIA}[Warning("Thread.Name cannot be set on Fuchsia")]{$ENDIF}
 method Thread.set_Name(aValue: String);
 begin
   if length(aValue) > 0 then begin
-    {$IF FUCHSIA OR DARWIN}
+    {$IF FUCHSIA}
+    var lName := aValue.ToAnsiChars(true);
+    var lStatus := rtl.pthread_setname_np(fThread, @lName[0]);
+    if lStatus <> 0 then
+      raise new Exception('Failed to set thread name: '+lStatus.ToString);
+    {$ELSEIF DARWIN}
     raise new NotSupportedException("Setting a thread's name is not supported on this platform.");
     {$ELSEIF WINDOWS}
     var lName: rtl.LPCWSTR := aValue.ToLPCWSTR;
@@ -540,11 +544,16 @@ begin
   end;
 end;
 
-{$IFDEF FUCHSIA}[Warning("Thread.Name cannot be read on Fuchsia")]{$ENDIF}
 {$IFDEF ANDROID}[Warning("Thread.Name cannot be read on Android")]{$ENDIF}
 method Thread.get_Name: String;
 begin
-  {$IF FUCHSIA OR ANDROID}
+  {$IF FUCHSIA}
+  var lBuffer: array[0..63] of AnsiChar;
+  var lStatus := rtl.pthread_getname_np(fThread, @lBuffer, sizeOf(lBuffer));
+  if lStatus <> 0 then
+    raise new Exception('Failed to get thread name: '+lStatus.ToString);
+  result := String.FromPAnsiChar(@lBuffer);
+  {$ELSEIF ANDROID}
   //result := nil;
   {$ELSEIF WINDOWS}
   var lpName: ^rtl.PWSTR;

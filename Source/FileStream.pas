@@ -12,8 +12,6 @@ type
   FileShare = public enum(None, &Read, &Write, ReadWrite, Delete);
   {$IF WINDOWS}
   PlatformHandle = rtl.HANDLE;
-  {$ELSEIF FUCHSIA}
-  PlatformHandle = ^rtl.zx_handle_t;
   {$ELSEIF POSIX}
   PlatformHandle = ^rtl.FILE;
   {$ENDIF}
@@ -131,7 +129,6 @@ begin
   {$ENDIF}
 end;
 
-{$IFDEF FUCHSIA}[Warning("FileStream.Seek is not implemented for Fuchsia, yet.")]{$ENDIF}
 method FileStream.Seek(Offset: Int64; Origin: SeekOrigin): Int64;
 begin
   if not CanSeek then raise new NotSupportedException();
@@ -163,11 +160,9 @@ begin
   result := rtl.ftell(fHandle);
   {$ELSEIF FUCHSIA}
   CheckForIOError(rtl.fseeko(fHandle, Offset, lOrigin));
-  var pos: rtl.fpos_t;
-  CheckForIOError(rtl.fgetpos(fHandle, @pos));
-  raise new NotImplementedException("FileStream.Seek is not implemented for Fuchsia, yet.");
-  {$WARNING FileStream.Seek is not implemented for Fuchsia, yet.}
-  //exit pos.__pos;
+  result := rtl.ftello(fHandle);
+  if result < 0 then
+    CheckForIOError(1);
   {$ELSE}
   CheckForIOError(rtl.fseeko64(fHandle, Offset, lOrigin));
   var pos: rtl.__fpos64_t;
@@ -208,6 +203,15 @@ end;
 method FileStream.SetLength(value: Int64);
 begin
   if not (CanWrite and CanSeek) then raise new NotSupportedException;
+  {$IF FUCHSIA}
+  if value < 0 then
+    raise new ArgumentOutOfRangeException('value');
+  var lPosition := Seek(0, SeekOrigin.Current);
+  Flush;
+  CheckForIOError(rtl.ftruncate(rtl.fileno(fHandle), value));
+  Seek(lPosition, SeekOrigin.Begin);
+  exit;
+  {$ENDIF}
   Seek(value, SeekOrigin.Begin);
   {$IFDEF WINDOWS}
   CheckForIOError(rtl.SetEndOfFile(fHandle));

@@ -4,6 +4,8 @@ type
   // Implemented by foreign exception wrappers that can preserve native identity.
   IForeignException = public interface
     method RaiseNative(aRaiseAddress: ^Void);
+    // Called only after a catch is selected and the foreign frames are unwound.
+    method TakeNativeOwnership;
   end;
 
   ForeignExceptionImplementation = public class

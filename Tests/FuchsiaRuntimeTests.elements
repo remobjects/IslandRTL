@@ -1,0 +1,28 @@
+<?xml version="1.0" encoding="utf-8"?>
+<Project xmlns="http://schemas.microsoft.com/developer/msbuild/2003" DefaultTargets="Build">
+  <PropertyGroup>
+    <ProjectGuid>{48C1034D-2660-4AFA-A463-E8CAD429AF89}</ProjectGuid>
+    <RootNamespace>FuchsiaRuntimeTests</RootNamespace>
+    <OutputType>Executable</OutputType>
+    <Mode>Island</Mode>
+    <CrossPlatform>True</CrossPlatform>
+    <Architecture Condition="'$(Architecture)' == ''">arm64</Architecture>
+    <OutputPath>bin/SocketTests</OutputPath>
+    <AssemblyName>FuchsiaRuntimeTests</AssemblyName>
+    <FuchsiaPackageName>elements-runtime-tests</FuchsiaPackageName>
+    <FuchsiaUseProtocols>fuchsia.posix.socket.Provider;fuchsia.net.name.Lookup</FuchsiaUseProtocols>
+    <CreatePackage>True</CreatePackage>
+  </PropertyGroup>
+  <PropertyGroup Condition=" '$(Target)' == 'Island.Fuchsia' "><SubMode>Fuchsia</SubMode></PropertyGroup>
+  <PropertyGroup Condition=" '$(Target)' == 'Island.Darwin.macOS' "><SubMode>Darwin</SubMode><SDK>macOS</SDK></PropertyGroup>
+  <PropertyGroup Condition=" '$(Target)' == 'Island.Linux' "><SubMode>Linux</SubMode></PropertyGroup>
+  <PropertyGroup Condition=" '$(Target)' == 'Island.Windows' "><SubMode>Windows</SubMode></PropertyGroup>
+  <ItemGroup>
+    <Reference Include="Island"><HintPath>$(SocketRTLReference)</HintPath></Reference>
+    <Reference Include="Elements"><HintPath>$(RuntimeRTL2Reference)</HintPath></Reference>
+    <Reference Include="rtl" />
+    <Reference Include="gc" />
+    <Compile Include="FuchsiaRuntimeTests.pas" />
+  </ItemGroup>
+  <Import Project="$(MSBuildExtensionsPath)/RemObjects Software/Elements/RemObjects.Elements.targets" />
+</Project>

@@ -62,6 +62,8 @@ begin
   var lDateFormat := WebAssembly.ReflectConstruct("Intl.DateTimeFormat", ['default']);
   var usedOptions: String := lDateFormat.resolvedOptions().timeZone;
   result := new TimeZone(usedOptions, lOffset);
+  {$ELSEIF FUCHSIA}
+  result := Utc;
   {$ELSE}
   result := new TimeZone('', 0);
   {$ENDIF}
@@ -118,6 +120,8 @@ begin
     lList.Add(lString);
   CFRelease(lAllTimeZones);
   result := lList;
+  {$ELSEIF FUCHSIA}
+  result := ['UTC'];
   {$ELSE}
   result := new String[1];
   {$ENDIF}
@@ -199,6 +203,9 @@ begin
   end
   else
     result := new TimeZone(' ' , 0);
+  {$ELSEIF FUCHSIA}
+  if (aName = 'UTC') or (aName = 'GMT') or (aName = 'Etc/UTC') or (aName = 'Etc/GMT') then
+    result := Utc;
   {$ELSE}
   result := new TimeZone(' ' , 0);
   {$ENDIF}

@@ -66,15 +66,15 @@ type
     method CheckReadOnly;
     {$IF WINDOWS}
     method GetStringFromLocale(aLocaleID: PlatformLocale; aLocaleItem: rtl.LCTYPE): String;
-    {$ELSEIF LINUX AND NOT ANDROID}
+    {$ELSEIF (LINUX OR FUCHSIA) AND NOT ANDROID}
     method GetStringFromLocale(aLocaleID: PlatformLocale; aLocaleItem: Integer): String;
     {$ELSEIF ICU_LOCALE}
     method GetDateTimePattern(aTimeStyle: UDateFormatStyle; aDateStyle: UDateFormatStyle; aLocaleID: PlatformLocale): String;
     {$ENDIF}
-    {$IF LINUX OR ICU_LOCALE}
+    {$IF LINUX OR FUCHSIA OR ICU_LOCALE}
     method AdjustPattern(aPattern: String): String;
     {$ENDIF}
-    {$IF LINUX OR ICU_LOCALE OR DARWIN}
+    {$IF LINUX OR FUCHSIA OR ICU_LOCALE OR DARWIN}
     method GetDateSeparator(aShortDatePattern: String): String;
     method GetTimeSeparator(aShortTimePattern: String): String;
     {$ENDIF}
@@ -102,6 +102,9 @@ type
     fNumberFormat: NumberFormatInfo;
     fDateTimeFormat: DateTimeFormatInfo;
     fLocaleID: PlatformLocale;
+    {$IF FUCHSIA}
+    fIdentifier: String := "C";
+    {$ENDIF}
     class method GetInvariant: not nullable Locale;
     class method GetCurrent: not nullable Locale;
     method GetIdentifier: not nullable String;
@@ -204,6 +207,10 @@ end;
 
 constructor Locale(aLocaleID: PlatformLocale; aIsReadOnly: Boolean := false);
 begin
+  {$IF FUCHSIA}
+  if aLocaleID = nil then
+    raise new ArgumentException('Invalid native locale');
+  {$ENDIF}
   fLocaleID := aLocaleID;
   var lCurrency: String := '';
   var lThousandsSep: Char := ',';
@@ -220,7 +227,7 @@ begin
   lTemp := String.FromPChar(@lBuffer[0], lTotal).Substring(0, 1);
   if lTemp.Length > 0 then
   lThousandsSep := lTemp[0];
-  {$ELSEIF LINUX AND NOT ANDROID}
+  {$ELSEIF (LINUX OR FUCHSIA) AND NOT ANDROID}
   var lTemp := rtl.nl_langinfo_l({$IF FUCHSIA}rtl.THOUSEP{$ELSE}rtl.THOUSANDS_SEP{$ENDIF}, fLocaleID);
   if lTemp <> nil then begin
     var lTempString := String.FromPAnsiChar(lTemp);
@@ -285,11 +292,27 @@ constructor Locale(aLocale: String);
 begin
   {$IF WINDOWS}
   constructor(rtl.LocaleNameToLCID(aLocale.ToLPCWSTR, 0), false);
-  {$ELSEIF LINUX AND NOT ANDROID}
+  {$ELSEIF (LINUX OR FUCHSIA) AND NOT ANDROID}
+  {$IF FUCHSIA}
+  // Normalize language tags without rewriting the UTF-8 codeset suffix.
+  var lCodeset := aLocale.IndexOf('.');
+  if lCodeset >= 0 then
+    aLocale := aLocale.Substring(0, lCodeset).Replace('-', '_') + aLocale.Substring(lCodeset)
+  else
+    aLocale := aLocale.Replace('-', '_');
+  {$ELSE}
   aLocale := aLocale.Replace('-', '_');
+  {$ENDIF}
   var lName := aLocale.ToAnsiChars(true);
   var lLocale := rtl.newlocale(rtl.LC_ALL_MASK, @lName[0], nil);
+  {$IF FUCHSIA}
+  if lLocale = nil then
+    raise new ArgumentException('Locale is not available: '+aLocale);
+  {$ENDIF}
   constructor(lLocale, false);
+  {$IF FUCHSIA}
+  fIdentifier := aLocale;
+  {$ENDIF}
   {$ELSEIF DARWIN}
   // CoreFoundation needs an NSString bridge, not the Island String object address.
   var lName: Foundation.NSString := aLocale;
@@ -309,9 +332,8 @@ begin
     raise new Exception("Error getting locale name");
   result := String.FromPChar(@lName[0], lLength) as not nullable;
   {$ELSEIF FUCHSIA}
-  {$WARNING Not Implememnted for Fuchsia yet}
-  raise new NotImplementedException;
-  {$ELSEIF LINUX AND NOT ANDROID}
+  result := fIdentifier as not nullable;
+  {$ELSEIF (LINUX OR FUCHSIA) AND NOT ANDROID}
   var lName := rtl.nl_langinfo_l(rtl._NL_IDENTIFICATION_LANGUAGE, fLocaleID);
   if lName = nil then
     raise new Exception("Error getting locale name");
@@ -334,6 +356,12 @@ begin
   if fInvariant = nil then begin
     {$IF WINDOWS}
     fInvariant := new Locale(rtl.LOCALE_INVARIANT, true);
+    {$ELSEIF FUCHSIA}
+    var lName := "C".ToAnsiChars(true);
+    var lHandle := rtl.newlocale(rtl.LC_ALL_MASK, @lName[0], nil);
+    if lHandle = nil then
+      raise new Exception('Cannot create invariant locale');
+    fInvariant := new Locale(lHandle, true);
     {$ELSEIF LINUX AND NOT ANDROID}
     var lInvariant := 'en_US.utf8'.ToAnsiChars(true);
     var lHandle := rtl.newLocale(rtl.LC_ALL_MASK, @lInvariant[0], nil);
@@ -356,6 +384,22 @@ begin
   if fCurrent = nil then begin
     {$IF WINDOWS}
     fCurrent := new Locale(rtl.GetThreadLocale);
+    {$ELSEIF FUCHSIA}
+    // libc has no dependency on the Fuchsia intl service. Use the process
+    // locale when supplied, otherwise the standard UTF-8 C locale.
+    var lDefaultName := Environment.GetEnvironmentVariable('LC_ALL');
+    if length(lDefaultName) = 0 then
+      lDefaultName := Environment.GetEnvironmentVariable('LANG');
+    if length(lDefaultName) = 0 then
+      lDefaultName := 'C.UTF-8';
+    var lName := lDefaultName.ToAnsiChars(true);
+    var lHandle := rtl.newlocale(rtl.LC_ALL_MASK, @lName[0], nil);
+    if lHandle = nil then
+      fCurrent := GetInvariant
+    else begin
+      fCurrent := new Locale(lHandle, true);
+      fCurrent.fIdentifier := lDefaultName;
+    end;
     {$ELSEIF LINUX AND NOT ANDROID}
     var lDefaultName := Environment.GetEnvironmentVariable('LANG');
     if lDefaultName = '' then
@@ -415,7 +459,7 @@ begin
   fLongDatePattern := GetStringFromLocale(aLocale, rtl.LOCALE_SLONGDATE);
   fShortTimePattern := GetStringFromLocale(aLocale, rtl.LOCALE_SSHORTTIME);
   fLongTimePattern := GetStringFromLocale(aLocale, rtl.LOCALE_STIMEFORMAT);
-  {$ELSEIF LINUX AND NOT ANDROID}
+  {$ELSEIF (LINUX OR FUCHSIA) AND NOT ANDROID}
   for i: Integer := 0 to 6 do begin
     fShortDayNames[i] := GetStringFromLocale(aLocale, rtl.ABDAY_1 + i);
     fLongDayNames[i] := GetStringFromLocale(aLocale, rtl.DAY_1 + i);
@@ -519,7 +563,7 @@ begin
   var lTotal := rtl.GetLocaleInfo(aLocaleID, aLocaleItem, @lBuffer[0], lBuffer.Length);
   result := String.FromPChar(@lBuffer[0], lTotal - 1);
 end;
-{$ELSEIF LINUX AND NOT ANDROID}
+{$ELSEIF (LINUX OR FUCHSIA) AND NOT ANDROID}
 method DateTimeFormatInfo.GetStringFromLocale(aLocaleID: PlatformLocale; aLocaleItem: Integer): String;
 begin
   var lTemp := rtl.nl_langinfo_l(aLocaleItem, aLocaleID);
@@ -541,7 +585,7 @@ begin
 end;
 {$ENDIF}
 
-{$IF LINUX OR ICU_LOCALE OR DARWIN}
+{$IF LINUX OR FUCHSIA OR ICU_LOCALE OR DARWIN}
 method DateTimeFormatInfo.GetDateSeparator(aShortDatePattern: String): String;
 begin
   var lDayPos := aShortDatePattern.IndexOf('dd');
@@ -590,10 +634,10 @@ begin
 end;
 {$ENDIF}
 
-{$IF LINUX OR ICU_LOCALE}
+{$IF LINUX OR FUCHSIA OR ICU_LOCALE}
 method DateTimeFormatInfo.AdjustPattern(aPattern: String): String;
 begin
-  {$IF LINUX}
+  {$IF LINUX OR FUCHSIA}
   var lToFind:    array of String := ['%a',    '%A',  '%b',   '%B', '%d', '%e', '%H', '%I', '%k', '%I', '%m', '%M', '%p', '%P', '%S', '%C', '%y', '%Y',   '%z',  '%Z'];
   var lToReplace: array of String := ['ddd', 'dddd', 'MMM', 'MMMM', 'dd', 'dd', 'HH', 'hh', 'h',  'hh', 'MM', 'mm', 'tt', 'tt', 'ss', 'yy', 'yy', 'yyyy', 'zzz', 'zzz'];
   {$ELSEIF ICU_LOCALE}

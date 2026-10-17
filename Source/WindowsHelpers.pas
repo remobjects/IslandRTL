@@ -2173,6 +2173,10 @@ begin
     ForeignExceptionImplementation.Caught(lCode, lData, Exception(ExternalCalls.fCatchException));
   end;
   {$ENDIF}
+  {$IF NOT ARM64EC}
+  if ExternalCalls.fCatchException is IForeignException then
+    IForeignException(ExternalCalls.fCatchException).TakeNativeOwnership;
+  {$ENDIF}
   ExternalCalls.fDeferredRaise := false;
   ExternalCalls.fCatchActive := true;
   {$IF ARM64EC}

@@ -62,10 +62,12 @@ type
       exit state[&index];
     end;
 
-    {$IFDEF FUCHSIA}[Warning("Random.CryptoSafeRandom is not implemented for Fuchsia, yet.")]{$ENDIF}
     class method CryptoSafeRandom(aDest: array of Byte; aStart, aLength: Integer);
     begin
-      if (aStart < 0) or (aStart + aLength > length(aDest)) then raise new ArgumentOutOfRangeException('start/length out of dest range!');
+      if (aStart < 0) or (aLength < 0) or (aStart > length(aDest)) or (aLength > length(aDest) - aStart) then
+        raise new ArgumentOutOfRangeException('start/length out of dest range!');
+      if aLength = 0 then
+        exit;
       {$IFDEF WINDOWS}
       if fHandle = 0 then begin
         var lNew: rtl.HCRYPTPROV;
@@ -76,6 +78,8 @@ type
         end;
       end;
       rtl.CryptGenRandom(fHandle, aLength, @aDest[aStart]);
+      {$ELSEIF FUCHSIA}
+      rtl.zx_cprng_draw(@aDest[aStart], aLength);
       {$ELSEIF POSIX}
       if fHandle = nil then begin
         var lNew := new FileStream('/dev/urandom', FileMode.Open, FileAccess.Read, FileShare.ReadWrite);
@@ -94,9 +98,6 @@ type
           if aLength <= 0 then break;
         end;
       end;
-      {$ELSEIF FUCHSIA}
-      raise new NotImplementedException("Random.CryptoSafeRandom is not implemented for Fuchsia, yet.");
-      {$WARNING Not Implememnted for Fuchsia yet}
       {$ELSEIF WEBASSEMBLY}
       WebAssemblyCalls.CryptoSafeRandom(@aDest[aStart], aLength);
       {$ELSE}
