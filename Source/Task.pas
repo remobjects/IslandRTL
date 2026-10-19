@@ -121,12 +121,29 @@ type
   end;
 {$IFNDEF NOTHREADS}
   TaskCompletionWaiter = class(TaskCompletion)
+  private
+    fLock: Integer;
   public
-     Monitor: EventWaitHandle;
-     method Complete(aOwner: Task); override;
-     begin
-       Monitor:&Set;
-     end;
+    Monitor: EventWaitHandle;
+    method Complete(aOwner: Task); override;
+    begin
+      // A timed-out waiter can be closing its event while completion runs.
+      Utilities.SpinLockEnter(var fLock);
+      try
+        Monitor:&Set;
+      finally
+        Utilities.SpinLockExit(var fLock);
+      end;
+    end;
+
+    method Dispose;
+    begin
+      Utilities.SpinLockEnter(var fLock);
+      var lMonitor := Monitor;
+      Monitor := nil;
+      Utilities.SpinLockExit(var fLock);
+      lMonitor:Dispose;
+    end;
   end;
 {$ENDIF}
 
@@ -382,53 +399,68 @@ type
       exit true;
     end;
 
-    method Wait; virtual;
+    method WaitForCompletion(aTimeoutMSec: Integer): Boolean; private;
     begin
-      if fState in [TaskState.Failed, TaskState.Completed] then exit;
       {$IFDEF WEBASSEMBLY}
+      if fState in [TaskState.Failed, TaskState.Completed] then exit true;
       raise new NotSupportedException("WebAssembly cannot do blocking waits");
       {$ELSE}
-      var lCompl := new TaskCompletionWaiter(Monitor := new EventWaitHandle(true, false));
+      // Completed tasks and zero-timeout polls need no event or allocation.
       Utilities.SpinLockEnter(var fLock);
-      if fState in [TaskState.Failed, TaskState.Completed] then begin
+      try
+        if fState in [TaskState.Failed, TaskState.Completed] then exit true;
+        if aTimeoutMSec = 0 then exit false;
+      finally
         Utilities.SpinLockExit(var fLock);
-        exit;
       end;
-      lCompl.Next := fCompletionList;
-      fCompletionList := lCompl;
-      Utilities.SpinLockExit(var fLock);
-
-      lCompl.Monitor.Wait;
-      var lMonitor := lCompl.Monitor;
-      lCompl.Monitor := nil;
-
-      lMonitor.Dispose;
+      var lCompl := new TaskCompletionWaiter(Monitor := new EventWaitHandle(true, false));
+      try
+        Utilities.SpinLockEnter(var fLock);
+        try
+          if fState in [TaskState.Failed, TaskState.Completed] then exit true;
+          lCompl.Next := fCompletionList;
+          fCompletionList := lCompl;
+        finally
+          Utilities.SpinLockExit(var fLock);
+        end;
+        try
+          lCompl.Monitor.Wait(aTimeoutMSec);
+        finally
+          Utilities.SpinLockEnter(var fLock);
+          try
+            result := fState in [TaskState.Failed, TaskState.Completed];
+            // Do not retain timed-out waiters on a task that may never finish.
+            // Completion may already own the detached chain; leave that chain
+            // intact and let the waiter's lock protect its event in that case.
+            var lCurrent := fCompletionList;
+            var lPrevious: TaskCompletion := nil;
+            while (lCurrent <> nil) and (lCurrent <> lCompl) do begin
+              lPrevious := lCurrent;
+              lCurrent := lCurrent.Next;
+            end;
+            if lCurrent <> nil then begin
+              if lPrevious = nil then fCompletionList := lCompl.Next
+              else lPrevious.Next := lCompl.Next;
+              lCompl.Next := nil;
+            end;
+          finally
+            Utilities.SpinLockExit(var fLock);
+          end;
+        end;
+      finally
+        lCompl.Dispose;
+      end;
       {$ENDIF}
+    end;
+
+    method Wait; virtual;
+    begin
+      WaitForCompletion(-1);
     end;
 
     method Wait(aTimeoutMSec: Integer): Boolean; virtual;
     begin
-      if fState in [TaskState.Failed, TaskState.Completed] then exit;
-      {$IFDEF WEBASSEMBLY}
-      raise new NotSupportedException("WebAssembly cannot do blocking waits");
-      {$ELSE}
-      var lCompl := new TaskCompletionWaiter(Monitor := new EventWaitHandle(true, false));
-      Utilities.SpinLockEnter(var fLock);
-      if fState in [TaskState.Failed, TaskState.Completed] then begin
-        Utilities.SpinLockExit(var fLock);
-        exit;
-      end;
-      lCompl.Next := fCompletionList;
-      fCompletionList := lCompl;
-      Utilities.SpinLockExit(var fLock);
-
-      lCompl.Monitor.Wait(aTimeoutMSec);
-      var lMonitor := lCompl.Monitor;
-      lCompl.Monitor := nil;
-      result := fState in [TaskState.Failed, TaskState.Completed];
-      if not result then Thread.Yield;
-      lMonitor.Dispose;
-      {$ENDIF}
+      exit WaitForCompletion(aTimeoutMSec);
     end;
 
     method Start();
@@ -493,8 +525,7 @@ type
 
     method Wait; override;
     begin
-      if fState in [TaskState.Failed, TaskState.Completed] then exit;
-
+      // Acquire completion's lock before observing the result of another worker.
       Utilities.SpinLockEnter(var fLock);
       if fState in [TaskState.Failed, TaskState.Completed] then begin
         Utilities.SpinLockExit(var fLock);
@@ -528,8 +559,7 @@ type
 
     method Wait; override;
     begin
-      if fState in [TaskState.Failed, TaskState.Completed] then exit;
-
+      // Acquire completion's lock before observing the result of another worker.
       Utilities.SpinLockEnter(var fLock);
       if fState in [TaskState.Failed, TaskState.Completed] then begin
         Utilities.SpinLockExit(var fLock);

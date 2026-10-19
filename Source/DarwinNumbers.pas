@@ -176,6 +176,7 @@ type
   private
     fValue: ^Void;
     fDtor: __ElementsBoxedStructDestructor;
+    fStorage: array of Byte;
   public
     constructor (aValue: ^Void; aDtor: __ElementsBoxedStructDestructor);
     begin
@@ -187,7 +188,8 @@ type
     begin
       if fDtor <> nil then
         fDtor(fValue);
-      free(fValue);
+      // Older callers supplied malloc storage; new callers keep scanned GC storage.
+      if fStorage = nil then free(fValue);
     end;
 
     method description: NSString; override;
@@ -200,7 +202,36 @@ type
       exit new __ElementsBoxedStruct(aValue, aDtor);
     end;
 
-    class method valueForStruct(aStruct: Object; aDtor: __ElementsBoxedStructDestructor): ^Void;
+    // A native array field in a Cocoa object uses the foreign GC lifetime strategy.
+    // It roots the scanned storage, including native references inside the record.
+    constructor(aStorage: array of Byte; aAlignment: NativeInt; aDtor: __ElementsBoxedStructDestructor);
+    begin
+      fStorage := aStorage;
+      fValue := addressForStructStorage(aStorage, aAlignment);
+      fDtor := aDtor;
+    end;
+
+    class method storageForStruct(aSize, aAlignment: NativeInt): array of Byte;
+    begin
+      if (aSize < 0) or (aAlignment <= 0) or ((aAlignment and (aAlignment - 1)) <> 0) or
+        (aAlignment > Integer.MaxValue) or (aSize > Integer.MaxValue - aAlignment) then
+        raise new ArgumentOutOfRangeException('Invalid boxed record size/alignment');
+      // Include padding even for an empty record so taking element zero is valid.
+      exit new Byte[Integer(aSize + aAlignment)];
+    end;
+
+    class method addressForStructStorage(aStorage: array of Byte; aAlignment: NativeInt): ^Void;
+    begin
+      exit ^Void((NativeUInt(@aStorage[0]) + NativeUInt(aAlignment - 1)) and not NativeUInt(aAlignment - 1));
+    end;
+
+    class method boxedStructWithStorage(aStorage: array of Byte; aAlignment: NativeInt; aDtor: __ElementsBoxedStructDestructor): __ElementsBoxedStruct;
+    begin
+      exit new __ElementsBoxedStruct(aStorage, aAlignment, aDtor);
+    end;
+
+    // The compiler passes the Cocoa box itself, not an Island Object wrapper.
+    class method valueForStruct(aStruct: id; aDtor: __ElementsBoxedStructDestructor): ^Void;
     begin
       var lSelf := __ElementsBoxedStruct(aStruct);
       if lSelf.Dtor <> aDtor then

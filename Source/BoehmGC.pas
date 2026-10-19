@@ -14,6 +14,8 @@ type
   ForeignBoehmGC = public record(ILifetimeStrategy<ForeignBoehmGC>)
   private
     {$HIDE H6} // DO NOT REMOVE!!
+    // This stores an object pointer. Root-table calls must reinterpret it as
+    // that object, not box its numeric address into a fresh NativeInt object.
     fInst: IntPtr;
     {$SHOW H6} // DO NOT REMOVE!!
 

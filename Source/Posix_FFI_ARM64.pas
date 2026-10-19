@@ -1,6 +1,6 @@
 ﻿namespace RemObjects.Elements.System;
 {$HIDE H7}
-{$IFDEF cpu64 and (arm or ARM64)}
+{$IFDEF ARM64}
 type
   ARM64CallData = record
     _X0,               //  0
@@ -18,13 +18,15 @@ type
     _V4,              // 96
     _V5,              // 104
     _V6,              // 112
-    _V7: Double;      // 120
-    SingleBits: Integer; //128
+    _V7: UInt64;      // 120
   end;
 
 
 
 
+  // MethodInfo.Invoke uses this bridge to call native Island methods. Copy each
+  // value to the register or stack position expected by the target method;
+  // numerical conversion here would change the arguments supplied by the caller.
   FFI = public class
   private
     fStack: array of Byte;
@@ -32,7 +34,7 @@ type
     fVarData: array of Object;
     fRegUsage: Byte;
     fRegUsageFloat: Byte;
-    f_V0: Double;
+    f_V0: UInt64;
     f_X0: NativeUInt;
 
     [InlineAsm("
@@ -56,13 +58,18 @@ type
       stp x1, x3, [sp, #-16]!
       stp x4, x5, [sp, #-16]!
 
-    .loop:
+      cbz x4, Ldone
+      mov x10, #8
+      mul x9, x4, x10
+      str x9, [sp, #-16]!
+    Lloop:
 
       ldp x0, x1, [x3]
       stp x0, x1, [sp, #-16]!
       sub x3, x3, #16
       sub x4, x4, #2
-      cbnz x4, .loop
+      cbnz x4, Lloop
+    Ldone:
 
       ldp x0, x1, [x16] // load x0-x7 registers
       ldp x2, x3, [x16, #16]
@@ -72,7 +79,7 @@ type
       ldp d0, d1, [x16, #64] // load d0-d7 registers (64 bits)
       ldp d2, d3, [x16, #80]
       ldp d4, d5, [x16, #96]
-      ldp d6, d7, [x16, #112]
+      ldp d6, d7, [x16, #112] // _V6 and _V7 in ARM64CallData
 
       blr x17
 
@@ -82,13 +89,19 @@ type
       ldr x5, [fp, #-24] // _V0
       str d0, [x5]
 
-      // Restore the original stack directly, including any copied arguments.
-      mov sp, fp
+      ldr x9, [fp, #-32]
+      cbz x9, Lnostack
+      ldr x9, [fp, #-48]
+      add sp, sp, #16 // stored #bytes
+      add sp, sp, x9
+
+    Lnostack:
+      add sp, sp, #32
 
       ldp  fp, lr, [sp], #16
       ret
     ", "", true, false), DisableInlining, DisableOptimizations]
-    class method DoCall(Address: ^Void;out _RAX: NativeUInt;[InReg]var data: ARM64CallData; Stack: ^Void; Items: NativeInt;var _XMM0: Double); external;
+    class method DoCall(Address: ^Void;out _RAX: NativeUInt;[InReg]var data: ARM64CallData; Stack: ^Void; Items: NativeInt;var _XMM0: UInt64); external;
 
     method PushBefore(aData: ^Void; aSize: Integer);
     begin
@@ -100,7 +113,21 @@ type
       fStack := lStack;
     end;
 
-    procedure StoreReg(data: UInt64);
+    // Apple packs stack arguments at their natural size/alignment. Other AAPCS64
+    // targets reserve eight-byte slots. Register slots always hold raw bits.
+    method PushArgument(aData: ^Void; aSize: Integer);
+    begin
+      {$IF DARWIN}
+      var lPadding := (aSize - (length(fStack) mod aSize)) mod aSize;
+      if lPadding > 0 then
+        PushBefore(nil, lPadding);
+      PushBefore(aData, aSize);
+      {$ELSE}
+      PushBefore(aData, 8);
+      {$ENDIF}
+    end;
+
+    procedure StoreReg(data: UInt64; aSize: Integer := 8);
     begin
       case fRegUsage of
         0: begin inc(fRegUsage); fCallData._X0:=data; end;
@@ -112,31 +139,30 @@ type
         6: begin inc(fRegUsage); fCallData._X6:=data; end;
         7: begin inc(fRegUsage); fCallData._X7:=data; end;
       else
-        PushBefore(@data,8);
+        PushArgument(@data, aSize);
       end;
+    end;
+
+    procedure StoreRegFloat(aBits: UInt64; aSize: Integer);
+    begin
+      if fRegUsageFloat < 8 then begin
+        ^UInt64(@fCallData._V0)[fRegUsageFloat] := aBits;
+        inc(fRegUsageFloat);
+      end
+      else
+        PushArgument(@aBits, aSize);
     end;
 
     procedure StoreRegDouble(data: Double);
     begin
-      case fRegUsageFloat of
-        0: begin inc(fRegUsageFloat); fCallData._V0:=data; end;
-        1: begin inc(fRegUsageFloat); fCallData._V1:=data; end;
-        2: begin inc(fRegUsageFloat); fCallData._V2:=data; end;
-        3: begin inc(fRegUsageFloat); fCallData._V3:=data; end;
-        4: begin inc(fRegUsageFloat); fCallData._V4:=data; end;
-        5: begin inc(fRegUsageFloat); fCallData._V5:=data; end;
-        6: begin inc(fRegUsageFloat); fCallData._V6:=data; end;
-        7: begin inc(fRegUsageFloat); fCallData._V7:=data; end;
-      else
-        PushBefore(@data,8);
-      end;
+      StoreRegFloat(^UInt64(@data)^, 8);
     end;
 
     procedure StoreRegSingle(data: Single);
     begin
-      var lBits: UInt64 := 0;
-      ^Single(@lBits)^ := data;
-      StoreRegDouble(^Double(@lBits)^);
+      // Loading dN also loads its low sN half. Do not numerically widen a Single:
+      // that changes the low bits, NaN payloads and the register's interpretation.
+      StoreRegFloat(UInt64(^UInt32(@data)^), 4);
     end;
 
     method GetPtr64(aParamIndex: Integer; aParam: Object; aParamMode: ArgumentMode;aParamType: &Type);
@@ -158,15 +184,15 @@ type
       end
       else case aParamType.Code of
           TypeCodes.Void: assert(false);
-          TypeCodes.Boolean:  StoreReg(UInt64(Boolean(aParam)));
-          TypeCodes.AnsiChar: StoreReg(UInt64(AnsiChar(aParam)));
-          TypeCodes.Char:     StoreReg(UInt64(Char(aParam)));
-          TypeCodes.SByte:    StoreReg(UInt64(SByte(aParam)));
-          TypeCodes.Byte:     StoreReg(UInt64(Byte(aParam)));
-          TypeCodes.Int16:    StoreReg(UInt64(Int16(aParam)));
-          TypeCodes.UInt16:   StoreReg(UInt64(UInt16(aParam)));
-          TypeCodes.Int32:    StoreReg(UInt64(Int32(aParam)));
-          TypeCodes.UInt32:   StoreReg(UInt64(UInt32(aParam)));
+          TypeCodes.Boolean:  StoreReg(UInt64(Boolean(aParam)), 1);
+          TypeCodes.AnsiChar: StoreReg(UInt64(AnsiChar(aParam)), 1);
+          TypeCodes.Char:     StoreReg(UInt64(Char(aParam)), 2);
+          TypeCodes.SByte:    StoreReg(UInt64(SByte(aParam)), 1);
+          TypeCodes.Byte:     StoreReg(UInt64(Byte(aParam)), 1);
+          TypeCodes.Int16:    StoreReg(UInt64(Int16(aParam)), 2);
+          TypeCodes.UInt16:   StoreReg(UInt64(UInt16(aParam)), 2);
+          TypeCodes.Int32:    StoreReg(UInt64(Int32(aParam)), 4);
+          TypeCodes.UInt32:   StoreReg(UInt64(UInt32(aParam)), 4);
           TypeCodes.Int64:    StoreReg(UInt64(Int64(aParam)));
           TypeCodes.UInt64:   StoreReg(UInt64(UInt64(aParam)));
           TypeCodes.Double:   StoreRegDouble(Double(aParam));
@@ -213,14 +239,10 @@ type
           if (lInst.fVarData = nil) and (aParameterFlags[I] in [ArgumentMode.Var, ArgumentMode.Out]) then lInst.fVarData := new Object[length(aParams)];
           lInst.GetPtr64(I, aParams[I], aParameterFlags[I],  aParameterTypes[I]);
         end;
-        // The trampoline always copies at least one aligned pair. Extra stack
-        // slots are ignored by callees whose arguments fit in registers.
-        if length(lInst.fStack) = 0 then
-          lInst.PushBefore(nil, 16);
         var pp: ^Byte;
         if (length(lInst.fStack) > 0) and ((length(lInst.fStack) mod 16 ≠ 0)) then
-          lInst.PushBefore(nil, 8); // stack should be aligned to 16
-        pp := @lInst.fStack[length(lInst.fStack)-16]; // -16: move two 64bits data back, since in asm code we move in pairs
+          lInst.PushBefore(nil, 16 - (length(lInst.fStack) mod 16)); // align the whole outgoing stack
+        if length(lInst.fStack) = 0 then pp := nil else pp := @lInst.fStack[length(lInst.fStack)-16]; // -16: move two 64bits data back, since in asm code we move in pairs
         DoCall(aAddress,out lInst.f_X0,var lInst.fCallData, pp, length(lInst.fStack) div 8, var lInst.f_V0);
         if lInst.fVarData <> nil then begin
           for I: Integer := 0 to length(aParams) - 1 do begin
@@ -233,7 +255,7 @@ type
         if assigned(aResultType) then begin
           case (aResultType.Code) of
             TypeCodes.Single:   exit ^Single(@lInst.f_V0)^;
-            TypeCodes.Double:   exit Double(lInst.f_V0);
+            TypeCodes.Double:   exit ^Double(@lInst.f_V0)^;
             TypeCodes.Byte:     exit Byte(lInst.f_X0);
             TypeCodes.Boolean:  exit Boolean(lInst.f_X0);
             TypeCodes.SByte:    exit SByte(lInst.f_X0);
@@ -253,5 +275,5 @@ type
         end;
       end;
   end;
-{$ENDIF cpu64}
+{$ENDIF ARM64}
 end.

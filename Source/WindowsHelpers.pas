@@ -43,6 +43,15 @@ type
   end;
   {$ENDIF}
 
+  {$IFDEF ARM64}
+  // Memory helpers accept arbitrary byte alignment, including overlapping moves.
+  [Packed]
+  MemoryBlock = assembly record
+  public
+    First, Second: UInt64;
+  end;
+  {$ENDIF}
+
   ExternalCalls = public static class
   private
 
@@ -56,6 +65,10 @@ type
     class var fCatchHandler: NativeInt;
     [ThreadLocal]
     class var fCatchFrame: NativeInt;
+    {$IF ARM64}
+    [ThreadLocal]
+    class var fCatchNonVolatileRegisters: array[0..18] of UInt64;
+    {$ENDIF}
     [ThreadLocal]
     class var fCatchEstablisherFrame: UInt64;
     [ThreadLocal]
@@ -538,7 +551,9 @@ type
     [SymbolName('roundf')]
     class method roundf(x: Single): Single;
     begin
-      exit Math.Round(x);
+      // llvm.round.f32 can lower back to roundf on targets without SSE4.1.
+      // Use SLEEF directly so this export cannot call itself through Math.Round.
+      exit SleefInternal.Sleef_roundf1(x);
     end;
 
     [SymbolName('strcmp')]
@@ -578,6 +593,22 @@ type
       if (a = nil) and (b = nil) then exit 0;
       if (a = nil) or (b = nil) then exit if a = nil then 1 else -1;
       if num = 0 then exit 0;
+      {$IFDEF ARM64}
+      // Read only complete blocks, including when a buffer ends at a guard page.
+      // A differing block falls through to byte order, not integer word order.
+      while num >= sizeOf(MemoryBlock) do begin
+        var lDifference: UInt32 := 0;
+        for i := 0 to sizeOf(MemoryBlock) - 1 do
+          lDifference := lDifference or UInt32(a[i] xor b[i]);
+        if lDifference <> 0 then
+          break;
+        inc(a, sizeOf(MemoryBlock));
+        inc(b, sizeOf(MemoryBlock));
+        dec(num, sizeOf(MemoryBlock));
+      end;
+      if num = 0 then
+        exit 0;
+      {$ENDIF}
       loop begin
         if a^ > b^ then exit 1;
         if a^ < b^ then exit -1;
@@ -663,6 +694,7 @@ type
           if lTest^ = str1^ then exit str1;
           inc(lTest);
         end;
+        inc(str1);
       end;
       exit nil;
     end;
@@ -670,6 +702,7 @@ type
     [SymbolName('strncpy')]
     class method strncpy(aDest, aSrc: ^AnsiChar; n: Integer): ^AnsiChar;
     begin
+      result := aDest;
       while (n > 0) and (aSrc^ <> #0) do begin
         aDest^ := aSrc^;
         aDest := aDest + 1;
@@ -681,24 +714,28 @@ type
         aDest  := aDest + 1;
         dec(n);
       end;
-      result := aDest;
     end;
 
     [SymbolName('strchr')]
     class method strchr(str: ^AnsiChar; c: Integer): ^AnsiChar;
     begin
-      while str^ <> #0 do begin
-        if Integer(str^) = c then exit str;
+      var lChar := Byte(c and $FF);
+      loop begin
+        if Byte(str^) = lChar then exit str;
+        if str^ = #0 then exit nil;
+        inc(str);
       end;
-      exit nil;
     end;
 
     [SymbolName('strrchr')]
     class method strrchr(str: ^AnsiChar; c: Integer): ^AnsiChar;
     begin
       var lHit: ^AnsiChar := nil;
-      while str^ <> #0 do begin
-        if Integer(str^) = c then lHit := str;
+      var lChar := Byte(c and $FF);
+      loop begin
+        if Byte(str^) = lChar then lHit := str;
+        if str^ = #0 then break;
+        inc(str);
       end;
       exit lHit;
     end;
@@ -764,9 +801,9 @@ type
     TryBlockMap: {$IFDEF _WIN64}Int32{$ELSE}^MSVCTryMap{$ENDIF};
     IPMapEntries: UInt32;
     IPMapEntry: {$IFDEF _WIN64}Int32{$ELSE}^MSVCIpToSate{$ENDIF};
-    {$IFDEF win64}
-    UnwindHelp: UInt32;
-    ESTypeList: ^Void;
+    {$IFDEF _WIN64}
+    UnwindHelp: Int32;
+    ESTypeList: Int32; // image-relative RVA, also on 64-bit Windows
     EHFlags: Int32;
     {$ENDIF}
     // From LLVM
@@ -1077,6 +1114,19 @@ begin
   if aNum < 0 then raise new Exception('aNum less than zero');
   if destination = source then exit;
 
+  {$IFDEF ARM64}
+  while aNum >= sizeOf(MemoryBlock) do begin
+    var lSource := ^MemoryBlock(source);
+    var lDestination := ^MemoryBlock(destination);
+    var lFirst := lSource^.First;
+    var lSecond := lSource^.Second;
+    lDestination^.First := lFirst;
+    lDestination^.Second := lSecond;
+    destination := ^Byte(destination) + sizeOf(MemoryBlock);
+    source := ^Byte(source) + sizeOf(MemoryBlock);
+    dec(aNum, sizeOf(MemoryBlock));
+  end;
+  {$ENDIF}
   // TODO: Optimize this
   while aNum >= 8 do begin
     ^Int64(destination)^ := ^Int64(source)^;
@@ -1103,9 +1153,19 @@ end;
 
 method ExternalCalls.memset(ptr: ^Void; value: Integer; aNum: NativeInt): ^Void;
 begin
+  result := ptr;
   value := value and $FF;
-  var vval: UInt64 := value or (value shl 8) or (value shl 16) or (value shl 24);
-  vval := vval or (vval shl 32);
+  // Replicate an unsigned value so bytes >= $80 cannot sign-extend the fill word.
+  var vval: UInt64 := UInt64(value) * $0101010101010101;
+  {$IFDEF ARM64}
+  while aNum >= sizeOf(MemoryBlock) do begin
+    var lDestination := ^MemoryBlock(ptr);
+    lDestination^.First := vval;
+    lDestination^.Second := vval;
+    ptr := ^Byte(ptr) + sizeOf(MemoryBlock);
+    dec(aNum, sizeOf(MemoryBlock));
+  end;
+  {$ENDIF}
   // TODO: Optimize this
   while aNum >= 8 do begin
     ^Int64(ptr)^ := vval;
@@ -1137,6 +1197,17 @@ begin
   if destination = source then exit;
 
   if (source < destination) and (^Void(^Byte(source)+aNum) >= destination) then begin
+    {$IFDEF ARM64}
+    while aNum >= sizeOf(MemoryBlock) do begin
+      dec(aNum, sizeOf(MemoryBlock));
+      var lSource := ^MemoryBlock(^Byte(source) + aNum);
+      var lDestination := ^MemoryBlock(^Byte(destination) + aNum);
+      var lFirst := lSource^.First;
+      var lSecond := lSource^.Second;
+      lDestination^.First := lFirst;
+      lDestination^.Second := lSecond;
+    end;
+    {$ENDIF}
     // TODO: Optimize this
     while aNum >= 8 do begin
       dec(aNum, 8);
@@ -1328,33 +1399,15 @@ end;
 
 class method ExternalCalls.int64remainder(dividend, divisor: Int64): Int64;
 begin
-  if divisor = dividend then exit 0;
-  if divisor = 0 then begin
-    {$HINT throw!}
-    exit 0;
-  end;
-  var rem: UInt64 := dividend;
-  if rem < 0 then rem := -rem;
-  if divisor < 0 then divisor := -divisor;
-
-  if divisor > rem then
-    exit rem;
-  var q: UInt64 := 0;
-  while rem >= divisor do begin
-    var td := divisor;
-    var shift := highbit(rem) - highbit(divisor);
-    td := td shl shift;
-    if (td > rem)  then begin
-      dec(shift);
-      td := td shr 1;
-    end;
-    rem := rem - td;
-
-    q := q or (UInt64(1) shl shift);
-  end;
-  if dividend < 0 then
-    exit -rem;
-  exit rem;
+  // Normalize using the signed operands, not an unsigned temporary. Unsigned
+  // subtraction also represents abs(MinValue) without signed overflow.
+  var lDividend := UInt64(dividend);
+  var lDivisor := UInt64(divisor);
+  if dividend < 0 then lDividend := UInt64(0) - lDividend;
+  if divisor < 0 then lDivisor := UInt64(0) - lDivisor;
+  var lRemainder := uint64remainder(lDividend, lDivisor);
+  if dividend < 0 then lRemainder := UInt64(0) - lRemainder;
+  exit Int64(lRemainder);
 end;
 
 class method ExternalCalls.uint64divide(dividend, divisor: UInt64): UInt64;
@@ -1386,34 +1439,15 @@ end;
 
 class method ExternalCalls.int64divide(dividend, divisor: Int64): Int64;
 begin
-  if divisor = dividend then exit 1;
-  if divisor = 0 then begin
-    {$HINT throw!}
-    exit 0;
-  end;
-  var rem: UInt64 := dividend;
-  var lneg := (dividend < 0) <> (divisor < 0);
-  if rem < 0 then rem := -rem;
-  if divisor < 0 then divisor := -divisor;
-
-  if divisor > rem then
-    exit 0;
-  var q: UInt64 := 0;
-  while rem >= divisor do begin
-    var td := divisor;
-    var shift := highbit(rem) - highbit(divisor);
-    td := td shl shift;
-    if (td > rem)  then begin
-      dec(shift);
-      td := td shr 1;
-    end;
-    rem := rem - td;
-
-    q := q or (UInt64(1) shl shift);
-  end;
-  if lneg then
-    exit -Int64(q);
-  exit q;
+  // Win32 lowers Int64 division to this helper, including negative divisors
+  // introduced by LLVM. Keep both magnitudes unsigned through long division.
+  var lDividend := UInt64(dividend);
+  var lDivisor := UInt64(divisor);
+  if dividend < 0 then lDividend := UInt64(0) - lDividend;
+  if divisor < 0 then lDivisor := UInt64(0) - lDivisor;
+  var lQuotient := uint64divide(lDividend, lDivisor);
+  if (dividend < 0) <> (divisor < 0) then lQuotient := UInt64(0) - lQuotient;
+  exit Int64(lQuotient);
 end;
 {$IFDEF ARM64}
 {$ELSEIF ARM64EC}
@@ -1582,33 +1616,137 @@ method CallCatch64AfterUnwind(aCall: NativeInt; aEBP: NativeInt; var aReturnAddr
 ", "", true, false), Naked, DisableInlining, DisableOptimizations]
 method ExitCatchFunclet(aReturnAddress: NativeInt; aReturnStack: NativeInt); external;
 {$ELSEIF ARM64}
-// These internal funclets execute native AArch64 code on both Windows targets.
-[InlineAsm("
+[SymbolName('__elements_call_cleanup_funclet'), InlineAsm("
+        .seh_proc __elements_call_cleanup_funclet
 
-        stp     x29, x30, [sp, #-16]!           // 16-byte Folded Spill
-        sub     x29, x1, #32
+        stp x19, x20, [sp, #-160]!
+        .seh_save_regp_x x19, 160
+        stp x21, x22, [sp, #16]
+        .seh_save_regp x21, 16
+        stp x23, x24, [sp, #32]
+        .seh_save_regp x23, 32
+        stp x25, x26, [sp, #48]
+        .seh_save_regp x25, 48
+        stp x27, x28, [sp, #64]
+        .seh_save_regp x27, 64
+        stp x29, x30, [sp, #80]
+        .seh_save_fplr 80
+        stp d8, d9, [sp, #96]
+        .seh_save_fregp d8, 96
+        stp d10, d11, [sp, #112]
+        .seh_save_fregp d10, 112
+        stp d12, d13, [sp, #128]
+        .seh_save_fregp d12, 128
+        stp d14, d15, [sp, #144]
+        .seh_save_fregp d14, 144
+        .seh_endprologue
+        // Funclets can address parent locals through x19 as well as x29.
+        ldp x19, x20, [x1]
+        ldp x21, x22, [x1, #16]
+        ldp x23, x24, [x1, #32]
+        ldp x25, x26, [x1, #48]
+        ldp x27, x28, [x1, #64]
+        ldr x29, [x1, #80]
+        ldp d8, d9, [x1, #88]
+        ldp d10, d11, [x1, #104]
+        ldp d12, d13, [x1, #120]
+        ldp d14, d15, [x1, #136]
         blr     x0
 
-        ldp     x29, x30, [sp], #16             // 16-byte Folded Reload
+        .seh_startepilogue
+        ldp d8, d9, [sp, #96]
+        .seh_save_fregp d8, 96
+        ldp d10, d11, [sp, #112]
+        .seh_save_fregp d10, 112
+        ldp d12, d13, [sp, #128]
+        .seh_save_fregp d12, 128
+        ldp d14, d15, [sp, #144]
+        .seh_save_fregp d14, 144
+        ldp x29, x30, [sp, #80]
+        .seh_save_fplr 80
+        ldp x27, x28, [sp, #64]
+        .seh_save_regp x27, 64
+        ldp x25, x26, [sp, #48]
+        .seh_save_regp x25, 48
+        ldp x23, x24, [sp, #32]
+        .seh_save_regp x23, 32
+        ldp x21, x22, [sp, #16]
+        .seh_save_regp x21, 16
+        ldp x19, x20, [sp], #160
+        .seh_save_regp_x x19, 160
+        .seh_endepilogue
         ret
-", "", true, false), DisableInlining, DisableOptimizations]
+        .seh_endproc
+", "", true, false), Naked, DisableInlining, DisableOptimizations]
 
-method CallCatch64(aCall: NativeInt; aEBP: NativeInt): NativeInt; external;
+method CallCatch64(aCall: NativeInt; aNonVolatileRegisters: NativeInt): NativeInt; external;
 
-[InlineAsm("
-        stp     x29, x30, [sp, #-16]!
-        // Island Windows ARM64 functions keep x29 32 bytes below the pre-allocation establisher.
-        sub     x29, x1, #32
+[SymbolName('__elements_call_catch_funclet'), InlineAsm("
+        .seh_proc __elements_call_catch_funclet
+        stp x19, x20, [sp, #-160]!
+        .seh_save_regp_x x19, 160
+        stp x21, x22, [sp, #16]
+        .seh_save_regp x21, 16
+        stp x23, x24, [sp, #32]
+        .seh_save_regp x23, 32
+        stp x25, x26, [sp, #48]
+        .seh_save_regp x25, 48
+        stp x27, x28, [sp, #64]
+        .seh_save_regp x27, 64
+        stp x29, x30, [sp, #80]
+        .seh_save_fplr 80
+        stp d8, d9, [sp, #96]
+        .seh_save_fregp d8, 96
+        stp d10, d11, [sp, #112]
+        .seh_save_fregp d10, 112
+        stp d12, d13, [sp, #128]
+        .seh_save_fregp d12, 128
+        stp d14, d15, [sp, #144]
+        .seh_save_fregp d14, 144
+        .seh_endprologue
+        // Funclets can address parent locals through x19 as well as x29.
+        ldp x19, x20, [x1]
+        ldp x21, x22, [x1, #16]
+        ldp x23, x24, [x1, #32]
+        ldp x25, x26, [x1, #48]
+        ldp x27, x28, [x1, #64]
+        ldr x29, [x1, #80]
+        ldp d8, d9, [x1, #88]
+        ldp d10, d11, [x1, #104]
+        ldp d12, d13, [x1, #120]
+        ldp d14, d15, [x1, #136]
         adr     x4, catch_return
         str     x4, [x2]
         mov     x5, sp
         str     x5, [x3]
         blr     x0
 catch_return:
-        ldp     x29, x30, [sp], #16
+        .seh_startepilogue
+        ldp d8, d9, [sp, #96]
+        .seh_save_fregp d8, 96
+        ldp d10, d11, [sp, #112]
+        .seh_save_fregp d10, 112
+        ldp d12, d13, [sp, #128]
+        .seh_save_fregp d12, 128
+        ldp d14, d15, [sp, #144]
+        .seh_save_fregp d14, 144
+        ldp x29, x30, [sp, #80]
+        .seh_save_fplr 80
+        ldp x27, x28, [sp, #64]
+        .seh_save_regp x27, 64
+        ldp x25, x26, [sp, #48]
+        .seh_save_regp x25, 48
+        ldp x23, x24, [sp, #32]
+        .seh_save_regp x23, 32
+        ldp x21, x22, [sp, #16]
+        .seh_save_regp x21, 16
+        ldp x19, x20, [sp], #160
+        .seh_save_regp_x x19, 160
+        .seh_endepilogue
         ret
-", "", true, false), DisableInlining, DisableOptimizations]
-method CallCatch64AfterUnwind(aCall: NativeInt; aEBP: NativeInt; var aReturnAddress: NativeInt; var aReturnStack: NativeInt): NativeInt; external;
+        .seh_endproc
+", "", true, false), Naked, DisableInlining, DisableOptimizations]
+method CallCatch64AfterUnwind(aCall: NativeInt; aNonVolatileRegisters: NativeInt; var aReturnAddress: NativeInt; var aReturnStack: NativeInt): NativeInt; external;
 
 [InlineAsm("
         mov     sp, x1
@@ -1616,57 +1754,62 @@ method CallCatch64AfterUnwind(aCall: NativeInt; aEBP: NativeInt; var aReturnAddr
 ", "", true, false), Naked, DisableInlining, DisableOptimizations]
 method ExitCatchFunclet(aReturnAddress: NativeInt; aReturnStack: NativeInt); external;
 {$ELSEIF X86_64}
-[InlineAsm("
+// A deferred raise exits the catch without its epilogue. Preserve every Windows
+// nonvolatile register here, and describe the frame for exceptions in cleanups.
+[SymbolName('__elements_call_cleanup_funclet'), InlineAsm("
+.seh_proc __elements_call_cleanup_funclet
 pushq %rbp
-movq %rdx, %rbp
-subq $$32, %rsp
-movq %rdx, 8(%rsp)
-callq *%rcx
-addq $$32, %rsp
-popq %rbp
-retq
-", "", false, false), DisableInlining, DisableOptimizations]
-method CallCatch64(aCall: NativeInt; aEBP: NativeInt): NativeInt; external;
-
-// A re-raise leaves the funclet through ExitCatchFunclet, bypassing its
-// epilogue. Preserve every Win64 nonvolatile register for that return path.
-[InlineAsm("
-pushq %rbp
+.seh_pushreg %rbp
 pushq %rbx
+.seh_pushreg %rbx
 pushq %rsi
+.seh_pushreg %rsi
 pushq %rdi
+.seh_pushreg %rdi
 pushq %r12
+.seh_pushreg %r12
 pushq %r13
+.seh_pushreg %r13
 pushq %r14
+.seh_pushreg %r14
 pushq %r15
-movq %rdx, %rbp
+.seh_pushreg %r15
 subq $$200, %rsp
-movdqu %xmm6, 32(%rsp)
-movdqu %xmm7, 48(%rsp)
-movdqu %xmm8, 64(%rsp)
-movdqu %xmm9, 80(%rsp)
-movdqu %xmm10, 96(%rsp)
-movdqu %xmm11, 112(%rsp)
-movdqu %xmm12, 128(%rsp)
-movdqu %xmm13, 144(%rsp)
-movdqu %xmm14, 160(%rsp)
-movdqu %xmm15, 176(%rsp)
+.seh_stackalloc 200
+movaps %xmm6, 32(%rsp)
+.seh_savexmm %xmm6, 32
+movaps %xmm7, 48(%rsp)
+.seh_savexmm %xmm7, 48
+movaps %xmm8, 64(%rsp)
+.seh_savexmm %xmm8, 64
+movaps %xmm9, 80(%rsp)
+.seh_savexmm %xmm9, 80
+movaps %xmm10, 96(%rsp)
+.seh_savexmm %xmm10, 96
+movaps %xmm11, 112(%rsp)
+.seh_savexmm %xmm11, 112
+movaps %xmm12, 128(%rsp)
+.seh_savexmm %xmm12, 128
+movaps %xmm13, 144(%rsp)
+.seh_savexmm %xmm13, 144
+movaps %xmm14, 160(%rsp)
+.seh_savexmm %xmm14, 160
+movaps %xmm15, 176(%rsp)
+.seh_savexmm %xmm15, 176
+.seh_endprologue
+movq %rdx, %rbp
 movq %rdx, 8(%rsp)
-leaq catch_return(%rip), %rax
-movq %rax, (%r8)
-movq %rsp, (%r9)
 callq *%rcx
-catch_return:
-movdqu 32(%rsp), %xmm6
-movdqu 48(%rsp), %xmm7
-movdqu 64(%rsp), %xmm8
-movdqu 80(%rsp), %xmm9
-movdqu 96(%rsp), %xmm10
-movdqu 112(%rsp), %xmm11
-movdqu 128(%rsp), %xmm12
-movdqu 144(%rsp), %xmm13
-movdqu 160(%rsp), %xmm14
-movdqu 176(%rsp), %xmm15
+movaps 32(%rsp), %xmm6
+movaps 48(%rsp), %xmm7
+movaps 64(%rsp), %xmm8
+movaps 80(%rsp), %xmm9
+movaps 96(%rsp), %xmm10
+movaps 112(%rsp), %xmm11
+movaps 128(%rsp), %xmm12
+movaps 144(%rsp), %xmm13
+movaps 160(%rsp), %xmm14
+movaps 176(%rsp), %xmm15
 addq $$200, %rsp
 popq %r15
 popq %r14
@@ -1677,7 +1820,82 @@ popq %rsi
 popq %rbx
 popq %rbp
 retq
-", "", false, false), DisableInlining, DisableOptimizations]
+.seh_endproc
+", "", true, false), Naked, DisableInlining, DisableOptimizations]
+method CallCatch64(aCall: NativeInt; aEBP: NativeInt): NativeInt; external;
+
+// A re-raise leaves the funclet through ExitCatchFunclet, bypassing its
+// epilogue. Preserve every Win64 nonvolatile register for that return path.
+[SymbolName('__elements_call_catch_funclet'), InlineAsm("
+.seh_proc __elements_call_catch_funclet
+pushq %rbp
+.seh_pushreg %rbp
+pushq %rbx
+.seh_pushreg %rbx
+pushq %rsi
+.seh_pushreg %rsi
+pushq %rdi
+.seh_pushreg %rdi
+pushq %r12
+.seh_pushreg %r12
+pushq %r13
+.seh_pushreg %r13
+pushq %r14
+.seh_pushreg %r14
+pushq %r15
+.seh_pushreg %r15
+subq $$200, %rsp
+.seh_stackalloc 200
+movaps %xmm6, 32(%rsp)
+.seh_savexmm %xmm6, 32
+movaps %xmm7, 48(%rsp)
+.seh_savexmm %xmm7, 48
+movaps %xmm8, 64(%rsp)
+.seh_savexmm %xmm8, 64
+movaps %xmm9, 80(%rsp)
+.seh_savexmm %xmm9, 80
+movaps %xmm10, 96(%rsp)
+.seh_savexmm %xmm10, 96
+movaps %xmm11, 112(%rsp)
+.seh_savexmm %xmm11, 112
+movaps %xmm12, 128(%rsp)
+.seh_savexmm %xmm12, 128
+movaps %xmm13, 144(%rsp)
+.seh_savexmm %xmm13, 144
+movaps %xmm14, 160(%rsp)
+.seh_savexmm %xmm14, 160
+movaps %xmm15, 176(%rsp)
+.seh_savexmm %xmm15, 176
+.seh_endprologue
+movq %rdx, %rbp
+movq %rdx, 8(%rsp)
+leaq catch_return(%rip), %rax
+movq %rax, (%r8)
+movq %rsp, (%r9)
+callq *%rcx
+catch_return:
+movaps 32(%rsp), %xmm6
+movaps 48(%rsp), %xmm7
+movaps 64(%rsp), %xmm8
+movaps 80(%rsp), %xmm9
+movaps 96(%rsp), %xmm10
+movaps 112(%rsp), %xmm11
+movaps 128(%rsp), %xmm12
+movaps 144(%rsp), %xmm13
+movaps 160(%rsp), %xmm14
+movaps 176(%rsp), %xmm15
+addq $$200, %rsp
+popq %r15
+popq %r14
+popq %r13
+popq %r12
+popq %rdi
+popq %rsi
+popq %rbx
+popq %rbp
+retq
+.seh_endproc
+", "", true, false), Naked, DisableInlining, DisableOptimizations]
 method CallCatch64AfterUnwind(aCall: NativeInt; aEBP: NativeInt; var aReturnAddress: NativeInt; var aReturnStack: NativeInt): NativeInt; external;
 
 [InlineAsm("
@@ -1686,14 +1904,25 @@ jmpq *%rcx
 ", "", false, false), Naked, DisableInlining, DisableOptimizations]
 method ExitCatchFunclet(aReturnAddress: NativeInt; aReturnStack: NativeInt); external;
 {$ELSEIF i386}
-[DisableInlining]
-method CallCatch32(aCall: NativeInt; aEBP: NativeInt): NativeInt;
-begin
-  exit InternalCalls.Asm("
-movl $2, %ebp
-calll *$1
-", "=A,r,r,~{esi},~{ebx},~{edi}~{ebp},~{dirflag},~{fpsr},~{flags}", false, false, aCall, aEBP);
-end;
+// Elements: a funclet call changes EBP and clobbers all volatile registers.
+// Use a complete cdecl bridge: the old inline-asm constraints let LLVM keep
+// the helper's SEH chain link in EDX across the call, corrupting FS:[0] on return.
+// Preserve the bridge caller's nonvolatile registers and leave the result in EAX.
+[InlineAsm("
+pushl %ebp
+pushl %ebx
+pushl %esi
+pushl %edi
+movl 20(%esp), %eax
+movl 24(%esp), %ebp
+calll *%eax
+popl %edi
+popl %esi
+popl %ebx
+popl %ebp
+retl
+", "", true, false), Naked, DisableInlining, DisableOptimizations]
+method CallCatch32(aCall: NativeInt; aEBP: NativeInt): NativeInt; external;
 {$ELSE}
   {$ERROR Unsupported Architecture}
 {$ENDIF}
@@ -1795,17 +2024,25 @@ end;
 
 {$IFDEF _WIN64}
 {$IF X86_64}
+// RtlUnwindEx jumps here with the parent stack, not a CALL return address.
+// Align helper calls explicitly and restore that stack before continuation.
 [SymbolName('__elements_after_unwind_run_catch'), InlineAsm("
-subq $$40, %rsp
+movq %rsp, %r11
+andq $$-16, %rsp
+subq $$48, %rsp
+movq %r11, 40(%rsp)
 callq __elements_run_catch_after_unwind
-addq $$40, %rsp
+movq 40(%rsp), %rsp
 testq %rax, %rax
 jz deferred_raise
 jmpq *%rax
 deferred_raise:
-subq $$40, %rsp
+movq %rsp, %r11
+andq $$-16, %rsp
+subq $$48, %rsp
+movq %r11, 40(%rsp)
 callq __elements_get_deferred_caller_context
-addq $$40, %rsp
+movq 40(%rsp), %rsp
 movq (%rax), %rsp
 movq 8(%rax), %rbp
 subq $$8, %rsp
@@ -1852,6 +2089,54 @@ begin
   result := NativeInt(@ExternalCalls.fDeferredCallerContext);
 end;
 
+// Elements: A cleanup can catch a nested exception and return to the original
+// unwind. Preserve its pending catch state, including ARM64's register snapshot.
+// Restore only after a normal return: an escaping replacement exception owns the
+// new state and unwinds this frame without restoring the abandoned exception.
+{$IF NOT ARM64EC}
+[DisableInlining]
+method CallCleanup64(aCall: NativeInt; aFrame: NativeInt);
+begin
+  var lCatchHandler: NativeInt := ExternalCalls.fCatchHandler;
+  var lCatchFrame: NativeInt := ExternalCalls.fCatchFrame;
+  var lCatchEstablisherFrame: UInt64 := ExternalCalls.fCatchEstablisherFrame;
+  var lCatchReturnAddress: NativeInt := ExternalCalls.fCatchReturnAddress;
+  var lCatchReturnStack: NativeInt := ExternalCalls.fCatchReturnStack;
+  var lCatchImageBase: NativeInt := ExternalCalls.fCatchImageBase;
+  var lCatchHandlerData: NativeInt := ExternalCalls.fCatchHandlerData;
+  var lCatchRaiseAddress: NativeInt := ExternalCalls.fCatchRaiseAddress;
+  var lCatchException: Object := ExternalCalls.fCatchException;
+  var lDeferredException: Object := ExternalCalls.fDeferredException;
+  var lCatchActive: Boolean := ExternalCalls.fCatchActive;
+  var lDeferredRaise: Boolean := ExternalCalls.fDeferredRaise;
+  var lDeferredCallerContext: DeferredCallerContext := ExternalCalls.fDeferredCallerContext;
+  var lSkipCatchFrame: UInt64 := ExternalCalls.fSkipCatchFrame;
+  {$IF ARM64}
+  var lNonVolatileRegisters: array[0..18] of UInt64;
+  memcpy(@lNonVolatileRegisters[0], @ExternalCalls.fCatchNonVolatileRegisters[0], sizeOf(lNonVolatileRegisters));
+  {$ENDIF}
+  CallCatch64(aCall, aFrame);
+  ExternalCalls.fCatchHandler := lCatchHandler;
+  ExternalCalls.fCatchFrame := lCatchFrame;
+  ExternalCalls.fCatchEstablisherFrame := lCatchEstablisherFrame;
+  ExternalCalls.fCatchReturnAddress := lCatchReturnAddress;
+  ExternalCalls.fCatchReturnStack := lCatchReturnStack;
+  ExternalCalls.fCatchImageBase := lCatchImageBase;
+  ExternalCalls.fCatchHandlerData := lCatchHandlerData;
+  ExternalCalls.fCatchRaiseAddress := lCatchRaiseAddress;
+  ExternalCalls.fCatchException := lCatchException;
+  ExternalCalls.fDeferredException := lDeferredException;
+  ExternalCalls.fCatchActive := lCatchActive;
+  ExternalCalls.fDeferredRaise := lDeferredRaise;
+  ExternalCalls.fDeferredCallerContext := lDeferredCallerContext;
+  ExternalCalls.fSkipCatchFrame := lSkipCatchFrame;
+  {$IF ARM64}
+  memcpy(@ExternalCalls.fCatchNonVolatileRegisters[0], @lNonVolatileRegisters[0], sizeOf(lNonVolatileRegisters));
+  {$ENDIF}
+end;
+
+{$ENDIF}
+
 method RunDeferredCatchCleanups;
 begin
   var msvcinfo := ^MSVCExceptionInfo(ExternalCalls.fCatchImageBase + ^Int32(ExternalCalls.fCatchHandlerData)^);
@@ -1871,7 +2156,7 @@ begin
       {$IF ARM64EC}
       CallCatch64(ExternalCalls.fCatchImageBase + lUnwindMap[lIndex].Cleanup, ExternalCalls.fCatchFrame, ExternalCalls.fCatchBasePointer);
       {$ELSE}
-      CallCatch64(ExternalCalls.fCatchImageBase + lUnwindMap[lIndex].Cleanup, ExternalCalls.fCatchFrame);
+      CallCleanup64(ExternalCalls.fCatchImageBase + lUnwindMap[lIndex].Cleanup, ExternalCalls.fCatchFrame);
       {$ENDIF}
     lIndex := lUnwindMap[lIndex].ToState;
   end;
@@ -1952,11 +2237,26 @@ begin
 end;
 
 type CatchHelper = method (pExcept: ^rtl.EXCEPTION_RECORD): NativeInt;
+// ARM64 funclets need the parent's preserved registers, including its base and
+// frame pointers. ContextRecord has already been unwound to the caller.
+method FuncletContext(dispatcher: rtl.PDISPATCHER_CONTEXT): NativeInt;
+begin
+  {$IF ARM64}
+  exit NativeInt(dispatcher^.NonVolatileRegisters);
+  {$ELSE}
+  exit dispatcher^.EstablisherFrame;
+  {$ENDIF}
+end;
+
 method IntCallCatch(pExcept: ^rtl.EXCEPTION_RECORD): NativeInt;
 begin
   ExternalCalls.fSkipCatchFrame := 0;
   ExternalCalls.fCatchEstablisherFrame := pExcept^.ExceptionInformation[1];
+  {$IF ARM64}
+  ExternalCalls.fCatchFrame := pExcept^.ExceptionInformation[5];
+  {$ELSE}
   ExternalCalls.fCatchFrame := pExcept^.ExceptionInformation[1];
+  {$ENDIF}
   ExternalCalls.fCatchHandler := pExcept^.ExceptionInformation[2];
   ExternalCalls.fCatchException := InternalCalls.Cast<Object>(^Void(pExcept^.ExceptionInformation[4]));
   {$IF ARM64EC}
@@ -2025,7 +2325,18 @@ begin
     exit;
   end;
   {$ENDIF}
-  rtl.RtlUnwindEx(rtl.PVOID(EstFrame), rtl.PVOID(dispatcher^.ControlPc),  @eh, nil, context, dispatcher^.HistoryTable);
+  {$IF ARM64}
+  // Keep the register snapshot alive after the dispatcher's stack is unwound.
+  memcpy(@ExternalCalls.fCatchNonVolatileRegisters[0], dispatcher^.NonVolatileRegisters, 19 * sizeOf(UInt64));
+  eh.ExceptionInformation[5] := UInt64(@ExternalCalls.fCatchNonVolatileRegisters[0]);
+  // RtlUnwindEx writes its walking context. The original exception context is
+  // still needed to unwind through KiUserExceptionDispatch; overwriting it makes
+  // that frame unwind back to itself (STATUS_BAD_FUNCTION_TABLE).
+  var lUnwindContext := &default(rtl.CONTEXT);
+  rtl.RtlUnwindEx(rtl.PVOID(EstFrame), rtl.PVOID(dispatcher^.ControlPc), @eh, nil, @lUnwindContext, dispatcher^.HistoryTable);
+  {$ELSE}
+  rtl.RtlUnwindEx(rtl.PVOID(EstFrame), rtl.PVOID(dispatcher^.ControlPc), @eh, nil, context, dispatcher^.HistoryTable);
+  {$ENDIF}
 end;
 
 
@@ -2053,27 +2364,45 @@ begin
       ExternalCalls.fForeignUnwindException := nil;
     end;
     {$ENDIF}
+    {$IF NOT ARM64EC}
+    // LLVM initializes this slot to -2. Advance it before calling a cleanup so
+    // a replacement exception does not execute the same finally again.
+    var lUnwindState := ^Int32(NativeInt(EstablisherFrame) + msvcinfo^.UnwindHelp);
+    if lUnwindState^ <> -2 then
+      index := lUnwindState^;
+    {$ENDIF}
     if (arec^.ExceptionCode = rtl.STATUS_UNWIND_CONSOLIDATE) and (EstablisherFrame = arec^.ExceptionInformation[1]) then begin
       var lTargetState := arec^.ExceptionInformation[3];
       // special exception, we're unwinding to a specific stat
       while (index >= 0) and (index < msvcinfo^.NumUnwindMap) and (&index <> lTargetState) do begin
         {$IF ARM64EC}
         if lMap[index].Cleanup <> 0 then CallCatch64(dispatcher^.ImageBase + lMap[index].Cleanup, ^NativeInt(rtl.PDISPATCHER_CONTEXT_ARM64EC(dispatcher)^.NonVolatileRegisters)[10], ^NativeInt(rtl.PDISPATCHER_CONTEXT_ARM64EC(dispatcher)^.NonVolatileRegisters)^);
+        index := lMap[index].ToState;
         {$ELSE}
-        if lMap[index].Cleanup <> 0 then CallCatch64(dispatcher^.ImageBase + lMap[index].Cleanup, dispatcher^.EstablisherFrame);
+        var lCleanup := lMap[index].Cleanup;
+        index := lMap[index].ToState;
+        lUnwindState^ := index;
+        if lCleanup <> 0 then
+          CallCleanup64(dispatcher^.ImageBase + lCleanup, FuncletContext(dispatcher));
         {$ENDIF}
-        index:= lMap[index].ToState;
       end;
+      {$IF NOT ARM64EC}
+      lUnwindState^ := -2;
+      {$ENDIF}
       exit;
     end;
     // unwinding, call finally, this is generally when unwinding completely.
     while (index >= 0) and (index < msvcinfo^.NumUnwindMap) do begin
       {$IF ARM64EC}
       if lMap[index].Cleanup <> 0 then CallCatch64(dispatcher^.ImageBase + lMap[index].Cleanup, ^NativeInt(rtl.PDISPATCHER_CONTEXT_ARM64EC(dispatcher)^.NonVolatileRegisters)[10], ^NativeInt(rtl.PDISPATCHER_CONTEXT_ARM64EC(dispatcher)^.NonVolatileRegisters)^);
+      index := lMap[index].ToState;
       {$ELSE}
-      if lMap[index].Cleanup <> 0 then CallCatch64(dispatcher^.ImageBase + lMap[index].Cleanup, dispatcher^.EstablisherFrame);
+      var lCleanup := lMap[index].Cleanup;
+      index := lMap[index].ToState;
+      lUnwindState^ := index;
+      if lCleanup <> 0 then
+        CallCleanup64(dispatcher^.ImageBase + lCleanup, FuncletContext(dispatcher));
       {$ENDIF}
-      index:= lMap[index].ToState;
     end;
   end else begin
     // we're not unwinding, we're looking for an exception handler that takes it
@@ -2115,12 +2444,20 @@ begin
               ^Exception(EstablisherFrame + lCatchOffset)^ := exo;
             var cond := htt^.Filter;
             {$IF ARM64} // workaround for 85424: Oxygene: bad error for {IFDEF}
-            if (cond = nil) or (cond(^Void(context^.Sp))) then begin
+            // localrecover offsets for a function with ARM64 funclets are relative to x29.
+            if (cond = nil) or (cond(^Void(^NativeUInt(dispatcher^.NonVolatileRegisters)[10]))) then begin
               result := 0;
               CallCatch(tb, ht, arec, EstablisherFrame, context, dispatcher, exo);
             end;
             {$ELSE}
-            if (cond = nil) or (cond(^Void(context^.Rsp))) then begin
+            // localrecover uses the parent frame register. The exception context
+            // still describes the throw site, not this handler's parent frame.
+            // UNWIND_INFO byte 3 stores FrameRegister and FrameOffset * 16.
+            // The SDK's anonymous union hides UnwindData, the third RUNTIME_FUNCTION DWORD.
+            var lFunctionEntry := ^UInt32(dispatcher^.FunctionEntry);
+            var lUnwindInfo := ^Byte(dispatcher^.ImageBase + lFunctionEntry[2]);
+            var lFilterFrame := EstablisherFrame + NativeUInt(lUnwindInfo[3] and $f0);
+            if (cond = nil) or (cond(^Void(lFilterFrame))) then begin
               result := 0;
               CallCatch(tb, ht, arec, EstablisherFrame, context, dispatcher, exo);
             end;
@@ -2146,8 +2483,12 @@ begin
   if 0 <> (arec^.ExceptionFlags and ( rtl.EXCEPTION_UNWINDING or rtl.EXCEPTION_EXIT_UNWIND)) then begin
     // unwinding, call finally
     while (regFrame^.TryLevel <> $FFFFFFFF) and (regFrame^.TryLevel < msvcinfo^.NumUnwindMap)  do begin
-      if msvcinfo^.UnwindMap[regFrame^.TryLevel].Cleanup <> nil then CallCatch32(NativeInt(^Void(msvcinfo^.UnwindMap[regFrame^.TryLevel].Cleanup)), lBaseAddress);
+      // Elements: advance before cleanup, as on Win64. A replacement exception
+      // must continue unwinding without entering this same finally again.
+      var lCleanup := msvcinfo^.UnwindMap[regFrame^.TryLevel].Cleanup;
       regFrame^.TryLevel := msvcinfo^.UnwindMap[regFrame^.TryLevel].ToState;
+      if lCleanup <> nil then
+        CallCatch32(NativeInt(^Void(lCleanup)), lBaseAddress);
     end;
   end else begin
     // we're not unwinding, we're looking for an exception handler that takes it
@@ -2174,15 +2515,19 @@ begin
             if (lCatchOffset <> 0) then
               ^Exception(lBaseAddress + lCatchOffset)^ := exo;
             var cond := tb^.HandlerType^.Type^.Filter;
-            if (cond = nil) or (cond(regFrame^.ESP)) then begin
+            // Elements: pass the registration end used by catch funclets.
+            // The generated filter uses llvm.eh.recoverfp to recover the parent
+            // local frame; saved ESP is below locals and cannot identify it.
+            if (cond = nil) or (cond(^Void(lBaseAddress))) then begin
               result := 0;
               MyRtlUnwind(IntPtr(aOrgregFrame), nil, IntPtr(arec), nil);
               // now unwind locally
               while (regFrame^.TryLevel <> $FFFFFFFF) and (regFrame^.TryLevel < tb^.CatchHigh) and (regFrame^.TryLevel >= tb^.TryLow) do begin
-                if msvcinfo^.UnwindMap[regFrame^.TryLevel].Cleanup <> nil then begin
-                  CallCatch32(NativeInt(^Void(msvcinfo^.UnwindMap[regFrame^.TryLevel].Cleanup)), lBaseAddress);
-                end;
+                // Elements: a throwing cleanup must not be unwound twice.
+                var lCleanup := msvcinfo^.UnwindMap[regFrame^.TryLevel].Cleanup;
                 regFrame^.TryLevel := msvcinfo^.UnwindMap[regFrame^.TryLevel].ToState;
+                if lCleanup <> nil then
+                  CallCatch32(NativeInt(^Void(lCleanup)), lBaseAddress);
               end;
               var lCont := CallCatch32(NativeInt(^Void(tb^.HandlerType^.Handler)), lBaseAddress);
               // LLVM catch funclets replace the parent frame's saved ESP. Restore

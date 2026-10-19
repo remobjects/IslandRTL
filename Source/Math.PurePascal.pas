@@ -5,8 +5,10 @@
 // (WebAssembly, Android, mobile Darwin platforms, unsupported architectures)
 
 // Check same conditions as Math.pas - must be kept in sync!
-{$IF WINDOWS OR (DARWIN AND MACOS)}
-  {$DEFINE USE_LLVM_MATH_VECTORLIB}
+{$IF WINDOWS OR (DARWIN AND MACOS) OR (LINUX AND (X86_64 OR ARM64))}
+  {$IFNDEF PUREPASCAL}
+    {$DEFINE USE_LLVM_MATH_VECTORLIB}
+  {$ENDIF}
 {$ENDIF}
 
 {$IFNDEF USE_LLVM_MATH_VECTORLIB}
@@ -18,32 +20,50 @@ type
   public
     // Transcendental functions - implemented in Pure Pascal
     class method Acos(d: Double): Double;
+    class method Acos(d: Single): Single;
     class method Asin(d: Double): Double;
+    class method Asin(d: Single): Single;
     class method Atan(d: Double): Double;
+    class method Atan(d: Single): Single;
     class method Atan2(x,y: Double): Double;
+    class method Atan2(x,y: Single): Single;
     class method Ceiling(d: Double): Double;
     class method Ceiling(d: Single): Single;
     class method Cos(d: Double): Double;
+    class method Cos(d: Single): Single;
     class method Cosh(d: Double): Double;
+    class method Cosh(d: Single): Single;
     class method Exp(d: Double): Double;
+    class method Exp(d: Single): Single;
     class method Exp2(d: Double): Double;
+    class method Exp2(d: Single): Single;
     class method Floor(d: Double): Double;
     class method Floor(d: Single): Single;
     class method Log(a: Double): Double;
+    class method Log(a: Single): Single;
     class method Log2(a: Double): Double;
+    class method Log2(a: Single): Single;
     class method Log10(a: Double): Double;
+    class method Log10(a: Single): Single;
     class method Pow(x, y: Double): Double;
+    class method Pow(x,y: Single): Single;
     class method Round(a: Double): Double;
+    class method Round(a: Single): Single;
     class method Sin(x: Double): Double;
+    class method Sin(x: Single): Single;
     class method Sinh(x: Double): Double;
+    class method Sinh(x: Single): Single;
     class method Sqrt(d: Double): Double;
     class method Sqrt(d: Single): Single;
     class method Tan(d: Double): Double;
+    class method Tan(d: Single): Single;
     class method Tanh(d: Double): Double;
+    class method Tanh(d: Single): Single;
     class method Truncate(d: Double): Double;
     class method Truncate(d: Single): Single;
     // Utility functions
     class method Abs(i: Double): Double;
+    class method Abs(i: Single): Single;
     class method fmod(x, y: Double): Double;
     class method fmodf(x,y: Single): Single;
   end;
@@ -321,14 +341,12 @@ end;
 
 class method Math.Ceiling(d: Single): Single;
 begin
-  var p := d mod 1;
-  if p = 0 then exit d;
-  if d < 0 then exit d-p else exit d-p+1;
+  exit Single(Ceiling(Double(d)));
 end;
 
 class method Math.Floor(d: Double): Double;
 begin
-  if (d = 0.0) then exit 0.0;
+  if (d = 0.0) then exit d; // Preserve the sign of zero.
   var res : Double := 0.0;
 
   var pIEEE_754_raw := ^UInt64(@d)^;
@@ -336,8 +354,12 @@ begin
   var signum := if (pIEEE_754_raw and Double.SignificantBitmask)=0 then 0 else 1;
   var tmp := pIEEE_754_raw and not Double.SignificantBitmask;
   var exponent: Integer := (tmp shr 52)-1023;
-  if exponent >= 52 then res := d
-  else if exponent > -1 then begin
+  // Integral values, infinities and NaNs need no rounding. In particular,
+  // the adjustment for negative fractions below must not turn -2 into -3.
+  if exponent >= 52 then exit d;
+  if exponent >= 0 then
+    if (tmp and ((UInt64(1) shl (52 - exponent)) - 1)) = 0 then exit d;
+  if exponent > -1 then begin
     var mantissa: UInt64 := Double.FractionBitmask and tmp;
     var denominator: UInt64 := UInt64(1) shl 52;
     var numerator : UInt64 := mantissa + denominator;
@@ -373,28 +395,12 @@ end;
 
 class method Math.Floor(d: Single): Single;
 begin
-  var xi := Integer(d);
-  if d < xi then
-    exit xi -1;
-  exit xi;
+  exit Single(Floor(Double(d)));
 end;
 
 class method Math.Round(a: Double): Double;
 begin
-  var p := a mod 1;
-  if p = 0 then exit Double(a);
-  var p1 := Abs(p);
-  if p1 < 0.5 then exit Double(a - p);
-  if p1 > 0.5 then exit Double(a - p) + if a<0 then -1 else 1;
-  //special case, p1 = 0.5
-  //12.5 => 12 and 11.5 => 12
-  //-12.5 => -12 and -11.5 => -12
-  var d1 := a + if a<0 then -0.5 else 0.5;
-  if d1 mod 2 <> 0 then begin
-    exit Double(d1) - if a<0 then -1 else 1
-  end
-  else
-    exit Double(d1);
+  exit MathRounding.RoundToIntegral(a, true);
 end;
 
 class method Math.Truncate(d: Double): Double;
@@ -404,7 +410,7 @@ end;
 
 class method Math.Truncate(d: Single): Single;
 begin
-  exit if d < 0 then -Floor(-d) else Floor(d);
+  exit Single(Truncate(Double(d)));
 end;
 
 // Square root
@@ -437,7 +443,99 @@ end;
 
 class method Math.fmodf(x, y: Single): Single;
 begin
-  exit (Abs(x) - (Abs(y) *  (Floor(Abs(x) / Abs(y))))) * Sign(x);
+  exit Single(fmod(Double(x), Double(y)));
+end;
+
+// Single precision overloads
+
+class method Math.Acos(d: Single): Single;
+begin
+  exit Single(Acos(Double(d)));
+end;
+
+class method Math.Asin(d: Single): Single;
+begin
+  exit Single(Asin(Double(d)));
+end;
+
+class method Math.Atan(d: Single): Single;
+begin
+  exit Single(Atan(Double(d)));
+end;
+
+class method Math.Atan2(x, y: Single): Single;
+begin
+  exit Single(Atan2(Double(x), Double(y)));
+end;
+
+class method Math.Cos(d: Single): Single;
+begin
+  exit Single(Cos(Double(d)));
+end;
+
+class method Math.Cosh(d: Single): Single;
+begin
+  exit Single(Cosh(Double(d)));
+end;
+
+class method Math.Exp(d: Single): Single;
+begin
+  exit Single(Exp(Double(d)));
+end;
+
+class method Math.Exp2(d: Single): Single;
+begin
+  exit Single(Exp2(Double(d)));
+end;
+
+class method Math.Log(a: Single): Single;
+begin
+  exit Single(Log(Double(a)));
+end;
+
+class method Math.Log2(a: Single): Single;
+begin
+  exit Single(Log2(Double(a)));
+end;
+
+class method Math.Log10(a: Single): Single;
+begin
+  exit Single(Log10(Double(a)));
+end;
+
+class method Math.Pow(x, y: Single): Single;
+begin
+  exit Single(Pow(Double(x), Double(y)));
+end;
+
+class method Math.Sin(x: Single): Single;
+begin
+  exit Single(Sin(Double(x)));
+end;
+
+class method Math.Sinh(x: Single): Single;
+begin
+  exit Single(Sinh(Double(x)));
+end;
+
+class method Math.Tan(d: Single): Single;
+begin
+  exit Single(Tan(Double(d)));
+end;
+
+class method Math.Tanh(d: Single): Single;
+begin
+  exit Single(Tanh(Double(d)));
+end;
+
+class method Math.Round(a: Single): Single;
+begin
+  exit Single(Round(Double(a)));
+end;
+
+class method Math.Abs(i: Single): Single;
+begin
+  exit Single(Abs(Double(i)));
 end;
 
 // C RTL exports - forward to Math class methods
@@ -484,7 +582,8 @@ end;
 
 class method CRTLMathExports.round(d: Double): Double;
 begin
-  exit Math.Round(d);
+  // The C ABI specifies ties-away even though public Math.Round uses ties-even.
+  exit MathRounding.RoundToIntegral(d, false);
 end;
 
 class method CRTLMathExports.fabs(d: Double): Double;

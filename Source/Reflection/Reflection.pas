@@ -657,7 +657,12 @@ type
         lTypes[i+dx]:= k.Type;
         lParams[i+dx]:= aArgs[i];
       end;
-      {$IFDEF WINDOWS}
+      {$IFDEF WINDOWS AND ARM64}
+      if (dx = 1) and DeclaringType.IsValueType then
+        result := FFI.CallWithBoxedReceiver(Pointer, cc, var lParams, lModes, lTypes, &Type)
+      else
+        result := FFI.Call(Pointer, cc, var lParams, lModes, lTypes, &Type);
+      {$ELSEIF WINDOWS}
       result := FFI.Call(Pointer, cc, var lParams, lModes, lTypes, &Type);
       {$ELSEIF ANDROID}
       raise new NotImplementedException($"MethodInfo.Invoke is not implemented for Island/Android yet.");

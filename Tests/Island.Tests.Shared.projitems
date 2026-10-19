@@ -8,6 +8,9 @@
     <ProjectGuid>{8BC0E3A8-C6B3-4FCC-AC6B-D80EE04F2628}</ProjectGuid>
   </PropertyGroup>
   <ItemGroup>
+    <!-- Elements: portable EH semantics must be checked by every platform suite. -->
+    <Compile Include="$(MSBuildThisFileDirectory)WindowsExceptionRethrow.pas" />
+    <Compile Include="$(MSBuildThisFileDirectory)ExceptionFilterTests.pas" />
     <Compile Include="$(MSBuildThisFileDirectory)BitConverterTest.pas" />
     <Compile Include="$(MSBuildThisFileDirectory)EventWaitHandleTests.pas" />
     <Compile Include="$(MSBuildThisFileDirectory)Datetime.pas" />
@@ -21,5 +24,38 @@
     <Compile Include="$(MSBuildThisFileDirectory)TextConvert_utf_tests.pas" />
     <Compile Include="$(MSBuildThisFileDirectory)String_Substring.pas" />
     <Compile Include="$(MSBuildThisFileDirectory)Guid.pas" />
+    <Compile Include="$(MSBuildThisFileDirectory)Math_IEEERemainder.pas" />
+    <Compile Include="$(MSBuildThisFileDirectory)Math_Rounding.pas" />
+    <Compile Include="$(MSBuildThisFileDirectory)Math_RoundingExports.pas" />
+    <Compile Include="$(MSBuildThisFileDirectory)Math_Precision.pas" />
+    <Compile Include="$(MSBuildThisFileDirectory)Linux_Startup.pas" />
+    <Compile Include="$(MSBuildThisFileDirectory)String_Equality.pas" />
+    <Compile Include="$(MSBuildThisFileDirectory)Memory_Comparison.pas" />
+    <Compile Include="$(MSBuildThisFileDirectory)WindowsCatchAlignment.pas" />
+    <Compile Include="$(MSBuildThisFileDirectory)CString_Helpers.pas" />
+    <Compile Include="$(MSBuildThisFileDirectory)String_Indexing.pas" />
+    <Compile Include="$(MSBuildThisFileDirectory)String_Search.pas" />
+    <Compile Include="$(MSBuildThisFileDirectory)RuntimeRegression\Collections_Boundaries.pas" />
+    <Compile Include="$(MSBuildThisFileDirectory)RuntimeRegression\Algorithms_Boundaries.pas" />
+    <Compile Include="$(MSBuildThisFileDirectory)RuntimeRegression\Equality_Boundaries.pas" />
+    <Compile Include="$(MSBuildThisFileDirectory)RuntimeRegression\Set_Boundaries.pas" />
+    <Compile Include="$(MSBuildThisFileDirectory)RuntimeRegression\IO_Number_Boundaries.pas" />
+    <Compile Include="$(MSBuildThisFileDirectory)RuntimeRegression\Collections_GCRoots.pas" />
+    <Compile Include="$(MSBuildThisFileDirectory)RuntimeRegression\Collections_CopyHooks.pas" />
+    <Compile Include="$(MSBuildThisFileDirectory)RuntimeRegression\Task_Wait.pas" />
+    <Compile Include="$(MSBuildThisFileDirectory)RuntimeRegression\Parallel_Boundaries.pas" />
+    <Compile Include="$(MSBuildThisFileDirectory)RuntimeRegression\Thread_Condition.pas" />
+    <Compile Include="$(MSBuildThisFileDirectory)RuntimeRegression\GCHandle_Boundaries.pas" />
+    <Compile Include="$(MSBuildThisFileDirectory)RuntimeRegression\ForeignGC_Lifetime.pas" />
+    <Compile Include="$(MSBuildThisFileDirectory)RuntimeRegression\NumericMetadata_Boundaries.pas" />
+    <Compile Include="$(MSBuildThisFileDirectory)RuntimeRegression\Sequence_Lifetime.pas" />
+    <Compile Include="$(MSBuildThisFileDirectory)RuntimeRegression\StringBuilder_Edit.pas" />
+    <Compile Include="$(MSBuildThisFileDirectory)StringBuilder_Append.pas" />
+    <Compile Include="$(MSBuildThisFileDirectory)StringBuilder_Capacity.pas" />
+    <Compile Include="$(MSBuildThisFileDirectory)Optimization_Workloads.pas" />
+    <Compile Include="$(MSBuildThisFileDirectory)Integer_Division.pas" />
+    <Compile Include="$(MSBuildThisFileDirectory)Array_Iteration.pas" />
+    <Compile Include="$(MSBuildThisFileDirectory)ReflectionFloatRegisters.pas" />
+    <Compile Include="$(MSBuildThisFileDirectory)ReflectionWindowsARM64.pas" />
   </ItemGroup>
 </Project>

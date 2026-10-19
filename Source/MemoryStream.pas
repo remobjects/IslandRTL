@@ -45,7 +45,8 @@ end;
 
 method MemoryStream.SetCapacity(value: Int32);
 begin
-  if value < fLength then raise new Exception('Capacity cannot be less than the current length of the stream.');
+  if (value < 0) or (value < fLength) then raise new Exception('Capacity cannot be less than the current length of the stream.');
+  if value = fCapacity then exit;
   var temp := new array of Byte(value);
   if fLength >0 then
     memcpy(@temp[0], @fbuf[0], fLength);
@@ -55,20 +56,28 @@ end;
 
 method MemoryStream.SetLength(value: Int64);
 begin
+  if (value < 0) or (value > Int32.MaxValue) then
+    raise new ArgumentOutOfRangeException('MemoryStream length');
   var curpos := Position;
-  //fLength := value;
-  CheckCapacity(value);
+  CheckCapacity(Int32(value));
+  // Shrink then grow must not reveal bytes from the old contents.
+  if value > fLength then memset(@fbuf[fLength], 0, NativeInt(value - fLength));
   fLength := value;
   if curpos > fLength then Seek(0, SeekOrigin.End);
 end;
 
 method MemoryStream.Seek(Offset: Int64; Origin: SeekOrigin): Int64;
 begin
+  var base: Int64;
   case Origin of
-    SeekOrigin.Begin: fPosition := Offset;
-    SeekOrigin.Current: fPosition :=fPosition + Offset;
-    SeekOrigin.End: fPosition := fLength + Offset;
+    SeekOrigin.Begin: base := 0;
+    SeekOrigin.Current: base := fPosition;
+    SeekOrigin.End: base := fLength;
+    else raise new ArgumentOutOfRangeException('Invalid seek origin');
   end;
+  if (Offset < -base) or (Offset > Int64.MaxValue - base) then
+    raise new ArgumentOutOfRangeException('MemoryStream position');
+  fPosition := base + Offset;
   exit fPosition;
 end;
 
@@ -88,8 +97,11 @@ method MemoryStream.Write(aSpan: ImmutableSpan<Byte>): Int32;
 begin
   if not CanWrite then raise new NotSupportedException;
   if aSpan.Length = 0 then exit 0;
-  CheckCapacity(fPosition + aSpan.Length);
-  memcpy(@fbuf[fPosition], aSpan.Pointer, aSpan.Length);
+  if (fPosition > Int32.MaxValue) or (aSpan.Length > Int32.MaxValue - fPosition) then
+    raise new ArgumentOutOfRangeException('MemoryStream write exceeds maximum length');
+  CheckCapacity(Int32(fPosition + aSpan.Length));
+  if fPosition > fLength then memset(@fbuf[fLength], 0, NativeInt(fPosition - fLength));
+  memmove(@fbuf[fPosition], aSpan.Pointer, aSpan.Length);
   fPosition := fPosition + aSpan.Length;
   if fPosition > fLength then fLength := fPosition;
   exit aSpan.Length;
@@ -114,6 +126,7 @@ begin
   if aNewCapacity > 64 then lDelta := aNewCapacity / 4
   else if aNewCapacity > 8 then lDelta := 16
   else lDelta := 4;
+  if lDelta > Int32.MaxValue - aNewCapacity then exit aNewCapacity;
   exit aNewCapacity + lDelta;
 end;
 
@@ -126,28 +139,45 @@ method MemoryStream.WriteTo(Destination: Stream);
 begin
   if Destination = nil then raise new Exception('Destination is null');
   if not Destination.CanWrite then raise new NotSupportedException;
-  Destination.Write(new Span<Byte>(fbuf, 0, fLength));
+  // Write the original contents only: self-copy can grow Length. Snapshot its
+  // bytes too, since an overlapping partial write could overwrite later input.
+  var length := Int32(fLength);
+  var source := if Destination = self then ToArray else fbuf;
+  var written := 0;
+  while written < length do begin
+    var count := Destination.Write(new ImmutableSpan<Byte>(source, written, length - written));
+    if (count <= 0) or (count > length - written) then raise new Exception('Invalid stream write count');
+    inc(written, count);
+  end;
 end;
 
 {$IFNDEF NOFILES}
 method MemoryStream.LoadFromFile(FileName: String);
 begin
   var fs := new FileStream(FileName, FileMode.Open,FileAccess.Read, FileShare.Read);
-  SetLength(0);
-  self.Capacity := fs.Length;
-  fs.Position := 0;
-  fLength := fs.Read(new Span<Byte>(fbuf, 0, fs.Length));
-  fs.Close;
+  try
+    SetLength(0);
+    var expected := fs.Length;
+    if expected > Int32.MaxValue then raise new ArgumentOutOfRangeException('File exceeds MemoryStream maximum length');
+    self.Capacity := Int32(expected);
+    while fLength < expected do begin
+      var count := fs.Read(new Span<Byte>(fbuf, Int32(fLength), Int32(expected - fLength)));
+      if count = 0 then break;
+      inc(fLength, count);
+    end;
+  finally
+    fs.Close;
+  end;
 end;
 
 method MemoryStream.SaveToFile(FileName: String);
 begin
   var fs := new FileStream(FileName, FileMode.Create,FileAccess.Write, FileShare.None);
-  SetLength(fLength);
-  fs.Position := 0;
-  if fLength > 0 then
-    fs.Write(new Span<Byte>(@fbuf[0], fLength));
-  fs.Close;
+  try
+    WriteTo(fs);
+  finally
+    fs.Close;
+  end;
 end;
 {$ENDIF}
 end.

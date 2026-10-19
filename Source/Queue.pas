@@ -6,7 +6,7 @@ type
   QueueEnumerator<T> = public class(IEnumerator<T>)
   private
     fArray: array of T;
-    fCurrentIndex: Integer := 0;
+    fCurrentIndex: Integer := -1;
     method GetCurrent: T;
     property NonGenCurrent: Object read GetCurrent; implements IEnumerator.Current;
   public
@@ -25,11 +25,12 @@ type
     method Grow(aCapacity: Integer);
     method IsEmpty: Boolean; inline;
     method CalcCapacity(aNewCapacity: Integer): Integer;
-    method Init;
+    method Init(aCapacity: Integer);
     method GetNonGenericEnumerator: IEnumerator; implements IEnumerable.GetEnumerator;
     method IsEqual(Item1: T; Item2: T): Boolean;
   public
     constructor;
+    constructor(aCapacity: Integer);
 
     method GetEnumerator: IEnumerator<T>;
     method Contains(aItem: T): Boolean;
@@ -47,12 +48,20 @@ implementation
 
 constructor Queue<T>;
 begin
-  Init;
+  Init(4);
 end;
 
-method Queue<T>.Init;
+constructor Queue<T>(aCapacity: Integer);
 begin
-  fItems := new array of T(4);
+  // Bounded producers can reserve their complete buffer once. Growing later
+  // copies owned values and keeps old-buffer copies alive until GC finalization.
+  Init(aCapacity);
+end;
+
+method Queue<T>.Init(aCapacity: Integer);
+begin
+  if aCapacity < 0 then raise new ArgumentOutOfRangeException('aCapacity');
+  fItems := new array of T(aCapacity);
   fHead := 0;
   fTail := 0;
   fCount := 0;
@@ -60,16 +69,29 @@ end;
 
 method Queue<T>.Contains(aItem: T): Boolean;
 begin
-  for k in self do
-    if IsEqual(k, aItem) then
-      exit true;
-
-  result := false;
+  // Search the live ring directly; enumeration would allocate a snapshot.
+  var lIndex := fTail;
+  for i := 0 to fCount - 1 do begin
+    if IsEqual(fItems[lIndex], aItem) then exit true;
+    inc(lIndex);
+    if lIndex = length(fItems) then lIndex := 0;
+  end;
+  exit false;
 end;
 
 method Queue<T>.Clear;
 begin
-  Init;
+  // Discarding an owned value needs cleanup, not a return-value copy. Calling
+  // Dequeue here invoked user Copy hooks (which may throw) for unused results.
+  // Advance only after clearing succeeds, just as Dequeue does for its slot.
+  while fCount > 0 do begin
+    fItems[fTail] := nil;
+    inc(fTail);
+    dec(fCount);
+    if fTail = length(fItems) then fTail := 0;
+  end;
+  fHead := 0;
+  fTail := 0;
 end;
 
 method Queue<T>.Peek: T;
@@ -82,18 +104,11 @@ end;
 
 method Queue<T>.Enqueue(aItem: T);
 begin
+  if fCount = length(fItems) then Grow(fCount + 1);
   fItems[fHead] := aItem;
   inc(fHead);
   inc(fCount);
-  if fHead = length(fItems) then begin
-    if fTail > 0 then
-      fHead := 0
-    else
-      Grow(fCount + 1);
-  end
-  else
-    if (fHead = fTail) and (not IsEmpty) then
-      Grow(fCount + 1);
+  if fHead = length(fItems) then fHead := 0;
 end;
 
 method Queue<T>.Dequeue: T;
@@ -112,18 +127,11 @@ end;
 method Queue<T>.ToArray: array of T;
 begin
   result := new array of T(fCount);
-
-  if fHead > fTail then begin
-    for i: Integer := 0 to fCount - 1 do
-      result[i] := fItems[fTail + i];
-  end
-  else begin
-    var lTotal := length(fItems) - fTail;
-    for i: Integer := 0 to lTotal - 1 do
-      result[i] := fItems[fTail + i];
-
-    for i: Integer := 0 to fHead - 1 do
-      result[lTotal + i] := fItems[fHead + i];
+  var lIndex := fTail;
+  for i := 0 to fCount - 1 do begin
+    result[i] := fItems[lIndex];
+    inc(lIndex);
+    if lIndex = length(fItems) then lIndex := 0;
   end;
 end;
 
@@ -138,23 +146,17 @@ end;
 
 method Queue<T>.Grow(aCapacity: Integer);
 begin
-  var lNewCapacity := CalcCapacity(aCapacity);
-  var lArray := new array of T(lNewCapacity);
-
-  if fHead > fTail then begin
-    for i: Integer := 0 to fCount - 1 do
-      lArray[i] := fItems[fTail + i];
-  end
-  else begin
-    var lTotal := length(fItems) - fTail;
-    for i: Integer := 0 to lTotal - 1 do
-      lArray[i] := fItems[fTail + i];
-
-    for i: Integer := 0 to fHead - 1 do
-      lArray[lTotal + i] := fItems[fHead + i];
+  var lArray := new array of T(CalcCapacity(aCapacity));
+  var lIndex := fTail;
+  for i := 0 to fCount - 1 do begin
+    lArray[i] := fItems[lIndex];
+    inc(lIndex);
+    if lIndex = length(fItems) then lIndex := 0;
   end;
-
+  // The copied ring is now contiguous, starting at zero.
   fItems := lArray;
+  fTail := 0;
+  fHead := fCount;
 end;
 
 method Queue<T>.IsEmpty: Boolean;
@@ -191,7 +193,7 @@ end;
 
 method QueueEnumerator<T>.MoveNext: Boolean;
 begin
-  inc(fCurrentIndex);
+  if fCurrentIndex < length(fArray) then inc(fCurrentIndex);
   result := fCurrentIndex < length(fArray);
 end;
 

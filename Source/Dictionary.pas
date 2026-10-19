@@ -1,12 +1,37 @@
 ﻿namespace RemObjects.Elements.System;
 
 type
-  Entry<T, U> = unit record
+  Entry<T, U> = private record
   public
     HashCode: Integer; // current hashcode
     Next: Integer; // contains reference to next item with the same hashcode
     Key : T;
     Value: U;
+
+    // The entry owns its values. Preserve nested record ownership when the
+    // table is copied, cleared, or eventually reclaimed by the GC.
+    constructor Copy(var aSource: Entry<T, U>);
+    begin
+      HashCode := aSource.HashCode;
+      Next := aSource.Next;
+      Key := aSource.Key;
+      Value := aSource.Value;
+    end;
+
+    class operator Assign(var aDest: Entry<T, U>; var aSource: Entry<T, U>);
+    begin
+      if (@aDest) = (@aSource) then exit;
+      aDest.HashCode := aSource.HashCode;
+      aDest.Next := aSource.Next;
+      aDest.Key := aSource.Key;
+      aDest.Value := aSource.Value;
+    end;
+
+    finalizer;
+    begin
+      Key := default(T);
+      Value := default(U);
+    end;
   end;
 
   ImmutableDictionary<T,U> = public class(sequence of KeyValuePair<T,U>)
@@ -69,13 +94,9 @@ type
       fEntriesTable[pos].Value := Value;
 
       var idx := CalcIndex(hash, length(fEntriesTable));
-      if fbucketTable[idx] = EMPTY_BUCKET then
-        fbucketTable[idx] := pos
-      else begin
-        idx := fbucketTable[idx];
-        while fEntriesTable[idx].Next <> EMPTY_BUCKET do idx := fEntriesTable[idx].Next;
-        fEntriesTable[idx].Next := pos;
-      end;
+      // Insert at the bucket head: no second collision-chain traversal.
+      fEntriesTable[pos].Next := fbucketTable[idx];
+      fbucketTable[idx] := pos;
       inc(fCount);
     end;
 
@@ -147,7 +168,12 @@ type
     method IndexOfValue(Value: U): Integer;
     begin
       for i: Integer := 0 to fMaxUsedIndex - 1 do
-        if (fEntriesTable[i].HashCode <> EMPTYHASH) and fEntriesTable[i].Value.Equals(Value) then exit i;
+        if fEntriesTable[i].HashCode <> EMPTYHASH then begin
+          var lValue := fEntriesTable[i].Value;
+          if not assigned(lValue) then begin
+            if not assigned(Value) then exit i;
+          end else if lValue.Equals(Value) then exit i;
+        end;
       exit -1;
     end;
 
@@ -172,36 +198,20 @@ type
 
     method DoResize(aNewCapacity: Integer);
     begin
-      if (aNewCapacity <= length(fEntriesTable)) and (fCount>0) then exit;
-      var new_fbucketTable := new array of Integer(aNewCapacity);
-{
-      for i:Integer :=0 to length(new_fbucketTable)-1 do
-        new_fbucketTable[i] := EMPTY_BUCKET;
-}
-      for i:Integer := 0 to length(fEntriesTable)-1 do begin
-        fEntriesTable[i].Next := EMPTY_BUCKET;
-      end;
-
-      for i:Integer := DEFAULT_MAX_INDEX to fMaxUsedIndex-1 do begin
-        var idx := CalcIndex(fEntriesTable[i].HashCode, aNewCapacity);
-
-        if new_fbucketTable[idx] = EMPTY_BUCKET then begin
-          new_fbucketTable[idx] := i;
-          fEntriesTable[i].Next := EMPTY_BUCKET;
-        end
-        else begin
-          idx := new_fbucketTable[idx];
-          while (fEntriesTable[idx].Next <> EMPTY_BUCKET) do
-            idx := fEntriesTable[idx].Next;
-          fEntriesTable[idx].Next := i;
+      if (aNewCapacity <= length(fEntriesTable)) and (fCount > 0) then exit;
+      var lBuckets := new Integer[aNewCapacity];
+      var lEntries := new Entry<T,U>[aNewCapacity];
+      for i := DEFAULT_MAX_INDEX to fMaxUsedIndex - 1 do begin
+        lEntries[i] := fEntriesTable[i];
+        if lEntries[i].HashCode <> EMPTYHASH then begin
+          // Rehash against the NEW capacity, and leave free-list links alone.
+          var lBucket := (lEntries[i].HashCode and POSITIVE_INTEGER_MASK) mod aNewCapacity;
+          lEntries[i].Next := lBuckets[lBucket];
+          lBuckets[lBucket] := i;
         end;
       end;
-      var new_fEntriesTable := new array of Entry<T,U>(aNewCapacity);
-      if fMaxUsedIndex > DEFAULT_MAX_INDEX then begin
-        memmove(@new_fEntriesTable[0], @fEntriesTable[0], fMaxUsedIndex * sizeOf(Entry<T,U>));
-      end;
-      fbucketTable := new_fbucketTable;
-      fEntriesTable := new_fEntriesTable;
+      fbucketTable := lBuckets;
+      fEntriesTable := lEntries;
     end;
 
   public
@@ -336,8 +346,9 @@ type
 
     method Clear;
     begin
-      fbucketTable := new array of Integer(0);
-      fEntriesTable := new array of Entry<T,U>(0);
+      for i := 0 to length(fbucketTable) - 1 do fbucketTable[i] := EMPTY_BUCKET;
+      for i := DEFAULT_MAX_INDEX to fMaxUsedIndex - 1 do
+        fEntriesTable[i] := default(Entry<T,U>);
       fCount := 0;
       fMaxUsedIndex := DEFAULT_MAX_INDEX;
       fFirstHole := EMPTY_BUCKET;

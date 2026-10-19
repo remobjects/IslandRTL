@@ -38,6 +38,10 @@ type
           end else begin
             lItem := fQueue[0];
             fQueue.RemoveAt(0);
+            // Auto-reset signals coalesce when a burst arrives. Hand pending
+            // work to another sleeper before this callback can block, so an
+            // idle pool wakes enough workers without broadcasting every item.
+            if fQueue.Count > 0 then fWakeup.Set;
           end;
         end;
         if lItem <> nil then begin

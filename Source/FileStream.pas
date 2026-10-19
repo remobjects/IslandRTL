@@ -73,47 +73,35 @@ begin
                         end;
   fHandle := rtl.CreateFileW(lName, lAccess, lShare, nil, lmode, rtl.FILE_ATTRIBUTE_NORMAL, nil);
   CheckForIOError(fHandle <> rtl.INVALID_HANDLE_VALUE);
-  {$ELSEIF FUCHSIA OR DARWIN}
-  var lFlags: Integer := case Access of
+  {$ELSEIF POSIX_LIGHT}
+  // Open flags define creation/truncation independently of the stdio access
+  // mode. In particular CreateNew must be atomic and must not truncate a file.
+  var flags := case Access of
     FileAccess.Read: rtl.O_RDONLY;
     FileAccess.Write: rtl.O_WRONLY;
     FileAccess.ReadWrite: rtl.O_RDWR;
   end;
   case Mode of
-    FileMode.CreateNew: lFlags := lFlags or rtl.O_CREAT or rtl.O_EXCL;
-    FileMode.Create: lFlags := lFlags or rtl.O_CREAT or rtl.O_TRUNC;
-    FileMode.OpenOrCreate: lFlags := lFlags or rtl.O_CREAT;
-    FileMode.Truncate: lFlags := lFlags or rtl.O_TRUNC;
+    FileMode.CreateNew: flags := flags or rtl.O_CREAT or rtl.O_EXCL;
+    FileMode.Create: flags := flags or rtl.O_CREAT or rtl.O_TRUNC;
+    FileMode.OpenOrCreate: flags := flags or rtl.O_CREAT;
+    FileMode.Truncate: flags := flags or rtl.O_TRUNC;
   end;
-  var lDescriptor := rtl.open(FileName.ToFileName, lFlags, 438 {0666, filtered by umask});
-  if lDescriptor < 0 then
-    CheckForIOError(1);
-  var lMode := (case Access of
-    FileAccess.Read: 'r';
-    FileAccess.Write: 'w';
-    FileAccess.ReadWrite: 'r+';
-  end).ToAnsiChars(true);
-  fHandle := rtl.fdopen(lDescriptor, @lMode[0]);
-  if fHandle = nil then begin
-    rtl.close(lDescriptor);
-    CheckForIOError(1);
-  end;
-  {$ELSEIF POSIX_LIGHT}
-  var s: AnsiChar := AnsiChar(case Mode of
-                                FileMode.CreateNew: 'w';
-                                FileMode.Create: 'w';
-                                FileMode.Open: 'r';
-                                FileMode.OpenOrCreate: 'a';
-                                FileMode.Truncate: 'w';
-                              end);
-  {$IFDEF ANDROID or DARWIN}
-  fHandle := rtl.fopen(FileName.ToFileName(), @s);
-  {$ELSEIF FUCHSIA}
-  fHandle := rtl.fopen(FileName.ToFileName(), @s);
+  {$IF LINUX AND NOT CPU64}
+  var fd := rtl.open64(FileName.ToFileName(), flags, UInt32($1b6));
   {$ELSE}
-  fHandle := rtl.fopen64(FileName.ToFileName(), @s);
+  var fd := rtl.open(FileName.ToFileName(), flags, UInt32($1b6)); // 0666, filtered by umask
   {$ENDIF}
-  if fHandle = nil then CheckForIOError(1);
+  if fd < 0 then CheckForIOError(-1);
+  var lMode: array[0..2] of AnsiChar;
+  lMode[0] := if Access = FileAccess.Write then AnsiChar('w') else AnsiChar('r');
+  lMode[1] := if Access = FileAccess.ReadWrite then AnsiChar('+') else AnsiChar(0);
+  lMode[2] := AnsiChar(0);
+  fHandle := rtl.fdopen(fd, @lMode[0]);
+  if fHandle = nil then begin
+    // fdopen does not close the descriptor when it fails.
+    try CheckForIOError(-1); finally rtl.close(fd); end;
+  end;
   {$ELSE}
   {$ERROR Unsupported platform}
   {$ENDIF}
@@ -157,9 +145,9 @@ begin
   var lResult := rtl.SetFilePointer(fHandle, offset_lo, @offset_hi, lOrigin);
   if (lResult = rtl.INVALID_SET_FILE_POINTER) then begin
     if rtl.GetLastError <> 0 then
-      CheckForIOError(True);
+      CheckForIOError(False);
   end;
-  exit lResult + Offset shl 32;
+  exit (Int64(offset_hi) shl 32) or UInt32(lResult);
   {$ELSEIF POSIX_LIGHT}
   var lOrigin: Int32 :=  case Origin of
                           SeekOrigin.Begin: rtl.SEEK_SET;
@@ -189,16 +177,26 @@ end;
 method FileStream.Close;
 begin
   if IsValid then begin
-    if CanWrite then Flush;
-    {$IFDEF WINDOWS}
-    rtl.CloseHandle(fHandle);
-    fHandle := rtl.INVALID_HANDLE_VALUE;
-    {$ELSEIF POSIX_LIGHT}
-    CheckForIOError(rtl.fclose(fHandle));
-    fHandle := nil;
-    {$ELSE}
-    {$ERROR Unsupported platform}
-    {$ENDIF}
+    var flushed := false;
+    try
+      if CanWrite then Flush;
+      flushed := true;
+    finally
+      // A failed flush still consumes this stream's handle. Invalidate before
+      // closing: fclose releases its FILE even when it reports a write error.
+      // Preserve the original flush failure if close reports another error.
+      var handle := fHandle;
+      {$IFDEF WINDOWS}
+      fHandle := rtl.INVALID_HANDLE_VALUE;
+      var closed := rtl.CloseHandle(handle);
+      {$ELSEIF POSIX_LIGHT}
+      fHandle := nil;
+      var closed := rtl.fclose(handle);
+      {$ELSE}
+      {$ERROR Unsupported platform}
+      {$ENDIF}
+      if flushed then CheckForIOError(closed);
+    end;
   end;
 end;
 
@@ -239,7 +237,8 @@ begin
   CheckForIOError(rtl.ReadFile(fHandle, aSpan.Pointer, aSpan.Length, @res, nil));
   exit res;
   {$ELSEIF POSIX_LIGHT}
-  exit rtl.fread(aSpan.Pointer, 1, aSpan.Length, fHandle);
+  result := rtl.fread(aSpan.Pointer, 1, aSpan.Length, fHandle);
+  if result < aSpan.Length then CheckForIOError(rtl.ferror(fHandle));
   {$ELSE}
   {$ERROR Unsupported platform}
   {$ENDIF}
@@ -254,7 +253,8 @@ begin
   CheckForIOError(rtl.WriteFile(fHandle, aSpan.Pointer, aSpan.Length, @res, nil));
   exit res;
   {$ELSEIF POSIX_LIGHT}
-  exit rtl.fwrite(aSpan.Pointer, 1, aSpan.Length, fHandle);
+  result := rtl.fwrite(aSpan.Pointer, 1, aSpan.Length, fHandle);
+  if result < aSpan.Length then CheckForIOError(rtl.ferror(fHandle));
   {$ELSE}
   {$ERROR Unsupported platform}
   {$ENDIF}
@@ -264,12 +264,11 @@ method FileStream.Flush;
 begin
   if not CanWrite then raise new NotSupportedException;
   {$IFDEF WINDOWS}
-  rtl.FlushFileBuffers(fHandle);
-  {$ELSEIF FUCHSIA OR DARWIN}
-  CheckForIOError(rtl.fflush(fHandle));
-  var fd := rtl.fileno(fHandle);
-  CheckForIOError(rtl.fsync(fd));
+  CheckForIOError(rtl.FlushFileBuffers(fHandle));
   {$ELSEIF POSIX_LIGHT}
+  // Flush stdio before syncing the descriptor; otherwise buffered writes
+  // remain invisible to another reader after Flush returns.
+  CheckForIOError(rtl.fflush(fHandle));
   var fd := rtl.fileno(fHandle);
   CheckForIOError(rtl.fsync(fd));
   {$ELSE}

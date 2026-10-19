@@ -29,7 +29,7 @@ type
     begin
       if aArray = nil then raise new ArgumentNullException('aArray');
       if aLength < 0 then raise new ArgumentOutOfRangeException('aLength < 0');
-      if (aStart < 0) or (Cardinal(aStart + aLength) > Cardinal(aArray.Length)) then new ArgumentOutOfRangeException('aStart < 0 or aStart + Length > aArray.Length');
+      if (aStart < 0) or (aStart > aArray.Length) or (aLength > aArray.Length - aStart) then raise new ArgumentOutOfRangeException('aStart < 0 or aStart + Length > aArray.Length');
       fObject := aArray;
       if aLength = 0 then
         fPointer := nil
@@ -40,6 +40,8 @@ type
 
     constructor(aPointer: ^T; aLength: Integer);
     begin
+       if (aLength < 0) or ((aPointer = nil) and (aLength <> 0)) then
+         raise new ArgumentOutOfRangeException('Invalid pointer/length');
        fPointer := aPointer;
        fLength := aLength;
     end;
@@ -58,7 +60,7 @@ type
 
     method Slice(aStart, aLength: Integer): Span<T>;
     begin
-      if (aStart < 0) or (aStart + aLength > Length) or (aLength < 0) then raise new ArgumentOutOfRangeException('Invalid start/length!');
+      if (aStart < 0) or (aStart > Length) or (aLength < 0) or (aLength > Length - aStart) then raise new ArgumentOutOfRangeException('Invalid start/length!');
       exit new Span<T>(fObject := fObject, fLength := aLength, fPointer := @fPointer[aStart]);
     end;
 
@@ -94,7 +96,7 @@ type
     begin
       if aArray = nil then raise new ArgumentNullException('aArray');
       if aLength < 0 then raise new ArgumentOutOfRangeException('aLength < 0');
-      if (aStart < 0) or (Cardinal(aStart + aLength) > Cardinal(aArray.Length)) then new ArgumentOutOfRangeException('aStart < 0 or aStart + Length >= aArray.Length');
+      if (aStart < 0) or (aStart > aArray.Length) or (aLength > aArray.Length - aStart) then raise new ArgumentOutOfRangeException('aStart < 0 or aStart + Length >= aArray.Length');
       fObject := aArray;
       if aLength = 0 then
         fPointer := nil
@@ -105,6 +107,8 @@ type
 
     constructor(aPointer: ^T; aLength: Integer);
     begin
+       if (aLength < 0) or ((aPointer = nil) and (aLength <> 0)) then
+         raise new ArgumentOutOfRangeException('Invalid pointer/length');
        fPointer := aPointer;
        fLength := aLength;
     end;
@@ -123,7 +127,7 @@ type
 
     method Slice(aStart, aLength: Integer): ImmutableSpan<T>;
     begin
-      if (aStart < 0) or (aStart + aLength > Length) or (aLength < 0) then raise new ArgumentOutOfRangeException('Invalid start/length!');
+      if (aStart < 0) or (aStart > Length) or (aLength < 0) or (aLength > Length - aStart) then raise new ArgumentOutOfRangeException('Invalid start/length!');
       exit new ImmutableSpan<T>(fObject := fObject, fLength := aLength, fPointer := @fPointer[aStart]);
     end;
 

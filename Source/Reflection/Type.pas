@@ -631,9 +631,9 @@ type
     end;
 
     property Code: TypeCodes read get_Code;
-    property IsSigned: Boolean read Code in [TypeCodes.SByte, TypeCodes.Int16, TypeCodes.Int32, TypeCodes.Int64, TypeCodes.IntPtr, TypeCodes.UInt64];
-    property IsInteger: Boolean read Code in [TypeCodes.SByte, TypeCodes.Int16, TypeCodes.Int32, TypeCodes.Int64, TypeCodes.Byte, TypeCodes.UInt16, TypeCodes.UInt32, TypeCodes.UInt64, TypeCodes.IntPtr, TypeCodes.UInt64];
-    property IsIntegerOrFloat: Boolean read Code in [TypeCodes.SByte, TypeCodes.Int16, TypeCodes.Int32, TypeCodes.Int64, TypeCodes.Byte, TypeCodes.UInt16, TypeCodes.UInt32, TypeCodes.UInt64, TypeCodes.IntPtr, TypeCodes.UInt64, TypeCodes.Single, TypeCodes.Double];
+    property IsSigned: Boolean read Code in [TypeCodes.SByte, TypeCodes.Int16, TypeCodes.Int32, TypeCodes.Int64, TypeCodes.IntPtr];
+    property IsInteger: Boolean read Code in [TypeCodes.SByte, TypeCodes.Int16, TypeCodes.Int32, TypeCodes.Int64, TypeCodes.Byte, TypeCodes.UInt16, TypeCodes.UInt32, TypeCodes.UInt64, TypeCodes.IntPtr, TypeCodes.UIntPtr];
+    property IsIntegerOrFloat: Boolean read Code in [TypeCodes.SByte, TypeCodes.Int16, TypeCodes.Int32, TypeCodes.Int64, TypeCodes.Byte, TypeCodes.UInt16, TypeCodes.UInt32, TypeCodes.UInt64, TypeCodes.IntPtr, TypeCodes.UIntPtr, TypeCodes.Single, TypeCodes.Double];
     property IsFloat: Boolean read Code in [TypeCodes.Single, TypeCodes.Double];
     property IsEnum: Boolean read (&Flags and IslandTypeFlags.TypeKindMask) = IslandTypeFlags.EnumFlags;
     property IsArray: Boolean read (&Flags and IslandTypeFlags.TypeKindMask) = IslandTypeFlags.Array;

@@ -6,7 +6,7 @@ type
   StackEnumerator<T> = public class(IEnumerator<T>)
   private
     fItems: array of T;
-    fCurrentIndex: Integer := 0;
+    fCurrentIndex: Integer := -1;
     method GetCurrent: T;
     property NonGenCurrent: Object read GetCurrent; implements IEnumerator.Current;
   public
@@ -90,7 +90,8 @@ end;
 
 method Stack<T>.Clear;
 begin
-  Init;
+  for i := 0 to fTop do fItems[i] := default(T);
+  fTop := -1;
 end;
 
 method Stack<T>.Pop: T;
@@ -155,8 +156,8 @@ end;
 
 method StackEnumerator<T>.MoveNext: Boolean;
 begin
+  if fCurrentIndex < length(fItems) then inc(fCurrentIndex);
   result := fCurrentIndex < length(fItems);
-  inc(fCurrentIndex);
 end;
 
 method StackEnumerator<T>.Dispose;
