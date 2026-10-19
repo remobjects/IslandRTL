@@ -5,6 +5,11 @@ namespace Island.Tests.Shared;
 
 uses RemObjects.Elements.EUnit;
 
+{$IF DARWIN AND MACOS AND ARM64}
+// Darwin ARM64 uses the system Single C-round implementation.
+[assembly:DllImport('/usr/lib/system/libsystem_m.dylib', EntryPoint := '_roundf')]
+{$ENDIF}
+
 {$IF not PUREPASCAL AND (WINDOWS OR (DARWIN AND MACOS) OR (LINUX AND (X86_64 OR ARM64)))}
 type
   Math_RoundingExports = public class(Test)

@@ -36,6 +36,8 @@ const COREFOUNDATION_FRAMEWORK = "/System/Library/Frameworks/CoreFoundation.fram
 [assembly:DllImport('/usr/lib/libobjc.A.dylib', EntryPoint := '_objc_initWeak')]
 [assembly:DllImport('/usr/lib/libobjc.A.dylib', EntryPoint := '_objc_loadWeakRetained')]
 [assembly:DllImport('/usr/lib/libobjc.A.dylib', EntryPoint := '_objc_retainAutorelease')]
+// Generic Cocoa argument boxing emits objc_autorelease after ARC lowering.
+[assembly:DllImport('/usr/lib/libobjc.A.dylib', EntryPoint := '_objc_autorelease')]
 [assembly:DllImport('/usr/lib/libobjc.A.dylib', EntryPoint := '_objc_autoreleaseReturnValue')]
 [assembly:DllImport('/usr/lib/libobjc.A.dylib', EntryPoint := '_objc_autoreleasePoolPush')]
 [assembly:DllImport('/usr/lib/libobjc.A.dylib', EntryPoint := '_objc_autoreleasePoolPop')]

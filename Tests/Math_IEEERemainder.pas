@@ -4,6 +4,12 @@ namespace Island.Tests.Shared;
 
 uses RemObjects.Elements.EUnit;
 
+{$IF DARWIN}
+// The scalar oracle uses system libm rather than an Island math export.
+[assembly:DllImport('/usr/lib/system/libsystem_m.dylib', EntryPoint := '_remainder')]
+[assembly:DllImport('/usr/lib/system/libsystem_m.dylib', EntryPoint := '_remainderf')]
+{$ENDIF}
+
 type
   Math_IEEERemainder = public class(Test)
   private
