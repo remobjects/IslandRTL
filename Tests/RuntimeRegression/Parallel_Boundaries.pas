@@ -1,6 +1,8 @@
 // Negative regression guards: loop failures must reach the caller after all
 // workers finish. Positive guards cover each index exactly once, Int64 limits,
 // empty/reversed ranges, early stopping, iterator disposal and nested loops.
+// Windows pool guards run in fresh child processes so retained pool workers
+// cannot invalidate the strict caller-only enumeration guard.
 namespace Island.Tests.Shared;
 uses RemObjects.Elements.EUnit;
 {$IFNDEF NOTHREADS}
@@ -385,10 +387,20 @@ type
 
     method IdlePoolWakesEveryBlockingCallback;
     begin
+      {$IF WINDOWS}
+      RunIsolatedPoolGuard(IdlePoolChildArgument);
+      {$ELSE}
+      RunIdlePoolGuard(5);
+      {$ENDIF}
+    end;
+
+    // Parameterized helpers are excluded from EUnit's test discovery.
+    method RunIdlePoolGuard(aPoolLimit: UInt32);
+    begin
       // Bound OS thread creation as well as task count; restore the caller's
       // pool setting even if a guard fails (Windows defaults to many workers).
       var originalLimit := ThreadPool.MaxThreads;
-      ThreadPool.MaxThreads := 5;
+      ThreadPool.MaxThreads := aPoolLimit;
       try
         // A reused pool must wake every worker in a burst even when callbacks
         // block. Repeating after idle time exposes coalesced auto-reset signals;
@@ -426,10 +438,20 @@ type
 
     method OriginalFailureSurvivesQueueCleanupFailure;
     begin
+      {$IF WINDOWS}
+      RunIsolatedPoolGuard(CleanupPoolChildArgument);
+      {$ELSE}
+      RunCleanupPoolGuard(5);
+      {$ENDIF}
+    end;
+
+    // Parameterized helpers are excluded from EUnit's test discovery.
+    method RunCleanupPoolGuard(aPoolLimit: UInt32);
+    begin
       // Bound OS thread creation as well as task count; restore the caller's
       // pool setting even if a guard fails (Windows defaults to many workers).
       var originalLimit := ThreadPool.MaxThreads;
-      ThreadPool.MaxThreads := 5;
+      ThreadPool.MaxThreads := aPoolLimit;
       try
         // Occupy the pool so the caller deterministically executes the first body
         // with unread values still queued. Throwing Assign models cleanup failure;
@@ -649,12 +671,62 @@ type
       end);
     end;
 
+    {$IF WINDOWS}
+    const SaturationChildArgument = '--island-test-saturated-pool';
+    const CleanupPoolChildArgument = '--island-test-pool-cleanup';
+    const IdlePoolChildArgument = '--island-test-pool-idle';
+    {$ENDIF}
+
     method SaturatedPoolMakesProgress;
+    begin
+      {$IF WINDOWS}
+      RunIsolatedPoolGuard(SaturationChildArgument);
+      {$ELSE}
+      RunSaturatedPoolGuard(5);
+      {$ENDIF}
+    end;
+
+    {$IF WINDOWS}
+    method RunIsolatedPoolGuard(aArgument: String); private;
+    begin
+      // Lowering a shared Windows pool's maximum does not immediately remove
+      // existing workers under Wine. Start this guard before any child pool use.
+      var lPath := new Char[32768];
+      var lLength := rtl.GetModuleFileNameW(nil, @lPath[0], lPath.Length);
+      Assert.IsTrue((lLength > 0) and (lLength < lPath.Length), 'Cannot locate pool guard executable');
+      var lExecutable := String.FromPChar(@lPath[0], lLength);
+      var lCommand := ('"'+lExecutable+'" '+aArgument).ToCharArray(true);
+      var lStartup := default(rtl.STARTUPINFO);
+      lStartup.cb := sizeOf(lStartup);
+      var lChild := default(rtl.PROCESS_INFORMATION);
+      Assert.IsTrue(rtl.CreateProcess(nil, @lCommand[0], nil, nil, true, 0, nil, nil, @lStartup, @lChild),
+        'Cannot start isolated pool guard');
+      try
+        var lWait := rtl.WaitForSingleObject(lChild.hProcess, 30000);
+        if lWait <> rtl.WAIT_OBJECT_0 then begin
+          rtl.TerminateProcess(lChild.hProcess, 1);
+          rtl.WaitForSingleObject(lChild.hProcess, 5000);
+          Assert.IsTrue(false, if lWait = rtl.WAIT_TIMEOUT then
+            'Isolated pool guard timed out after 30 seconds' else
+            'Waiting for isolated pool guard failed');
+        end;
+        var lExitCode: rtl.DWORD;
+        Assert.IsTrue(rtl.GetExitCodeProcess(lChild.hProcess, @lExitCode), 'Cannot read pool guard child exit code');
+        Assert.AreEqual(Integer(lExitCode), 0, 'Isolated pool guard failed; see child output');
+      finally
+        rtl.CloseHandle(lChild.hThread);
+        rtl.CloseHandle(lChild.hProcess);
+      end;
+    end;
+    {$ENDIF}
+
+    // A parameter keeps this helper out of EUnit's parameterless discovery.
+    method RunSaturatedPoolGuard(aPoolLimit: UInt32);
     begin
       // Bound OS thread creation as well as task count; restore the caller's
       // pool setting even if a guard fails (Windows defaults to many workers).
       var originalLimit := ThreadPool.MaxThreads;
-      ThreadPool.MaxThreads := 5;
+      ThreadPool.MaxThreads := aPoolLimit;
       try
         // Every configured pool slot enters the barrier before any nested loop
         // begins; no spare worker can hide a deadlock. Run in a process with a
