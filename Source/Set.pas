@@ -210,6 +210,9 @@ end;
 
 class method &Set<T>.op_In(aValue: T; aData: &Set<T>): Boolean;
 begin
+  // A nil set represents the empty set, including in checked callers.
+  if Object.ReferenceEquals(aData, nil) then
+    exit false;
   exit aData.Get(Converter(aValue));
 end;
 
