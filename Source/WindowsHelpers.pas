@@ -548,12 +548,16 @@ type
       exit if x < y then x else y;
     end;
 
+    // Keep the libc export independent of Math.LLVMVectorLib's file-local helper.
+    [SymbolName('Sleef_roundf1')]
+    class method SleefRoundSingle(x: Single): Single; private; external;
+
     [SymbolName('roundf')]
     class method roundf(x: Single): Single;
     begin
       // llvm.round.f32 can lower back to roundf on targets without SSE4.1.
       // Use SLEEF directly so this export cannot call itself through Math.Round.
-      exit SleefInternal.Sleef_roundf1(x);
+      exit SleefRoundSingle(x);
     end;
 
     [SymbolName('strcmp')]
