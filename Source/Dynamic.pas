@@ -107,6 +107,7 @@ type
         end;
         if lPars <> nil then begin
           for j: Integer := 0 to lPars.Length -1 do begin
+            if aArgs[j] = nil then continue;
             if not lPars[j].Type.IsAssignableFrom(aArgs[j].GetType)  then begin
               case lPars[j].Type.Code of
                 TypeCodes.SByte: aArgs[j] := Convert.ToSByte(aArgs[j]);
