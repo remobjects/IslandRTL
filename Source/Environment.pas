@@ -346,15 +346,35 @@ type
       {$IFDEF WINDOWS}
       var lCount: Int32;
       var lArgs := rtl.CommandLineToArgvW(rtl.GetCommandLineW(), @lCount);
-      result := new String[lCount - 1];
-      for i: Integer := 1 to lCount - 1 do
-        result[i - 1] := String.FromPChar(lArgs[i]);
+      if lArgs = nil then
+        raise new Exception('Could not read command-line arguments');
+      try
+        result := new String[Math.Max(0, lCount - 1)];
+        for i: Integer := 1 to lCount - 1 do begin
+          if lArgs[i] = nil then
+            raise new Exception('Null command-line argument at index ' + i.ToString);
+          result[i - 1] := String.FromPChar(lArgs[i]);
+        end;
+      finally
+        rtl.LocalFree(lArgs);
+      end;
       {$ELSEIF POSIX_LIGHT}
-      result := new String[ExternalCalls.nargs - 1];
-      for i: Integer := 1 to ExternalCalls.nargs - 1 do
-        result[i - 1] := String.FromPAnsiChar(ExternalCalls.args[i]);
+      // argc excludes the null sentinel. An empty invocation still supplies an array.
+      var lCount := ExternalCalls.nargs;
+      var lArgs := ExternalCalls.args;
+      if (lCount < 0) or ((lCount > 0) and (lArgs = nil)) then
+        raise new Exception('Invalid native command-line argument vector');
+      result := new String[Math.Max(0, lCount - 1)];
+      for i: Integer := 1 to lCount - 1 do begin
+        if lArgs[i] = nil then
+          raise new Exception('Null command-line argument at index ' + i.ToString);
+        var lArgument := String.FromPAnsiChar(lArgs[i]);
+        if lArgument = nil then
+          raise new Exception('Could not decode command-line argument at index ' + i.ToString);
+        result[i - 1] := lArgument;
+      end;
       {$ELSEIF WEBASSEMBLY}
-      // return empty, for compatibility
+      result := new String[0];
       {$ELSE}
       {$ERROR Unsupported platform}
       {$ENDIF}

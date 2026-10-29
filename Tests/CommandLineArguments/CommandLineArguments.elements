@@ -1,0 +1,16 @@
+<Project xmlns="http://schemas.microsoft.com/developer/msbuild/2003" DefaultTargets="Build">
+  <PropertyGroup>
+    <ProjectGuid>{8D97AF43-6E82-4EBD-A2B6-6F5C9C9584F8}</ProjectGuid>
+    <OutputType>Executable</OutputType><AssemblyName>CommandLineArguments</AssemblyName>
+    <SDK>macOS</SDK><Architecture>arm64</Architecture>
+    <Configuration Condition="'$(Configuration)' == ''">Debug</Configuration>
+    <OutputPath>bin</OutputPath>
+    <RuntimeLibrary Condition="'$(RuntimeLibrary)' == ''">../../Source/Bin/Debug/macOS/arm64/Island.fx</RuntimeLibrary>
+  </PropertyGroup>
+  <ItemGroup>
+    <Reference Include="gc" /><Reference Include="rtl" />
+    <Reference Include="Island"><HintPath>$(RuntimeLibrary)</HintPath></Reference>
+    <Compile Include="Program.pas" />
+  </ItemGroup>
+  <Import Project="$(MSBuildExtensionsPath)/RemObjects Software/Elements/RemObjects.Elements.Island.Darwin.targets" />
+</Project>

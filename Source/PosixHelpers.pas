@@ -601,11 +601,9 @@ begin
   ExternalCalls.args := argv;
   ExternalCalls.envp := _envp;
   Utilities.Initialize;
-  var lArgs := new String[argc - 1];
-  for i: Integer := 1 to argc - 1 do
-    lArgs[i - 1] := String.FromPAnsiChar(argv[i]);
   try
-    exit UserEntryPoint(lArgs);
+    // Validate and decode before invoking user code, including nullable Main signatures.
+    exit UserEntryPoint(Environment.GetCommandLineArgs);
     {$IF NOT EMSCRIPTEN AND NOT ANDROID and not DARWIN and not FUCHSIA}
     {$HIDE H14}
     ExternalCalls.libc_main(nil, 0, nil, nil, nil); // do not remove, this is there to ensure it's linked in.

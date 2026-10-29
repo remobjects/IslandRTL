@@ -2565,14 +2565,10 @@ method main: Integer;
 begin
   Utilities.Initialize;
   InitCtors;
-  var cnt: Int32;
-  var args := rtl.CommandLineToArgvW(rtl.GetCommandLineW(), @cnt);
-  var args_s := new String[cnt-1];
-  for i: Integer := 1 to cnt-1 do
-    args_s[i-1] := String.FromPChar(args[i]);
   try
     try
-      result := UserEntryPoint(args_s);
+      // Use the same checked conversion as explicit command-line queries.
+      result := UserEntryPoint(Environment.GetCommandLineArgs);
     finally
       FiniCtors;
       while ExternalCalls.atexitlist <> nil do begin
