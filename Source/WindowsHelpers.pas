@@ -2087,7 +2087,9 @@ b __elements_raise_deferred_exception
 method AfterUnwindRunCatch; external;
 {$ENDIF}
 
-[SymbolName('__elements_get_deferred_caller_context'), DisableInlining, DisableOptimizations]
+// These three entry points are named inside AfterUnwindRunCatch assembly.
+// Keep them visible to LTO, which cannot see those references as IR operands.
+[SymbolName('__elements_get_deferred_caller_context'), Used, DisableInlining, DisableOptimizations]
 method GetDeferredCallerContext: NativeInt;
 begin
   result := NativeInt(@ExternalCalls.fDeferredCallerContext);
@@ -2166,7 +2168,7 @@ begin
   end;
 end;
 
-[SymbolName('__elements_run_catch_after_unwind'), DisableInlining, DisableOptimizations]
+[SymbolName('__elements_run_catch_after_unwind'), Used, DisableInlining, DisableOptimizations]
 method RunCatchAfterUnwind: NativeInt;
 begin
   {$IF ARM64EC}
@@ -2207,7 +2209,7 @@ begin
   end;
 end;
 
-[SymbolName('__elements_raise_deferred_exception'), DisableInlining, DisableOptimizations]
+[SymbolName('__elements_raise_deferred_exception'), Used, DisableInlining, DisableOptimizations]
 method RaiseDeferredException;
 begin
   var lException := ExternalCalls.fDeferredException;
