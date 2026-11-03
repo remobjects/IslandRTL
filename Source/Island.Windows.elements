@@ -45,7 +45,7 @@
     <XmlDocWarningLevel>WarningOnPublicMembers</XmlDocWarningLevel>
     <EnableUnmanagedDebugging>False</EnableUnmanagedDebugging>
     <GenerateDebugInfo>False</GenerateDebugInfo>
-    <Optimize>False</Optimize>
+    <Optimize>True</Optimize>
   </PropertyGroup>
   <ItemGroup>
     <Compile Include="BoehmGC.pas" />
