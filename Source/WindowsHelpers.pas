@@ -1584,6 +1584,7 @@ begin
 end;
 
 {$IF ARM64EC}
+// Naked preserves the register arguments and assembly return value during LTO.
 // LLVM funclets can address the parent locals through x19 as well as x29.
 [InlineAsm("
         stp     x29, x30, [sp, #-32]!
@@ -1594,7 +1595,7 @@ end;
         ldr     x19, [sp, #16]
         ldp     x29, x30, [sp], #32
         ret
-", "", true, false), DisableInlining, DisableOptimizations]
+", "", true, false), Naked, DisableInlining, DisableOptimizations]
 method CallCatch64(aCall: NativeInt; aEBP: NativeInt; aBase: NativeInt): NativeInt; external;
 
 [InlineAsm("
@@ -1611,7 +1612,7 @@ catch_return:
         ldr     x19, [sp, #16]
         ldp     x29, x30, [sp], #32
         ret
-", "", true, false), DisableInlining, DisableOptimizations]
+", "", true, false), Naked, DisableInlining, DisableOptimizations]
 method CallCatch64AfterUnwind(aCall: NativeInt; aEBP: NativeInt; var aReturnAddress: NativeInt; var aReturnStack: NativeInt; aBase: NativeInt): NativeInt; external;
 
 [InlineAsm("
@@ -2087,7 +2088,9 @@ b __elements_raise_deferred_exception
 method AfterUnwindRunCatch; external;
 {$ENDIF}
 
-[SymbolName('__elements_get_deferred_caller_context'), DisableInlining, DisableOptimizations]
+// These three entry points are named inside AfterUnwindRunCatch assembly.
+// Keep them visible to LTO, which cannot see those references as IR operands.
+[SymbolName('__elements_get_deferred_caller_context'), Used, DisableInlining, DisableOptimizations]
 method GetDeferredCallerContext: NativeInt;
 begin
   result := NativeInt(@ExternalCalls.fDeferredCallerContext);
@@ -2166,7 +2169,7 @@ begin
   end;
 end;
 
-[SymbolName('__elements_run_catch_after_unwind'), DisableInlining, DisableOptimizations]
+[SymbolName('__elements_run_catch_after_unwind'), Used, DisableInlining, DisableOptimizations]
 method RunCatchAfterUnwind: NativeInt;
 begin
   {$IF ARM64EC}
@@ -2207,7 +2210,7 @@ begin
   end;
 end;
 
-[SymbolName('__elements_raise_deferred_exception'), DisableInlining, DisableOptimizations]
+[SymbolName('__elements_raise_deferred_exception'), Used, DisableInlining, DisableOptimizations]
 method RaiseDeferredException;
 begin
   var lException := ExternalCalls.fDeferredException;
