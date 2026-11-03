@@ -1584,6 +1584,7 @@ begin
 end;
 
 {$IF ARM64EC}
+// Naked preserves the register arguments and assembly return value during LTO.
 // LLVM funclets can address the parent locals through x19 as well as x29.
 [InlineAsm("
         stp     x29, x30, [sp, #-32]!
@@ -1594,7 +1595,7 @@ end;
         ldr     x19, [sp, #16]
         ldp     x29, x30, [sp], #32
         ret
-", "", true, false), DisableInlining, DisableOptimizations]
+", "", true, false), Naked, DisableInlining, DisableOptimizations]
 method CallCatch64(aCall: NativeInt; aEBP: NativeInt; aBase: NativeInt): NativeInt; external;
 
 [InlineAsm("
@@ -1611,7 +1612,7 @@ catch_return:
         ldr     x19, [sp, #16]
         ldp     x29, x30, [sp], #32
         ret
-", "", true, false), DisableInlining, DisableOptimizations]
+", "", true, false), Naked, DisableInlining, DisableOptimizations]
 method CallCatch64AfterUnwind(aCall: NativeInt; aEBP: NativeInt; var aReturnAddress: NativeInt; var aReturnStack: NativeInt; aBase: NativeInt): NativeInt; external;
 
 [InlineAsm("
