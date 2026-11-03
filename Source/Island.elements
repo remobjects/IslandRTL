@@ -20,11 +20,13 @@
     <XmlDocWarningLevel>WarningOnPublicMembers</XmlDocWarningLevel>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Target)' == 'Island.Android'">
+    <EnableLTO>False</EnableLTO>
     <SubMode>Android</SubMode>
     <WarnOnCaseMismatch>True</WarnOnCaseMismatch>
     <DefineConstants>ANDROID;POSIX_LIGHT</DefineConstants>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Target)' == 'Island.Darwin.iOS'">
+    <EnableLTO>False</EnableLTO>
     <SubMode>Darwin</SubMode>
     <WarnOnCaseMismatch>True</WarnOnCaseMismatch>
     <DefineConstants>POSIX;POSIX_LIGHT</DefineConstants>
@@ -33,6 +35,7 @@
     <DeploymentTargetVersion>9.0</DeploymentTargetVersion>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Target)' == 'Island.Darwin.macOS'">
+    <EnableLTO>False</EnableLTO>
     <SubMode>Darwin</SubMode>
     <WarnOnCaseMismatch>True</WarnOnCaseMismatch>
     <DefineConstants>POSIX;POSIX_LIGHT</DefineConstants>
@@ -40,6 +43,7 @@
     <DeploymentTargetVersion>10.12</DeploymentTargetVersion>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Target)' == 'Island.Darwin.tvOS'">
+    <EnableLTO>False</EnableLTO>
     <SubMode>Darwin</SubMode>
     <WarnOnCaseMismatch>True</WarnOnCaseMismatch>
     <DefineConstants>POSIX;POSIX_LIGHT</DefineConstants>
@@ -47,6 +51,7 @@
     <DeploymentTargetVersion>9.0</DeploymentTargetVersion>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Target)' == 'Island.Darwin.visionOS'">
+    <EnableLTO>False</EnableLTO>
     <SubMode>Darwin</SubMode>
     <WarnOnCaseMismatch>True</WarnOnCaseMismatch>
     <DefineConstants>POSIX;POSIX_LIGHT</DefineConstants>
@@ -54,6 +59,7 @@
     <DeploymentTargetVersion>1.0</DeploymentTargetVersion>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Target)' == 'Island.Fuchsia'">
+    <EnableLTO>False</EnableLTO>
     <SubMode>Fuchsia</SubMode>
     <WarnOnCaseMismatch>True</WarnOnCaseMismatch>
     <KnownConditionalDefines>POSIX_LIGHT</KnownConditionalDefines>
@@ -61,12 +67,14 @@
     <ConditionalDefines>POSIX_LIGHT</ConditionalDefines>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Target)' == 'Island.Linux'">
+    <EnableLTO>False</EnableLTO>
     <SubMode>Linux</SubMode>
     <WarnOnCaseMismatch>True</WarnOnCaseMismatch>
     <DefineConstants>POSIX;POSIX_LIGHT;LINUX</DefineConstants>
     <Architecture>aarch64</Architecture>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Target)' == 'Island.WebAssembly'">
+    <EnableLTO>False</EnableLTO>
     <SubMode>WebAssembly</SubMode>
     <DefineConstants>WEBASSEMBLY;WASM;CPU32;NOTHREADS;NOFILES;ENABLE_UNLIMITED_CACHE</DefineConstants>
     <DefaultUses>RemObjects.Elements.WebAssembly.DOM</DefaultUses>
@@ -74,10 +82,10 @@
   <PropertyGroup Condition="'$(Target)' == 'Island.Windows'">
     <SubMode>Windows</SubMode>
     <DefineConstants>WINDOWS</DefineConstants>
-    <Optimize>False</Optimize>
     <Architecture>arm64ec;arm64;x86_64;i386</Architecture>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)' == 'Debug'">
+    <EnableLTO>False</EnableLTO>
     <OutputPath>Bin\Debug</OutputPath>
     <EnableAsserts>True</EnableAsserts>
     <Optimize>False</Optimize>
@@ -91,6 +99,8 @@
     <GenerateMDB>False</GenerateMDB>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)' == 'Release'">
+    <!-- Windows Release keeps native code and LTO IR; other targets disable LTO. -->
+    <EnableLTO>True</EnableLTO>
     <OutputPath>Bin\Release</OutputPath>
     <EnableAsserts>False</EnableAsserts>
     <CaptureConsoleOutput>False</CaptureConsoleOutput>
