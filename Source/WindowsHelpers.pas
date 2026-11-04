@@ -464,7 +464,7 @@ type
     [SymbolName('ElementsRaiseException'), DllExport]
     class method RaiseException(aRaiseAddress: ^Void; aRaiseFrame: ^Void; aRaiseObject: Object);
 
-    class property ModuleHandle: rtl.HMODULE read fModuleHandle;
+    class property ModuleHandle: rtl.HMODULE read fModuleHandle write fModuleHandle;
     class property MainThreadID: rtl.DWORD read fMainThreadID;
 
     const ElementsExceptionCode = $E0428819;

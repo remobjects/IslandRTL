@@ -478,7 +478,8 @@ type
     class method Release(var Dest: BoehmGC); empty;
 
     class var fWasFinalized: Boolean;
-    class method UnloadGC;
+    // Shared runtime packages own shutdown even when linked from the shipped library.
+    class method UnloadGC; public;
     begin
       if fWasFinalized then exit;
       fWasFinalized := true;
