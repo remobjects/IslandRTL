@@ -1007,7 +1007,8 @@ method main: Integer;
 {$ENDIF}
 
 {$IF ARM64EC}
-[SymbolName('#__security_init_cookie')]
+// LLVM adds ARM64EC's # decoration and generates the matching call thunk.
+[SymbolName('__security_init_cookie')]
 method InitializeSecurityCookie; external;
 {$ENDIF}
 
@@ -1943,7 +1944,7 @@ begin
   end;
   {$ENDIF}
   // Catch funclets must finish their deferred cleanups before a native rethrow.
-  {$IF _WIN64 AND NOT ARM64EC}
+  {$IF I386 OR _WIN64 OR ARM64EC}
   if aRaiseObject is IForeignException then
     IForeignException(aRaiseObject).RaiseNative(if aRaiseAddress = nil then Utilities.GetReturnAddress(0) else aRaiseAddress);
   {$ENDIF}
@@ -2536,6 +2537,9 @@ begin
                 if lCleanup <> nil then
                   CallCatch32(NativeInt(^Void(lCleanup)), lBaseAddress);
               end;
+              // Native Delphi ownership transfers only after this catch is selected.
+              if exo is IForeignException then
+                IForeignException(exo).TakeNativeOwnership;
               var lCont := CallCatch32(NativeInt(^Void(tb^.HandlerType^.Handler)), lBaseAddress);
               // LLVM catch funclets replace the parent frame's saved ESP. Restore
               // it so a later catch resumes on the original function stack.
