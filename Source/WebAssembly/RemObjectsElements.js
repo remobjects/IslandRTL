@@ -722,6 +722,9 @@
             return input.then(function (bytes) {
                 bytedata = bytes;
                 defineElementsSystemFunctions(importObject);
+                // LLVM-generated modules that catch exceptions can import this tag.
+                if (importObject.env.__cpp_exception === undefined && typeof WebAssembly.Tag === "function")
+                    importObject.env.__cpp_exception = new WebAssembly.Tag({ parameters: ["i32"] });
                 if (!importObject.env.memory)
                     importObject.env.memory = new WebAssembly.Memory({
                         initial: memorySize
