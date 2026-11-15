@@ -111,9 +111,10 @@ type
     const ElementsExceptionCode: UInt64 = $E042881952454d4f;
     const CocoaExceptionCode: UInt64 = $434C4E47432B2B00;
 
-    //{$IFNDEF xANDROID}
+    // Keep Island language finalizers separate from the Android CRT's atexit.
+    {$IFNDEF ANDROID}
     [SymbolName('atexit')]
-    //{$ENDIF}
+    {$ENDIF}
     class method atexit(func: atexitfunc);
     [SymbolName('ElementsBeginCatch')]
     method ElementsBeginCatch(obj: ^Void): ^Void;
