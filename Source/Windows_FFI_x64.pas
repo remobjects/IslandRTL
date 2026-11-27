@@ -15,6 +15,15 @@ type
     SingleBits: Integer;   // 72
   end;
 
+  // The call bridge keeps this data in its LLVM-managed frame while the
+  // outgoing argument area temporarily becomes the machine stack pointer.
+  X64InvokeFrame = record
+    Address: ^Void;
+    IntegerResult: ^NativeUInt;
+    FloatResult: ^Double;
+    Registers: ^X64CallData;
+  end;
+
   FFI = public class
   private
     fStack: array of Byte;
@@ -24,35 +33,27 @@ type
     f_XMM0: Double;
     f_RAX: NativeUInt;
 
-    [InlineAsm("
-      // Registers:
-      // RCX: Address
-      // RDX: *_RAX
-      // R8:  * _XMM0
-      // R9: _REGISTERS
-      pushq %rbp          //push rbp
-      movq %rsp, %rbp     //mov rbp,rsp
-
-
-      pushq %rcx           //push rcx  // address         ;rbp -8
-      pushq %rdx           //push rdx  // @_rax           ;rbp -16
-      pushq %r8            //push r8   // @_xmm0          ;rbp -24
-      pushq %r9            //push r9   // _registers      ;rbp -32
-
-      movq -32(%rbp), %rax //mov rax, [rbp-32] //registers
-
-      movq  64(%rax), %rcx //mov rcx, [rax+64] // items/count
-      movq  56(%rax), %rdx //mov rdx, [rax+56] // stack
-          jmp compareitems
-        work:
-      pushq (%rdx)          //push [rdx]
-      decq %rcx             //dec rcx
-      subq $$8,%rdx         //sub rdx,8
-        compareitems:
-      or %rcx, %rcx         //or rcx, rcx
-          jnz work
-
-          // copy registers
+    // LLVM owns the frame/probes/unwind tables, as in the ARM64 Windows
+    // bridge. A naked assembly frame prevented exceptions from crossing Invoke.
+    // Keep the existing register marshalling and copy outgoing stack words in
+    // their original order; Windows additionally reserves its 32-byte shadow area.
+    [DisableInlining, DisableOptimizations]
+    class method DoCall(Address: ^Void;out _RAX: NativeUInt;var _XMM0: Double;[InReg]var data: X64CallData);
+    begin
+      var lFrame: X64InvokeFrame;
+      lFrame.Address := Address;
+      lFrame.IntegerResult := @_RAX;
+      lFrame.FloatResult := @_XMM0;
+      lFrame.Registers := @data;
+      var lBytes := data.Items * 8;
+      var lAllocation := InternalCalls.Alloca(lBytes + 32 + 15);
+      var lStack := ^Byte((NativeUInt(lAllocation) + 15) and not NativeUInt(15));
+      if lBytes > 0 then
+        ExternalCalls.memcpy(lStack + 32, ^Byte(NativeUInt(data.Stack) - NativeUInt(lBytes) + 8), lBytes);
+      InternalCalls.VoidAsm("
+      movq %rsp, %r14
+      movq %r13, %rsp
+      movq 24(%r12), %rax
       movq  72(%rax), %rcx  //mov rcx, [rax+72] // single bits
 
       btq $$1, %rcx         //bt rcx, 1
@@ -81,11 +82,11 @@ type
           // rbp-16: address of xmm0
       btq $$0, %rcx    //bt rcx, 0
           jnc g0
-      movq  -24(%rbp),%rdx    //mov rdx, [rbp -24]
+      movq 16(%r12),%rdx    //mov rdx, [rbp -24]
       cvtsd2ss (%rdx),%xmm0    //cvtsd2ss xmm0, [rdx]
           jmp g0e
           g0:
-      movq -24(%rbp),%rdx    //mov rdx, [rbp -24]
+      movq 16(%r12),%rdx    //mov rdx, [rbp -24]
       movsd   (%rdx),%xmm0    //movsd xmm0, [rdx]
           g0e:
 
@@ -95,34 +96,30 @@ type
       movq 16(%rax), %r8      //mov r8, [rax+16]
       movq 24(%rax), %r9      //mov r9, [rax+24]
 
-      movq -8(%rbp), %rax     //mov RAX, [rbp-8]
 
-                              // weird thing on windows, it needs 32 bytes in the CALLEE side to do whatever in
-      subq  $$32, %rsp        //sub RSP, 32
-      callq *%rax             //call RAX
-      addq  $$32, %rsp        //add RSP, 32 // undo the damage done earlier
-
+      movq (%r12), %rax
+      callq *%rax
+      movq %r14, %rsp
           // copy result back
-      movq  -16(%rbp), %rdx    //mov RDX, [rbp-16]
+      movq  8(%r12), %rdx    //mov RDX, [rbp-16]
       movq %rax,(%rdx)         //mov [RDX], RAX
-      movq -32(%rbp),%rax      //mov rax, [rbp-32] //registers
+      movq 24(%r12),%rax      //mov rax, [rbp-32] //registers
 
       btq $$8, 72(%rax)        //bt [rax+72], 8                 // if atype.basetype  <> btSingle
           jnc g5                        //
       cvtss2sd %xmm0,%xmm1     //cvtss2sd xmm1,xmm0             // convert single to double  into xmm1
-      movq -24(%rbp), %rdx     //mov rdx,[rbp-24]               // @_xmm0  ;rbp -24
+      movq 16(%r12), %rdx     //mov rdx,[rbp-24]               // @_xmm0  ;rbp -24
       movsd %xmm1, (%rdx)      //movsd qword ptr [rdx], xmm1    // save  xmm1 to param _xmm0
           jmp g5e                       // exit if atype.basetype  = btSingle
 
           g5:                           //else if atype.basetype  = btSingle
-      movq -24(%rbp), %rdx     //mov rdx,[rbp-24]             // @_xmm0  ;rbp -24
+      movq 16(%r12), %rdx     //mov rdx,[rbp-24]             // @_xmm0  ;rbp -24
       movsd %xmm0, (%rdx)      //movsd qword ptr [rdx], xmm0  // save  xmm1 to param _xmm0
 
       g5e:
-   leave//   popq %rbp     //leave
-      retq          //ret
-    ", "", false, false), DisableInlining, DisableOptimizations]
-    class method DoCall(Address: ^Void;out _RAX: NativeUInt;var _XMM0: Double;[InReg]var data: X64CallData); external;
+
+      ", "{r12},{r13},~{rax},~{rcx},~{rdx},~{rsi},~{rdi},~{r8},~{r9},~{r10},~{r11},~{r14},~{xmm0},~{xmm1},~{xmm2},~{xmm3},~{xmm4},~{xmm5},~{cc},~{memory}", true, false, NativeUInt(@lFrame), NativeUInt(lStack));
+    end;
 
     method PushBefore(aData: ^Void; aSize: Integer);
     begin

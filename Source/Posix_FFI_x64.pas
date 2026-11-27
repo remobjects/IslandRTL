@@ -24,6 +24,15 @@ type
 
 
 
+  // The call bridge keeps this data in its LLVM-managed frame while the
+  // outgoing argument area temporarily becomes the machine stack pointer.
+  X64InvokeFrame = record
+    Address: ^Void;
+    IntegerResult: ^NativeUInt;
+    FloatResult: ^Double;
+    Registers: ^X64CallData;
+  end;
+
   FFI = public class
   private
     fStack: array of Byte;
@@ -34,42 +43,28 @@ type
     f_XMM0: Double;
     f_RAX: NativeUInt;
 
-    [InlineAsm("
-      // Registers:
-      //    RDI: Address
-      //    RSI: _RAX
-      //    RDX: Registers
-      //    RCX: aStack
-      //    R8:  aItems
-      //    R9:  XMM0
-      //
-      //    rbp-8    addr
-      //    rbp-16   _rax
-      //    rbp-24   _xmm0
-      //    rbp-32   regs
-      pushq %rbp          //push rbp
-      movq %rsp, %rbp     //mov rbp,rsp
-
-      pushq %rdi          //  push rdi  // address
-      pushq %rsi          //  push rsi  // _rax
-      pushq %r9           //  push r9   // xmm0
-      pushq %rdx          //  push rdx
-
-      movq %rdx, %rax     //mov rax, rdx
-      jmp compareitems
-  work:
-      pushq (%rcx)        //push [rcx]
-
-      decq %r8            //dec r8
-      subq $$8,%rcx       //sub rcx,8
-     
-  compareitems:
-      or %r8, %r8         //or r8, r8
-      jnz work
-
-                             // copy registers
-                             // xmm0
-      movq -24(%rbp), %rdx   //mov rdx,[rbp-24]
+    // LLVM owns the frame/probes/unwind tables, as in the ARM64 Windows
+    // bridge. A naked assembly frame prevented exceptions from crossing Invoke.
+    // Keep the existing register marshalling and copy outgoing stack words in
+    // their original order; Windows additionally reserves its 32-byte shadow area.
+    [DisableInlining, DisableOptimizations]
+    class method DoCall(Address: ^Void;out _RAX: NativeUInt;[InReg]var data: X64CallData; Stack: ^Void; Items: NativeInt;var _XMM0: Double);
+    begin
+      var lFrame: X64InvokeFrame;
+      lFrame.Address := Address;
+      lFrame.IntegerResult := @_RAX;
+      lFrame.FloatResult := @_XMM0;
+      lFrame.Registers := @data;
+      var lBytes := Items * 8;
+      var lAllocation := InternalCalls.Alloca(lBytes + 0 + 15);
+      var lStack := ^Byte((NativeUInt(lAllocation) + 15) and not NativeUInt(15));
+      if lBytes > 0 then
+        memcpy(lStack + 0, ^Byte(NativeUInt(Stack) - NativeUInt(lBytes) + 8), lBytes);
+      InternalCalls.VoidAsm("
+      movq %rsp, %r14
+      movq %r13, %rsp
+      movq 24(%r12), %rax
+      movq 16(%r12), %rdx   //mov rdx,[rbp-24]
 
       btq $$0, 104(%rax)     //bt [rax+104], 0
       jnc skipxmm0
@@ -150,16 +145,17 @@ type
       movq 32(%rax), %r8          //mov R8,  [rax+32]
       movq 40(%rax), %r9          //mov R9,  [rax+40]
 
-      mov -8(%rbp), %rax          //mov rax, [rbp-8]
-      callq *%rax                 //call RAX
 
+      movq (%r12), %rax
+      callq *%rax
+      movq %r14, %rsp
                                   // copy result back
-      movq -16(%rbp), %rsi        //mov rsi, [rbp-16]          // _RAX parameter
+      movq 8(%r12), %rsi        //mov rsi, [rbp-16]          // _RAX parameter
       movq %rax, (%rsi)           //mov [rsi], RAX
-      movq -24(%rbp), %rsi        //mov rsi, [rbp-24]          // _XMM0 parameter
+      movq 16(%r12), %rsi        //mov rsi, [rbp-24]          // _XMM0 parameter
 
                                   // xmm0 res
-      movq -32(%rbp), %rax        //mov rax, [rbp-32]          // Registers parameter
+      movq 24(%r12), %rax        //mov rax, [rbp-32]          // Registers parameter
       btq $$8, 104(%rax)         //bt [rax+104], 8            // if atype.basetype  <> btSingle
       jnc skipres               // then goto skipres else begin
       cvtss2sd %xmm0, %xmm1      //cvtss2sd xmm1,xmm0         // convert single to double  into xmm1
@@ -170,14 +166,9 @@ type
   skipresre:
 
 
-      popq %rdx                  //pop rdx
-      popq %r9                   //pop r9   // xmm0
-      popq %rsi                  //pop rsi  // _rax
-      popq %rdi                  //pop rdi  // address
-      leave
-      retq          //ret
-    ", "", false, false), DisableInlining, DisableOptimizations]
-    class method DoCall(Address: ^Void;out _RAX: NativeUInt;[InReg]var data: X64CallData; Stack: ^Void; Items: NativeInt;var _XMM0: Double); external;
+
+      ", "{r12},{r13},~{rax},~{rcx},~{rdx},~{rsi},~{rdi},~{r8},~{r9},~{r10},~{r11},~{r14},~{xmm0},~{xmm1},~{xmm2},~{xmm3},~{xmm4},~{xmm5},~{xmm6},~{xmm7},~{xmm8},~{xmm9},~{xmm10},~{xmm11},~{xmm12},~{xmm13},~{xmm14},~{xmm15},~{cc},~{memory}", true, false, NativeUInt(@lFrame), NativeUInt(lStack));
+    end;
 
     method PushBefore(aData: ^Void; aSize: Integer);
     begin
