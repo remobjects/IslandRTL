@@ -24,6 +24,13 @@ type
 
 
 
+  ARM64InvokeFrame = record
+    Address: ^Void;
+    IntegerResult: ^NativeUInt;
+    FloatResult: ^UInt64;
+    Registers: ^ARM64CallData;
+  end;
+
   // MethodInfo.Invoke uses this bridge to call native Island methods. Copy each
   // value to the register or stack position expected by the target method;
   // numerical conversion here would change the arguments supplied by the caller.
@@ -37,71 +44,43 @@ type
     f_V0: UInt64;
     f_X0: NativeUInt;
 
-    [InlineAsm("
-      // Registers:
-      //    X0: Address
-      //    X1: _X0 (Return)
-      //    X2: Registers
-      //    X3: aStack
-      //    X4: aItems
-      //    X5:  V0
-      //
-      //    fp-16    _r0
-      //    fp-8   aStack
-      //    fp-32   aItems
-      //    fp-24   V0
-      stp  fp, lr, [sp, #-16]!
-      mov  fp, sp
-
-      mov x17, x0 // save address
-      mov x16, x2 // save registers
-      stp x1, x3, [sp, #-16]!
-      stp x4, x5, [sp, #-16]!
-
-      cbz x4, Ldone
-      mov x10, #8
-      mul x9, x4, x10
-      str x9, [sp, #-16]!
-    Lloop:
-
-      ldp x0, x1, [x3]
-      stp x0, x1, [sp, #-16]!
-      sub x3, x3, #16
-      sub x4, x4, #2
-      cbnz x4, Lloop
-    Ldone:
-
-      ldp x0, x1, [x16] // load x0-x7 registers
-      ldp x2, x3, [x16, #16]
-      ldp x4, x5, [x16, #32]
-      ldp x6, x7, [x16, #48]
-
-      ldp d0, d1, [x16, #64] // load d0-d7 registers (64 bits)
-      ldp d2, d3, [x16, #80]
-      ldp d4, d5, [x16, #96]
-      ldp d6, d7, [x16, #112] // _V6 and _V7 in ARM64CallData
-
-      blr x17
-
-      ldr x1, [fp, #-16] // _R0
-      str x0, [x1]
-
-      ldr x5, [fp, #-24] // _V0
-      str d0, [x5]
-
-      ldr x9, [fp, #-32]
-      cbz x9, Lnostack
-      ldr x9, [fp, #-48]
-      add sp, sp, #16 // stored #bytes
-      add sp, sp, x9
-
-    Lnostack:
-      add sp, sp, #32
-
-      ldp  fp, lr, [sp], #16
-      ret
-    ", "", true, false), DisableInlining, DisableOptimizations]
-    class method DoCall(Address: ^Void;out _RAX: NativeUInt;[InReg]var data: ARM64CallData; Stack: ^Void; Items: NativeInt;var _XMM0: UInt64); external;
+    // Keep the frame and its unwind information under LLVM control, as in
+    // the Windows ARM64 bridge. The previous naked frame stopped exceptions
+    // crossing reflection calls. Stack arguments retain their existing packing.
+    [DisableInlining, DisableOptimizations]
+    class method DoCall(Address: ^Void; out _RAX: NativeUInt; [InReg] var data: ARM64CallData; Stack: ^Void; Items: NativeInt; var _XMM0: UInt64);
+    begin
+      var lFrame: ARM64InvokeFrame;
+      lFrame.Address := Address;
+      lFrame.IntegerResult := @_RAX;
+      lFrame.FloatResult := @_XMM0;
+      lFrame.Registers := @data;
+      var lBytes := Items * 8;
+      var lAllocation := InternalCalls.Alloca(lBytes + 15);
+      var lStack := ^Byte((NativeUInt(lAllocation) + 15) and not NativeUInt(15));
+      if lBytes > 0 then
+        memcpy(lStack, ^Byte(NativeUInt(Stack) - NativeUInt(lBytes) + 16), lBytes);
+      InternalCalls.VoidAsm("
+        mov x21, sp
+        mov sp, x20
+        ldr x16, [x19, #24]
+        ldr x17, [x19]
+        ldp x0, x1, [x16]
+        ldp x2, x3, [x16, #16]
+        ldp x4, x5, [x16, #32]
+        ldp x6, x7, [x16, #48]
+        ldp d0, d1, [x16, #64]
+        ldp d2, d3, [x16, #80]
+        ldp d4, d5, [x16, #96]
+        ldp d6, d7, [x16, #112]
+        blr x17
+        mov sp, x21
+        ldr x1, [x19, #8]
+        str x0, [x1]
+        ldr x1, [x19, #16]
+        str d0, [x1]
+      ", "{x19},{x20},~{x0},~{x1},~{x2},~{x3},~{x4},~{x5},~{x6},~{x7},~{x8},~{x9},~{x10},~{x11},~{x12},~{x13},~{x14},~{x15},~{x16},~{x17},~{x18},~{x21},~{lr},~{v0},~{v1},~{v2},~{v3},~{v4},~{v5},~{v6},~{v7},~{v16},~{v17},~{v18},~{v19},~{v20},~{v21},~{v22},~{v23},~{v24},~{v25},~{v26},~{v27},~{v28},~{v29},~{v30},~{v31},~{cc},~{memory}", true, false, NativeUInt(@lFrame), NativeUInt(lStack));
+    end;
 
     method PushBefore(aData: ^Void; aSize: Integer);
     begin
