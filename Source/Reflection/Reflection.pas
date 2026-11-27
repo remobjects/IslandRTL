@@ -145,6 +145,62 @@ type
   ArgumentInfo = public class
   private
 
+    // The compiler writes field 4 only for an optional constant parameter.
+    // Presence is separate from Value because a null default is valid.
+    method get_HasDefaultValue: Boolean;
+    begin
+      var lPtr := fPtr; var lKey: Integer; var lTy: ProtoReadType;
+      while ProtoReadHeader(var lPtr, out lKey, out lTy) do begin
+        if (lKey = 4) and (lTy = ProtoReadType.startgroup) then exit true;
+        ProtoSkipValue(var lPtr, lTy);
+      end;
+      exit false;
+    end;
+
+    // Field 5 preserves the scalar type even when the declared parameter is
+    // Object (for example Object := true must remain a boxed Boolean).
+    method get_DefaultTypeCode: TypeCodes;
+    begin
+      var lPtr := fPtr; var lKey: Integer; var lTy: ProtoReadType;
+      while ProtoReadHeader(var lPtr, out lKey, out lTy) do begin
+        if (lKey = 5) and (lTy = ProtoReadType.varint) then exit TypeCodes(ProtoReadVarInt(var lPtr));
+        ProtoSkipValue(var lPtr, lTy);
+      end;
+      exit &Type.Code;
+    end;
+
+    method get_DefaultValue: Object;
+    begin
+      var lPtr := fPtr; var lKey: Integer; var lTy: ProtoReadType;
+      while ProtoReadHeader(var lPtr, out lKey, out lTy) do begin
+        if (lKey = 4) and (lTy = ProtoReadType.startgroup) then begin
+          var lValue := &Type.ReadAttributeValue(var lPtr);
+          if lValue = nil then exit nil;
+          var lResult := lValue.Value;
+          if lResult = nil then exit nil;
+          // Integer constants share a wire representation. Restore the
+          // declared scalar type before reflective overload selection.
+          case get_DefaultTypeCode of
+            TypeCodes.Boolean: exit Convert.ToBoolean(lResult);
+            TypeCodes.Char: exit Char(Convert.ToUInt16(lResult));
+            TypeCodes.SByte: exit Convert.ToSByte(lResult);
+            TypeCodes.Byte: exit Convert.ToByte(lResult);
+            TypeCodes.Int16: exit Convert.ToInt16(lResult);
+            TypeCodes.UInt16: exit Convert.ToUInt16(lResult);
+            TypeCodes.Int32: exit Convert.ToInt32(lResult);
+            TypeCodes.UInt32: exit Convert.ToUInt32(lResult);
+            TypeCodes.Int64: exit Convert.ToInt64(lResult);
+            TypeCodes.UInt64: exit Convert.ToUInt64(lResult);
+            TypeCodes.Single: exit Convert.ToSingle(lResult);
+            TypeCodes.Double: exit Convert.ToDouble(lResult);
+          end;
+          exit lResult;
+        end;
+        ProtoSkipValue(var lPtr, lTy);
+      end;
+      raise new Exception('Parameter has no default value');
+    end;
+
     method get_Attributes: sequence of CustomAttribute; iterator;
     begin
       var lPtr := fPtr;
@@ -215,6 +271,8 @@ type
     property Name: String read get_Name;
     property &Type: &Type read get_Type;
     property Mode: ArgumentMode read get_Mode;
+    property HasDefaultValue: Boolean read get_HasDefaultValue;
+    property DefaultValue: Object read get_DefaultValue;
     property Attributes: sequence of CustomAttribute read get_Attributes;
 
   end;

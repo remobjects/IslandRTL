@@ -128,6 +128,55 @@ type
       end;
       exit nil;
     end;
+    // Bind already evaluated values to source parameters. Never mutate the
+    // caller's array: another overload may need a different parameter order.
+    method BindArguments(aMethod: &MethodInfo; aArgs: array of Object; aNames: array of String; out aBound: array of Object): Boolean;
+    begin
+      var lParameters := aMethod.Arguments.ToArray;
+      var lCount := length(lParameters);
+      if length(aArgs) > lCount then exit false;
+      aBound := new Object[lCount];
+      var lAssigned := new Boolean[lCount];
+      var lNamed := false;
+      for i: Integer := 0 to length(aArgs) - 1 do begin
+        var lName := if aNames = nil then nil else aNames[i];
+        var lSlot := i;
+        if (lName <> nil) and (lName <> '') then begin
+          lNamed := true;
+          lSlot := -1;
+          for j: Integer := 0 to lCount - 1 do
+            if lParameters[j].Name = lName then begin lSlot := j; break; end;
+        end else if lNamed then exit false;
+        if (lSlot < 0) or (lSlot >= lCount) then exit false;
+        if lAssigned[lSlot] then exit false;
+        lAssigned[lSlot] := true;
+        aBound[lSlot] := aArgs[i];
+      end;
+      for j: Integer := 0 to lCount - 1 do
+        if not lAssigned[j] then begin
+          if not lParameters[j].HasDefaultValue then exit false;
+          aBound[j] := lParameters[j].DefaultValue;
+        end;
+      exit true;
+    end;
+
+    // Give each overload its own bound values, then reuse the established
+    // null/type checks and numeric conversions without changing caller values.
+    method FindBoundMatch(aGroup: DynamicMethodGroup; aArgs: array of Object; aNames: array of String; out aBound: array of Object): &MethodInfo;
+    begin
+      for i: Integer := 0 to aGroup.Count - 1 do begin
+        var lMethod := aGroup[i];
+        var lCandidate: array of Object;
+        if not BindArguments(lMethod, aArgs, aNames, out lCandidate) then continue;
+        var lOnly := new List<&MethodInfo>;
+        lOnly.Add(lMethod);
+        if FindBestMatch(new DynamicMethodGroup(aGroup.Inst, lOnly), lCandidate) <> nil then begin
+          aBound := lCandidate;
+          exit lMethod;
+        end;
+      end;
+      exit nil;
+    end;
   public
     method GetMember(aInstance: Object; aName: String; aGetFlags: Integer; aArgs: array of Object): Object;
     begin
@@ -250,6 +299,39 @@ type
 
       if DynamicGetFlags.NilOnBindingFailure in DynamicGetFlags(aGetFlags) then exit;
       raise new DynamicInvokeException('No element with this name: '+aName);
+    end;
+
+    // This overload receives Python keyword names in source order. Keep the
+    // four-argument entry point unchanged for existing compiled callers.
+    method Invoke(aInstance: Object; aName: String; aGetFlags: Integer; aArgs: array of Object; aNames: array of String): Object;
+    begin
+      if (aNames <> nil) and (length(aNames) <> length(aArgs)) then
+        raise new DynamicInvokeException('Argument name/value count mismatch');
+      var lDynamic := IDynamicObject(aInstance);
+      if lDynamic <> nil then begin
+        if (aNames <> nil) and aNames.Any(n -> (n <> nil) and (n <> '')) then
+          raise new DynamicInvokeException('Dynamic object does not support named arguments');
+        exit lDynamic.Invoke(aName, aGetFlags, aArgs);
+      end;
+      for i: Integer := 0 to length(aArgs) - 1 do aArgs[i] := UnwrapValue(aArgs[i]);
+      var lTarget := if aName = nil then aInstance else GetMember(aInstance, aName, aGetFlags or Integer(DynamicGetFlags.FollowedByCall), nil);
+      var lGroup := DynamicMethodGroup(lTarget);
+      if lTarget is &Type then
+        lGroup := new DynamicMethodGroup(nil, &Type(lTarget).Methods.Where(m -> MethodFlags.Constructor in m.Flags).ToList);
+      if lGroup = nil then
+        lGroup := GetMember(lTarget, 'Invoke', Integer(DynamicGetFlags.FollowedByCall), nil) as DynamicMethodGroup;
+      if lGroup = nil then raise new DynamicInvokeException('No overload with these parameters');
+      var lBound: array of Object;
+      var lMethod := FindBoundMatch(lGroup, aArgs, aNames, out lBound);
+      if lMethod = nil then raise new DynamicInvokeException('No overload with these parameters');
+      if (lMethod.Pointer = nil) and (lMethod.VmtOffset < 0) then
+        raise new DynamicInvokeException('Method address unavailable: ' + lMethod.DeclaringType.FullName + '.' + lMethod.Name);
+      if MethodFlags.Constructor in lMethod.Flags then begin
+        result := InternalCalls.Cast<Object>(DefaultGC.New(lMethod.DeclaringType.RTTI, lMethod.DeclaringType.SizeOfType));
+        lMethod.Invoke(result, lBound);
+        exit;
+      end;
+      exit lMethod.Invoke(if lGroup.Inst is &Type then nil else lGroup.Inst, lBound);
     end;
 
     method Invoke(aInstance: Object; aName: String; aGetFlags: Integer; aArgs: array of Object): Object;
